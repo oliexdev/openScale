@@ -335,7 +335,9 @@ fun OverviewScreen(
     } else {
         remember { mutableStateOf(emptyList<UserGoals>()) }
     }
-    var isGoalsSectionExpanded by rememberSaveable { mutableStateOf(false) }
+    val isGoalsSectionExpanded by sharedViewModel.myGoalsExpandedOverview.collectAsState(
+        initial = true
+    )
 
     val localSelectedOverviewGraphTypeIntIds = remember { mutableStateListOf<Int>() }
 
@@ -611,7 +613,10 @@ fun OverviewScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
-                                                isGoalsSectionExpanded = !isGoalsSectionExpanded
+                                                val newIsGoalsSectionExpanded = !isGoalsSectionExpanded
+                                                scope.launch {
+                                                    sharedViewModel.setMyGoalsExpandedOverview(newIsGoalsSectionExpanded)
+                                                }
                                             }
                                             .padding(horizontal = 16.dp, vertical = 12.dp),
                                         verticalAlignment = Alignment.CenterVertically,

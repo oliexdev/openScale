@@ -158,6 +158,14 @@ fun UserDetailScreen(
         remember { mutableStateOf(emptyList<UserGoals>()) }
     }
 
+    var pendingUserGoals by remember { mutableStateOf(emptyList<UserGoals>()) }
+
+    LaunchedEffect(userGoals, isEdit) {
+        if (pendingUserGoals != userGoals) {
+            pendingUserGoals = userGoals
+        }
+    }
+
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -181,85 +189,129 @@ fun UserDetailScreen(
         }
     }
 
-    val editUserTitle = stringResource(R.string.user_detail_edit_user_title)
-    val addUserTitle = stringResource(R.string.user_detail_add_user_title)
-
     LaunchedEffect(user, heightInputUnit) {
-        user?.heightCm?.let { cmValue -> // user.heightCm ist die in der DB gespeicherte Höhe in CM
+        user?.heightCm?.let { cmValue ->
             if (cmValue > 0f) {
                 heightValueString = if (heightInputUnit == UnitType.CM) {
                     String.format(Locale.US, "%.1f", cmValue)
                 } else { // heightInputUnit == UnitType.INCH
-                    // Konvertiere den CM-Wert aus der DB in Zoll für die Anzeige
                     val inchesValue = ConverterUtils.convertFloatValueUnit(cmValue, UnitType.CM, UnitType.INCH)
                     String.format(Locale.US, "%.1f", inchesValue)
                 }
             } else {
-                heightValueString = "" // Wenn keine valide gespeicherte Höhe, Feld leeren
+                heightValueString = ""
             }
         } ?: run {
-            heightValueString = "" // Neuer User, Feld leer
+            heightValueString = ""
         }
     }
 
-    // Effect to set the top bar title and save action.
-    // This runs when userId changes or the screen is first composed.
-    LaunchedEffect(userId) {
+
+    /**
+     * Adds a new user and their pending goals to the database.
+     */
+    fun addUser() {
+        val numericHeight = heightValueString.replace(',', '.').toFloatOrNull()
+        val finalHeightCm = if (numericHeight != null && numericHeight > 0f) {
+            if (heightInputUnit == UnitType.CM) numericHeight
+            else ConverterUtils.convertFloatValueUnit(numericHeight, UnitType.INCH, UnitType.CM)
+        } else null
+
+        if (name.isBlank() || finalHeightCm == null || finalHeightCm <= 0f) {
+            Toast.makeText(context, R.string.user_detail_error_invalid_data, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        settingsViewModel.viewModelScope.launch {
+            val newUserToSave = User(
+                id = 0, name = name, icon = selectedIcon, birthDate = birthDate,
+                gender = gender, heightCm = finalHeightCm, activityLevel = activityLevel,
+                useAssistedWeighing = useAssistedWeighing
+            )
+            val newGeneratedUserIdLong = settingsViewModel.addUser(newUserToSave)
+            if (newGeneratedUserIdLong > 0) {
+                val newGeneratedUserIdInt = newGeneratedUserIdLong.toInt()
+                pendingUserGoals.forEach { currentPendingGoal ->
+                    val finalGoalToSave = currentPendingGoal.copy(userId = newGeneratedUserIdInt)
+                    sharedViewModel.insertUserGoal(finalGoalToSave)
+                }
+                sharedViewModel.selectUser(newGeneratedUserIdInt)
+                navController.popBackStack()
+            } else {
+                Toast.makeText(context, R.string.user_detail_error_invalid_data, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    /**
+     * Updates an existing user's profile and synchronizes their goals with the database.
+     */
+    fun updateUser() {
+        val currentLoadedUser = user ?: return // Should not happen in edit mode
+
+        val numericHeight = heightValueString.replace(',', '.').toFloatOrNull()
+        val finalHeightCm = if (numericHeight != null && numericHeight > 0f) {
+            if (heightInputUnit == UnitType.CM) numericHeight
+            else ConverterUtils.convertFloatValueUnit(numericHeight, UnitType.INCH, UnitType.CM)
+        } else null
+
+        if (name.isBlank() || finalHeightCm == null || finalHeightCm <= 0f) {
+            Toast.makeText(context, R.string.user_detail_error_invalid_data, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        settingsViewModel.viewModelScope.launch {
+            val updatedUser = currentLoadedUser.copy(
+                name = name, icon = selectedIcon, birthDate = birthDate, gender = gender,
+                heightCm = finalHeightCm, activityLevel = activityLevel, useAssistedWeighing = useAssistedWeighing
+            )
+            settingsViewModel.updateUser(updatedUser)
+
+            val originalDbSnapshot = userGoals // Snapshot of goals from DB when screen loaded
+
+            // Goals to delete
+            val goalsToDelete = originalDbSnapshot.filter { originalGoal ->
+                pendingUserGoals.none { pendingGoal -> pendingGoal.measurementTypeId == originalGoal.measurementTypeId }
+            }
+            goalsToDelete.forEach { goalToDel ->
+                sharedViewModel.deleteUserGoal(currentLoadedUser.id, goalToDel.measurementTypeId)
+            }
+
+            // Goals to insert or update
+            pendingUserGoals.forEach { currentPendingGoal ->
+                val goalForDb = currentPendingGoal.copy(userId = currentLoadedUser.id)
+                val originalGoalInSnapshot = originalDbSnapshot.find { it.measurementTypeId == goalForDb.measurementTypeId }
+
+                if (originalGoalInSnapshot != null) { // Goal existed
+                    if (originalGoalInSnapshot.goalValue != goalForDb.goalValue) { // And value changed
+                        sharedViewModel.updateUserGoal(goalForDb)
+                    }
+                } else { // New goal for this user
+                    sharedViewModel.insertUserGoal(goalForDb)
+                }
+            }
+            navController.popBackStack()
+        }
+    }
+
+
+    // --- TopBar Save Action ---
+    LaunchedEffect(key1 = userId) {
         sharedViewModel.setTopBarTitle(
-            if (isEdit) editUserTitle
-            else addUserTitle
+            if (isEdit) context.getString(R.string.user_detail_edit_user_title)
+            else context.getString(R.string.user_detail_add_user_title)
         )
         sharedViewModel.setTopBarAction(
             TopBarAction(icon = Icons.Default.Save, onClick = {
-                val validNumericHeight = heightValueString.toFloatOrNull()
-                var finalHeightCm: Float? = null
-
-                if (validNumericHeight != null && validNumericHeight > 0f) {
-                    finalHeightCm = if (heightInputUnit == UnitType.CM) {
-                        validNumericHeight // Wert ist bereits in CM
-                    } else { // heightInputUnit == UnitType.INCH
-                        // Konvertiere den in Zoll eingegebenen Wert zurück zu CM für die Speicherung
-                        ConverterUtils.convertFloatValueUnit(
-                            validNumericHeight,
-                            UnitType.INCH,
-                            UnitType.CM
-                        )
-                    }
-                }
-                if (name.isNotBlank() && finalHeightCm != null) {
-                    val newUser = User(
-                        id = user?.id
-                            ?: 0, // Use existing ID if editing, or 0 for Room to auto-generate
-                        name = name,
-                        icon = selectedIcon,
-                        birthDate = birthDate,
-                        gender = gender,
-                        heightCm = finalHeightCm,
-                        activityLevel = activityLevel,
-                        useAssistedWeighing = useAssistedWeighing
-                    )
-                    settingsViewModel.viewModelScope.launch {
-                        if (isEdit) {
-                            settingsViewModel.updateUser(newUser)
-                        } else {
-                            val newUserId = settingsViewModel.addUser(newUser)
-                            if (newUserId > 0) {
-                                // If a new user was added, select them in SharedViewModel
-                                sharedViewModel.selectUser(newUserId.toInt())
-                            }
-                        }
-                    }
-                    navController.popBackStack() // Navigate back after saving
+                if (!isEdit) {
+                    addUser()
                 } else {
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.user_detail_error_invalid_data), // "Please enter valid data"
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    updateUser()
                 }
             })
         )
     }
+
     val scrollState = rememberScrollState()
 
     Column(
@@ -427,7 +479,7 @@ fun UserDetailScreen(
                 IconButton(onClick = {
                     val firstTargetableType = allMeasurementTypes.firstOrNull {
                         (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) && !it.isDerived &&
-                                userGoals.none { ug -> ug.measurementTypeId == it.id }
+                                pendingUserGoals.none { ug -> ug.measurementTypeId == it.id }
                     }
                     if (firstTargetableType != null) {
                         sharedViewModel.showUserGoalDialogWithContext(
@@ -444,12 +496,12 @@ fun UserDetailScreen(
                 }
             }
 
-            if (userGoals.isNotEmpty()) {
+            if (pendingUserGoals.isNotEmpty()) {
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(vertical = 4.dp)
                 ) {
-                    items(userGoals, key = { it.userId.toString() + "_" + it.measurementTypeId.toString() }) { goal ->
+                    items(pendingUserGoals, key = { it.userId.toString() + "_" + it.measurementTypeId.toString() }) { goal ->
                         val measurementType = allMeasurementTypes.find { it.id == goal.measurementTypeId }
                         if (measurementType != null) {
                             UserGoalChip(
@@ -466,13 +518,6 @@ fun UserDetailScreen(
                         }
                     }
                 }
-            } else {
-                Text(
-                    text = stringResource(R.string.text_none),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-                )
             }
         }
     }
@@ -483,34 +528,38 @@ fun UserDetailScreen(
             navController = navController,
             existingUserGoal = goalDialogContextData.existingGoalForDialog,
             allMeasurementTypes = allMeasurementTypes,
-            allGoalsOfCurrentUser = userGoals,
+            allGoalsOfCurrentUser = pendingUserGoals,
             onDismiss = { sharedViewModel.dismissUserGoalDialogWithContext() },
-            onConfirm = { measurementTypeIdFromDialog, newGoalValueString ->
-                val finalGoalValueFloat = newGoalValueString.replace(',', '.').toFloatOrNull()
+            onConfirm = { measurementTypeId, goalValueString ->
+                val goalValueFloat = goalValueString.replace(',', '.').toFloatOrNull()
 
-                if (finalGoalValueFloat != null) {
-                    val goalToProcess = UserGoals(
-                        userId = user?.id ?: -1,
-                        measurementTypeId = if (goalDialogContextData.existingGoalForDialog != null) goalDialogContextData.existingGoalForDialog!!.measurementTypeId else measurementTypeIdFromDialog,
-                        goalValue = finalGoalValueFloat
-                    )
-                    if (goalDialogContextData.existingGoalForDialog != null) {
-                        sharedViewModel.updateUserGoal(goalToProcess)
-                    } else {
-                        sharedViewModel.insertUserGoal(goalToProcess)
+                if (goalValueFloat == null) {
+                    if (goalDialogContextData.existingGoalForDialog == null) {  return@UserGoalDialog }
+                    else {
+                        pendingUserGoals = pendingUserGoals.filterNot { it.measurementTypeId == measurementTypeId && it.userId == goalDialogContextData.existingGoalForDialog!!.userId }
+                        sharedViewModel.dismissUserGoalDialogWithContext()
+                        return@UserGoalDialog
                     }
+                }
+
+                val targetUserIdForPendingGoal = if (!isEdit) -1 else user!!.id
+
+                val newOrUpdatedPendingGoal = UserGoals(
+                    userId = targetUserIdForPendingGoal,
+                    measurementTypeId = measurementTypeId,
+                    goalValue = goalValueFloat
+                )
+
+                val existingIndex = pendingUserGoals.indexOfFirst { it.measurementTypeId == newOrUpdatedPendingGoal.measurementTypeId && it.userId == newOrUpdatedPendingGoal.userId }
+                if (existingIndex != -1) {
+                    pendingUserGoals = pendingUserGoals.toMutableList().apply { set(existingIndex, newOrUpdatedPendingGoal) }
                 } else {
-                    if (goalDialogContextData.existingGoalForDialog != null && !newGoalValueString.isBlank()){
-                       sharedViewModel.showSnackbar(messageResId = R.string.toast_invalid_number_format)
-                    }
+                    pendingUserGoals = pendingUserGoals + newOrUpdatedPendingGoal
                 }
                 sharedViewModel.dismissUserGoalDialogWithContext()
             },
-            onDelete = { userIdToDelete, measurementTypeIdToDelete ->
-                settingsViewModel.viewModelScope.launch {
-                    sharedViewModel.deleteUserGoal(userIdToDelete, measurementTypeIdToDelete)
-                }
-                Toast.makeText(context, R.string.toast_goal_deleted, Toast.LENGTH_SHORT).show()
+            onDelete = { userIdFromDialog, measurementTypeIdFromDialog ->
+                pendingUserGoals = pendingUserGoals.filterNot { it.measurementTypeId == measurementTypeIdFromDialog && it.userId == userIdFromDialog }
                 sharedViewModel.dismissUserGoalDialogWithContext()
             }
         )

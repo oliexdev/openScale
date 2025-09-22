@@ -66,11 +66,11 @@ object SettingsPreferenceKeys {
     val IS_FIRST_APP_START = booleanPreferencesKey("is_first_app_start")
     val CURRENT_USER_ID = intPreferencesKey("current_user_id")
     val APP_LANGUAGE_CODE = stringPreferencesKey("app_language_code")
-
     val HAPTIC_ON_MEASUREMENT = booleanPreferencesKey("haptic_on_measurement")
 
     // Settings for specific UI components
     val SELECTED_TYPES_TABLE = stringSetPreferencesKey("selected_types_table") // IDs of measurement types selected for the data table
+    val MY_GOALS_EXPANDED_OVERVIEW = booleanPreferencesKey("my_goals_expanded")
 
     // Saved Bluetooth Scale
     val SAVED_BLUETOOTH_DEVICE_ADDRESS        = stringPreferencesKey("saved_bluetooth_device_address")
@@ -155,6 +155,9 @@ interface SettingsFacade {
     // Table settings
     val selectedTableTypeIds: Flow<Set<String>>
     suspend fun saveSelectedTableTypeIds(typeIds: Set<String>)
+
+    val myGoalsExpandedOverview: Flow<Boolean>
+    suspend fun setMyGoalsExpandedOverview(isExpanded: Boolean)
 
     // Bluetooth scale settings
     fun observeSavedDevice(): Flow<ScannedDeviceInfo?>
@@ -340,6 +343,17 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun saveSelectedTableTypeIds(typeIds: Set<String>) {
         // LogManager.d(TAG, "Saving selected table type IDs: $typeIds")
         saveSetting(SettingsPreferenceKeys.SELECTED_TYPES_TABLE.name, typeIds)
+    }
+
+    override val myGoalsExpandedOverview: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.MY_GOALS_EXPANDED_OVERVIEW.name,
+        true
+    ).catch { exception ->
+        emit(true)
+    }
+
+    override suspend fun setMyGoalsExpandedOverview(isExpanded: Boolean) {
+        saveSetting(SettingsPreferenceKeys.MY_GOALS_EXPANDED_OVERVIEW.name, isExpanded)
     }
 
     override fun observeSavedDevice(): Flow<ScannedDeviceInfo?> {
