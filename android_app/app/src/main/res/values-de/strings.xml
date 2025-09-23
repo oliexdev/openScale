@@ -378,6 +378,21 @@
     <string name="table_message_no_data_for_selection">Keine Daten für die aktuelle Spaltenauswahl verfügbar.</string>
     <string name="table_trend_up">Trend steigend</string>
     <string name="table_trend_down">Trend fallend</string>
+    <string name="desc_enter_selection_mode">Elemente auswählen</string>
+    <string name="items_selected_count">%1$d ausgewählt</string>
+    <string name="desc_cancel_selection_mode">Auswahl abbrechen</string>
+    <string name="desc_change_user">Nutzer für ausgewählte Elemente wechseln</string>
+    <string name="desc_export_selected">Ausgewählte Elemente exportieren</string>
+    <string name="desc_delete_selected">Ausgewählte Elemente löschen</string>
+    <string name="dialog_title_delete_items">Elemente löschen?</string>
+    <string name="dialog_message_delete_item">Möchten Sie das ausgewählte Element wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="dialog_message_delete_items">Möchten Sie die ausgewählten %1$d Elemente wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="snackbar_items_deleted_successfully">%1$d Elemente erfolgreich gelöscht.</string>
+    <string name="snackbar_error_deleting_items">Fehler beim Löschen der Elemente.</string>
+    <string name="dialog_title_select_user_for_assignment">Nutzer für Zuweisung auswählen</string>
+    <string name="snackbar_no_other_users_to_change_to">Keine anderen Nutzer vorhanden, zu denen gewechselt werden kann.</string>
+    <string name="snackbar_items_user_changed_successfully">Nutzer für %1$d Elemente erfolgreich geändert.</string>
+    <string name="snackbar_error_user_changed_items">Fehler beim Ändern des Nutzers für einige Elemente.</string>
 
     <!-- Statistik-Bildschirm -->
     <string name="statistics_no_relevant_types">Keine relevanten Messarten verfügbar oder für Statistiken konfiguriert.</string>

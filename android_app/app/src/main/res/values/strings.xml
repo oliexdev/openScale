@@ -381,6 +381,21 @@
     <string name="table_message_no_data_for_selection">No data available for the current column selection.</string>
     <string name="table_trend_up">Trending up</string>
     <string name="table_trend_down">Trending down</string>
+    <string name="desc_enter_selection_mode">Select items</string>
+    <string name="items_selected_count">%1$d selected</string>
+    <string name="desc_cancel_selection_mode">Cancel selection</string>
+    <string name="desc_change_user">Change user for selected items</string>
+    <string name="desc_export_selected">Export selected items</string>
+    <string name="desc_delete_selected">Delete selected items</string>
+    <string name="dialog_title_delete_items">Delete Items?</string>
+    <string name="dialog_message_delete_item">Are you sure you want to delete the selected item? This action cannot be undone.</string>
+    <string name="dialog_message_delete_items">Are you sure you want to delete the selected %1$d items? This action cannot be undone.</string>
+    <string name="snackbar_items_deleted_successfully">%1$d items deleted successfully.</string>
+    <string name="snackbar_error_deleting_items">Error deleting items.</string>
+    <string name="dialog_title_select_user_for_assignment">Select User for Assignment</string>
+    <string name="snackbar_no_other_users_to_change_to">No other users available to change to.</string>
+    <string name="snackbar_items_user_changed_successfully">User changed for %1$d items successfully.</string>
+    <string name="snackbar_error_user_changed_items">Error changing user for some items.</string>
 
     <!-- Statistics Screen -->
     <string name="statistics_no_relevant_types">No relevant measurement types available or configured for statistics.</string>

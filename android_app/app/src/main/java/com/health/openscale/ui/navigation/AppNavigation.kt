@@ -179,6 +179,7 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
     // Collect UI states from SharedViewModel
     val topBarTitleFromVM by sharedViewModel.topBarTitle.collectAsState()
     val topBarActions by sharedViewModel.topBarActions.collectAsState()
+    val isInContextualSelectionMode by sharedViewModel.isInContextualSelectionMode.collectAsState()
     val allUsers by sharedViewModel.allUsers.collectAsState()
     val selectedUser by sharedViewModel.selectedUser.collectAsState()
 
@@ -536,7 +537,7 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                         }
 
                         // Show user switcher dropdown if on a main route and users exist.
-                        if (currentRoute in mainRoutes && allUsers.isNotEmpty() && currentRoute != Routes.SETTINGS) {
+                        if (!isInContextualSelectionMode && currentRoute in mainRoutes && allUsers.isNotEmpty() && currentRoute != Routes.SETTINGS) {
                             UserDropdownAsAction(
                                 users = allUsers,
                                 selectedUser = selectedUser,

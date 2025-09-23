@@ -49,6 +49,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -77,6 +78,7 @@ import com.health.openscale.ui.screen.dialog.TextInputDialog
 import com.health.openscale.ui.screen.dialog.TimeInputDialog
 import com.health.openscale.ui.screen.dialog.UserInputDialog
 import com.health.openscale.ui.shared.TopBarAction
+import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -100,6 +102,7 @@ fun MeasurementDetailScreen(
     sharedViewModel: SharedViewModel
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     // Holds the string representation of measurement values, keyed by MeasurementType ID.
     val valuesState = remember { mutableStateMapOf<Int, String>() }
@@ -311,7 +314,9 @@ fun MeasurementDetailScreen(
                         }
 
                     if (allConversionsOk) {
-                        sharedViewModel.saveMeasurement(measurementToSave, valueList)
+                        scope.launch {
+                            sharedViewModel.saveMeasurement(measurementToSave, valueList)
+                        }
                         pendingUserId = null
                         isPendingNavigation = true // Trigger loading indicator and navigate back.
                         navController.popBackStack()

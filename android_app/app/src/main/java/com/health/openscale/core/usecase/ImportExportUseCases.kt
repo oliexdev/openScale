@@ -91,7 +91,8 @@ class ImportExportUseCases @Inject constructor(
     suspend fun exportUserToCsv(
         userId: Int,
         uri: Uri,
-        contentResolver: ContentResolver
+        contentResolver: ContentResolver,
+        filterByMeasurementIds: List<Int>? = null
     ): Result<Int> = runCatching {
         LogManager.i(TAG, "CSV export for userId=$userId -> $uri")
 
@@ -120,15 +121,21 @@ class ImportExportUseCases @Inject constructor(
             addAll(valueColumnKeys.sorted())
         }
 
-        val userMeasurementsWithValues: List<MeasurementWithValues> =
+        val allUserMeasurementsWithValues: List<MeasurementWithValues> =
             repository.getMeasurementsWithValuesForUser(userId).first()
 
-        require(userMeasurementsWithValues.isNotEmpty()) {
+        val filteredUserMeasurementsWithValues = if (filterByMeasurementIds != null) {
+            allUserMeasurementsWithValues.filter { it.measurement.id in filterByMeasurementIds }
+        } else {
+            allUserMeasurementsWithValues
+        }
+
+        require(filteredUserMeasurementsWithValues.isNotEmpty()) {
             "No measurements found for userId=$userId"
         }
 
         val rows = mutableListOf<Map<String, String?>>()
-        userMeasurementsWithValues.forEach { mwv ->
+        filteredUserMeasurementsWithValues.forEach { mwv ->
             val zdt = Instant.ofEpochMilli(mwv.measurement.timestamp).atZone(ZoneId.systemDefault())
             val row = mutableMapOf<String, String?>(
                 dateColumnKey to dateFormatter.format(zdt),

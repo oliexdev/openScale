@@ -17,6 +17,9 @@
  */
 package com.health.openscale.ui.shared
 
+import android.content.ContentResolver
+import android.net.Uri
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.material3.SnackbarDuration
 import androidx.lifecycle.ViewModel
@@ -30,6 +33,7 @@ import com.health.openscale.core.data.SmoothingAlgorithm
 import com.health.openscale.core.data.TimeRangeFilter
 import com.health.openscale.core.data.User
 import com.health.openscale.core.data.UserGoals
+import com.health.openscale.core.facade.DataManagementFacade
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
@@ -38,6 +42,8 @@ import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.usecase.MeasurementEvaluationResult
 import com.health.openscale.core.utils.LogManager
+import com.health.openscale.core.utils.LogManager.init
+import com.health.openscale.ui.screen.settings.SettingsViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -52,12 +58,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -71,6 +79,7 @@ import javax.inject.Inject
 class SharedViewModel @Inject constructor(
     private val userFacade: UserFacade,
     private val measurementFacade: MeasurementFacade,
+    private val dataManagementFacade: DataManagementFacade,
     private val settingsFacade: SettingsFacade
 ) : ViewModel(), SettingsFacade by settingsFacade {
     companion object {
@@ -93,6 +102,13 @@ class SharedViewModel @Inject constructor(
     val topBarActions: StateFlow<List<TopBarAction>> = _topBarActions.asStateFlow()
     fun setTopBarAction(action: TopBarAction?) { _topBarActions.value = if (action != null) listOf(action) else emptyList() }
     fun setTopBarActions(actions: List<TopBarAction>) { _topBarActions.value = actions }
+
+    private val _isInContextualSelectionMode = MutableStateFlow(false)
+    val isInContextualSelectionMode: StateFlow<Boolean> = _isInContextualSelectionMode.asStateFlow()
+
+    fun setContextualSelectionMode(isActive: Boolean) {
+        _isInContextualSelectionMode.value = isActive
+    }
 
     // --- Snackbar events ---
     private val _snackbarEvents = MutableSharedFlow<SnackbarEvent>(replay = 0, extraBufferCapacity = 1)
@@ -280,6 +296,19 @@ class SharedViewModel @Inject constructor(
             }
         }
 
+    fun performCsvExport(userId: Int, uri: Uri, contentResolver: ContentResolver, filterByMeasurementIds: List<Int>? = null) {
+        viewModelScope.launch {
+            try {
+                val rows = dataManagementFacade.exportUserToCsv(userId, uri, contentResolver, filterByMeasurementIds).getOrThrow()
+                if (rows > 0) showSnackbar(messageResId = R.string.export_successful)
+                else showSnackbar(messageResId = R.string.export_error_no_exportable_values)
+            } catch (e: Exception) {
+                LogManager.e(TAG, "CSV export error", e)
+                showSnackbar(messageResId = R.string.export_error_generic, formatArgs = listOf(e.localizedMessage ?: "Unknown error"))
+            }
+        }
+    }
+
     // --- Measurement types (via MeasurementFacade) ---
     val measurementTypes: StateFlow<List<MeasurementType>> =
         measurementFacade.getAllMeasurementTypes()
@@ -339,13 +368,6 @@ class SharedViewModel @Inject constructor(
             .map { list -> list.firstOrNull()?.measurementWithValues }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    // --- Time-filtered flow (no smoothing) for current user ---
-    fun getTimeFilteredEnrichedMeasurements(range: TimeRangeFilter): Flow<List<EnrichedMeasurement>> =
-        selectedUserId.flatMapLatest { uid ->
-            if (uid == null) flowOf(emptyList())
-            else measurementFacade.timeFilteredEnrichedFlow(uid, measurementTypes, range)
-        }
-
     // --- Full pipeline (time filter + smoothing) for current user ---
     val processedMeasurementsFlow: StateFlow<List<EnrichedMeasurement>> =
         selectedUserId
@@ -364,28 +386,36 @@ class SharedViewModel @Inject constructor(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     // --- CRUD delegates (via MeasurementFacade) ---
-    fun saveMeasurement(measurement: Measurement, values: List<MeasurementValue>) {
-        viewModelScope.launch(Dispatchers.IO) {
+    fun getMeasurementById(id: Int) : Flow<MeasurementWithValues?> {
+        return measurementFacade.getMeasurementWithValuesById(id)
+    }
+
+    suspend fun saveMeasurement(measurement: Measurement, values: List<MeasurementValue>, silent : Boolean = false) : Boolean {
+        return withContext(Dispatchers.IO) {
             val result = measurementFacade.saveMeasurement(measurement, values)
             if (result.isSuccess) {
-                showSnackbar(
+                 if (!silent) showSnackbar(
                     messageResId = if (measurement.id == 0) R.string.success_measurement_saved
                     else R.string.success_measurement_updated
                 )
+                true
             } else {
-                showSnackbar(messageResId = R.string.error_saving_measurement)
+                if (!silent) showSnackbar(messageResId = R.string.error_saving_measurement)
+                false
             }
         }
     }
 
-    fun deleteMeasurement(measurement: Measurement) {
-        viewModelScope.launch(Dispatchers.IO) {
+    suspend fun deleteMeasurement(measurement: Measurement, silent : Boolean = false) : Boolean {
+        return withContext(Dispatchers.IO) {
             val result = measurementFacade.deleteMeasurement(measurement)
             if (result.isSuccess) {
-                showSnackbar(messageResId = R.string.success_measurement_deleted)
+                if (!silent) showSnackbar(messageResId = R.string.success_measurement_deleted)
                 if (_currentMeasurementId.value == measurement.id) _currentMeasurementId.value = null
+                true
             } else {
-                showSnackbar(messageResId = R.string.error_deleting_measurement)
+                if (!silent) showSnackbar(messageResId = R.string.error_deleting_measurement)
+                false
             }
         }
     }

@@ -14,6 +14,10 @@
  */
 package com.health.openscale.ui.screen.table
 
+import android.net.Uri
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -37,22 +41,35 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.SupervisorAccount
+import androidx.compose.material.icons.outlined.CheckBox
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,6 +78,7 @@ import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.EvaluationState
 import com.health.openscale.core.data.InputFieldType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.Trend
 import com.health.openscale.core.data.UnitType
@@ -68,8 +86,12 @@ import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.screen.components.MeasurementTypeFilterRow
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.core.utils.LocaleUtils
+import com.health.openscale.ui.screen.dialog.UserInputDialog
+import com.health.openscale.ui.shared.TopBarAction
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
@@ -125,6 +147,7 @@ fun TableScreen(
     navController: NavController,
     sharedViewModel: SharedViewModel
 ) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val enrichedMeasurements by sharedViewModel.enrichedMeasurementsFlow.collectAsState()
     val allAvailableTypesFromVM by sharedViewModel.measurementTypes.collectAsState()
@@ -132,11 +155,34 @@ fun TableScreen(
 
     // Column selection state provided by filter row.
     val selectedColumnIdsFromFilter = remember { mutableStateListOf<Int>() }
+    var isInSelectionMode by rememberSaveable { mutableStateOf(false) }
+    val selectedItemIds = remember { mutableStateListOf<Int>() }
+    val allUsersForDialog by sharedViewModel.allUsers.collectAsState()
+
+    var showDeleteConfirmDialog by rememberSaveable { mutableStateOf(false) }
+    var showChangeUserDialog by rememberSaveable { mutableStateOf(false) }
 
     val displayedTypes =
         remember(allAvailableTypesFromVM, selectedColumnIdsFromFilter.toList()) {
             allAvailableTypesFromVM.filter { it.id in selectedColumnIdsFromFilter }
         }
+
+    val exportCsvLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("text/csv"),
+        onResult = { uri: Uri? ->
+            val currentUserId = sharedViewModel.selectedUserId.value
+            if (uri != null && selectedItemIds.isNotEmpty() && currentUserId != null && currentUserId != 0) {
+                sharedViewModel.performCsvExport(
+                    userId = currentUserId,
+                    uri = uri,
+                    contentResolver = context.contentResolver,
+                    filterByMeasurementIds = selectedItemIds.toList()
+                )
+                isInSelectionMode = false
+                selectedItemIds.clear()
+            }
+        }
+    )
 
     // Transform measurements -> table rows (compute eval state & formatted strings here).
     val tableData = remember(enrichedMeasurements, displayedTypes, allAvailableTypesFromVM, userEvaluationContext) {
@@ -253,8 +299,233 @@ fun TableScreen(
     val noDataForSelectionMessage = stringResource(id = R.string.table_message_no_data_for_selection)
     val dateColumnHeader = stringResource(id = R.string.table_header_date)
 
-    LaunchedEffect(Unit, tableScreenTitle) {
-        sharedViewModel.setTopBarTitle(tableScreenTitle)
+    fun deleteSelectedItems(selectedItemIds : List<Int>) {
+        if (selectedItemIds.isEmpty()) {
+            return
+        }
+
+        scope.launch {
+            var allSucceeded = true
+
+            for (id in selectedItemIds) {
+                val measurementWithValues = sharedViewModel.getMeasurementById(id).firstOrNull()
+
+                if (measurementWithValues != null) {
+                    val success = sharedViewModel.deleteMeasurement(measurementWithValues.measurement, true)
+
+                    if (!success) {
+                        allSucceeded = false
+                        break
+                    }
+                }
+            }
+
+            if (allSucceeded) {
+                sharedViewModel.showSnackbar(messageResId = R.string.snackbar_items_deleted_successfully, formatArgs = listOf(selectedItemIds.size))
+            } else {
+                sharedViewModel.showSnackbar(messageResId = R.string.snackbar_error_deleting_items)
+            }
+        }
+    }
+
+    fun exportSelectedItems(selectedItemIds: List<Int>) {
+        if (selectedItemIds.isEmpty()) {
+            return
+        }
+
+        val timestamp = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date())
+        val fileName = "${timestamp}_openscale_selected_export.csv"
+        exportCsvLauncher.launch(fileName)
+    }
+
+    fun changeUserOfSelectedItems(selectedItemIds : List<Int>, newUserId : Int) {
+        if (selectedItemIds.isEmpty()) {
+            return
+        }
+
+        scope.launch {
+            var allSucceeded = true
+
+            for (id in selectedItemIds) {
+                val measurementWithValues = sharedViewModel.getMeasurementById(id).firstOrNull()
+
+                if (measurementWithValues != null) {
+                    val originalMeasurement = measurementWithValues.measurement
+                    val originalValues = measurementWithValues.values.map { it.value }
+
+                    val updatedMeasurement = originalMeasurement.copy(userId = newUserId)
+
+                    val success = sharedViewModel.saveMeasurement(updatedMeasurement, originalValues, true)
+
+                    if (!success) {
+                        allSucceeded = false
+                        break
+                    }
+                }
+            }
+
+            if (allSucceeded) {
+                sharedViewModel.showSnackbar(messageResId = R.string.snackbar_items_user_changed_successfully, formatArgs = listOf(selectedItemIds.size))
+            } else {
+                sharedViewModel.showSnackbar(messageResId = R.string.snackbar_error_user_changed_items)
+            }
+        }
+    }
+
+    if (showChangeUserDialog) {
+        val usersForDialog = allUsersForDialog.filter { user ->
+            user.id != 0 && user.id != sharedViewModel.selectedUserId.value
+        }
+        if (usersForDialog.isNotEmpty()) {
+            UserInputDialog(
+                title = stringResource(R.string.dialog_title_select_user_for_assignment),
+                users = usersForDialog,
+                initialSelectedId = usersForDialog.firstOrNull()?.id,
+                measurementIcon = MeasurementTypeIcon.IC_USER,
+                iconBackgroundColor = MaterialTheme.colorScheme.primary,
+                onDismiss = {
+                    showChangeUserDialog = false
+                },
+                onConfirm = { selectedNewUserId ->
+                    if (selectedNewUserId != null) {
+                        changeUserOfSelectedItems(selectedItemIds.toList(), selectedNewUserId)
+                    }
+                    showChangeUserDialog = false
+                    isInSelectionMode = false
+                    selectedItemIds.clear()
+                }
+            )
+        } else {
+            LaunchedEffect(Unit) {
+                showChangeUserDialog = false
+                sharedViewModel.showSnackbar(messageResId = R.string.snackbar_no_other_users_to_change_to)
+            }
+        }
+    }
+
+    if (showDeleteConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteConfirmDialog = false
+            },
+            title = {
+                Text(text = stringResource(id = R.string.dialog_title_delete_items))
+            },
+            text = {
+                val messageResId = if (selectedItemIds.size == 1) {
+                    R.string.dialog_message_delete_item
+                } else {
+                    R.string.dialog_message_delete_items
+                }
+                Text(text = stringResource(id = messageResId, selectedItemIds.size))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        deleteSelectedItems(selectedItemIds.toList())
+                        showDeleteConfirmDialog = false
+                        isInSelectionMode = false
+                        selectedItemIds.clear()
+                    }
+                ) {
+                    Text(stringResource(id = R.string.delete_button_label).uppercase(Locale.getDefault()))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirmDialog = false
+                    }
+                ) {
+                    Text(stringResource(id = R.string.cancel_button).uppercase(Locale.getDefault()))
+                }
+            },
+            icon = {
+                Icon(Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+            }
+        )
+    }
+
+    LaunchedEffect(Unit, tableScreenTitle, isInSelectionMode, selectedItemIds.toList(), enrichedMeasurements) {
+        sharedViewModel.setContextualSelectionMode(isInSelectionMode)
+
+        if (isInSelectionMode) {
+            sharedViewModel.setTopBarTitle(context.getString(R.string.items_selected_count, selectedItemIds.size))
+
+            val actions = mutableListOf<TopBarAction>()
+
+            actions.add(
+                TopBarAction(
+                    icon = Icons.Filled.SupervisorAccount,
+                    contentDescriptionResId = R.string.desc_change_user,
+                    onClick = {
+                        val usersSelectable = allUsersForDialog.filter { it.id != 0 && it.id != sharedViewModel.selectedUser.value?.id }
+
+                        if (usersSelectable.isNotEmpty()) {
+                            showChangeUserDialog = true
+                        } else {
+                            sharedViewModel.showSnackbar(messageResId = R.string.snackbar_no_other_users_to_change_to)
+                        }
+                    }
+                )
+            )
+            actions.add(
+                TopBarAction(
+                    icon = Icons.Filled.FileDownload,
+                    contentDescriptionResId = R.string.desc_export_selected,
+                    onClick = {
+                        exportSelectedItems(selectedItemIds)
+                    }
+                )
+            )
+            actions.add(
+                TopBarAction(
+                    icon = Icons.Filled.Delete,
+                    contentDescriptionResId = R.string.desc_delete_selected,
+                    onClick = {
+                        if (selectedItemIds.isNotEmpty()) {
+                            showDeleteConfirmDialog = true
+                        }
+                    }
+                )
+            )
+
+            actions.add(
+                TopBarAction(
+                    icon = Icons.Filled.Close,
+                    contentDescriptionResId = R.string.desc_cancel_selection_mode,
+                    onClick = {
+                        isInSelectionMode = false
+                        selectedItemIds.clear()
+                    }
+                )
+            )
+
+            sharedViewModel.setTopBarActions(actions)
+
+        } else {
+            sharedViewModel.setTopBarTitle(tableScreenTitle)
+
+            val defaultActions = mutableListOf<TopBarAction>()
+            if (!enrichedMeasurements.isEmpty()) {
+                defaultActions.add(
+                    TopBarAction(
+                        icon = Icons.Outlined.CheckBox,
+                        contentDescriptionResId = R.string.desc_enter_selection_mode,
+                        onClick = { isInSelectionMode = true }
+                    )
+                )
+            }
+
+            sharedViewModel.setTopBarActions(defaultActions)
+        }
+    }
+
+    if (isInSelectionMode) {
+        BackHandler(enabled = true) {
+            isInSelectionMode = false
+            selectedItemIds.clear()
+        }
     }
 
     val horizontalScrollState = rememberScrollState()
@@ -271,7 +542,14 @@ fun TableScreen(
             onPersistSelectedTypeIds = { idsToSave ->
                 scope.launch { sharedViewModel.saveSelectedTableTypeIds(idsToSave) }
             },
-            filterLogic = { allTypes -> allTypes.filter { it.isEnabled } },
+            filterLogic = { allTypes ->
+                allTypes.filter {
+                    it.isEnabled &&
+                    it.key != MeasurementTypeKey.DATE &&
+                    it.key != MeasurementTypeKey.TIME &&
+                    it.key != MeasurementTypeKey.USER
+                }
+            },
             defaultSelectionLogic = { availableFilteredTypes ->
                 val defaultDesiredTypeIds = listOf(
                     MeasurementTypeKey.WEIGHT.id,
@@ -337,6 +615,40 @@ fun TableScreen(
                         .height(IntrinsicSize.Min),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    if (isInSelectionMode) {
+                        val allItemsSelected = tableData.isNotEmpty() && selectedItemIds.size == tableData.size
+                        val noItemsSelected = selectedItemIds.isEmpty()
+
+                        val checkboxState = when {
+                            allItemsSelected -> ToggleableState.On
+                            noItemsSelected -> ToggleableState.Off
+                            else -> ToggleableState.Indeterminate
+                        }
+
+                        Box(modifier = Modifier
+                            .fillMaxHeight()
+                            .padding(horizontal = 6.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            TriStateCheckbox(
+                                state = checkboxState,
+                                onClick = {
+                                    when (checkboxState) {
+                                        ToggleableState.On -> selectedItemIds.clear()
+                                        ToggleableState.Off -> {
+                                            selectedItemIds.clear()
+                                            selectedItemIds.addAll(tableData.map { it.measurementId })
+                                        }
+                                        ToggleableState.Indeterminate -> {
+                                            selectedItemIds.clear()
+                                            selectedItemIds.addAll(tableData.map { it.measurementId })
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                    }
+
                     TableHeaderCellInternal(
                         text = dateColumnHeader,
                         modifier = Modifier
@@ -368,27 +680,63 @@ fun TableScreen(
                 // --- DATA ROWS ---
                 LazyColumn(Modifier.fillMaxSize()) {
                     items(tableData, key = { it.measurementId }) { rowData ->
+                        val isSelected = selectedItemIds.contains(rowData.measurementId)
+
                         Row(
                             Modifier
                                 .fillMaxWidth()
+                                .background(
+                                    if (isSelected && isInSelectionMode) {
+                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                                    } else {
+                                        MaterialTheme.colorScheme.surface
+                                    }
+                                )
                                 .clickable {
-                                    navController.navigate(
-                                        Routes.measurementDetail(
-                                            rowData.measurementId,
-                                            sharedViewModel.selectedUserId.value
+                                    if (isInSelectionMode) {
+                                        if (isSelected) {
+                                            selectedItemIds.remove(rowData.measurementId)
+                                        } else {
+                                            selectedItemIds.add(rowData.measurementId)
+                                        }
+                                    } else {
+                                        navController.navigate(
+                                            Routes.measurementDetail(
+                                                rowData.measurementId,
+                                                sharedViewModel.selectedUserId.value
+                                            )
                                         )
-                                    )
+                                    }
                                 }
                                 .height(IntrinsicSize.Min),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             // Date cell (fixed column)
+                            if (isInSelectionMode) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .padding(horizontal = 6.dp),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    Checkbox(
+                                        checked = isSelected,
+                                        onCheckedChange = { checked ->
+                                            if (checked) {
+                                                selectedItemIds.add(rowData.measurementId)
+                                            } else {
+                                                selectedItemIds.remove(rowData.measurementId)
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+
                             TableDataCellInternal(
                                 cellData = null,
                                 fixedText = rowData.formattedTimestamp,
                                 modifier = Modifier
                                     .widthIn(min = dateColMin, max = dateColMax)
-                                    .background(MaterialTheme.colorScheme.surface)
                                     .fillMaxHeight(),
                                 alignment = TextAlign.Start,
                                 isDateCell = true

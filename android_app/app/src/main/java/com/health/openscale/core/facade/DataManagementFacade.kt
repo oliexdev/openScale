@@ -90,8 +90,9 @@ class DataManagementFacade @Inject constructor(
     suspend fun exportUserToCsv(
         userId: Int,
         uri: Uri,
-        resolver: ContentResolver
-    ): Result<Int> = importExport.exportUserToCsv(userId, uri, resolver)
+        resolver: ContentResolver,
+        filterByMeasurementIds: List<Int>? = null
+    ): Result<Int> = importExport.exportUserToCsv(userId, uri, resolver, filterByMeasurementIds)
 
     suspend fun importUserFromCsv(
         userId: Int,

@@ -757,7 +757,9 @@ fun OverviewScreen(
                                             )
                                         },
                                         onDelete = {
-                                            sharedViewModel.deleteMeasurement(enrichedItem.measurementWithValues.measurement)
+                                            scope.launch {
+                                                sharedViewModel.deleteMeasurement(enrichedItem.measurementWithValues.measurement)
+                                            }
                                         },
                                         isHighlighted = (highlightedMeasurementId == enrichedItem.measurementWithValues.measurement.id)
                                     )
