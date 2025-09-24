@@ -20,6 +20,7 @@ package com.health.openscale.ui.screen.graph
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,6 +44,7 @@ import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.components.LineChart
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
 import com.health.openscale.ui.screen.overview.MeasurementValueRow
+import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
@@ -54,6 +56,7 @@ fun GraphScreen(
     sharedViewModel: SharedViewModel
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val graphState by sharedViewModel.graphUiState.collectAsState()
     val processed by sharedViewModel.processedMeasurementsFlow.collectAsState()
     val allMeasurementsWithValues = remember(graphState) {
@@ -185,6 +188,23 @@ fun GraphScreen(
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = stringResource(R.string.action_edit_measurement_desc)
+                        )
+                    }
+
+                    IconButton(
+                        enabled = uid != null,
+                        onClick = {
+                            sheetMeasurementId = null
+                            if (uid != null) {
+                                scope.launch {
+                                   sharedViewModel.deleteMeasurement(mwv.measurement)
+                                }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = stringResource(R.string.action_delete_measurement_desc)
                         )
                     }
 

@@ -85,7 +85,7 @@
     <string name="success_measurement_updated">Messung erfolgreich aktualisiert</string>
     <string name="success_measurement_saved">Messung erfolgreich gespeichert</string>
     <string name="error_saving_measurement">Fehler beim Speichern der Messung</string>
-    <string name="success_measurement_deleted">Messung erfolgreich gelöscht</string>
+    <string name="success_measurement_deleted">Messung %1$s erfolgreich gelöscht</string>
     <string name="error_deleting_measurement">Fehler beim Löschen der Messung</string>
     <string name="action_save_measurement">Messung speichern</string>
     <string name="action_add_measurement">Messung hinzufügen</string>

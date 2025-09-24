@@ -86,7 +86,7 @@
     <string name="success_measurement_updated">Measurement successfully updated</string>
     <string name="success_measurement_saved">Measurement successfully saved</string>
     <string name="error_saving_measurement">Error saving measurement</string>
-    <string name="success_measurement_deleted">Measurement successfully deleted</string>
+    <string name="success_measurement_deleted">Measurement %1$s successfully deleted</string>
     <string name="error_deleting_measurement">Error deleting measurement</string>
     <string name="action_save_measurement">Save measurement</string>
     <string name="action_add_measurement">Add Measurement</string>

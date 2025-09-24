@@ -209,7 +209,7 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                 bluetoothViewModel.snackbarEvents
             )
             .distinctUntilChanged { a, b ->
-                    a.messageResId == b.messageResId && a.message == b.message
+                    a.messageResId == b.messageResId && a.message == b.message && a.messageFormatArgs == b.messageFormatArgs
             }
             .debounce(150)
             .collect { evt ->

@@ -67,8 +67,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import java.text.DateFormat
+import java.util.Date
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
+import kotlin.text.format
 
 /**
  * Shared VM coordinating user selection, measurement flows, and UI chrome.
@@ -410,11 +413,16 @@ class SharedViewModel @Inject constructor(
         return withContext(Dispatchers.IO) {
             val result = measurementFacade.deleteMeasurement(measurement)
             if (result.isSuccess) {
-                if (!silent) showSnackbar(messageResId = R.string.success_measurement_deleted)
+                if (!silent) {
+                    val formattedDateTime = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(measurement.timestamp))
+                    showSnackbar(messageResId = R.string.success_measurement_deleted, formatArgs = listOf(formattedDateTime))
+                }
                 if (_currentMeasurementId.value == measurement.id) _currentMeasurementId.value = null
                 true
             } else {
-                if (!silent) showSnackbar(messageResId = R.string.error_deleting_measurement)
+                if (!silent) {
+                    showSnackbar(messageResId = R.string.error_deleting_measurement)
+                }
                 false
             }
         }
