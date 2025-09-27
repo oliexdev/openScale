@@ -143,9 +143,9 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     }
 
     private String convertUserNameToScale(ScaleUser user) {
-        String normalized = normalizeString(user.getUserName());
+        String normalized = normalizeString(user.userName);
         if (normalized.isEmpty()) {
-            return String.valueOf(user.getId());
+            return String.valueOf(user.id);
         }
         return normalized.toUpperCase(Locale.US);
     }
@@ -249,7 +249,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 currentRemoteUser = null;
                 final ScaleUser selectedUser = getSelectedScaleUser();
                 for (RemoteUser remoteUser : remoteUsers) {
-                    if (remoteUser.localUserId == selectedUser.getId()) {
+                    if (remoteUser.localUserId == selectedUser.id) {
                         currentRemoteUser = remoteUser;
                         break;
                     }
@@ -277,7 +277,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     }
                     else {
                         LogManager.i(TAG, "User still not identified, so storing the data for the selected user.");
-                        addMeasurement(measurementData, getSelectedScaleUser().getId());
+                        addMeasurement(measurementData, getSelectedScaleUser().id);
                     }
                     storedMeasurement.measurementData = null;
                 }
@@ -390,15 +390,15 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
         for (ScaleUser scaleUser : getScaleUserList()) {
             final String localName = convertUserNameToScale(scaleUser);
-            cal.setTime(scaleUser.getBirthday());
+            cal.setTime(scaleUser.birthday);
             final int year = cal.get(Calendar.YEAR);
 
             for (RemoteUser remoteUser : remoteUsers) {
                 if (localName.startsWith(remoteUser.name) && year == remoteUser.year) {
-                    remoteUser.localUserId = scaleUser.getId();
+                    remoteUser.localUserId = scaleUser.id;
                     LogManager.d(TAG, String.format("Remote user %s (0x%x) is local user %s (%d)",
                             remoteUser.name, remoteUser.remoteUserId,
-                            scaleUser.getUserName(), remoteUser.localUserId));
+                            scaleUser.userName, remoteUser.localUserId));
                     break;
                 }
             }
@@ -641,7 +641,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
                 byte requestedUnit = (byte) currentUnit;
                 ScaleUser user = getSelectedScaleUser();
-                switch (user.getScaleUnit()) {
+                switch (user.scaleUnit) {
                     case KG:
                         requestedUnit = 1;
                         break;
@@ -653,7 +653,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                         break;
                 }
                 if (requestedUnit != currentUnit) {
-                    LogManager.d(TAG, String.format("Set scale unit (CMD_SET_UNIT) to %s (%d)", user.getScaleUnit(), requestedUnit));
+                    LogManager.d(TAG, String.format("Set scale unit (CMD_SET_UNIT) to %s (%d)", user.scaleUnit, requestedUnit));
                     sendCommand(CMD_SET_UNIT, requestedUnit);
                     // We send a new command, so make sure we wait
                     stopMachineState();
@@ -976,19 +976,19 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     }
 
     private void createRemoteUser(ScaleUser scaleUser) {
-        LogManager.d(TAG, String.format("Create user: %s", scaleUser.getUserName()));
+        LogManager.d(TAG, String.format("Create user: %s", scaleUser.userName));
 
         Calendar cal = Calendar.getInstance();
-        cal.setTime(scaleUser.getBirthday());
+        cal.setTime(scaleUser.birthday);
 
         // We can only use up to 3 characters (padding with 0 if needed)
         byte[] nick = Arrays.copyOf(convertUserNameToScale(scaleUser).getBytes(), 3);
         byte year = (byte) (cal.get(Calendar.YEAR) - 1900);
         byte month = (byte) cal.get(Calendar.MONTH);
         byte day = (byte) cal.get(Calendar.DAY_OF_MONTH);
-        byte height = (byte) scaleUser.getBodyHeight();
-        byte sex = scaleUser.getGender().isMale() ? (byte) 0x80 : 0;
-        byte activity = (byte) (scaleUser.getActivityLevel().toInt() + 1); // activity level: 1 - 5
+        byte height = (byte) scaleUser.bodyHeight;
+        byte sex = scaleUser.gender.isMale() ? (byte) 0x80 : 0;
+        byte activity = (byte) (scaleUser.activityLevel.toInt() + 1); // activity level: 1 - 5
 
         long maxUserId = remoteUsers.isEmpty() ? 100 : 0;
         for (RemoteUser remoteUser : remoteUsers) {
@@ -996,7 +996,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         }
 
         currentRemoteUser = new RemoteUser(maxUserId + 1, new String(nick), 1900 + year);
-        currentRemoteUser.localUserId = scaleUser.getId();
+        currentRemoteUser.localUserId = scaleUser.id;
         currentRemoteUser.isNew = true;
 
         byte[] uid = encodeUserId(currentRemoteUser);

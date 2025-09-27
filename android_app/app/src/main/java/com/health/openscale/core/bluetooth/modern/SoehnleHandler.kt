@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.bluetooth.modern
 
+import android.R.attr.data
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
@@ -111,7 +112,9 @@ class SoehnleHandler : ScaleDeviceHandler() {
 
         // (1) Battery: subscribe + read once
         setNotifyOn(SVC_BATTERY, CHR_BATTERY_LEVEL)
-        readFrom(SVC_BATTERY, CHR_BATTERY_LEVEL)
+        readFrom(SVC_BATTERY, CHR_BATTERY_LEVEL) { value ->
+            handleBattery(value)
+        }
 
         // (2) Write current time using BluetoothBytesParser (CTS)
         val parser = BluetoothBytesParser()

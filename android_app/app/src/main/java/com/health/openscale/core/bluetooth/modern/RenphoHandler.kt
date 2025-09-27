@@ -17,6 +17,8 @@
  */
 package com.health.openscale.core.bluetooth.modern
 
+import android.R.attr.data
+import android.R.attr.vendor
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
@@ -146,7 +148,9 @@ class RenphoHandler : ScaleDeviceHandler() {
         writeUserProfile(user)
 
         // Optional: read feature flags
-        readFrom(SERV_BODY_COMP, CHAR_BODY_COMP_FEAT)
+        readFrom(SERV_BODY_COMP, CHAR_BODY_COMP_FEAT) { value ->
+            LogManager.d(TAG, "read body comp feat len=${value.size}")
+        }
 
         // Subscribe to measurements
         setNotifyOn(SERV_WEIGHT_SCALE, CHAR_WEIGHT)          // weight → proprietary format

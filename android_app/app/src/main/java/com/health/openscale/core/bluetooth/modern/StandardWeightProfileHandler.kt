@@ -19,7 +19,6 @@ package com.health.openscale.core.bluetooth.modern
 
 import android.os.Handler
 import com.health.openscale.R
-import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
@@ -88,7 +87,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
     private val UDS_CP_RESP_USER_NOT_AUTHORIZED    = 0x05
 
     // ---- Internal state -------------------------------------------------------
-    private var previousMeasurement: ScaleMeasurement? = null
+    private var pendingMeasurement: ScaleMeasurement? = null
     private var registeringNewUser = false
     private var pendingAppUserId: Int? = null
     private var pendingConsentForNewUser: Int? = null
@@ -134,9 +133,19 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         writeTo(SVC_CURRENT_TIME, CHR_CURRENT_TIME, buildCurrentTimePayload())
 
         // Helpful (non-essential) info
-        readFrom(SVC_DEVICE_INFO, CHR_MANUFACTURER_NAME)
-        readFrom(SVC_DEVICE_INFO, CHR_MODEL_NUMBER)
-        readFrom(SVC_BATTERY, CHR_BATTERY_LEVEL)
+        readFrom(SVC_DEVICE_INFO, CHR_MANUFACTURER_NAME) { data ->
+            logD("Device info: ${data.toString(Charsets.UTF_8)}")
+        }
+        readFrom(SVC_DEVICE_INFO, CHR_MODEL_NUMBER) { data ->
+            logD("Device info: ${data.toString(Charsets.UTF_8)}")
+        }
+        readFrom(SVC_BATTERY, CHR_BATTERY_LEVEL) { data ->
+            if (data.isNotEmpty()) {
+                val level = data[0].toInt() and 0xFF
+                logD("Battery level: $level%")
+                if (level in 0..10) userWarn(R.string.bt_warn_low_battery, level)
+            }
+        }
 
         // 1) Try auto-consent from persisted mapping/consent
         if (!tryAutoConsent(user)) {
@@ -154,26 +163,16 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
             CHR_BODY_COMPOSITION_MEAS    -> handleBodyCompositionMeasurement(data)
             CHR_USER_CONTROL_POINT       -> handleUcpIndication(data)
             CHR_DATABASE_CHANGE_INCREMENT-> logD("UDS Change Increment notified")
-            CHR_BATTERY_LEVEL -> {
-                if (data.isNotEmpty()) {
-                    val level = data[0].toInt() and 0xFF
-                    logD("Battery level: $level%")
-                    if (level in 0..10) userWarn(R.string.bt_warn_low_battery, level)
-                }
-            }
-            CHR_MANUFACTURER_NAME, CHR_MODEL_NUMBER ->
-                logD("Device info: ${data.toString(Charsets.UTF_8)}")
             else ->
                 logD("Unhandled notification chr=$characteristic len=${data.size} ${data.toHexPreview(24)}")
         }
     }
 
     override fun onDisconnected() {
-        previousMeasurement?.let {
-            logD("Disconnect: flushing pending measurement without body composition merge")
+        pendingMeasurement?.let {
             publishTransformed(it)
+            pendingMeasurement = null
         }
-        previousMeasurement = null
     }
 
     protected open fun transformBeforePublish(m: ScaleMeasurement): ScaleMeasurement {
@@ -188,7 +187,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
 
     protected fun loadUserIdForScaleIndex(scaleIndex: Int): Int {
         val userId = settingsGetInt("userMap/userIdByIndex/$scaleIndex", -1)
-        logD("Loaded appUserId=$userId for scaleIndex=$scaleIndex")
+        //logD("Loaded appUserId=$userId for scaleIndex=$scaleIndex")
         return userId
     }
 
@@ -247,7 +246,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
     }
 
     /** Show a CHOOSE_USER dialog with only a "Create new user…" option. */
-    private fun presentCreateOnlyChoice() {
+    protected fun presentCreateOnlyChoice() {
         logD("Presenting user choice dialog with only 'Create new user' option")
         val items = arrayOf<CharSequence>(resolveString(R.string.bluetooth_scale_info_create_user_instruction))
         val indices = intArrayOf(-1)
@@ -256,7 +255,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
     }
 
     /** Show a CHOOSE_USER dialog built from simple slot indices (+ "Create new"). */
-    private fun presentChooseFromIndices(indicesList: List<Int>) {
+    protected fun presentChooseFromIndices(indicesList: List<Int>) {
         logD("Presenting user choice dialog with existing scale slots: $indicesList and 'Create new'")
         val labels = indicesList.map { "P%02d".format(it) }.toMutableList<CharSequence>()
         val ids = indicesList.toMutableList()
@@ -270,47 +269,42 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
 
     private fun handleWeightMeasurement(value: ByteArray) {
         val m = parseWeightToMeasurement(value) ?: return
-        mergeWithPrevious(m)
+        handleNewMeasurement(m)
     }
 
     private fun handleBodyCompositionMeasurement(value: ByteArray) {
         val m = parseBodyCompToMeasurement(value) ?: return
-        mergeWithPrevious(m)
+        handleNewMeasurement(m)
     }
 
-    private fun mergeWithPrevious(newM: ScaleMeasurement) {
-        val prev = previousMeasurement
+    private fun handleNewMeasurement(newM: ScaleMeasurement) {
+        val prev = pendingMeasurement
+
+        // Log for debugging
+        logD("mergeWithPrevious called: prev.userId=${prev?.userId}, newM.userId=${newM.userId}")
 
         if (prev == null) {
-            if (newM.userId == -1) publishTransformed(newM) else previousMeasurement = newM
+            // First packet → just buffer it
+            pendingMeasurement = newM
             return
         }
 
-        if (newM.userId == -1 && prev.userId != -1) {
-            if (newM.dateTime == null && prev.dateTime != null) newM.dateTime = prev.dateTime
-            if ((newM.weight <= 0f) && (prev.weight > 0f)) newM.weight = prev.weight
-            newM.userId = prev.userId
-            logD("merge: publish MERGED (weight+bodycomp) userId=${newM.userId}")
-            publishTransformed(newM)
-            previousMeasurement = null
-            return
-        }
+        if (prev.userId != -1) {
+            // Merge fields from newM into prev
+            prev.mergeWith(newM)
 
-        if (prev.userId != -1 && newM.userId != -1 && prev.userId == newM.userId) {
-            if (newM.dateTime == null && prev.dateTime != null) newM.dateTime = prev.dateTime
-            if ((newM.weight <= 0f) && (prev.weight > 0f)) newM.weight = prev.weight
-            logD("merge: publish MERGED (both had userId) userId=${newM.userId}")
-            publishTransformed(newM)
-            previousMeasurement = null
-            return
-        }
-
-        // Fallback
-        publishTransformed(prev)
-        previousMeasurement = if (newM.userId == -1) {
-            publishTransformed(newM); null
+            // When we already have weight + body metrics (or stabilized) → publish
+            if (prev.hasWeight() && prev.hasAnyBodyCompositionValue()) {
+                publishTransformed(prev)
+                pendingMeasurement = null
+            } else {
+                // Not yet all fields: keep buffering
+                pendingMeasurement = prev
+            }
         } else {
-            newM
+            // Different userId → publish old, start new
+            publishTransformed(prev)
+            pendingMeasurement = newM
         }
     }
 
@@ -444,7 +438,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
             val w = u16le(value, offset) * massMultiplier; offset += 2
             m.weight = w
         } else {
-            previousMeasurement?.weight?.takeIf { it > 0f }?.let { m.weight = it }
+            pendingMeasurement?.weight?.takeIf { it > 0f }?.let { m.weight = it }
         }
 
         if (heightPresent) {
@@ -758,7 +752,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         writeTo(SVC_USER_DATA, CHR_USER_CONTROL_POINT, payload)
     }
 
-    private fun requestScaleUserConsent(appUserId: Int, scaleIndex: Int) {
+    protected open fun requestScaleUserConsent(appUserId: Int, scaleIndex: Int) {
         pendingAppUserId = appUserId
         requestUserInteraction(
             UserInteractionType.ENTER_CONSENT,
@@ -767,7 +761,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
     }
 
     /** Find a previously persisted mapping (scaleIndex → this appUserId). */
-    private fun findKnownScaleIndexForAppUser(appUserId: Int): Int? {
+    protected fun findKnownScaleIndexForAppUser(appUserId: Int): Int? {
         for (idx in 0..255) {
             if (loadUserIdForScaleIndex(idx) == appUserId) return idx
         }

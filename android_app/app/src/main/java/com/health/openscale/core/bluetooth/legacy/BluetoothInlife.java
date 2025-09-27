@@ -39,7 +39,7 @@ public class BluetoothInlife extends BluetoothCommunication {
     private byte[] lastData = null;
 
     private int getAthleteLevel(ScaleUser scaleUser) {
-        switch (scaleUser.getActivityLevel()) {
+        switch (scaleUser.activityLevel) {
             case SEDENTARY:
             case MILD:
                 return 0; // General
@@ -80,10 +80,10 @@ public class BluetoothInlife extends BluetoothCommunication {
             case 1:
                 ScaleUser scaleUser = getSelectedScaleUser();
                 byte level = (byte)(getAthleteLevel(scaleUser) + 1);
-                byte sex = (byte)(scaleUser.getGender().isMale() ? 0 : 1);
-                byte userId = (byte)scaleUser.getId();
+                byte sex = (byte)(scaleUser.gender.isMale() ? 0 : 1);
+                byte userId = (byte) scaleUser.id;
                 byte age = (byte)scaleUser.getAge();
-                byte height = (byte)scaleUser.getBodyHeight();
+                byte height = (byte) scaleUser.bodyHeight;
 
                 sendCommand(0xd2, level, sex, userId, age, height);
                 break;
@@ -179,10 +179,10 @@ public class BluetoothInlife extends BluetoothCommunication {
         final double muscle = (0.548 * lbm / weight) * 100.0;
         final double bone = 0.05158 * lbm;
 
-        final float height = selectedUser.getBodyHeight();
+        final float height = selectedUser.bodyHeight;
 
         double visceral = visceralFactor - 50;
-        if (selectedUser.getGender().isMale()) {
+        if (selectedUser.gender.isMale()) {
             if (height >= 1.6 * weight + 63) {
                 visceral += (0.765 - 0.002 * height) * weight;
             }

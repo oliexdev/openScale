@@ -110,7 +110,7 @@ public class BluetoothBroadcastScale extends BluetoothCommunication {
                     if (state != 0 && measurement == null) {
                         measurement = new ScaleMeasurement();
                         measurement.setDateTime(new Date());
-                        measurement.setWeight((float)grams / 1000);
+                        measurement.setWeight((float) grams / 1000);
 
                         // stop now since we don't support any further data.
                         addScaleMeasurement(measurement);

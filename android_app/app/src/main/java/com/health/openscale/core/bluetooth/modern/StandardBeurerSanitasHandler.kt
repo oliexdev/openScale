@@ -25,12 +25,12 @@ import java.nio.ByteBuffer
 import java.util.UUID
 
 /**
- * Unified vendor handler for Beurer/Sanitas models.
+ * Unified vendor handler for Beurer models.
  * Uses the existing consent UI from the base handler.
  */
 class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
 
-    private enum class Model { BEURER_BF105, BEURER_BF950, BEURER_BF500, BEURER_BF600, SANITAS_SBF72 }
+    private enum class Model { BEURER_BF105, BEURER_BF950, BEURER_BF500, BEURER_BF600 }
 
     private data class Profile(
         val service: UUID,
@@ -78,14 +78,6 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             chrInitials = uuid16(0xFFF6), // BF850 initials
             chrTargetWeight = null
         )
-        Model.SANITAS_SBF72 -> Profile(
-            service = uuid16(0xFFFF),
-            chrUserList = uuid16(0x0001),
-            chrActivity = uuid16(0x0004),
-            chrTakeMeasurement = uuid16(0x0006),
-            chrInitials = null,
-            chrTargetWeight = null
-        )
     }
 
     private fun nameFor(m: Model) = when (m) {
@@ -93,23 +85,19 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
         Model.BEURER_BF950 -> "Beurer BF950"
         Model.BEURER_BF500 -> "Beurer BF500"
         Model.BEURER_BF600 -> "Beurer BF600"
-        Model.SANITAS_SBF72 -> "Sanitas SBF72"
     }
 
-    fun driverName(): String = friendlyName ?: "Beurer/Sanitas"
+    fun driverName(): String = friendlyName ?: "Beurer"
 
     // Model detection; constructor stays empty.
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name?.lowercase().orEmpty()
-        val svcs = device.serviceUuids ?: emptySet()
 
         val model = when {
             "bf105" in name || "bf720" in name -> Model.BEURER_BF105
-            "bf950" in name || "sbf77" in name || "sbf76" in name || "bf950" in name -> Model.BEURER_BF950
+            "bf950" in name || "sbf77" in name || "sbf76" in name -> Model.BEURER_BF950
             "bf500" in name                    -> Model.BEURER_BF500
             "bf600" in name || "bf850" in name -> Model.BEURER_BF600
-            "sbf72" in name || "bf915" in name || "sbf73" in name -> Model.SANITAS_SBF72
-            svcs.contains(uuid16(0xFFF0))  -> Model.BEURER_BF600
             else -> return null
         }
 
@@ -167,68 +155,6 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             logD("Requesting measurement: writing 0x00 to chrTakeMeasurement=${it.chrTakeMeasurement}")
             writeTo(it.service, it.chrTakeMeasurement, byteArrayOf(0x00))
         } ?: logW("onRequestMeasurement called but profile is null")
-    }
-
-    // SBF72: show PIN on scale, then open the existing consent UI in-app.
-    private fun triggerDisplayPinOnScale(scaleIndex: Int) {
-        val p = profile ?: run {
-            logW("Cannot trigger PIN display: profile is null")
-            return
-        }
-
-        if (activeModel != Model.SANITAS_SBF72) {
-            logD("triggerDisplayPinOnScale skipped: model=$activeModel is not SANITAS_SBF72")
-            return
-        }
-
-        val pinIndex = (scaleIndex + 0x10) and 0xFF   // spec: slot N -> (0x10 + N)
-        writeTo(p.service, p.chrUserList, byteArrayOf(pinIndex.toByte()))
-        logD("SBF72: requested PIN display for scale slot $scaleIndex (PIN index=0x${pinIndex.toString(16)})")
-    }
-
-    override fun onUserInteractionFeedback(
-        interactionType: UserInteractionType,
-        appUserId: Int,
-        feedbackData: Any,
-        uiHandler: Handler
-    ) {
-        logD("onUserInteractionFeedback received: type=$interactionType appUserId=$appUserId feedbackData=$feedbackData")
-
-        if (interactionType == UserInteractionType.CHOOSE_USER) {
-            val idx = (feedbackData as? Int)
-            val isSbf72 = (activeModel == Model.SANITAS_SBF72)
-
-            logD("CHOOSE_USER feedback idx=$idx, model=$activeModel")
-
-            if (idx != null && idx >= 0 && isSbf72) {
-                val knownConsent = loadConsentForScaleIndex(idx)
-                logD("Loaded existing consent for scaleIndex=$idx: $knownConsent")
-
-                if (knownConsent == -1) {
-                    logD("No consent yet for scaleIndex=$idx, preparing to trigger PIN display and open consent UI")
-                    // Keep mapping consistent (like base handler does)
-                    for (i in 0..255) {
-                        if (i != idx && loadUserIdForScaleIndex(i) == appUserId) {
-                            saveUserIdForScaleIndex(i, -1)
-                            logD("Cleared previous mapping for appUserId=$appUserId at scaleIndex=$i")
-                        }
-                    }
-
-                    saveUserIdForScaleIndex(idx, appUserId)
-                    logD("Saved mapping appUserId=$appUserId to scaleIndex=$idx")
-
-                    // 1) Ask the scale to display the PIN
-                    triggerDisplayPinOnScale(idx)
-                    // 2) Open existing consent UI in-app
-                    requestUserInteraction(UserInteractionType.ENTER_CONSENT, intArrayOf(idx, 0))
-                    logD("Triggered ENTER_CONSENT UI for scaleIndex=$idx")
-                    return  // prevent base from triggering a second prompt
-                }
-            }
-        }
-
-        logD("Delegating onUserInteractionFeedback to base handler")
-        super.onUserInteractionFeedback(interactionType, appUserId, feedbackData, uiHandler)
     }
 
     // ---- Vendor write helpers -------------------------------------------------

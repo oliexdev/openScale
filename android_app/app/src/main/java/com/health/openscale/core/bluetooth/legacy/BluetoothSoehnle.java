@@ -65,7 +65,7 @@ public class BluetoothSoehnle extends BluetoothCommunication {
 
                 // check if an openScale user is stored as a Soehnle user otherwise do a factory reset
                 for (ScaleUser openScaleUser : openScaleUserList) {
-                    index = getSoehnleUserIndex(openScaleUser.getId());
+                    index = getSoehnleUserIndex(openScaleUser.id);
                     if (index != -1) {
                         break;
                     }
@@ -90,7 +90,7 @@ public class BluetoothSoehnle extends BluetoothCommunication {
                 setNotificationOn(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT);
                 break;
             case 4:
-                int openScaleUserId = getSelectedScaleUser().getId();
+                int openScaleUserId = getSelectedScaleUser().id;
                 int soehnleUserIndex = getSoehnleUserIndex(openScaleUserId);
 
                 if (soehnleUserIndex == -1) {
@@ -109,11 +109,11 @@ public class BluetoothSoehnle extends BluetoothCommunication {
                 break;
             case 6:
                 // set gender
-                writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_GENDER, new byte[]{getSelectedScaleUser().getGender().isMale() ? (byte)0x00 : (byte)0x01});
+                writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_GENDER, new byte[]{getSelectedScaleUser().gender.isMale() ? (byte)0x00 : (byte)0x01});
                 break;
             case 7:
                 // set height
-                writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_HEIGHT, ConverterUtils.toInt16Le((int)getSelectedScaleUser().getBodyHeight()));
+                writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_HEIGHT, ConverterUtils.toInt16Le((int) getSelectedScaleUser().bodyHeight));
                 break;
             case 8:
                 setNotificationOn(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_A_CHARACTERISTIC);
@@ -162,7 +162,7 @@ public class BluetoothSoehnle extends BluetoothCommunication {
             int cmd = value[1];
 
             if (cmd == (byte)0x01) { // user create
-                int userId = getSelectedScaleUser().getId();
+                int userId = getSelectedScaleUser().id;
                 int success = value[2];
                 int soehnleUserIndex = value[3];
 
@@ -235,7 +235,7 @@ public class BluetoothSoehnle extends BluetoothCommunication {
 
         int activityLevel = 0;
 
-        switch (scaleUser.getActivityLevel()) {
+        switch (scaleUser.activityLevel) {
             case SEDENTARY:
                 activityLevel = 0;
                 break;
@@ -258,7 +258,7 @@ public class BluetoothSoehnle extends BluetoothCommunication {
         if (openScaleUserId == -1) {
             LogManager.e(TAG, "Unknown Soehnle user index " + soehnleUserIndex, null);
         } else {
-            SoehnleLib soehnleLib = new SoehnleLib(scaleUser.getGender().isMale(), scaleUser.getAge(), scaleUser.getBodyHeight(), activityLevel);
+            SoehnleLib soehnleLib = new SoehnleLib(scaleUser.gender.isMale(), scaleUser.getAge(), scaleUser.bodyHeight, activityLevel);
 
             ScaleMeasurement scaleMeasurement = new ScaleMeasurement();
 

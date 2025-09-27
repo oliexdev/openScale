@@ -49,11 +49,11 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
             case 1:
                 final ScaleUser selectedUser = getSelectedScaleUser();
 
-                byte gender = selectedUser.getGender().isMale() ? (byte)0x00 : (byte)0x01; // 00 - male; 01 - female
-                byte height = (byte)(((int)selectedUser.getBodyHeight()) & 0xff); // cm
+                byte gender = selectedUser.gender.isMale() ? (byte)0x00 : (byte)0x01; // 00 - male; 01 - female
+                byte height = (byte)(((int) selectedUser.bodyHeight) & 0xff); // cm
                 byte age = (byte)(selectedUser.getAge() & 0xff);
 
-                int userId = selectedUser.getId();
+                int userId = selectedUser.id;
 
                 byte cmdByte[] = {(byte)0x10, (byte)userId, gender, age, height};
 

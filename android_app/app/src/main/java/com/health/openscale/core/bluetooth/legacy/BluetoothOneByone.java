@@ -66,7 +66,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
             case 1:
                 ScaleUser currentUser = getSelectedScaleUser();
                 byte unit = 0x00; // kg
-                switch (currentUser.getScaleUnit()) {
+                switch (currentUser.scaleUnit) {
                     case LB:
                         unit = 0x01;
                         break;
@@ -171,13 +171,13 @@ public class BluetoothOneByone extends BluetoothCommunication {
 
         int sex = 0, peopleType = 0;
 
-        if (scaleUser.getGender() == GenderType.MALE) {
+        if (scaleUser.gender == GenderType.MALE) {
             sex = 1;
         } else {
             sex = 0;
         }
 
-        switch (scaleUser.getActivityLevel()) {
+        switch (scaleUser.activityLevel) {
             case SEDENTARY:
                 peopleType = 0;
                 break;
@@ -195,7 +195,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
                 break;
         }
 
-        OneByoneLib oneByoneLib = new OneByoneLib(sex, scaleUser.getAge(), scaleUser.getBodyHeight(), peopleType);
+        OneByoneLib oneByoneLib = new OneByoneLib(sex, scaleUser.getAge(), scaleUser.bodyHeight, peopleType);
 
         ScaleMeasurement scaleBtData = new ScaleMeasurement();
         scaleBtData.setWeight(weight);

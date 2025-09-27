@@ -354,8 +354,8 @@ class HuaweiAH100Handler : ScaleDeviceHandler() {
         lastMeasuredWeightTenthKg = weightTenth
 
         val m = ScaleMeasurement().apply {
-            setUserId(userId)
-            dateTime = dt
+            this.userId = userId
+            this.dateTime = dt
             this.weight = weight
             this.fat = fat
             // TODO: if someone contributes formulas, fill water/muscle/bone via resistance.

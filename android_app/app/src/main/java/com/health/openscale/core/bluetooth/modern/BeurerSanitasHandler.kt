@@ -22,6 +22,7 @@ import androidx.annotation.VisibleForTesting
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.ConverterUtils
 import java.text.Normalizer
@@ -490,9 +491,9 @@ class BeurerSanitasHandler : ScaleDeviceHandler() {
                 }
 
                 val desiredUnit = when (selectedUser.scaleUnit) {
-                    com.health.openscale.core.data.WeightUnit.KG -> 1
-                    com.health.openscale.core.data.WeightUnit.LB -> 2
-                    com.health.openscale.core.data.WeightUnit.ST -> 4
+                    WeightUnit.KG -> 1
+                    WeightUnit.LB -> 2
+                    WeightUnit.ST -> 4
                 }
 
                 if (desiredUnit != currentUnit) {
@@ -668,8 +669,8 @@ class BeurerSanitasHandler : ScaleDeviceHandler() {
         // bmr/amr/bmi present but not stored in app DB in legacy code
 
         val m = ScaleMeasurement().apply {
-            setUserId(userId)
-            dateTime = Date(timestampMs)
+            this.userId = userId
+            this.dateTime = Date(timestampMs)
             this.weight = weight
             this.fat = fat
             this.water = water

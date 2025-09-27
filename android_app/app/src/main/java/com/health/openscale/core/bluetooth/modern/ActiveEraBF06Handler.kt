@@ -20,6 +20,7 @@ package com.health.openscale.core.bluetooth.modern
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.time.Instant
 import java.util.UUID
@@ -163,9 +164,9 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
         val gender = if (user.gender.isMale()) 0x01 else 0x02
 
         val units = when (user.scaleUnit) {
-            com.health.openscale.core.data.WeightUnit.KG -> 0
-            com.health.openscale.core.data.WeightUnit.LB -> 1
-            com.health.openscale.core.data.WeightUnit.ST -> 2
+            WeightUnit.KG -> 0
+            WeightUnit.LB -> 1
+            WeightUnit.ST -> 2
         }
 
         val initW = (ceil(user.initialWeight * 100.0)).toInt().coerceIn(0, 0xFFFF)

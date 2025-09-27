@@ -136,7 +136,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
         switch (stepNr) {
             case 0: { // set unit on the scale
                 final ScaleUser u = getSelectedScaleUser();
-                byte[] setUnitCmd = new byte[]{0x06, 0x04, 0x00, (byte) u.getScaleUnit().toInt()};
+                byte[] setUnitCmd = new byte[]{0x06, 0x04, 0x00, (byte) u.scaleUnit.toInt()};
                 writeBytes(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_CONFIG, setUnitCmd);
                 LogManager.d(TAG, "Unit set cmd: " + byteInHex(setUnitCmd));
                 break;
@@ -222,12 +222,12 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
             final ScaleUser user = getSelectedScaleUser();
             ScaleMeasurement m = new ScaleMeasurement();
-            m.setWeight(ConverterUtils.toKilogram(weight, user.getScaleUnit()));
+            m.setWeight(ConverterUtils.toKilogram(weight, user.scaleUnit));
             m.setDateTime(dt);
 
             if (impedance > 0.0f) {
-                int sex = (user.getGender() == GenderType.MALE) ? 1 : 0;
-                MiScaleLib lib = new MiScaleLib(sex, user.getAge(), user.getBodyHeight());
+                int sex = (user.gender == GenderType.MALE) ? 1 : 0;
+                MiScaleLib lib = new MiScaleLib(sex, user.getAge(), user.bodyHeight);
                 m.setWater(lib.getWater(weight, impedance));
                 m.setVisceralFat(lib.getVisceralFat(weight));
                 m.setFat(lib.getBodyFat(weight, impedance));
@@ -291,7 +291,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
             final ScaleUser user = getSelectedScaleUser();
             ScaleMeasurement m = new ScaleMeasurement();
-            m.setWeight(ConverterUtils.toKilogram(weight, user.getScaleUnit()));
+            m.setWeight(ConverterUtils.toKilogram(weight, user.scaleUnit));
             m.setDateTime(dt);
             // No impedance expected in history; BIA fields left empty.
 

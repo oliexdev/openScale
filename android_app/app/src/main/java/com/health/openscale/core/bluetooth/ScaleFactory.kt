@@ -86,6 +86,7 @@ import com.health.openscale.core.bluetooth.modern.OneByoneNewHandler
 import com.health.openscale.core.bluetooth.modern.QNHandler
 import com.health.openscale.core.bluetooth.modern.RenphoES26BBHandler
 import com.health.openscale.core.bluetooth.modern.RenphoHandler
+import com.health.openscale.core.bluetooth.modern.SanitasSbf72Handler
 import com.health.openscale.core.bluetooth.modern.SenssunHandler
 import com.health.openscale.core.bluetooth.modern.SinocareHandler
 import com.health.openscale.core.bluetooth.modern.SoehnleHandler
@@ -133,6 +134,7 @@ class ScaleFactory @Inject constructor(
         YunmaiHandler(isMini = true),
         Yoda1Handler(),
         TrisaBodyAnalyzeHandler(),
+        SanitasSbf72Handler(),
         StandardBeurerSanitasHandler(),
         SoehnleHandler(),
         SinocareHandler(),

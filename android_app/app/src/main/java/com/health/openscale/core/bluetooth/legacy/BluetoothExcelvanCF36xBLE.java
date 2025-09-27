@@ -49,12 +49,12 @@ public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
                 final ScaleUser selectedUser = getSelectedScaleUser();
 
                 byte userId = (byte) 0x01;
-                byte sex = selectedUser.getGender().isMale() ? (byte) 0x01 : (byte) 0x00;
+                byte sex = selectedUser.gender.isMale() ? (byte) 0x01 : (byte) 0x00;
 
                 // 0x00 = ordinary, 0x01 = amateur, 0x02 = professional
                 byte exerciseLevel = (byte) 0x01;
 
-                switch (selectedUser.getActivityLevel()) {
+                switch (selectedUser.activityLevel) {
                     case SEDENTARY:
                     case MILD:
                         exerciseLevel = (byte) 0x00;
@@ -68,11 +68,11 @@ public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
                         break;
                 }
 
-                byte height = (byte) selectedUser.getBodyHeight();
+                byte height = (byte) selectedUser.bodyHeight;
                 byte age = (byte) selectedUser.getAge();
 
                 byte unit = 0x01; // kg
-                switch (selectedUser.getScaleUnit()) {
+                switch (selectedUser.scaleUnit) {
                     case LB:
                         unit = 0x02;
                         break;
@@ -132,7 +132,7 @@ public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
 
         final ScaleUser selectedUser = getSelectedScaleUser();
 
-        scaleBtData.setWeight(ConverterUtils.toKilogram(weight, selectedUser.getScaleUnit()));
+        scaleBtData.setWeight(ConverterUtils.toKilogram(weight, selectedUser.scaleUnit));
         scaleBtData.setFat(fat);
         scaleBtData.setMuscle(muscle);
         scaleBtData.setWater(water);

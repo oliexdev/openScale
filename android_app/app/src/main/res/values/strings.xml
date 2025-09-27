@@ -666,4 +666,22 @@
     <string name="bt_error_handler_parse_error">Handler parse error for %1$s: %2$s</string>
     <string name="bt_error_no_bluetooth_adapter">No Bluetooth adapter detected on this device.</string>
     <string name="bt_error_no_device_found">Device not found. Make sure it is powered on and in range.</string>
+    <string name="bt_info_using_existing_mapping_auto_consent">Using existing mapping for user %1$s to scale slot %2$s. Attempting auto-consent.</string>
+    <string name="bt_error_pin_format_invalid">Invalid PIN format. Please enter a valid number.</string>
+    <string name="bt_error_uds_register_failed">Failed to register user on scale. Error: %1$s</string>
+    <string name="bt_error_uds_consent_failed">Failed to confirm user on scale. Error: %1$s</string>
+    <string name="bt_error_uds_list_users_failed">Failed to retrieve user list from scale. Error: %1$s</string>
+    <string name="bt_error_user_setup_failed_no_list">User setup failed. Could not retrieve user list from scale.</string>
+
+    <string name="bluetooth_scale_info_create_user_instruction_uds">Create new user on scale (UDS assigned slot)</string>
+    <string name="bt_uds_choice_slot_current_user">Slot P%1$d: %2$s (Current App User)</string>
+    <string name="bt_uds_choice_slot_other_user">Slot P%1$d: Used by %2$s (Select to take over?)</string>
+    <string name="bt_uds_choice_slot_occupied_unmapped">Slot P%1$d: Occupied (Unmapped)</string>
+
+    <!-- SBF72 Specific (can be in a general BT strings section or specific if needed later) -->
+    <!-- These were requested for SanitasSbf72Handler, ensure they are distinct if used by both -->
+    <string name="bt_sbf72_choice_slot_current_user">P%1$d: %2$s (Current)</string>
+    <string name="bt_sbf72_choice_slot_other_user">P%1$d: Used by %2$s (Take over?)</string>
+    <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Occupied (Not linked)</string>
+    <string name="bt_sbf72_choice_slot_create_new">P%1$d: Create \'%2$s\' here</string>
 </resources>

@@ -98,7 +98,7 @@ public class BluetoothMGB extends BluetoothCommunication {
                 break;
 
             case 3:
-                writeCfg(0xFB, (user.getGender().isMale() ? 1 : 2), user.getAge(), (int)user.getBodyHeight());
+                writeCfg(0xFB, (user.gender.isMale() ? 1 : 2), user.getAge(), (int) user.bodyHeight);
                 break;
 
             case 4:
@@ -110,7 +110,7 @@ public class BluetoothMGB extends BluetoothCommunication {
                 break;
 
             case 6:
-                writeCfg(0xFE, 6, user.getScaleUnit().toInt(), 0);
+                writeCfg(0xFE, 6, user.scaleUnit.toInt(), 0);
                 break;
 
             case 7:

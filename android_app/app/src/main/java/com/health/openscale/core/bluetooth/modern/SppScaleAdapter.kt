@@ -268,7 +268,7 @@ class SppScaleAdapter(
             }
         }
 
-        override fun read(service: UUID, characteristic: UUID) {
+        override fun read(service: UUID, characteristic: UUID, onResult: (ByteArray) -> Unit) {
             // Not applicable for SPP; reads are handled by the continuous reader loop
         }
 

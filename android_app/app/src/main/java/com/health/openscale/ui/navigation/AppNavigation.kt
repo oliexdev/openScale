@@ -17,8 +17,7 @@
  */
 package com.health.openscale.ui.navigation
 
-import android.R.attr.contentDescription
-import android.util.Pair
+import kotlin.Pair
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

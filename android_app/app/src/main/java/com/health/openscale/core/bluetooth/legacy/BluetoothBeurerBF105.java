@@ -118,7 +118,7 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
     @Override
     protected void writeActivityLevel() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
-        int activityLevel = this.selectedUser.getActivityLevel().toInt() + 1;
+        int activityLevel = this.selectedUser.activityLevel.toInt() + 1;
         LogManager.d(TAG, String.format("activityLevel: %d", activityLevel));
         parser.setIntValue(activityLevel, FORMAT_UINT8);
         writeBytes(SERVICE_BF105_CUSTOM, CHARACTERISTIC_ACTIVITY_LEVEL,
@@ -127,7 +127,7 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
 
     protected void writeTargetWeight() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
-        int targetWeight = (int) this.selectedUser.getGoalWeight();
+        int targetWeight = (int) this.selectedUser.goalWeight;
         parser.setIntValue(targetWeight, FORMAT_UINT16);
         writeBytes(SERVICE_BF105_CUSTOM, CHARACTERISTIC_TARGET_WEIGHT,
                 parser.getValue());
@@ -136,7 +136,7 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
     @Override
     protected void writeInitials() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
-        String initials = getInitials(this.selectedUser.getUserName());
+        String initials = getInitials(this.selectedUser.userName);
         LogManager.d(TAG, "Initials: " + initials);
         parser.setString(initials);
         writeBytes(SERVICE_BF105_CUSTOM, CHARACTERISTIC_INITIALS,

@@ -58,13 +58,13 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
                 byte[] userId = ConverterUtils.toInt16Be(getUniqueNumber());
 
                 final ScaleUser selectedUser = getSelectedScaleUser();
-                byte sex = selectedUser.getGender().isMale() ? (byte)0x01 : (byte)0x02;
-                byte display_unit = selectedUser.getScaleUnit() == WeightUnit.KG ? (byte) 0x01 : (byte) 0x02;
-                byte body_type = (byte) YunmaiLib.toYunmaiActivityLevel(selectedUser.getActivityLevel());
+                byte sex = selectedUser.gender.isMale() ? (byte)0x01 : (byte)0x02;
+                byte display_unit = selectedUser.scaleUnit == WeightUnit.KG ? (byte) 0x01 : (byte) 0x02;
+                byte body_type = (byte) YunmaiLib.toYunmaiActivityLevel(selectedUser.activityLevel);
 
                 byte[] user_add_or_query = new byte[]{
                         (byte) 0x0d, (byte) 0x12, (byte) 0x10, (byte) 0x01, (byte) 0x00, (byte) 0x00,
-                        userId[0], userId[1], (byte) selectedUser.getBodyHeight(), sex,
+                        userId[0], userId[1], (byte) selectedUser.bodyHeight, sex,
                         (byte) selectedUser.getAge(), (byte) 0x55, (byte) 0x5a, (byte) 0x00,
                         (byte)0x00, display_unit, body_type, (byte) 0x00};
                 user_add_or_query[user_add_or_query.length - 1] =
@@ -129,13 +129,13 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
         if (isMini) {
             int sex;
 
-            if (scaleUser.getGender() == GenderType.MALE) {
+            if (scaleUser.gender == GenderType.MALE) {
                 sex = 1;
             } else {
                 sex = 0;
             }
 
-            YunmaiLib yunmaiLib = new YunmaiLib(sex, scaleUser.getBodyHeight(), scaleUser.getActivityLevel());
+            YunmaiLib yunmaiLib = new YunmaiLib(sex, scaleUser.bodyHeight, scaleUser.activityLevel);
             float bodyFat;
             int resistance = ConverterUtils.fromUnsignedInt16Be(weightBytes, 15);
             if (weightBytes[1] >= (byte)0x1E) {

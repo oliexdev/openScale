@@ -223,9 +223,9 @@ abstract class ScaleDeviceHandler {
     }
 
     /** Read a characteristic (rare for scales; most data comes via NOTIFY). */
-    protected fun readFrom(service: UUID, characteristic: UUID) {
+    protected fun readFrom(service: UUID, characteristic: UUID, onResult: (ByteArray) -> Unit) {
         logD("\u2192 read svc=$service chr=$characteristic")
-        transport?.read(service, characteristic)
+        transport?.read(service, characteristic, onResult)
             ?: logW("readFrom called without transport")
     }
 
@@ -315,7 +315,7 @@ abstract class ScaleDeviceHandler {
     interface Transport {
         fun setNotifyOn(service: UUID, characteristic: UUID)
         fun write(service: UUID, characteristic: UUID, payload: ByteArray, withResponse: Boolean = true)
-        fun read(service: UUID, characteristic: UUID)
+        fun read(service: UUID, characteristic: UUID, onResult: (ByteArray) -> Unit)
         fun disconnect()
         fun getPeripheral(): BluetoothPeripheral? = null
         fun hasCharacteristic(service: UUID, characteristic: UUID): Boolean

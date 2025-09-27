@@ -122,11 +122,11 @@ public class BluetoothRenphoScale extends BluetoothCommunication {
                 writeBytes(SERV_USER_DATA, CHAR_CUSTOM1, CHAR_CUSTOM1_MAGIC);
                 break;
             case 8:
-                byte[] gender = new byte[]{(byte) (user.getGender().isMale() ? 0x00 : 0x01)};
+                byte[] gender = new byte[]{(byte) (user.gender.isMale() ? 0x00 : 0x01)};
                 writeBytes(SERV_USER_DATA, CHAR_GENDER, gender);
                 break;
             case 9:
-                int height = (int) ConverterUtils.toCentimeter(user.getBodyHeight(), user.getMeasureUnit());
+                int height = (int) ConverterUtils.toCentimeter(user.bodyHeight, user.measureUnit);
                 byte[] height_data = new byte[]{
                         (byte) (height & 0xff) ,    // Height, cm, LSB
                         (byte) (height >> 8)        // Height, cm, MSB
@@ -134,7 +134,7 @@ public class BluetoothRenphoScale extends BluetoothCommunication {
                 writeBytes(SERV_USER_DATA, CHAR_HEIGHT, height_data);
                 break;
             case 10:
-                Date dob_d = user.getBirthday();
+                Date dob_d = user.birthday;
 
                 // Needed to calculate DAY_OF_YEAR.
                 // Moreover, Date::getXXX() is deprecated and replaced by Calendar::get
@@ -160,7 +160,7 @@ public class BluetoothRenphoScale extends BluetoothCommunication {
             case 12:
                 byte[] athl = new byte[]{(byte) 0x03, (byte)0x00}; // Non athlete
 
-                switch (user.getActivityLevel()) {
+                switch (user.activityLevel) {
                     case HEAVY:
                     case EXTREME:
                         athl[0] = (byte) 0x0d;

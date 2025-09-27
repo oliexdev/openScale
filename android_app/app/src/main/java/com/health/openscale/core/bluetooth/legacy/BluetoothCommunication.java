@@ -111,19 +111,19 @@ public abstract class BluetoothCommunication {
     public void setCachedLastMeasurementForSelectedUser(ScaleMeasurement measurement) {
         this.cachedLastMeasurementForSelectedUser = measurement;
         if (measurement != null) {
-            LogManager.d(TAG, "Cached last measurement for selected user (ID: " + getSelectedScaleUser().getId() + ") set.");
+            LogManager.d(TAG, "Cached last measurement for selected user (ID: " + getSelectedScaleUser().id + ") set.");
         } else {
-            LogManager.d(TAG, "Cached last measurement for selected user (ID: " + getSelectedScaleUser().getId() + ") cleared.");
+            LogManager.d(TAG, "Cached last measurement for selected user (ID: " + getSelectedScaleUser().id + ") cleared.");
         }
     }
     public ScaleMeasurement getLastScaleMeasurement(int userId) {
-        if (getSelectedScaleUser().getId() == userId && this.cachedLastMeasurementForSelectedUser != null) {
+        if (getSelectedScaleUser().id == userId && this.cachedLastMeasurementForSelectedUser != null) {
             LogManager.d(TAG, "Returning cached last measurement for user ID: " + userId);
             return this.cachedLastMeasurementForSelectedUser;
         }
-        if (getSelectedScaleUser().getId() != userId) {
+        if (getSelectedScaleUser().id != userId) {
             LogManager.w(TAG, "Requested last measurement for user ID " + userId +
-                    ", but cached data is for selected user ID " + getSelectedScaleUser().getId() + ". Returning null.", null);
+                    ", but cached data is for selected user ID " + getSelectedScaleUser().id + ". Returning null.", null);
         } else { // cachedLastMeasurementForSelectedUser is null
             LogManager.d(TAG, "No cached last measurement available for user ID: " + userId + ". Returning null.");
         }
@@ -139,7 +139,7 @@ public abstract class BluetoothCommunication {
             LogManager.w(TAG, "Unique number base not set! Call setUniqueNumber() first.", null);
             uniqueBase = 99;
         }
-        int userId = getSelectedScaleUser().getId();
+        int userId = getSelectedScaleUser().id;
         int finalUnique = uniqueBase + userId;
         LogManager.d(TAG, "Returning unique number " + finalUnique + " (base=" + uniqueBase + " + userId=" + userId + ")");
         return finalUnique;

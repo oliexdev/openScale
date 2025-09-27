@@ -58,7 +58,7 @@ public class BluetoothBeurerBF500 extends BluetoothStandardWeightProfile {
 
     @Override
     protected void writeActivityLevel() {
-        ActivityLevel al = selectedUser.getActivityLevel();
+        ActivityLevel al = selectedUser.activityLevel;
         BluetoothBytesParser parser = new BluetoothBytesParser(new byte[]{0});
         parser.setIntValue(al.toInt() + 1, FORMAT_UINT8, 0);
         LogManager.d(TAG, String.format("setCurrentUserData Activity level: %d", al.toInt() + 1));

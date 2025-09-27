@@ -114,7 +114,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
     public void setSelectedScaleUser(ScaleUser user) {
         super.setSelectedScaleUser(user);
         this.selectedUser = user;
-        LogManager.d(TAG, "setSelectedScaleUser: id=" + (user != null ? user.getId() : -1));
+        LogManager.d(TAG, "setSelectedScaleUser: id=" + (user != null ? user.id : -1));
     }
 
     @Override
@@ -129,7 +129,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
 
         switch (step) {
             case START:
-                pendingUserId = (this.selectedUser != null) ? this.selectedUser.getId() : -1;
+                pendingUserId = (this.selectedUser != null) ? this.selectedUser.id : -1;
                 LogManager.d(TAG, "START: selectedUserId=" + pendingUserId
                         + " storedIndex=" + getUserScaleIndex(pendingUserId)
                         + " storedConsent=" + getUserScaleConsent(pendingUserId));
@@ -182,7 +182,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
             case REQUEST_VENDOR_SPECIFIC_USER_LIST:
                 scaleUserList.clear();
                 int uid = (pendingUserId != -1) ? pendingUserId
-                        : (this.selectedUser != null ? this.selectedUser.getId() : -1);
+                        : (this.selectedUser != null ? this.selectedUser.id : -1);
                 int idx = getUserScaleIndex(uid);
                 int cns = getUserScaleConsent(uid);
 
@@ -200,7 +200,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                 stopMachineState();
                 break;
             case REGISTER_NEW_SCALE_USER:
-                int userId = this.selectedUser.getId();
+                int userId = this.selectedUser.id;
                 pendingUserId = userId;
                 int consentCode = getUserScaleConsent(userId);
                 int userIndex = getUserScaleIndex(userId);
@@ -217,7 +217,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                 }
                 break;
             case SELECT_SCALE_USER:
-                int userIdToUse = (pendingUserId != -1) ? pendingUserId : this.selectedUser.getId();
+                int userIdToUse = (pendingUserId != -1) ? pendingUserId : this.selectedUser.id;
                 LogManager.d(TAG, "SELECT_SCALE_USER using appUserId=" + userIdToUse);
                 setUser(userIdToUse);
                 pendingUserId = -1; // optionaler Cleanup
@@ -307,7 +307,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                 case UDS_CP_REGISTER_NEW_USER:
                     if (value[2] == UDS_CP_RESP_VALUE_SUCCESS) {
                         int userIndex = value[3];
-                        int userId = this.selectedUser.getId();
+                        int userId = this.selectedUser.id;
                         LogManager.d(TAG, String.format("UDS_CP_REGISTER_NEW_USER: Created scale user index: "
                                 + "%d (app user id: %d)", userIndex, userId));
                         storeUserScaleIndex(userId, userIndex);
@@ -328,7 +328,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                         resumeMachineState();
                     } else if (value[2] == UDS_CP_RESP_USER_NOT_AUTHORIZED) {
                         LogManager.e(TAG, "UDS_CP_CONSENT: Not authorized", null);
-                        requestScaleUserConsent(selectedUser.getId(), getUserScaleIndex(selectedUser.getId()));
+                        requestScaleUserConsent(selectedUser.id, getUserScaleIndex(selectedUser.id));
                     }
                     else {
                         LogManager.e(TAG, "UDS_CP_CONSENT: unhandled, code: " + value[2], null);
@@ -594,7 +594,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
         else {
             // Both measurements have a userId
             if (previousMeasurement.getUserId() != -1 &&
-                    newMeasurement.getUserId()     != -1 &&
+                    newMeasurement.getUserId() != -1 &&
                     previousMeasurement.getUserId() == newMeasurement.getUserId()) {
 
                 // Optional: If the BodyComp packet has no timestamp, use the one from the previous measurement
@@ -661,7 +661,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
         int userIndex = getUserScaleIndex(userId);
         int consentCode = getUserScaleConsent(userId);
         LogManager.d(TAG, "setUser(appUserId=" + userId + ") with index=" + userIndex + " consent=" + consentCode
-                + " (selectedUserId=" + (this.selectedUser != null ? this.selectedUser.getId() : -1)
+                + " (selectedUserId=" + (this.selectedUser != null ? this.selectedUser.id : -1)
                 + ", pendingUserId=" + pendingUserId + ")");
 
         if (userIndex == -1) {
@@ -700,7 +700,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
 
     protected void writeBirthday() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
-        Calendar userBirthday = dateToCalender(this.selectedUser.getBirthday());
+        Calendar userBirthday = dateToCalender(this.selectedUser.birthday);
         LogManager.d(TAG, String.format("user Birthday: %tD", userBirthday));
         parser.setDateTime(userBirthday);
         writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_DATE_OF_BIRTH,
@@ -715,7 +715,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
 
     protected void writeGender() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
-        int gender = this.selectedUser.getGender().isMale() ? 0 : 1;
+        int gender = this.selectedUser.gender.isMale() ? 0 : 1;
         LogManager.d(TAG, String.format("gender: %d", gender));
         parser.setIntValue(gender, FORMAT_UINT8);
         writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_GENDER,
@@ -724,7 +724,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
 
     protected void writeHeight() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
-        int height = (int) this.selectedUser.getBodyHeight();
+        int height = (int) this.selectedUser.bodyHeight;
         LogManager.d(TAG, String.format("height: %d", height));
         parser.setIntValue(height, FORMAT_UINT16);
         writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_HEIGHT,
@@ -831,7 +831,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                     LogManager.d(TAG, "ENTER_CONSENT Feedback: scaleUserConsent = " + scaleUserConsent);
                     storeUserScaleConsentCode(appUserId, scaleUserConsent);
                     LogManager.d(TAG, "after_enter_consent_store: appUserId=" + appUserId + ", pendingUserId=" + pendingUserId
-                            + ", selectedUserId=" + (this.selectedUser != null ? this.selectedUser.getId() : -1));
+                            + ", selectedUserId=" + (this.selectedUser != null ? this.selectedUser.id : -1));
                     if (scaleUserConsent == -1) { // User cancelled or denied consent
                         reconnectOrSetSmState(SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST, SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST, uiHandler);
                     } else { // User provided consent
@@ -853,7 +853,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
             int userListStatus = parser.getIntValue(FORMAT_UINT8);
             if (userListStatus == 2) {
                 LogManager.d(TAG, "scale have no users!");
-                int uid = selectedUser.getId();
+                int uid = selectedUser.id;
 
                 int oldConsent = getUserScaleConsent(uid);
                 if (oldConsent != -1) {
@@ -884,10 +884,10 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                     resumeMachineState();
                     return;
                 }
-                if (getUserScaleIndex(selectedUser.getId()) == -1 || getUserScaleConsent(selectedUser.getId()) == -1)  {
+                if (getUserScaleIndex(selectedUser.id) == -1 || getUserScaleConsent(selectedUser.id) == -1)  {
                     LogManager.d(TAG, "Missing mapping => chooseExisting: index="
-                            + getUserScaleIndex(selectedUser.getId()) + ", consent="
-                            + getUserScaleConsent(selectedUser.getId()));
+                            + getUserScaleIndex(selectedUser.id) + ", consent="
+                            + getUserScaleConsent(selectedUser.id));
                     chooseExistingScaleUser(scaleUserList);
                     return;
                 }
@@ -912,15 +912,15 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
             int activityLevel = parser.getIntValue(FORMAT_UINT8);
             GregorianCalendar calendar = new GregorianCalendar(year, month - 1, day);
             ScaleUser scaleUser = new ScaleUser();
-            scaleUser.setUserName(initials);
-            scaleUser.setBirthday(calendar.getTime());
-            scaleUser.setBodyHeight(height);
-            scaleUser.setGender(gender == 0 ? GenderType.MALE : GenderType.FEMALE);
-            scaleUser.setActivityLevel(ActivityLevel.fromInt(activityLevel - 1));
-            scaleUser.setId(index);
+            scaleUser.userName = initials;
+            scaleUser.birthday = calendar.getTime();
+            scaleUser.bodyHeight = height;
+            scaleUser.gender = gender == 0 ? GenderType.MALE : GenderType.FEMALE;
+            scaleUser.activityLevel = ActivityLevel.fromInt(activityLevel - 1);
+            scaleUser.id = index;
             scaleUserList.add(scaleUser);
             if (scaleUserList.size() == getVendorSpecificMaxUserCount()) {
-                if (getUserScaleIndex(selectedUser.getId()) == -1 || getUserScaleConsent(selectedUser.getId()) == -1)  {
+                if (getUserScaleIndex(selectedUser.id) == -1 || getUserScaleConsent(selectedUser.id) == -1)  {
                     chooseExistingScaleUser(scaleUserList);
                     return;
                 }
@@ -939,13 +939,13 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
         int selectedItem = -1;
         for (int i = 0; i < userList.size(); ++i) {
             ScaleUser u = userList.get(i);
-            String name = u.getUserName();
-            choiceStrings[i] = (name.length() > 0 ? name : String.format("P%02d", u.getId()))
-                    + " " + (u.getGender().isMale() ? "male" : "female").toLowerCase()
-                    + " " + "height" + ":" + u.getBodyHeight()
-                    + " " + "birthday" + ":" + dateFormat.format(u.getBirthday())
-                    + " " + "activityLevel" + ":" + (u.getActivityLevel().toInt() + 1);
-            indexArray[i] = u.getId();
+            String name = u.userName;
+            choiceStrings[i] = (name.length() > 0 ? name : String.format("P%02d", u.id))
+                    + " " + (u.gender.isMale() ? "male" : "female").toLowerCase()
+                    + " " + "height" + ":" + u.bodyHeight
+                    + " " + "birthday" + ":" + dateFormat.format(u.birthday)
+                    + " " + "activityLevel" + ":" + (u.activityLevel.toInt() + 1);
+            indexArray[i] = u.id;
         }
         if (userList.size() < getVendorSpecificMaxUserCount()) {
             choiceStrings[userList.size()] = context.getString(R.string.bluetooth_scale_info_create_user_instruction);
@@ -999,7 +999,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
     }
 
     private String getDefaultInitials() {
-        int userId = this.selectedUser.getId();
+        int userId = this.selectedUser.id;
         int userIndex = getUserScaleIndex(userId);
         return "P" + userIndex + " ";
     }

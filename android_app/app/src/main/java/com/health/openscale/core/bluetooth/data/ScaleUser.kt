@@ -15,154 +15,84 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.health.openscale.core.bluetooth.data;
+package com.health.openscale.core.bluetooth.data
 
-import com.health.openscale.core.data.ActivityLevel;
-import com.health.openscale.core.data.GenderType;
-import com.health.openscale.core.data.MeasureUnit;
-import com.health.openscale.core.data.WeightUnit;
+import com.health.openscale.core.data.ActivityLevel
+import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.data.MeasureUnit
+import com.health.openscale.core.data.WeightUnit
+import java.util.Calendar
+import java.util.Date
 
-import java.util.Calendar;
-import java.util.Date;
+class ScaleUser {
+    @JvmField
+    var id: Int = 0
 
-public class ScaleUser {
-    private int id;
+    @JvmField
+    var userName: String = ""
+    @JvmField
+    var birthday: Date
 
-    private String userName;
-    private Date birthday;
+    @JvmField
+    var bodyHeight: Float
 
-    private float bodyHeight;
+    @JvmField
+    var gender: GenderType
 
-    private GenderType gender;
+    @JvmField
+    var initialWeight: Float = 0f // TODO implement in GUI
 
-    private float initialWeight; // TODO implement in GUI
+    @JvmField
+    var goalWeight: Float = 0f // TODO implement in GUI
 
-    private float goalWeight; // TODO implement in GUI
+    @JvmField
+    var scaleUnit: WeightUnit // TODO implement in GUI
 
-    private WeightUnit scaleUnit; // TODO implement in GUI
+    @JvmField
+    var measureUnit: MeasureUnit // TODO implement in GUI
 
-    private MeasureUnit measureUnit; // TODO implement in GUI
+    @JvmField
+    var activityLevel: ActivityLevel
 
-    private ActivityLevel activityLevel;
-
-    public ScaleUser() {
-        userName = "";
-        birthday = new Date();
-        bodyHeight = -1;
-        gender = GenderType.MALE;
-        initialWeight = 0f;
-        goalWeight = 0f;
-        scaleUnit = WeightUnit.KG;
-        measureUnit = MeasureUnit.CM;
-        activityLevel = ActivityLevel.SEDENTARY;
+    init {
+        birthday = Date()
+        bodyHeight = -1f
+        gender = GenderType.MALE
+        scaleUnit = WeightUnit.KG
+        measureUnit = MeasureUnit.CM
+        activityLevel = ActivityLevel.SEDENTARY
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public Date getBirthday() {
-        return birthday;
-    }
-
-    public void setBirthday(Date birthday) {
-        this.birthday = birthday;
-    }
-
-    public float getBodyHeight() {
-        return bodyHeight;
-    }
-
-    public void setBodyHeight(float bodyHeight) {
-        this.bodyHeight = bodyHeight;
-    }
-
-    public int getAge(Date todayDate) {
-        Calendar calToday = Calendar.getInstance();
+    fun getAge(todayDate: Date?): Int {
+        val calToday = Calendar.getInstance()
         if (todayDate != null) {
-            calToday.setTime(todayDate);
+            calToday.setTime(todayDate)
         }
 
-        Calendar calBirthday = Calendar.getInstance();
-        calBirthday.setTime(birthday);
+        val calBirthday = Calendar.getInstance()
+        calBirthday.setTime(birthday)
 
-        return yearsBetween(calBirthday, calToday);
+        return yearsBetween(calBirthday, calToday)
     }
 
-    public int getAge() {
-        return getAge(null);
-    }
+    val age: Int
+        get() = getAge(null)
 
-    public WeightUnit getScaleUnit() {
-        return scaleUnit;
-    }
+    private fun yearsBetween(start: Calendar, end: Calendar): Int {
+        var years = end.get(Calendar.YEAR) - start.get(Calendar.YEAR)
 
-    public void setScaleUnit(WeightUnit scaleUnit) {
-        this.scaleUnit = scaleUnit;
-    }
-
-    public void setMeasureUnit(MeasureUnit unit) {
-        measureUnit = unit;
-    }
-
-    public MeasureUnit getMeasureUnit() {
-        return measureUnit;
-    }
-
-    public void setActivityLevel(ActivityLevel level) {
-        activityLevel = level;
-    }
-
-    public ActivityLevel getActivityLevel() {
-        return activityLevel;
-    }
-
-    private int yearsBetween(Calendar start, Calendar end) {
-        int years = end.get(Calendar.YEAR) - start.get(Calendar.YEAR);
-
-        final int startMonth = start.get(Calendar.MONTH);
-        final int endMonth = end.get(Calendar.MONTH);
+        val startMonth = start.get(Calendar.MONTH)
+        val endMonth = end.get(Calendar.MONTH)
         if (endMonth < startMonth
-                || (endMonth == startMonth
-                && end.get(Calendar.DAY_OF_MONTH) < start.get(Calendar.DAY_OF_MONTH))) {
-            years -= 1;
+            || (endMonth == startMonth
+                    && end.get(Calendar.DAY_OF_MONTH) < start.get(Calendar.DAY_OF_MONTH))
+        ) {
+            years -= 1
         }
-        return years;
+        return years
     }
 
-    public GenderType getGender() {
-        return gender;
-    }
-
-    public void setGender(GenderType gender) {
-        this.gender = gender;
-    }
-
-    public float getGoalWeight() {
-        return goalWeight;
-    }
-
-    public void setGoalWeight(float goalWeight) {
-        this.goalWeight = goalWeight;
-    }
-
-    public void setInitialWeight(float weight) {
-        this.initialWeight = weight;
-    }
-
-    public float getInitialWeight() {
-        return initialWeight;
+    override fun toString() : String {
+        return "ScaleUser(id=$id, userName=$userName, birthday=$birthday, bodyHeight=$bodyHeight, gender=$gender, initialWeight=$initialWeight, goalWeight=$goalWeight, scaleUnit=$scaleUnit, measureUnit=$measureUnit, activityLevel=$activityLevel)"
     }
 }

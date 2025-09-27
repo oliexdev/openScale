@@ -193,7 +193,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
                     final ScaleUser selectedUser = getSelectedScaleUser();
                     ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
-                    scaleBtData.setWeight(ConverterUtils.toKilogram(weight, selectedUser.getScaleUnit()));
+                    scaleBtData.setWeight(ConverterUtils.toKilogram(weight, selectedUser.scaleUnit));
                     scaleBtData.setDateTime(date_time);
 
                     addScaleMeasurement(scaleBtData);

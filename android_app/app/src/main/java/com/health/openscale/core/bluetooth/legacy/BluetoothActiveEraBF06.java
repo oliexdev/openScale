@@ -68,12 +68,12 @@ public class BluetoothActiveEraBF06 extends BluetoothCommunication {
         byte[] time = ConverterUtils.toInt32Be(now);
 
         final ScaleUser selectedUser = getSelectedScaleUser();
-        int height = (int) Math.ceil(selectedUser.getBodyHeight());
+        int height = (int) Math.ceil(selectedUser.bodyHeight);
         int age = selectedUser.getAge();
-        int gender = selectedUser.getGender() == GenderType.FEMALE ? 0x02 : 0x01;
+        int gender = selectedUser.gender == GenderType.FEMALE ? 0x02 : 0x01;
 
         int units = 0; // KG
-        switch(selectedUser.getScaleUnit()) {
+        switch(selectedUser.scaleUnit) {
             case LB:
                 units = 1;
                 break;
@@ -82,11 +82,11 @@ public class BluetoothActiveEraBF06 extends BluetoothCommunication {
                 break;
         };
 
-        int initialWeight = (int) Math.ceil(selectedUser.getInitialWeight() * 100);
+        int initialWeight = (int) Math.ceil(selectedUser.initialWeight * 100);
         byte[] initialWeightBytes = ConverterUtils.toInt16Be(initialWeight);
 
         byte[] targetWeightBytes;
-        float goalWeight = selectedUser.getGoalWeight();
+        float goalWeight = selectedUser.goalWeight;
         if (goalWeight > -1) {
             int targetWeight = (int) Math.ceil(goalWeight * 100);
             targetWeightBytes = ConverterUtils.toInt16Be(targetWeight);
@@ -245,9 +245,9 @@ public class BluetoothActiveEraBF06 extends BluetoothCommunication {
                     // calculate BIA using measure weight and impedance
                     if (impedance > 0.0) {
                         final ScaleUser selectedUser = getSelectedScaleUser();
-                        int height = (int) Math.ceil(selectedUser.getBodyHeight());
+                        int height = (int) Math.ceil(selectedUser.bodyHeight);
                         int age = selectedUser.getAge();
-                        int gender = selectedUser.getGender() == GenderType.FEMALE ? 0 : 1;
+                        int gender = selectedUser.gender == GenderType.FEMALE ? 0 : 1;
 
                         calculateBIA(height, impedance, stableWeightKg, age, gender);
                         // TODO: report results

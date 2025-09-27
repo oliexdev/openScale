@@ -68,9 +68,9 @@ public class BluetoothHoffenBBS8107 extends BluetoothCommunication {
                 // Send user data to the scale
                 byte[] userData = {
                         (byte) 0x00,  // "plan" id?
-                        user.getGender().isMale() ? (byte) 0x01 : (byte) 0x00,
+                        user.gender.isMale() ? (byte) 0x01 : (byte) 0x00,
                         (byte) user.getAge(),
-                        (byte) user.getBodyHeight(),
+                        (byte) user.bodyHeight,
                 };
                 sendPacket(CMD_SEND_USER_DATA, userData);
 
@@ -81,7 +81,7 @@ public class BluetoothHoffenBBS8107 extends BluetoothCommunication {
             case 2:
                 // Send preferred scale unit to the scale
                 byte[] weightUnitData = {
-                        (byte) (0x01 + user.getScaleUnit().toInt()),
+                        (byte) (0x01 + user.scaleUnit.toInt()),
                         (byte) 0x00,  // always empty
                 };
                 sendPacket(CMD_CHANGE_SCALE_UNIT, weightUnitData);
@@ -143,7 +143,7 @@ public class BluetoothHoffenBBS8107 extends BluetoothCommunication {
             case RESPONSE_INTERMEDIATE_MEASUREMENT:
                 // Got intermediate result
                 weight = ConverterUtils.fromUnsignedInt16Le(value, 4) / 10.0f;
-                LogManager.d(TAG, String.format("Got intermediate weight: %.1f %s", weight, user.getScaleUnit().toString()));
+                LogManager.d(TAG, String.format("Got intermediate weight: %.1f %s", weight, user.scaleUnit.toString()));
                 break;
 
             case RESPONSE_FINAL_MEASUREMENT:
@@ -165,10 +165,10 @@ public class BluetoothHoffenBBS8107 extends BluetoothCommunication {
 
     private ScaleMeasurement parseFinalMeasurement(byte[] value) {
         float weight = ConverterUtils.fromUnsignedInt16Le(value, 3) / 10.0f;
-        LogManager.d(TAG, String.format("Got final weight: %.1f %s", weight, user.getScaleUnit().toString()));
+        LogManager.d(TAG, String.format("Got final weight: %.1f %s", weight, user.scaleUnit.toString()));
         sendMessage(R.string.bluetooth_scale_info_measuring_weight, weight);
 
-        if (user.getScaleUnit() != WeightUnit.KG) {
+        if (user.scaleUnit != WeightUnit.KG) {
             // For lb and st this scale will always return result in lb
             weight = ConverterUtils.toKilogram(weight, WeightUnit.LB);
         }

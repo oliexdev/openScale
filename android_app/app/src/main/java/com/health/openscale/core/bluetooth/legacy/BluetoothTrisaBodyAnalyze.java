@@ -275,7 +275,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
             float resistance2 = getBase10Float(data, resistance2Offset);
             float impedance = resistance2 < 410f ? 3.0f : 0.3f * (resistance2 - 400f);
 
-            TrisaBodyAnalyzeLib trisaBodyAnalyzeLib = new TrisaBodyAnalyzeLib(user.getGender().isMale() ? 1 : 0, user.getAge(), user.getBodyHeight());
+            TrisaBodyAnalyzeLib trisaBodyAnalyzeLib = new TrisaBodyAnalyzeLib(user.gender.isMale() ? 1 : 0, user.getAge(), user.bodyHeight);
 
             measurement.setFat(trisaBodyAnalyzeLib.getFat(weightKg, impedance));
             measurement.setWater(trisaBodyAnalyzeLib.getWater(weightKg, impedance));
@@ -354,6 +354,6 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
     }
 
     private boolean isValidUser(@Nullable ScaleUser user) {
-        return user != null && user.getAge() > 0 && user.getBodyHeight() > 0;
+        return user != null && user.getAge() > 0 && user.bodyHeight > 0;
     }
 }

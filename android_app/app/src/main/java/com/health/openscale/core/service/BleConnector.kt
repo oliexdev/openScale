@@ -527,7 +527,7 @@ class BleConnector(
             addConvertedIfValid(measurementData.fat,          MeasurementTypeKey.BODY_FAT)
             addConvertedIfValid(measurementData.water,        MeasurementTypeKey.WATER)
             addConvertedIfValid(measurementData.muscle,       MeasurementTypeKey.MUSCLE)
-            addConvertedIfValid(measurementData.visceralFat,  MeasurementTypeKey.VISCERAL_FAT) { it.isFinite() && it >= 0f }
+            addConvertedIfValid(measurementData.visceralFat,  MeasurementTypeKey.VISCERAL_FAT)
             addConvertedIfValid(measurementData.bone,         MeasurementTypeKey.BONE)
             addConvertedIfValid(measurementData.lbm,          MeasurementTypeKey.LBM)
 

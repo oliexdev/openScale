@@ -24,23 +24,29 @@ import android.content.UriMatcher
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
+import android.util.Log
 import com.health.openscale.BuildConfig
+import com.health.openscale.OpenScaleApp
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
+import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.utils.LogManager
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface DatabaseProviderEntryPoint {
     fun databaseRepository(): DatabaseRepository
-   // fun userSettingsRepository(): UserSettingsRepository // not needed
+    fun userSettingsFacade(): SettingsFacade
 }
 
 /**
@@ -52,6 +58,7 @@ class DatabaseProvider : ContentProvider() {
     private val TAG = "DatabaseProvider"
 
     private lateinit var databaseRepository: DatabaseRepository
+    private lateinit var userSettingsFacade: SettingsFacade
 
     object UserColumns {
         const val _ID = "_ID"
@@ -70,15 +77,19 @@ class DatabaseProvider : ContentProvider() {
     override fun onCreate(): Boolean {
         val appContext = context!!.applicationContext
         return try {
-            LogManager.init(appContext, false)
-
             val entryPoint = EntryPointAccessors.fromApplication(
                 appContext,
                 DatabaseProviderEntryPoint::class.java
             )
             databaseRepository = entryPoint.databaseRepository()
+            userSettingsFacade = entryPoint.userSettingsFacade()
 
-            LogManager.i(TAG, "DatabaseProvider initialized successfully.")
+            CoroutineScope(Dispatchers.IO).launch {
+                val isFileLogging = userSettingsFacade.isFileLoggingEnabled.first()
+                LogManager.init(appContext, isFileLogging)
+                LogManager.i(TAG, "DatabaseProvider initialized with file logging = $isFileLogging")
+            }
+
             true
         } catch (e: Exception) {
             LogManager.e(TAG, "Failed to initialize DatabaseProvider: ${e.message}", e)

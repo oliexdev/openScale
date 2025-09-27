@@ -58,7 +58,7 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
 
     @Override
     protected void writeActivityLevel() {
-        ActivityLevel al = selectedUser.getActivityLevel();
+        ActivityLevel al = selectedUser.activityLevel;
         BluetoothBytesParser parser = new BluetoothBytesParser(new byte[]{0});
         parser.setIntValue(al.toInt() + 1, FORMAT_UINT8, 0);
         LogManager.d(TAG, String.format("setCurrentUserData Activity level: %d", al.toInt() + 1));
@@ -70,7 +70,7 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
     protected void writeInitials() {
         if (haveCharacteristic(SERVICE_BEURER_CUSTOM_BF600, CHARACTERISTIC_BEURER_BF850_INITIALS)) {
             BluetoothBytesParser parser = new BluetoothBytesParser();
-            String initials = getInitials(this.selectedUser.getUserName());
+            String initials = getInitials(this.selectedUser.userName);
             LogManager.d(TAG, "Initials: " + initials);
             parser.setString(initials);
             writeBytes(SERVICE_BEURER_CUSTOM_BF600, CHARACTERISTIC_BEURER_BF850_INITIALS,

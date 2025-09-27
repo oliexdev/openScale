@@ -96,8 +96,8 @@ public class BluetoothESCS20M extends BluetoothCommunication {
 
         if (getStepNr() == 4 && (measurementType == MEASUREMENT_TYPE_STOP_WEIGHT_ONLY || measurementType == MEASUREMENT_TYPE_STOP_ALL)) {
             final ScaleUser scaleUser = getSelectedScaleUser();
-            final int sex = scaleUser.getGender() == GenderType.MALE ? 1 : 0;
-            YunmaiLib yunmaiLib = new YunmaiLib(sex, scaleUser.getBodyHeight(), scaleUser.getActivityLevel());
+            final int sex = scaleUser.gender == GenderType.MALE ? 1 : 0;
+            YunmaiLib yunmaiLib = new YunmaiLib(sex, scaleUser.bodyHeight, scaleUser.activityLevel);
 
             rawMeasurements = rawMeasurements.stream().sorted(Comparator.comparingInt(a -> a[2])).collect(Collectors.toList());
 

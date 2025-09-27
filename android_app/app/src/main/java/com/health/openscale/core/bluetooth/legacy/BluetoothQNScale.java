@@ -117,7 +117,7 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 break;
             case 2:
                 final ScaleUser scaleUser = getSelectedScaleUser();
-                final WeightUnit scaleUserWeightUnit = scaleUser.getScaleUnit();
+                final WeightUnit scaleUserWeightUnit = scaleUser.scaleUnit;
                 // Value of 0x01 = KG. 0x02 = LB. Requests with stones unit are sent as LB, with post-processing in vendor app.
                 byte weightUnitByte = (byte) 0x01;
                 // Default weight unit KG. If user config set to LB or ST, scale will show LB units, consistent with vendor app
@@ -220,7 +220,7 @@ public class BluetoothQNScale extends BluetoothCommunication {
                             LogManager.d(TAG, "scale user " + scaleUser);
                             ScaleMeasurement btScaleMeasurement = new ScaleMeasurement();
                             //TrisaBodyAnalyzeLib gives almost simillar values for QNScale body fat calcualtion
-                            TrisaBodyAnalyzeLib qnscalelib = new TrisaBodyAnalyzeLib(scaleUser.getGender().isMale() ? 1 : 0, scaleUser.getAge(), (int)scaleUser.getBodyHeight());
+                            TrisaBodyAnalyzeLib qnscalelib = new TrisaBodyAnalyzeLib(scaleUser.gender.isMale() ? 1 : 0, scaleUser.getAge(), (int) scaleUser.bodyHeight);
 
                             //Now much difference between resistance1 and resistance2.
                             //Will use resistance 1 for now

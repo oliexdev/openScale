@@ -45,11 +45,11 @@ class Yoda1Handler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         // Heuristic: name starts with "Yoda1" OR the MSD payload looks like Yoda1 (>= 7 bytes)
-        val nameMatch = device.name.startsWith("Yoda1", ignoreCase = true)
+        val nameMatch = device.name.startsWith("Yoda", ignoreCase = true)
         if (!nameMatch) return null
 
         return DeviceSupport(
-            displayName = "Yoda1 Scale",
+            displayName = "Yoda Scale",
             capabilities = setOf(LIVE_WEIGHT_STREAM),
             implemented = setOf(LIVE_WEIGHT_STREAM),
             linkMode = LinkMode.BROADCAST_ONLY
@@ -73,7 +73,7 @@ class Yoda1Handler : ScaleDeviceHandler() {
         if (!oneDecimal) weight /= 10.0f
 
         val measurement = ScaleMeasurement().apply {
-            setWeight(ConverterUtils.toKilogram(weight, user.scaleUnit))
+            weight = ConverterUtils.toKilogram(weight, user.scaleUnit)
         }
 
         // If not stabilized yet, keep scanning (device often sends intermediate weights).

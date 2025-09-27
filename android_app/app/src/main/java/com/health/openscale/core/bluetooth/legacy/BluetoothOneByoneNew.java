@@ -71,7 +71,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
                 impedance = ConverterUtils.fromUnsignedInt16Be(data, 15);
 
                 ScaleMeasurement historicMeasurement = new ScaleMeasurement();
-                int assignableUserId = getSelectedScaleUser().getId(); // TODO old implementation was getAssignableUser(weight);
+                int assignableUserId = getSelectedScaleUser().id; // TODO old implementation was getAssignableUser(weight);
                 if(assignableUserId == -1){
                     LogManager.i(TAG, "Discarding historic measurement: no user found with intelligent user recognition");
                     break;
@@ -101,7 +101,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
 
                 float measurementWeight = currentMeasurement.getWeight();
                 ScaleUser user = getSelectedScaleUser();
-                populateMeasurement(user.getId(), currentMeasurement, impedance, measurementWeight);
+                populateMeasurement(user.id, currentMeasurement, impedance, measurementWeight);
                 addScaleMeasurement(currentMeasurement);
                 resumeMachineState();
                 break;
@@ -116,8 +116,8 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
             return;
         }
         ScaleUser user = getSelectedScaleUser();
-        float cmHeight = ConverterUtils.fromCentimeter(user.getBodyHeight(), user.getMeasureUnit());
-        OneByoneNewLib onebyoneLib = new OneByoneNewLib(getUserGender(user), user.getAge(), cmHeight, user.getActivityLevel().toInt());
+        float cmHeight = ConverterUtils.fromCentimeter(user.bodyHeight, user.measureUnit);
+        OneByoneNewLib onebyoneLib = new OneByoneNewLib(getUserGender(user), user.getAge(), cmHeight, user.activityLevel.toInt());
         measurement.setWeight(weight);
         measurement.setDateTime(Calendar.getInstance().getTime());
         measurement.setFat(onebyoneLib.getBodyFatPercentage(weight, impedance));
@@ -146,14 +146,14 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
                 // Update the user history on the scale
                 // Priority given to the current user
                 ScaleUser currentUser = getSelectedScaleUser();
-                sendUsersHistory(currentUser.getId());
+                sendUsersHistory(currentUser.id);
 
                 // We wait for the response
                 stopMachineState();
                 break;
             case 2:
                 // After the measurement took place, we store the data and send back to the scale
-                sendUsersHistory(getSelectedScaleUser().getId());
+                sendUsersHistory(getSelectedScaleUser().id);
                 break;
             default:
                 return false;
@@ -171,10 +171,10 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
     private void sendUsersHistory(int priorityUser){
         List<ScaleUser> scaleUsers = getScaleUserList();
         Collections.sort(scaleUsers, (ScaleUser u1, ScaleUser u2) -> {
-                    if(u1.getId() == priorityUser) return -9999;
-                    if(u2.getId() == priorityUser) return 9999;
-                    Date u1LastMeasureDate = getLastScaleMeasurement(u1.getId()).getDateTime();
-                    Date u2LastMeasureDate = getLastScaleMeasurement(u2.getId()).getDateTime();
+                    if(u1.id == priorityUser) return -9999;
+                    if(u2.id == priorityUser) return 9999;
+                    Date u1LastMeasureDate = getLastScaleMeasurement(u1.id).getDateTime();
+                    Date u2LastMeasureDate = getLastScaleMeasurement(u2.id).getDateTime();
                     return u1LastMeasureDate.compareTo(u2LastMeasureDate);
                 }
         );
@@ -182,7 +182,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
         int msgCounter = 0;
         for(int i = 0; i < scaleUsers.size(); i++){
             ScaleUser user = scaleUsers.get(i);
-            ScaleMeasurement lastMeasure = getLastScaleMeasurement(user.getId());
+            ScaleMeasurement lastMeasure = getLastScaleMeasurement(user.id);
             float weight = 0;
             int impedance = 0;
             if(lastMeasure != null){
@@ -202,7 +202,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
             }
 
             setMeasurementEntry(msg, 4 + entryPosition * 7, i + 1,
-                    Math.round(user.getBodyHeight()),
+                    Math.round(user.bodyHeight),
                     weight,
                     getUserGender(user),
                     user.getAge(),
@@ -254,7 +254,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
         }
 
         ScaleUser currentUser = getSelectedScaleUser();
-         WeightUnit weightUnit = currentUser.getScaleUnit();
+         WeightUnit weightUnit = currentUser.scaleUnit;
 
         msg[offset] = HEADER_BYTES[0];
         msg[offset+1] = HEADER_BYTES[1];
@@ -262,7 +262,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
         // This byte has been left empty in all the observations, unknown meaning
         msg[offset+6] = 0;
         msg[offset+7] = (byte) weightUnit.toInt();
-        int userId = currentUser.getId();
+        int userId = currentUser.id;
 
 
         // We send the last measurement or if not present an empty one
@@ -276,7 +276,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
 
         setMeasurementEntry(msg, offset+8,
                 userId,
-                Math.round(currentUser.getBodyHeight()),
+                Math.round(currentUser.bodyHeight),
                 weight,
                 getUserGender(currentUser),
                 currentUser.getAge(),
@@ -292,7 +292,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
 
     private int getUserGender(ScaleUser user){
         // Custom function since the toInt() gives the opposite values
-        return user.getGender().isMale() ? 1 : 0;
+        return user.gender.isMale() ? 1 : 0;
     }
 
     private byte d4Checksum(byte[] msg, int offset, int length){
@@ -323,7 +323,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
     public int getImpedanceFromLBM(ScaleUser user, ScaleMeasurement measurement) {
         float finalLbm = measurement.getLbm();
         float postImpedanceLbm = finalLbm + user.getAge() * 0.0542F;
-        float preImpedanceLbm = user.getBodyHeight() / 100 * user.getBodyHeight() / 100 * 9.058F + 12.226F + measurement.getWeight() * 0.32F;
+        float preImpedanceLbm = user.bodyHeight / 100 * user.bodyHeight / 100 * 9.058F + 12.226F + measurement.getWeight() * 0.32F;
         return Math.round((preImpedanceLbm - postImpedanceLbm) / 0.0068F);
     }
 

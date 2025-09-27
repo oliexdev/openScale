@@ -164,11 +164,11 @@ public class BluetoothSenssun extends BluetoothCommunication {
 
         if (values == 15) {
             ScaleMeasurement scaleBtData = new ScaleMeasurement();
-            scaleBtData.setWeight((float)lastWeight / 10.0f);
-            scaleBtData.setFat((float)lastFat / 10.0f);
-            scaleBtData.setWater((float)lastHydration / 10.0f);
-            scaleBtData.setBone((float)lastBone / 10.0f);
-            scaleBtData.setMuscle((float)lastMuscle / 10.0f);
+            scaleBtData.setWeight((float) lastWeight / 10.0f);
+            scaleBtData.setFat((float) lastFat / 10.0f);
+            scaleBtData.setWater((float) lastHydration / 10.0f);
+            scaleBtData.setBone((float) lastBone / 10.0f);
+            scaleBtData.setMuscle((float) lastMuscle / 10.0f);
             scaleBtData.setDateTime(new Date());
             addScaleMeasurement(scaleBtData);
             disconnect();
@@ -222,9 +222,9 @@ public class BluetoothSenssun extends BluetoothCommunication {
 
         byte message[] = new byte[]{(byte)0xA5, (byte)0x10, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
         //message[2] = (byte)((selectedUser.getGender().isMale() ? (byte)0x80: (byte)0x00) + 1+selectedUser.getId());
-        message[2] = (byte) ((selectedUser.getGender().isMale() ? 15 : 0) * 16 + selectedUser.getId());
+        message[2] = (byte) ((selectedUser.gender.isMale() ? 15 : 0) * 16 + selectedUser.id);
         message[3] = (byte)selectedUser.getAge();
-        message[4] = (byte)selectedUser.getBodyHeight();
+        message[4] = (byte) selectedUser.bodyHeight;
 
         addChecksum(message);
 

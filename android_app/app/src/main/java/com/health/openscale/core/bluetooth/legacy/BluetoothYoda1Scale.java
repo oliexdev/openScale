@@ -61,7 +61,7 @@ public class BluetoothYoda1Scale extends BluetoothCommunication {
                 final ScaleUser selectedUser = getSelectedScaleUser();
                 ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
-                scaleBtData.setWeight(ConverterUtils.toKilogram(weight, selectedUser.getScaleUnit()));
+                scaleBtData.setWeight(ConverterUtils.toKilogram(weight, selectedUser.scaleUnit));
                 addScaleMeasurement(scaleBtData);
 
                 disconnect();

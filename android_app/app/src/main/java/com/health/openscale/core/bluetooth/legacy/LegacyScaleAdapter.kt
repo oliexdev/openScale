@@ -30,6 +30,7 @@ import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacade
+import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.utils.LogManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -124,12 +125,12 @@ class LegacyScaleAdapter @AssistedInject constructor(
 
             val legacyScaleUserList = userListFromDb.map { kotlinUser ->
                  ScaleUser().apply {
-                     setId(kotlinUser.id)
-                     setUserName(kotlinUser.name)
-                     setBirthday(Date(kotlinUser.birthDate))
-                     setBodyHeight(if (kotlinUser.heightCm == null) 0f else kotlinUser.heightCm)
-                     setGender(kotlinUser.gender)
-                     setActivityLevel(kotlinUser.activityLevel)
+                     id = kotlinUser.id
+                     userName = kotlinUser.name
+                     birthday = Date(kotlinUser.birthDate)
+                     bodyHeight = if (kotlinUser.heightCm == null) 0f else kotlinUser.heightCm
+                     gender = kotlinUser.gender
+                     activityLevel = kotlinUser.activityLevel
 
                      // TODO setInitialWeight(kotlinUser.initialWeight)
                      // TODO setGoalWeight(kotlinUser.goalWeight)
@@ -152,11 +153,11 @@ class LegacyScaleAdapter @AssistedInject constructor(
             }
 
             bluetoothDriverInstance.setUniqueNumber(base)
-            this.currentInternalUser?.let { userId ->
-                if (userId.id != -1) {
-                LogManager.d(TAG, "Attempting to load last measurement for user ID: $userId using existing repository methods.")
-                    val lastMeasurementWithValues: com.health.openscale.core.model.MeasurementWithValues? =
-                        databaseRepository.getMeasurementsWithValuesForUser(userId.id)
+            this.currentInternalUser?.let { userInteralId ->
+                if (userInteralId.id != -1) {
+                LogManager.d(TAG, "Attempting to load last measurement for user ID: $userInteralId using existing repository methods.")
+                    val lastMeasurementWithValues: MeasurementWithValues? =
+                        databaseRepository.getMeasurementsWithValuesForUser(userInteralId.id)
                             .map { measurements ->
                                 measurements.maxByOrNull { it.measurement.timestamp }
                             }
@@ -164,21 +165,21 @@ class LegacyScaleAdapter @AssistedInject constructor(
 
                     if (lastMeasurementWithValues != null) {
                         val legacyScaleMeasurement = ScaleMeasurement().apply {
-                            setDateTime(Date(lastMeasurementWithValues.measurement.timestamp))
-                            setUserId(lastMeasurementWithValues.measurement.userId)
-                            setWeight(lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.WEIGHT }?.value?.floatValue ?: 0.0f)
-                            setFat(lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.BODY_FAT }?.value?.floatValue ?: 0.0f)
-                            setWater(lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.WATER }?.value?.floatValue ?: 0.0f)
-                            setMuscle(lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.MUSCLE }?.value?.floatValue ?: 0.0f)
-                            setBone(lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.BONE }?.value?.floatValue ?: 0.0f)
-                            setVisceralFat(lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.VISCERAL_FAT }?.value?.floatValue ?: 0.0f)
-                            setLbm(lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.LBM }?.value?.floatValue ?: 0.0f)
+                            dateTime = Date(lastMeasurementWithValues.measurement.timestamp)
+                            userId = lastMeasurementWithValues.measurement.userId
+                            weight = lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.WEIGHT }?.value?.floatValue ?: 0.0f
+                            fat = lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.BODY_FAT }?.value?.floatValue ?: 0.0f
+                            water = lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.WATER }?.value?.floatValue ?: 0.0f
+                            muscle = lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.MUSCLE }?.value?.floatValue ?: 0.0f
+                            bone = lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.BONE }?.value?.floatValue ?: 0.0f
+                            visceralFat = lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.VISCERAL_FAT }?.value?.floatValue ?: 0.0f
+                            lbm = lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.LBM }?.value?.floatValue ?: 0.0f
                         }
                         bluetoothDriverInstance.setCachedLastMeasurementForSelectedUser(legacyScaleMeasurement)
-                        LogManager.i(TAG, "Successfully provided last measurement for user $userId to legacy driver.")
+                        LogManager.i(TAG, "Successfully provided last measurement for user $userInteralId to legacy driver.")
                     } else {
                         bluetoothDriverInstance.setCachedLastMeasurementForSelectedUser(null)
-                        LogManager.d(TAG, "No last measurement found for user $userId.")
+                        LogManager.d(TAG, "No last measurement found for user $userInteralId.")
                     }
                 } else {
                     bluetoothDriverInstance.setCachedLastMeasurementForSelectedUser(null)

@@ -665,4 +665,22 @@
     <string name="bt_error_handler_parse_error">Handler-Parserfehler für %1$s: %2$s</string>
     <string name="bt_error_no_bluetooth_adapter">Kein Bluetooth-Adapter auf diesem Gerät vorhanden.</string>
     <string name="bt_error_no_device_found">Gerät nicht gefunden. Bitte sicherstellen, dass es eingeschaltet ist und sich in Reichweite befindet.</string>
+    <string name="bt_info_using_existing_mapping_auto_consent">Verwende bestehende Zuordnung für Benutzer %1$s zu Waagenplatz %2$s. Automatisches Bestätigen wird versucht.</string>
+    <string name="bt_error_pin_format_invalid">Ungültiges PIN-Format. Bitte geben Sie eine gültige Zahl ein.</string>
+    <string name="bt_error_uds_register_failed">Benutzer konnte nicht auf der Waage registriert werden. Fehler: %1$s</string>
+    <string name="bt_error_uds_consent_failed">Benutzer konnte nicht auf der Waage bestätigt werden. Fehler: %1$s</string>
+    <string name="bt_error_uds_list_users_failed">Benutzerliste konnte nicht von der Waage abgerufen werden. Fehler: %1$s</string>
+    <string name="bt_error_user_setup_failed_no_list">Benutzereinrichtung fehlgeschlagen. Benutzerliste konnte nicht von der Waage abgerufen werden.</string>
+
+    <string name="bluetooth_scale_info_create_user_instruction_uds">Neuen Benutzer auf Waage erstellen (UDS weist Platz zu)</string>
+    <string name="bt_uds_choice_slot_current_user">Platz P%1$d: %2$s (Aktueller App-Benutzer)</string>
+    <string name="bt_uds_choice_slot_other_user">Platz P%1$d: Verwendet von %2$s (Auswählen zum Übernehmen?)</string>
+    <string name="bt_uds_choice_slot_occupied_unmapped">Platz P%1$d: Belegt (Nicht zugeordnet)</string>
+
+    <!-- SBF72 Spezifisch (können in einem allgemeinen BT-Strings-Abschnitt sein oder spezifisch, falls später benötigt) -->
+    <!-- Diese wurden für SanitasSbf72Handler angefragt, stelle sicher, dass sie eindeutig sind, wenn sie von beiden verwendet werden -->
+    <string name="bt_sbf72_choice_slot_current_user">P%1$d: %2$s (Aktuell)</string>
+    <string name="bt_sbf72_choice_slot_other_user">P%1$d: Verwendet von %2$s (Übernehmen?)</string>
+    <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Belegt (Nicht verknüpft)</string>
+    <string name="bt_sbf72_choice_slot_create_new">P%1$d: \'%2$s\' hier erstellen</string>
 </resources>

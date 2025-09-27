@@ -491,7 +491,7 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
         ///String user example =  "27 af 00 2a 03 ff ff";
 
         ScaleUser currentUser = getSelectedScaleUser();
-        int weight = (int) currentUser.getInitialWeight() * 10;
+        int weight = (int) currentUser.initialWeight * 10;
         AHcmdUserInfo(weight);
     }
 
@@ -507,8 +507,8 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
             payload[13] = upperByte(impedance)
          */
         ScaleUser currentUser = getSelectedScaleUser();
-        byte height = (byte) currentUser.getBodyHeight();
-        byte sex = currentUser.getGender().isMale() ? 0 : (byte) 0x80;
+        byte height = (byte) currentUser.bodyHeight;
+        byte sex = currentUser.gender.isMale() ? 0 : (byte) 0x80;
         byte age = (byte) ( sex  |  ((byte) currentUser.getAge()) );
         byte[] user = new byte[]{
                 age,
@@ -607,8 +607,8 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
 
         ScaleUser currentUser = getSelectedScaleUser();
         ScaleMeasurement receivedMeasurement = new ScaleMeasurement();
-        receivedMeasurement.setUserId(currentUser.getId());
-        receivedMeasurement.setDateTime( date );
+        receivedMeasurement.setUserId(currentUser.id);
+        receivedMeasurement.setDateTime(date);
         receivedMeasurement.setWeight(weight);
         receivedMeasurement.setFat(fat);
 //        receivedMeasurement.setWater(water);
@@ -694,7 +694,7 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
 
     public byte[] getUserID() {
         ScaleUser currentUser = getSelectedScaleUser();
-        byte id = (byte) currentUser.getId();
+        byte id = (byte) currentUser.id;
         byte[] auth = new byte[] {0x11, 0x22, 0x33, 0x44, 0x55, 0x00, id};
         auth[5] = xorChecksum(auth, 0, auth.length); // set xor of authorise code to 0x00
         return auth;

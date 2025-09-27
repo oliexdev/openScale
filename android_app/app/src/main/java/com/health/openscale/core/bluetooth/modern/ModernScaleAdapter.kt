@@ -79,7 +79,8 @@ data class BleGattTuning(
     val postWriteDelayMs: Long = 20,
     val connectAfterScanDelayMs: Long = 650,
     val requestHighConnectionPriority: Boolean = true,
-    val requestMtuBytes: Int = 185
+    val requestMtuBytes: Int = 185,
+    val operationTimeoutMs: Long = 1000
 )
 
 // Broadcast scanner tuning
@@ -129,7 +130,8 @@ fun TuningProfile.forGatt(): BleGattTuning = when (this) {
         postWriteDelayMs = 20,
         connectAfterScanDelayMs = 650,
         requestHighConnectionPriority = true,
-        requestMtuBytes = 185
+        requestMtuBytes = 185,
+        operationTimeoutMs = 1000
     )
     TuningProfile.Conservative -> BleGattTuning(
         common = CommonTuning(2500, 1800, 3),
@@ -139,7 +141,8 @@ fun TuningProfile.forGatt(): BleGattTuning = when (this) {
         postWriteDelayMs = 30,
         connectAfterScanDelayMs = 800,
         requestHighConnectionPriority = true,
-        requestMtuBytes = 0
+        requestMtuBytes = 0,
+        operationTimeoutMs = 2000
     )
     TuningProfile.Aggressive -> BleGattTuning(
         common = CommonTuning(1200, 1200, 2),
@@ -149,7 +152,8 @@ fun TuningProfile.forGatt(): BleGattTuning = when (this) {
         postWriteDelayMs = 15,
         connectAfterScanDelayMs = 400,
         requestHighConnectionPriority = true,
-        requestMtuBytes = 247
+        requestMtuBytes = 247,
+        operationTimeoutMs = 500
     )
 }
 
@@ -439,34 +443,33 @@ abstract class ModernScaleAdapter(
 
     protected fun mapUser(u: User): ScaleUser =
         ScaleUser().apply {
-            runCatching { setId(u.id) }
-            runCatching { setUserName(u.name) }
+            runCatching { id = u.id }
+            runCatching { userName = u.name }
             when (val b = runCatching { u.birthDate }.getOrNull()) {
-                is Date -> setBirthday(b)
-                is Long -> setBirthday(Date(b))
+                is Date -> birthday = b
+                is Long -> birthday = Date(b)
             }
-            runCatching { setBodyHeight(u.heightCm) }
-            runCatching { setGender(u.gender) }
-            runCatching { setActivityLevel(u.activityLevel) }
+            runCatching { bodyHeight = u.heightCm }
+            runCatching { gender = u.gender }
+            runCatching { activityLevel = u.activityLevel }
         }
 
     protected fun mapMeasurement(mwv: MeasurementWithValues?): ScaleMeasurement? {
         if (mwv == null) return null
         val m = ScaleMeasurement()
-        runCatching { m.setId(mwv.measurement.id) }
-        runCatching { m.setUserId(mwv.measurement.userId) }
-        runCatching { m.setDateTime(Date(mwv.measurement.timestamp)) }
+        runCatching { m.userId = mwv.measurement.userId }
+        runCatching { m.dateTime = Date(mwv.measurement.timestamp) }
 
         fun valueOf(key: MeasurementTypeKey): MeasurementValue? =
             mwv.values.firstOrNull { it.type.key == key }?.value
 
-        valueOf(MeasurementTypeKey.WEIGHT)?.let { m.setWeight(it.floatValue ?: 0f) }
-        valueOf(MeasurementTypeKey.BODY_FAT)?.let { m.setFat(it.floatValue ?: 0f) }
-        valueOf(MeasurementTypeKey.WATER)?.let { m.setWater(it.floatValue ?: 0f) }
-        valueOf(MeasurementTypeKey.MUSCLE)?.let { m.setMuscle(it.floatValue ?: 0f) }
-        valueOf(MeasurementTypeKey.VISCERAL_FAT)?.let { m.setVisceralFat(it.floatValue ?: 0f) }
-        valueOf(MeasurementTypeKey.LBM)?.let { m.setLbm(it.floatValue ?: 0f) }
-        valueOf(MeasurementTypeKey.BONE)?.let { m.setBone(it.floatValue ?: 0f) }
+        valueOf(MeasurementTypeKey.WEIGHT)?.let { m.weight = it.floatValue ?: 0f }
+        valueOf(MeasurementTypeKey.BODY_FAT)?.let { m.fat = it.floatValue ?: 0f }
+        valueOf(MeasurementTypeKey.WATER)?.let { m.water = it.floatValue ?: 0f }
+        valueOf(MeasurementTypeKey.MUSCLE)?.let { m.muscle = it.floatValue ?: 0f }
+        valueOf(MeasurementTypeKey.VISCERAL_FAT)?.let { m.visceralFat = it.floatValue ?: 0f }
+        valueOf(MeasurementTypeKey.LBM)?.let { m.lbm = it.floatValue ?: 0f }
+        valueOf(MeasurementTypeKey.BONE)?.let { m.bone = it.floatValue ?: 0f }
 
         return m
     }
