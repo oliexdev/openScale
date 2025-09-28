@@ -18,7 +18,6 @@
 package com.health.openscale.core.bluetooth.modern
 
 import android.bluetooth.BluetoothGattCharacteristic.FORMAT_UINT16
-import android.util.Log
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
@@ -35,9 +34,7 @@ import java.util.UUID
  * alongside standard Bluetooth services (WSS, BCS, UDS).
  */
 class SanitasSbf72Handler : StandardWeightProfileHandler() {
-
     private val scaleUserList = mutableListOf<ScaleUser>()
-
 
     companion object {
         val SVC_SBF72_CUSTOM: UUID by lazy { UUID.fromString("0000ffff-0000-1000-8000-00805f9b34fb") }
@@ -131,6 +128,24 @@ class SanitasSbf72Handler : StandardWeightProfileHandler() {
         writeTo(SVC_SBF72_CUSTOM, CHR_SBF72_TAKE_MEASUREMENT, parser.getValue());
     }
 
+    override fun writeUserDataToScale() {
+        val parser = BluetoothBytesParser()
+        val activityLevel = currentAppUser().activityLevel.toInt() + 1
+        logD(String.format("activityLevel: %d", activityLevel))
+
+        parser.setIntValue(activityLevel, FORMAT_UINT8)
+        writeTo(SVC_SBF72_CUSTOM,CHR_SBF72_ACTIVITY_LEVEL,parser.getValue())
+
+        val raw = currentAppUser().userName.uppercase().replace(Regex("[^A-Z0-9]"), "").orEmpty()
+        val initials = raw.take(3)
+        if (initials.isNotEmpty()) {
+            logD(String.format("initials: %s", initials))
+            writeTo(SVC_SBF72_CUSTOM,CHR_SBF72_INITIALS,initials.encodeToByteArray())
+        }
+
+        super.writeUserDataToScale()
+    }
+
     private fun handleSBF72UserList(data: ByteArray, user : ScaleUser) {
         val parser = BluetoothBytesParser(data)
 
@@ -139,12 +154,12 @@ class SanitasSbf72Handler : StandardWeightProfileHandler() {
         when (userListStatus) {
             2 -> {
                 // Status=2 -> no user on scale
-                Log.d(TAG, "no user on scale")
+                logD("no user on scale")
                 return
             }
             1 -> {
                 // Status=1 -> user list complete
-                Log.d(TAG, "User-list received")
+                logD( "User-list received")
                 val scaleIndex = findKnownScaleIndexForAppUser(user.id) ?: -1
                 if (loadConsentForScaleIndex(scaleIndex) == -1) {
                     presentChooseFromIndices(scaleUserList.map { it.id })
@@ -181,7 +196,7 @@ class SanitasSbf72Handler : StandardWeightProfileHandler() {
                     this.id = index
                 }
                 scaleUserList.add(scaleUser)
-                Log.d(TAG, "ScaleUser added: $scaleUser")
+                logD("ScaleUser added: $scaleUser")
             }
         }
     }

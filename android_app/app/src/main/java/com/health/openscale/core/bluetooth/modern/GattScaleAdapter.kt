@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.bluetooth.modern
 
+import android.R.attr.data
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.le.ScanResult
 import android.content.Context
@@ -67,7 +68,8 @@ class GattScaleAdapter(
     private var currentPeripheral: BluetoothPeripheral? = null
 
     private val opQueue = Channel<suspend () -> Unit>(Channel.UNLIMITED)
-    private val currentDeferred = AtomicReference<CompletableDeferred<*>?>(null)
+
+    private val deferredMap = mutableMapOf<UUID, CompletableDeferred<*>>()
     private val ioMutex = Mutex()
 
     private var connectAttempts = 0
@@ -184,7 +186,12 @@ class GattScaleAdapter(
             characteristic: BluetoothGattCharacteristic,
             status: GattStatus
         ) {
-            (currentDeferred.getAndSet(null) as? CompletableDeferred<Unit>)?.complete(Unit)
+            LogManager.d(TAG,"\u2190 write response chr=${characteristic.uuid} len=${value.size} status=${status} ${value.toHexPreview(24)}")
+
+            deferredMap[characteristic.uuid]?.let {
+                (it as CompletableDeferred<Unit>).complete(Unit)
+                deferredMap.remove(characteristic.uuid)
+            }
         }
 
         override fun onNotificationStateUpdate(
@@ -192,7 +199,12 @@ class GattScaleAdapter(
             characteristic: BluetoothGattCharacteristic,
             status: GattStatus
         ) {
-            (currentDeferred.getAndSet(null) as? CompletableDeferred<Unit>)?.complete(Unit)
+            LogManager.d(TAG,"\u2190 notify state chr=${characteristic.uuid} status=${status}")
+
+            deferredMap[characteristic.uuid]?.let {
+                (it as CompletableDeferred<Unit>).complete(Unit)
+                deferredMap.remove(characteristic.uuid)
+            }
         }
 
         override fun onCharacteristicUpdate(
@@ -201,9 +213,14 @@ class GattScaleAdapter(
             characteristic: BluetoothGattCharacteristic,
             status: GattStatus
         ) {
-            (currentDeferred.getAndSet(null) as? CompletableDeferred<ByteArray>)?.complete(value)
+            LogManager.d(TAG,"\u2190 received data chr=${characteristic.uuid} len=${value.size} status=${status} ${value.toHexPreview(24)}")
 
             handler.handleNotification(characteristic.uuid, value)
+
+            deferredMap[characteristic.uuid]?.let {
+                (it as CompletableDeferred<Unit>).complete(Unit)
+                deferredMap.remove(characteristic.uuid)
+            }
         }
     }
 
@@ -218,7 +235,9 @@ class GattScaleAdapter(
                 val ch = p.getCharacteristic(service, characteristic) ?: return@trySend
 
                 val deferred = CompletableDeferred<Unit>()
-                currentDeferred.set(deferred)
+                deferredMap[characteristic] = deferred
+
+                LogManager.d(TAG,"\u2192 set notify on chr=$characteristic svc=$service" )
 
                 val cccdUuid = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
                 val cccd = ch.getDescriptor(cccdUuid)
@@ -277,7 +296,7 @@ class GattScaleAdapter(
                 val ch = p.getCharacteristic(service, characteristic) ?: return@trySend
 
                 val deferred = CompletableDeferred<Unit>()
-                currentDeferred.set(deferred)
+                deferredMap[characteristic] = deferred
 
                 val supportsWriteNoResponse = ch.properties and BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE != 0
                 val supportsWriteResponse = ch.properties and BluetoothGattCharacteristic.PROPERTY_WRITE != 0
@@ -302,6 +321,8 @@ class GattScaleAdapter(
                 ioGap(if (withResponse) tuning.writeWithResponseDelayMs else tuning.writeWithoutResponseDelayMs)
                 p.writeCharacteristic(service, characteristic, payload, type)
 
+                LogManager.d(TAG,"\u2192 write to chr=$characteristic svc=$service len=${payload.size} withResp=$withResponse ${payload.toHexPreview(24)}")
+
                 try {
                     withTimeout(tuning.operationTimeoutMs) {
                         deferred.await()
@@ -314,26 +335,27 @@ class GattScaleAdapter(
             }
         }
 
-        override fun read(service: UUID, characteristic: UUID, onResult: (ByteArray) -> Unit) {
+        override fun read(service: UUID, characteristic: UUID) {
             opQueue.trySend {
                 val p = currentPeripheral ?: return@trySend
                 val ch = p.getCharacteristic(service, characteristic) ?: return@trySend
 
-                val deferred = CompletableDeferred<ByteArray>()
-                currentDeferred.set(deferred)
+                val deferred = CompletableDeferred<Unit>()
+                deferredMap[characteristic] = deferred
 
                 p.readCharacteristic(service, characteristic)
 
-                val value = try {
+                LogManager.d(TAG,"\u2192 read from chr=$characteristic svc=$service")
+
+                try {
                     withTimeout(tuning.operationTimeoutMs) {
                         deferred.await()
                     }
                 } catch (t: Throwable) {
                     LogManager.w(TAG, "Timeout waiting for read on $characteristic")
-                    ByteArray(0) // fallback if timeout occurs
                 }
 
-                onResult(value)
+                ioGap(tuning.postReadDelayMs)
             }
         }
 

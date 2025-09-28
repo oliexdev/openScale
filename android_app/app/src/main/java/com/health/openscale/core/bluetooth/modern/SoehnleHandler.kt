@@ -112,9 +112,7 @@ class SoehnleHandler : ScaleDeviceHandler() {
 
         // (1) Battery: subscribe + read once
         setNotifyOn(SVC_BATTERY, CHR_BATTERY_LEVEL)
-        readFrom(SVC_BATTERY, CHR_BATTERY_LEVEL) { value ->
-            handleBattery(value)
-        }
+        readFrom(SVC_BATTERY, CHR_BATTERY_LEVEL)
 
         // (2) Write current time using BluetoothBytesParser (CTS)
         val parser = BluetoothBytesParser()

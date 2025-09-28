@@ -22,7 +22,6 @@ import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.service.ScannedDeviceInfo
-import com.health.openscale.core.utils.LogManager
 import java.util.Date
 import java.util.UUID
 import kotlin.math.abs
@@ -144,7 +143,7 @@ class DigooDGSO38HHandler : ScaleDeviceHandler() {
 
         if (abs(fat - 0.0f) < 0.00001f) {
             // Device sometimes signals "all values" but fat==0 → only weight is reliable.
-            LogManager.d(ScaleDeviceHandler.TAG, "DG-SO38H: all-values flag set but fat==0, storing weight only")
+            logD("DG-SO38H: all-values flag set but fat==0, storing weight only")
         } else {
             // viscFat index at [10] /10
             val visceral = (frame[10].toInt() and 0xFF) / 10.0f

@@ -26,8 +26,10 @@ import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Calendar
 import java.util.Date
 import java.util.UUID
+import kotlin.collections.get
 import kotlin.math.min
 import kotlin.random.Random
+import kotlin.text.toInt
 
 /**
  * Handler for **Bluetooth Standard Weight Profile** devices (GATT 181D/181B/181C/1805/180F).
@@ -133,19 +135,9 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         writeTo(SVC_CURRENT_TIME, CHR_CURRENT_TIME, buildCurrentTimePayload())
 
         // Helpful (non-essential) info
-        readFrom(SVC_DEVICE_INFO, CHR_MANUFACTURER_NAME) { data ->
-            logD("Device info: ${data.toString(Charsets.UTF_8)}")
-        }
-        readFrom(SVC_DEVICE_INFO, CHR_MODEL_NUMBER) { data ->
-            logD("Device info: ${data.toString(Charsets.UTF_8)}")
-        }
-        readFrom(SVC_BATTERY, CHR_BATTERY_LEVEL) { data ->
-            if (data.isNotEmpty()) {
-                val level = data[0].toInt() and 0xFF
-                logD("Battery level: $level%")
-                if (level in 0..10) userWarn(R.string.bt_warn_low_battery, level)
-            }
-        }
+        readFrom(SVC_DEVICE_INFO, CHR_MANUFACTURER_NAME)
+        readFrom(SVC_DEVICE_INFO, CHR_MODEL_NUMBER)
+        readFrom(SVC_BATTERY, CHR_BATTERY_LEVEL)
 
         // 1) Try auto-consent from persisted mapping/consent
         if (!tryAutoConsent(user)) {
@@ -163,6 +155,14 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
             CHR_BODY_COMPOSITION_MEAS    -> handleBodyCompositionMeasurement(data)
             CHR_USER_CONTROL_POINT       -> handleUcpIndication(data)
             CHR_DATABASE_CHANGE_INCREMENT-> logD("UDS Change Increment notified")
+            CHR_MANUFACTURER_NAME, CHR_MODEL_NUMBER -> logD("Device info: ${data.toString(Charsets.UTF_8)}")
+            CHR_BATTERY_LEVEL -> {
+                if (data.isNotEmpty()) {
+                    val level = data[0].toInt() and 0xFF
+                    logD("Battery level: $level%")
+                    if (level in 0..10) userWarn(R.string.bt_warn_low_battery, level)
+                }
+            }
             else ->
                 logD("Unhandled notification chr=$characteristic len=${data.size} ${data.toHexPreview(24)}")
         }
@@ -173,6 +173,8 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
             publishTransformed(it)
             pendingMeasurement = null
         }
+
+        super.onDisconnected()
     }
 
     protected open fun transformBeforePublish(m: ScaleMeasurement): ScaleMeasurement {
@@ -293,8 +295,8 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
             // Merge fields from newM into prev
             prev.mergeWith(newM)
 
-            // When we already have weight + body metrics (or stabilized) → publish
-            if (prev.hasWeight() && prev.hasAnyBodyCompositionValue()) {
+            // When we already have weight (or stabilized) → publish
+            if (prev.hasWeight()) {
                 publishTransformed(prev)
                 pendingMeasurement = null
             } else {
@@ -539,6 +541,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
                             awaitingReferenceAfterRegister = false
                             logD("Prompted user to step on scale for reference measurement")
                         }
+                        writeUserDataToScale()
                         onRequestMeasurement()
                         logD("onRequestMeasurement() triggered after successful consent")
                     }
@@ -595,7 +598,8 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
     /**
      * Write core UDS user data (best effort).
      */
-    private fun writeUserDataToScale() {
+    protected open fun writeUserDataToScale() {
+        logD("writeUserDataToScale() called")
         val u = currentAppUser()
 
         // Date of Birth: Year(2 LE), Month(1), Day(1)

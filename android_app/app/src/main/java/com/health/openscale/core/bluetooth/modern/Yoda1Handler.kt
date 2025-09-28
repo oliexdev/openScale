@@ -42,11 +42,16 @@ import com.health.openscale.core.utils.ConverterUtils
  *      bit3 -> one decimal place (otherwise extra /10 afterwards)
  */
 class Yoda1Handler : ScaleDeviceHandler() {
+    private var isYoda0 : Boolean = false
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         // Heuristic: name starts with "Yoda1" OR the MSD payload looks like Yoda1 (>= 7 bytes)
-        val nameMatch = device.name.startsWith("Yoda", ignoreCase = true)
-        if (!nameMatch) return null
+        val isYoda1 = device.name.startsWith("Yoda1", ignoreCase = true)
+        val isYoda0 = device.name.startsWith("Yoda0", ignoreCase = true)
+
+        if (!isYoda1 && !isYoda0) return null
+
+        this.isYoda0 = isYoda0
 
         return DeviceSupport(
             displayName = "Yoda Scale",
@@ -63,17 +68,31 @@ class Yoda1Handler : ScaleDeviceHandler() {
         val payload = msd.valueAt(0) ?: return IGNORED
         if (payload.size < 7) return IGNORED
 
-        val ctrl = payload[6].toInt() and 0xFF
-        val stabilized = isBitSet(ctrl, 0)
-        val unitIsKg = isBitSet(ctrl, 2)
-        val oneDecimal = isBitSet(ctrl, 3)
+        var stabilized : Boolean
+        var weight : Float
 
-        val raw = ((payload[0].toInt() and 0xFF) shl 8) or (payload[1].toInt() and 0xFF)
-        var weight = if (unitIsKg) raw / 10.0f else raw / 20.0f // catty/jin conversion
-        if (!oneDecimal) weight /= 10.0f
+        if (!isYoda0) {
+            val ctrl = payload[6].toInt() and 0xFF
+            stabilized = isBitSet(ctrl, 0)
+            val unitIsKg = isBitSet(ctrl, 2)
+            val oneDecimal = isBitSet(ctrl, 3)
+
+            val raw = ((payload[0].toInt() and 0xFF) shl 8) or (payload[1].toInt() and 0xFF)
+            weight = if (unitIsKg) raw / 10.0f else raw / 20.0f // catty/jin conversion
+            if (!oneDecimal) weight /= 10.0f
+        } else {
+            val ctrl = payload[7].toInt() and 0xFF
+            stabilized = isBitSet(ctrl, 0)
+            val unitIsKg = isBitSet(ctrl, 2)
+            val oneDecimal = isBitSet(ctrl, 3)
+
+            val raw = ((payload[1].toInt() and 0xFF) shl 8) or (payload[2].toInt() and 0xFF)
+            weight = if (unitIsKg) raw / 10.0f else raw / 20.0f // catty/jin conversion
+            if (!oneDecimal) weight /= 10.0f
+        }
 
         val measurement = ScaleMeasurement().apply {
-            weight = ConverterUtils.toKilogram(weight, user.scaleUnit)
+            this.weight = ConverterUtils.toKilogram(weight, user.scaleUnit)
         }
 
         // If not stabilized yet, keep scanning (device often sends intermediate weights).

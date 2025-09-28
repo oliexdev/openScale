@@ -47,6 +47,8 @@ import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.LogManager
 import com.welie.blessed.BluetoothPeripheral
+import com.welie.blessed.GattStatus
+import com.welie.blessed.Transport
 import java.util.UUID
 import kotlin.math.min
 
@@ -110,9 +112,9 @@ enum class BroadcastAction { IGNORED, CONSUMED_KEEP_SCANNING, CONSUMED_STOP }
  * handler; just call the helpers in the order your protocol requires.
  */
 abstract class ScaleDeviceHandler {
+    val TAG = this::class.simpleName ?: "ScaleDeviceHandler"
 
     companion object {
-        const val TAG = "ScaleDeviceHandler"
         // Pseudo UUIDs for Classic/SPP
         val CLASSIC_FAKE_SERVICE: UUID =
             UUID.fromString("00000000-0000-0000-0000-00000000C1A0")
@@ -151,7 +153,6 @@ abstract class ScaleDeviceHandler {
 
     internal fun handleNotification(characteristic: UUID, data: ByteArray) {
         val u = currentAppUser() ?: return
-        logD("\u2190 notify chr=$characteristic len=${data.size} ${data.toHexPreview(24)}")
         try {
             onNotification(characteristic, data, u)
         } catch (t: Throwable) {
@@ -202,7 +203,6 @@ abstract class ScaleDeviceHandler {
 
     /** Enable notifications for a characteristic. */
     protected fun setNotifyOn(service: UUID, characteristic: UUID) {
-        logD("\u2192 setNotifyOn svc=$service chr=$characteristic")
         transport?.setNotifyOn(service, characteristic)
             ?: logW("setNotifyOn called without transport")
     }
@@ -217,28 +217,26 @@ abstract class ScaleDeviceHandler {
         payload: ByteArray,
         withResponse: Boolean = true
     ) {
-        logD("\u2192 write svc=$service chr=$characteristic len=${payload.size} withResp=$withResponse ${payload.toHexPreview(24)}")
         transport?.write(service, characteristic, payload, withResponse)
             ?: logW("writeTo called without transport")
     }
 
     /** Read a characteristic (rare for scales; most data comes via NOTIFY). */
-    protected fun readFrom(service: UUID, characteristic: UUID, onResult: (ByteArray) -> Unit) {
-        logD("\u2192 read svc=$service chr=$characteristic")
-        transport?.read(service, characteristic, onResult)
+    protected fun readFrom(service: UUID, characteristic: UUID) {
+        transport?.read(service, characteristic)
             ?: logW("readFrom called without transport")
     }
 
     /** Publish a fully parsed measurement to the app. */
     protected fun publish(measurement: ScaleMeasurement) {
-        logI("\u2190 publish measurement")
+        logI("\u2190 publish measurement to app")
         callbacks?.onPublish(measurement)
             ?: logW("publish called without callbacks")
     }
 
     /** Ask the adapter to terminate the link. */
     protected fun requestDisconnect() {
-        logD("\u2192 requestDisconnect()")
+        logD("\u2192 request BLE disconnect")
         transport?.disconnect()
     }
 
@@ -315,7 +313,7 @@ abstract class ScaleDeviceHandler {
     interface Transport {
         fun setNotifyOn(service: UUID, characteristic: UUID)
         fun write(service: UUID, characteristic: UUID, payload: ByteArray, withResponse: Boolean = true)
-        fun read(service: UUID, characteristic: UUID, onResult: (ByteArray) -> Unit)
+        fun read(service: UUID, characteristic: UUID)
         fun disconnect()
         fun getPeripheral(): BluetoothPeripheral? = null
         fun hasCharacteristic(service: UUID, characteristic: UUID): Boolean

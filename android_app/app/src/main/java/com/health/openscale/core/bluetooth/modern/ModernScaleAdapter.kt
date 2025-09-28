@@ -58,6 +58,7 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.min
 
 // -------------------------------------------------------------------------------------------------
 // Shared tuning for BLE pacing & retry (used by GATT adapter).
@@ -77,6 +78,7 @@ data class BleGattTuning(
     val writeWithResponseDelayMs: Long = 80,
     val writeWithoutResponseDelayMs: Long = 35,
     val postWriteDelayMs: Long = 20,
+    val postReadDelayMs: Long = 20,
     val connectAfterScanDelayMs: Long = 650,
     val requestHighConnectionPriority: Boolean = true,
     val requestMtuBytes: Int = 185,
@@ -128,6 +130,7 @@ fun TuningProfile.forGatt(): BleGattTuning = when (this) {
         writeWithResponseDelayMs = 80,
         writeWithoutResponseDelayMs = 35,
         postWriteDelayMs = 20,
+        postReadDelayMs = 20,
         connectAfterScanDelayMs = 650,
         requestHighConnectionPriority = true,
         requestMtuBytes = 185,
@@ -139,6 +142,7 @@ fun TuningProfile.forGatt(): BleGattTuning = when (this) {
         writeWithResponseDelayMs = 100,
         writeWithoutResponseDelayMs = 50,
         postWriteDelayMs = 30,
+        postReadDelayMs = 30,
         connectAfterScanDelayMs = 800,
         requestHighConnectionPriority = true,
         requestMtuBytes = 0,
@@ -150,6 +154,7 @@ fun TuningProfile.forGatt(): BleGattTuning = when (this) {
         writeWithResponseDelayMs = 60,
         writeWithoutResponseDelayMs = 25,
         postWriteDelayMs = 15,
+        postReadDelayMs = 15,
         connectAfterScanDelayMs = 400,
         requestHighConnectionPriority = true,
         requestMtuBytes = 247,
@@ -472,5 +477,19 @@ abstract class ModernScaleAdapter(
         valueOf(MeasurementTypeKey.BONE)?.let { m.bone = it.floatValue ?: 0f }
 
         return m
+    }
+
+    /** Pretty print a few leading bytes of a payload for logs. */
+    fun ByteArray.toHexPreview(limit: Int): String {
+        if (limit <= 0 || isEmpty()) return "(payload ${size}b)"
+        val show = min(size, limit)
+        val sb = StringBuilder("payload=[")
+        for (i in 0 until show) {
+            if (i > 0) sb.append(' ')
+            sb.append(String.format("%02X", this[i]))
+        }
+        if (size > limit) sb.append(" …(+").append(size - limit).append("b)")
+        sb.append(']')
+        return sb.toString()
     }
 }

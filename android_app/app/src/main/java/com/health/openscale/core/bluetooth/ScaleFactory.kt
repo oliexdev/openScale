@@ -442,7 +442,7 @@ class ScaleFactory @Inject constructor(
                 LogManager.i(TAG, "Modern handler '${support.displayName}' supports '$primaryIdentifier'.")
                 val modern = createModernCommunicator(handler, support)
                 if (modern != null) {
-                    LogManager.i(TAG, "Modern communicator '${modern.javaClass.simpleName}' created for '$primaryIdentifier'.")
+                    LogManager.i(TAG, "Modern communicator '${modern.javaClass.simpleName}' created for '$primaryIdentifier' with linkMode=${support.linkMode}.")
                     return modern
                 }
                 LogManager.w(TAG, "Modern handler '${support.displayName}' supports '$primaryIdentifier', but no communicator is available.")

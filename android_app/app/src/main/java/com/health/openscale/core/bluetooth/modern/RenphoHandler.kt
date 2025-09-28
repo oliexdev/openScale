@@ -148,9 +148,7 @@ class RenphoHandler : ScaleDeviceHandler() {
         writeUserProfile(user)
 
         // Optional: read feature flags
-        readFrom(SERV_BODY_COMP, CHAR_BODY_COMP_FEAT) { value ->
-            LogManager.d(TAG, "read body comp feat len=${value.size}")
-        }
+        readFrom(SERV_BODY_COMP, CHAR_BODY_COMP_FEAT)
 
         // Subscribe to measurements
         setNotifyOn(SERV_WEIGHT_SCALE, CHAR_WEIGHT)          // weight → proprietary format
@@ -173,6 +171,9 @@ class RenphoHandler : ScaleDeviceHandler() {
             CHAR_CUR_TIME, CHAR_ICCEDK, CHAR_CUSTOM0_NOTIFY, CHAR_CUSTOM1_NOTIFY -> {
                 // No special handling needed; these are just part of the handshake/noise.
                 LogManager.d(TAG, "Notify from ${characteristic} len=${data.size}")
+            }
+            CHAR_BODY_COMP_FEAT -> {
+                LogManager.d(TAG, "read body comp feat len=${data.size}")
             }
             else -> LogManager.d(TAG, "Unhandled notify chr=$characteristic len=${data.size}")
         }

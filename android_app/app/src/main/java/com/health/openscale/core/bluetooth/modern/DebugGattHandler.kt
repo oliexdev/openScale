@@ -148,14 +148,8 @@ class DebugGattHandler : ScaleDeviceHandler() {
 
     private fun readSafe(service: UUID, characteristic: UUID) {
         logD("→ read svc=${prettyUuid(service)} chr=${prettyUuid(characteristic)} (best effort)")
-
-        try {
-            readFrom(service, characteristic) { value ->
-                logD("read result: ${value.joinToString(" ") { "%02X".format(it) }}")
-            }
-        } catch (e: Exception) {
-            logD("read failed: ${e.message ?: e::class.simpleName}")
-        }
+        runCatching { readFrom(service, characteristic) }
+            .onFailure { logD("read failed: ${it.message ?: it::class.simpleName}") }
     }
 
     // ---------------------------------------------------------------------------------------------

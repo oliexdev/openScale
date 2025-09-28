@@ -72,7 +72,7 @@ class BleConnector(
     ) : AutoCloseable {
 
     private companion object {
-        const val TAG = "BluetoothConnManager"
+        const val TAG = "BleConnector"
         const val DISCONNECT_TIMEOUT_MS = 3000L // Timeout for forceful disconnect if no event received.
     }
 
