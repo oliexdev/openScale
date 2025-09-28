@@ -17,7 +17,6 @@
  */
 package com.health.openscale.core.bluetooth.modern
 
-import android.R.attr.data
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.le.ScanResult
 import android.content.Context
@@ -44,8 +43,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withTimeout
 import java.util.UUID
-import java.util.concurrent.atomic.AtomicReference
-import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 // -------------------------------------------------------------------------------------------------
 // GATT adapter (BLE)
@@ -69,7 +66,7 @@ class GattScaleAdapter(
 
     private val opQueue = Channel<suspend () -> Unit>(Channel.UNLIMITED)
 
-    private val deferredMap = mutableMapOf<UUID, CompletableDeferred<*>>()
+    private val deferredMap = mutableMapOf<UUID, CompletableDeferred<Unit>>()
     private val ioMutex = Mutex()
 
     private var connectAttempts = 0
@@ -189,7 +186,7 @@ class GattScaleAdapter(
             LogManager.d(TAG,"\u2190 write response chr=${characteristic.uuid} len=${value.size} status=${status} ${value.toHexPreview(24)}")
 
             deferredMap[characteristic.uuid]?.let {
-                (it as CompletableDeferred<Unit>).complete(Unit)
+                it.complete(Unit)
                 deferredMap.remove(characteristic.uuid)
             }
         }
@@ -202,7 +199,7 @@ class GattScaleAdapter(
             LogManager.d(TAG,"\u2190 notify state chr=${characteristic.uuid} status=${status}")
 
             deferredMap[characteristic.uuid]?.let {
-                (it as CompletableDeferred<Unit>).complete(Unit)
+                it.complete(Unit)
                 deferredMap.remove(characteristic.uuid)
             }
         }
@@ -218,7 +215,7 @@ class GattScaleAdapter(
             handler.handleNotification(characteristic.uuid, value)
 
             deferredMap[characteristic.uuid]?.let {
-                (it as CompletableDeferred<Unit>).complete(Unit)
+                it.complete(Unit)
                 deferredMap.remove(characteristic.uuid)
             }
         }

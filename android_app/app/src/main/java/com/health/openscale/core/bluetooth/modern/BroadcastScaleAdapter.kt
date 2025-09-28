@@ -199,7 +199,7 @@ class BroadcastScaleAdapter(
     private val noopTransport = object : ScaleDeviceHandler.Transport {
         override fun setNotifyOn(service: UUID, characteristic: UUID) {}
         override fun write(service: UUID, characteristic: UUID, payload: ByteArray, withResponse: Boolean) {}
-        override fun read(service: UUID, characteristic: UUID, onResult: (ByteArray) -> Unit) {}
+        override fun read(service: UUID, characteristic: UUID) {}
         override fun disconnect() { doDisconnect() }
         override fun getPeripheral(): BluetoothPeripheral? = null
         override fun hasCharacteristic(service: UUID, characteristic: UUID): Boolean = false
