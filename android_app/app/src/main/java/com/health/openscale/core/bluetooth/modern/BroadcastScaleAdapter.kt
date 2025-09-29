@@ -82,7 +82,7 @@ class BroadcastScaleAdapter(
             val t = now()
             val last = dedupSeen[hash]
             if (last != null && (t - last) <= tuning.packetDedupWindowMs) {
-                LogManager.d(TAG, "Deduplicated packet hash=$hash from ${peripheral.address}")
+                LogManager.w(TAG, "Deduplicated packet hash=$hash from ${peripheral.address}")
                 return
             }
             dedupSeen[hash] = t
@@ -93,7 +93,7 @@ class BroadcastScaleAdapter(
 
             // Optional stabilization: avoid forwarding bursts too quickly
             if (t - lastForwardAtMs < tuning.stabilizeWindowMs) {
-                LogManager.d(TAG, "Skipping forwarding to handler (stabilize window) from ${peripheral.address}")
+                LogManager.w(TAG, "Skipping forwarding to handler (stabilize window) from ${peripheral.address}")
                 return
             }
 

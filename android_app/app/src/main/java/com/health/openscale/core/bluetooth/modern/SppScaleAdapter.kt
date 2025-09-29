@@ -106,6 +106,7 @@ class SppScaleAdapter(
             var attempt = 0
             while (isActive) {
                 try {
+                    LogManager.i(TAG, "Attempting SPP connection (attempt ${attempt + 1})")
                     val socket = device.createRfcommSocketToServiceRecord(ScaleDeviceHandler.CLASSIC_DATA_UUID)
                     sppSocket = socket
 
@@ -115,6 +116,7 @@ class SppScaleAdapter(
                     val connectJob = launch(Dispatchers.IO) {
                         socket.connect() // blocking call
                         connected = true
+                        LogManager.i(TAG, "SPP connect() succeeded")
                     }
                     // Start a guard that closes the socket if connect takes too long
                     val guardJob = launch(Dispatchers.IO) {
@@ -122,6 +124,7 @@ class SppScaleAdapter(
                         if (to > 0) {
                             delay(to)
                             if (!connected) {
+                                LogManager.w(TAG, "Connect timeout reached ($to ms), closing socket")
                                 // Force the connect() to abort by closing the socket
                                 runCatching { socket.close() }
                             }
@@ -145,6 +148,7 @@ class SppScaleAdapter(
 
                     val name = safeDeviceName(device)
                     val addr = safeDeviceAddress(device)
+                    LogManager.i(TAG, "Connected to device $name [$addr]")
                     _events.tryEmit(BluetoothEvent.Connected(name, addr))
 
                     // Attach handler
@@ -170,11 +174,14 @@ class SppScaleAdapter(
                                     val n = ins.read(buf, 0, min(buf.size, avail))
                                     if (n <= 0) break
                                     lastRx = SystemClock.elapsedRealtime()
-                                    handler.handleNotification(ScaleDeviceHandler.CLASSIC_DATA_UUID, buf.copyOf(n))
+                                    val payload = buf.copyOf(n)
+                                    LogManager.d(TAG, "Received $n bytes from SPP ${payload.toHexPreview(24)}")
+                                    handler.handleNotification(ScaleDeviceHandler.CLASSIC_DATA_UUID, payload)
                                 } else {
                                     delay(50)
                                     val idle = SystemClock.elapsedRealtime() - lastRx
                                     if (tuning.readTimeoutMs > 0 && idle >= tuning.readTimeoutMs) {
+                                        LogManager.w(TAG, "Read idle timeout reached, disconnecting")
                                         sppTransport.disconnect()
                                         break
                                     }
@@ -185,6 +192,7 @@ class SppScaleAdapter(
                         } finally {
                             withContext(Dispatchers.Main) {
                                 val da = safeDeviceAddress(device)
+                                LogManager.i(TAG, "Reader loop finished, emitting disconnect")
                                 _events.tryEmit(BluetoothEvent.Disconnected(da, "SPP stream closed"))
                                 lastDisconnectAtMs = SystemClock.elapsedRealtime()
                                 cleanup(da)
