@@ -254,23 +254,24 @@ class SppScaleAdapter(
             scope.launch(Dispatchers.IO) {
                 writeMutex.withLock {
                     try {
+                        LogManager.d(TAG, "Starting write of ${payload.size} bytes to SPP: ${payload.toHexPreview(24)}")
                         val chunk = maxOf(1, tuning.writeChunkBytes)
                         var i = 0
                         while (i < payload.size) {
                             val end = min(i + chunk, payload.size)
                             sppOut?.write(payload, i, end - i)
                             sppOut?.flush()
+                            val writtenChunk = payload.copyOfRange(i, end)
+                            LogManager.d(TAG, "Wrote chunk ${i / chunk + 1}: ${writtenChunk.toHexPreview(16)}")
                             i = end
                             if (i < payload.size && tuning.interChunkDelayMs > 0) {
                                 delay(tuning.interChunkDelayMs)
                             }
                         }
+                        LogManager.i(TAG, "Finished writing ${payload.size} bytes to SPP")
                     } catch (t: Throwable) {
-                        appCallbacks.onWarn(
-                            R.string.bt_warn_write_failed_status,
-                            "SPP",
-                            t.message ?: "write failed"
-                        )
+                        LogManager.e(TAG, "SPP write failed: ${t.message}", t)
+                        appCallbacks.onWarn(R.string.bt_warn_write_failed_status,"SPP",t.message ?: "write failed")
                     }
                 }
             }
