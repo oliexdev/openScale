@@ -75,10 +75,16 @@ class BroadcastScaleAdapter(
 
             // De-dup: collapse identical packets within packetDedupWindowMs
             val bytes = scanResult.scanRecord?.bytes
+
+            LogManager.d(TAG,"Discovered advertisement from ${peripheral.address} RSSI=$rssi ${bytes?.toHexPreview(24)}")
+
             val hash = contentHash(bytes, rssi)
             val t = now()
             val last = dedupSeen[hash]
-            if (last != null && (t - last) <= tuning.packetDedupWindowMs) return
+            if (last != null && (t - last) <= tuning.packetDedupWindowMs) {
+                LogManager.d(TAG, "Deduplicated packet hash=$hash from ${peripheral.address}")
+                return
+            }
             dedupSeen[hash] = t
             trimDedup(t)
 
@@ -86,12 +92,20 @@ class BroadcastScaleAdapter(
             ensureAttached(peripheral.address)
 
             // Optional stabilization: avoid forwarding bursts too quickly
-            if (t - lastForwardAtMs < tuning.stabilizeWindowMs) return
+            if (t - lastForwardAtMs < tuning.stabilizeWindowMs) {
+                LogManager.d(TAG, "Skipping forwarding to handler (stabilize window) from ${peripheral.address}")
+                return
+            }
 
             val user = selectedUserSnapshot ?: return
-            when (handler.onAdvertisement(scanResult, user)) {
-                BroadcastAction.IGNORED -> Unit
+            LogManager.d(TAG,"Forwarding advertisement to handler: ${peripheral.address} RSSI=$rssi ${bytes?.toHexPreview(24)}")
+            val action = handler.onAdvertisement(scanResult, user)
+            LogManager.d(TAG, "Handler returned $action for ${peripheral.address}")
+
+            when (action) {
+                BroadcastAction.IGNORED -> LogManager.d(TAG, "Advertisement IGNORED for ${peripheral.address}")
                 BroadcastAction.CONSUMED_KEEP_SCANNING -> {
+                    LogManager.d(TAG, "Advertisement CONSUMED for ${peripheral.address}")
                     lastForwardAtMs = t
                     _events.tryEmit(
                         BluetoothEvent.DeviceMessage(
@@ -102,6 +116,7 @@ class BroadcastScaleAdapter(
                 }
                 BroadcastAction.CONSUMED_STOP -> {
                     lastForwardAtMs = t
+                    LogManager.d(TAG, "Measurement stabilized → BroadcastComplete for ${peripheral.address}")
                     _events.tryEmit(BluetoothEvent.BroadcastComplete(peripheral.address))
                     stopScanInternal(peripheral.address)
                     cleanup(peripheral.address)
