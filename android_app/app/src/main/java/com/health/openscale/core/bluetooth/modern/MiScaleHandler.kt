@@ -34,6 +34,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import java.util.UUID
 
 /**
@@ -436,7 +437,9 @@ class MiScaleHandler : ScaleDeviceHandler() {
 
     private fun parseMinuteDate(y: Int, m: Int, d: Int, h: Int, min: Int): Date? =
         runCatching {
-            SimpleDateFormat("yyyy/MM/dd/HH/mm", Locale.US).parse("$y/$m/$d/$h/$min")
+            val sdf = SimpleDateFormat("yyyy/MM/dd/HH/mm", Locale.US)
+            sdf.timeZone = TimeZone.getDefault()
+            sdf.parse("$y/$m/$d/$h/$min")
         }.getOrNull()
 
     private fun plausible(date: Date, years: Int = 20): Boolean {
