@@ -84,6 +84,7 @@ import com.health.openscale.core.bluetooth.modern.DeviceCapability
 import com.health.openscale.core.bluetooth.modern.DeviceSupport
 import com.health.openscale.core.bluetooth.modern.TuningProfile
 import com.health.openscale.core.service.ScannedDeviceInfo
+import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.shared.SharedViewModel
 import kotlinx.coroutines.launch
 
@@ -105,6 +106,7 @@ fun BluetoothScreen(
     sharedViewModel: SharedViewModel,
     bluetoothViewModel: BluetoothViewModel
 ) {
+    val TAG = "BluetoothScreen"
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -145,7 +147,10 @@ fun BluetoothScreen(
             if (hasPermissions) {
                 if (pendingScan) {
                     bluetoothViewModel.clearAllErrors()
-                    if (!isScanning) bluetoothViewModel.requestStartDeviceScan()
+                    if (!isScanning) {
+                        LogManager.d(TAG, "Launching Bluetooth scan via enableBluetoothLauncher (user enabled BT)")
+                        bluetoothViewModel.requestStartDeviceScan()
+                    }
                     pendingScan = false
                 }
             } else {
@@ -176,6 +181,7 @@ fun BluetoothScreen(
             if (bluetoothViewModel.isBluetoothEnabled()) {
                 if (pendingScan && !isScanning) {
                     bluetoothViewModel.clearAllErrors()
+                    LogManager.d(TAG, "Launching Bluetooth scan via permissionsLauncher (permissions granted)")
                     bluetoothViewModel.requestStartDeviceScan()
                 }
                 pendingScan = false
@@ -433,6 +439,8 @@ fun BluetoothScreen(
                                     enableBluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
                                 }
                                 else -> {
+                                    LogManager.d(TAG, "Launching Bluetooth scan directly via ScanButton")
+
                                     bluetoothViewModel.requestStartDeviceScan()
                                     pendingScan = false
                                 }

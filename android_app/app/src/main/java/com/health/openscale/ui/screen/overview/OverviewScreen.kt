@@ -120,6 +120,7 @@ import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.model.ValueWithDifference
 import com.health.openscale.core.utils.LocaleUtils
+import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.components.LinearGauge
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.navigation.Routes
@@ -170,7 +171,7 @@ fun determineBluetoothTopBarAction(
     currentUserForAssistedWeighing: User?,
     onShowReferenceDialog: (user: User) -> Unit
 ): TopBarAction? {
-
+    val TAG = "BluetoothTopBar"
     val deviceNameForMessage = currentDeviceName ?: context.getString(R.string.fallback_device_name_saved_scale)
 
     // Busy while connecting/disconnecting to the currently saved device
@@ -276,6 +277,8 @@ fun determineBluetoothTopBarAction(
                         message = context.getString(R.string.snackbar_bluetooth_attempting_connection, deviceNameForMessage),
                         duration = SnackbarDuration.Short
                     )
+                    LogManager.d(TAG, "User clicked bluetooth icon connect → trying to connect to saved device $deviceNameForMessage")
+
                     bluetoothViewModel.connectToSavedDevice()
                 }
             }

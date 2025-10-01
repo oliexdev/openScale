@@ -23,6 +23,7 @@ import com.health.openscale.core.bluetooth.modern.BroadcastAction.*
 import com.health.openscale.core.bluetooth.modern.DeviceCapability.LIVE_WEIGHT_STREAM
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.ConverterUtils
 
@@ -81,14 +82,34 @@ class Yoda1Handler : ScaleDeviceHandler() {
             weight = if (unitIsKg) raw / 10.0f else raw / 20.0f // catty/jin conversion
             if (!oneDecimal) weight /= 10.0f
         } else {
-            val ctrl = payload[7].toInt() and 0xFF
-            stabilized = isBitSet(ctrl, 0)
-            val unitIsKg = isBitSet(ctrl, 2)
-            val oneDecimal = isBitSet(ctrl, 3)
+            val ctrl = payload[10].toInt() and 0xFF
 
-            val raw = ((payload[1].toInt() and 0xFF) shl 8) or (payload[2].toInt() and 0xFF)
-            weight = if (unitIsKg) raw / 10.0f else raw / 20.0f // catty/jin conversion
-            if (!oneDecimal) weight /= 10.0f
+            stabilized = when (ctrl) {
+                0x24, 0x30, 0x38 -> false
+                0x25, 0x31, 0x39 -> true
+                else -> false
+            }
+
+            val unitCode = when (ctrl) {
+                0x24, 0x25 -> WeightUnit.KG
+                0x30, 0x31 -> WeightUnit.LB
+                0x38, 0x39 -> WeightUnit.ST
+                else -> WeightUnit.KG
+            }
+
+            val raw = ((payload[4].toInt() and 0xFF) shl 8) or (payload[5].toInt() and 0xFF)
+
+            val weightInUnit: Float = when(unitCode) {
+                WeightUnit.KG -> raw / 100.0f
+                WeightUnit.LB -> raw / 10.0f
+                WeightUnit.ST -> {
+                    val stones = raw / 256
+                    val pounds = raw % 256
+                    (stones * 14 + pounds / 10.0f)
+                }
+            }
+
+            weight = ConverterUtils.toKilogram(weightInUnit, unitCode)
         }
 
         val measurement = ScaleMeasurement().apply {
