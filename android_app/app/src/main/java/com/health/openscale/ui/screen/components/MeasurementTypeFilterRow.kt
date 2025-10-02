@@ -19,12 +19,15 @@ package com.health.openscale.ui.screen.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +38,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
@@ -189,46 +193,42 @@ fun MeasurementTypeFilterRow(
             val iconBackgroundColor = if (isSelected) Color(type.color) else MaterialTheme.colorScheme.surfaceVariant
             val iconColor = if (isSelected) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant // Consider MaterialTheme.colorScheme.onPrimary for selected state if type.color is primary-like
 
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
+            RoundMeasurementIcon(
+                icon = type.icon.resource,
+                backgroundTint = iconBackgroundColor,
+                iconTint = iconColor,
+                size = iconSize,
                 modifier = Modifier
-                    .padding(vertical = 4.dp) // Padding for touch target
-                    .clickable {
-                        if (!isInitialized) { // Prevent clicks during initial setup
-                            return@clickable
-                        }
+                    .clip(CircleShape)
+                    .clickable(
+                        enabled = isInitialized,
+                        onClick = {
+                            val currentSelectionMutable = displayedSelectedIds.toMutableList()
+                            val currentlySelectedInList = type.id in currentSelectionMutable
 
-                        val currentSelectionMutable = displayedSelectedIds.toMutableList()
-                        val currentlySelectedInList = type.id in currentSelectionMutable
-
-                        if (currentlySelectedInList) {
-                            // Only allow deselection if empty selection is allowed or if more than one item is selected
-                            if (allowEmptySelection || currentSelectionMutable.size > 1) {
-                                currentSelectionMutable.remove(type.id)
+                            if (currentlySelectedInList) {
+                                // Only allow deselection if empty selection is allowed or if more than one item is selected
+                                if (allowEmptySelection || currentSelectionMutable.size > 1) {
+                                    currentSelectionMutable.remove(type.id)
+                                } else {
+                                    // Prevent deselecting the last item if allowEmptySelection is false
+                                    return@clickable
+                                }
                             } else {
-                                // Prevent deselecting the last item if allowEmptySelection is false
-                                return@clickable
+                                currentSelectionMutable.add(type.id)
                             }
-                        } else {
-                            currentSelectionMutable.add(type.id)
-                        }
 
-                        val newSelectedIdsList = currentSelectionMutable.toList()
-                        displayedSelectedIds = newSelectedIdsList
-                        onSelectionChanged(newSelectedIdsList)
+                            val newSelectedIdsList = currentSelectionMutable.toList()
+                            displayedSelectedIds = newSelectedIdsList
+                            onSelectionChanged(newSelectedIdsList)
 
-                        scope.launch {
-                            val setToPersist = newSelectedIdsList.map { it.toString() }.toSet()
-                            onPersistSelectedTypeIds(setToPersist)
+                            scope.launch {
+                                val setToPersist = newSelectedIdsList.map { it.toString() }.toSet()
+                                onPersistSelectedTypeIds(setToPersist)
+                            }
                         }
-                    }
-            ) {
-                RoundMeasurementIcon(
-                    icon = type.icon.resource,
-                    backgroundTint = iconBackgroundColor,
-                    iconTint = iconColor
-                )
-            }
+                    )
+            )
         }
     }
 }

@@ -519,12 +519,7 @@ fun UserDetailScreen(
                 onValueChange = {},
                 readOnly = true,
                 modifier = Modifier.fillMaxWidth(),
-                label = {
-                    Text(
-                        text = stringResource(R.string.my_goals_label),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                },
+                label = { Text(stringResource(R.string.my_goals_label)) },
                 trailingIcon = {
                     IconButton(onClick = {
                         val firstTargetableType = allMeasurementTypes.firstOrNull {
