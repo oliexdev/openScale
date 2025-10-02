@@ -18,11 +18,14 @@
 package com.health.openscale.ui.screen.settings
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -30,10 +33,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.DatePicker
@@ -49,6 +54,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -64,6 +70,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -133,6 +140,7 @@ fun UserDetailScreen(
         }
     }
     var gender by remember { mutableStateOf(user?.gender ?: GenderType.MALE) }
+    var genderExpanded by remember { mutableStateOf(false) }
     var heightInputUnit by remember { mutableStateOf(UnitType.CM) }
     var heightValueString by remember { mutableStateOf("") }
     val heightUnitsOptions = listOf(UnitType.CM, UnitType.INCH)
@@ -385,19 +393,37 @@ fun UserDetailScreen(
             }
         )
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            GenderType.entries.forEach { option ->
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .clickable { gender = option }
-                        .padding(end = 8.dp)
-                ) {
-                    RadioButton(
-                        selected = gender == option,
-                        onClick = { gender = option }
+        ExposedDropdownMenuBox(
+            expanded = genderExpanded,
+            onExpandedChange = { genderExpanded = !genderExpanded },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = gender.getDisplayName(LocalContext.current),
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(id = R.string.user_detail_label_gender)) },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = genderExpanded)
+                },
+                modifier = Modifier
+                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable)
+                    .fillMaxWidth()
+            )
+
+            ExposedDropdownMenu(
+                expanded = genderExpanded,
+                onDismissRequest = { genderExpanded = false }
+            ) {
+                GenderType.entries.forEach { selectionOption ->
+                    DropdownMenuItem(
+                        text = { Text(selectionOption.getDisplayName(LocalContext.current)) },
+                        onClick = {
+                            gender = selectionOption
+                            genderExpanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                     )
-                    Text(option.getDisplayName(LocalContext.current))
                 }
             }
         }
@@ -437,89 +463,121 @@ fun UserDetailScreen(
             }
         }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { useAssistedWeighing = !useAssistedWeighing }
-                .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(stringResource(R.string.user_detail_label_assisted_weighting))
-            Switch(
-                checked = useAssistedWeighing,
-                onCheckedChange = { useAssistedWeighing = it }
+        Box {
+            OutlinedTextField(
+                value = stringResource(if (useAssistedWeighing) R.string.switch_on else R.string.switch_off),
+                onValueChange = {},
+                label = { Text(stringResource(R.string.user_detail_label_assisted_weighting)) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = true,
+                readOnly = true,
+                trailingIcon = {
+                    Switch(
+                        checked = useAssistedWeighing,
+                        onCheckedChange = null,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                }
+            )
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clickable { useAssistedWeighing = !useAssistedWeighing }
             )
         }
 
-        OutlinedTextField(
-            value = dateFormatter.format(Date(birthDate)),
-            label = { Text(stringResource(R.string.user_detail_label_birth_date)) },
-            onValueChange = {}, // Input is read-only, selection via DatePicker
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showDatePicker = true }, // Show DatePicker on click
-            enabled = false, // Visually indicates it's not directly editable
-            readOnly = true  // Ensures it's not directly editable
-        )
+        Box {
+            OutlinedTextField(
+                value = dateFormatter.format(Date(birthDate)),
+                onValueChange = {},
+                label = { Text(stringResource(R.string.user_detail_label_birth_date)) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = true,
+                readOnly = true,
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = stringResource(R.string.user_detail_label_birth_date)
+                    )
+                }
+            )
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clickable { showDatePicker = true }
+            )
+        }
 
         // My Goals
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(
+        Column {
+            OutlinedTextField(
+                value = if (pendingUserGoals.isNotEmpty()) {
+                    stringResource(R.string.user_detail_goals,pendingUserGoals.size)
+                } else {
+                    stringResource(R.string.user_detail_no_goals)
+                },
+                onValueChange = {},
+                readOnly = true,
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                label = {
                     Text(
                         text = stringResource(R.string.my_goals_label),
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.bodyLarge
                     )
-                }
-                IconButton(onClick = {
-                    val firstTargetableType = allMeasurementTypes.firstOrNull {
-                        (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) && !it.isDerived &&
-                                pendingUserGoals.none { ug -> ug.measurementTypeId == it.id }
-                    }
-                    if (firstTargetableType != null) {
-                        sharedViewModel.showUserGoalDialogWithContext(
-                            type = firstTargetableType,
-                            existingGoal = null,
+                },
+                trailingIcon = {
+                    IconButton(onClick = {
+                        val firstTargetableType = allMeasurementTypes.firstOrNull {
+                            (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) && !it.isDerived &&
+                                    pendingUserGoals.none { ug -> ug.measurementTypeId == it.id }
+                        }
+                        if (firstTargetableType != null) {
+                            sharedViewModel.showUserGoalDialogWithContext(
+                                type = firstTargetableType,
+                                existingGoal = null,
+                            )
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.AddCircleOutline,
+                            contentDescription = stringResource(R.string.action_add_measurement_desc),
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
-                }) {
-                    Icon(
-                        imageVector = Icons.Filled.AddCircleOutline,
-                        contentDescription = stringResource(R.string.action_add_measurement_desc),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
+                },
+            )
 
             if (pendingUserGoals.isNotEmpty()) {
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(vertical = 4.dp)
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.extraSmall.copy(topStart = ZeroCornerSize, topEnd = ZeroCornerSize),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
-                    items(pendingUserGoals, key = { it.userId.toString() + "_" + it.measurementTypeId.toString() }) { goal ->
-                        val measurementType = allMeasurementTypes.find { it.id == goal.measurementTypeId }
-                        if (measurementType != null) {
-                            UserGoalChip(
-                                userGoal = goal,
-                                measurementType = measurementType,
-                                referenceMeasurement = null,
-                                onClick = {
-                                    sharedViewModel.showUserGoalDialogWithContext(
-                                        type = measurementType,
-                                        existingGoal = goal
-                                    )
-                                },
-                            )
+                    LazyRow(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        items(pendingUserGoals, key = { it.userId.toString() + "_" + it.measurementTypeId.toString() }) { goal ->
+                            val measurementType = allMeasurementTypes.find { it.id == goal.measurementTypeId }
+                            if (measurementType != null) {
+                                UserGoalChip(
+                                    userGoal = goal,
+                                    measurementType = measurementType,
+                                    referenceMeasurement = null,
+                                    onClick = {
+                                        sharedViewModel.showUserGoalDialogWithContext(
+                                            type = measurementType,
+                                            existingGoal = goal
+                                        )
+                                    },
+                                )
+                            }
                         }
                     }
                 }
             }
         }
+
     }
 
     if (goalDialogContextData.showDialog) {

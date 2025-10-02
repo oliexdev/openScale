@@ -12,6 +12,8 @@
     <string name="cancel_button">Abbrechen</string>
     <string name="confirm_button">Bestätigen</string>
     <string name="dialog_ok">OK</string>
+    <string name="switch_on">An</string>
+    <string name="switch_off">Aus</string>
     <string name="open_link_content_description">Link öffnen</string>
     <string name="content_desc_warning_icon">Warnsymbol</string>
     <string name="content_desc_restore_icon">Wiederherstellen-Symbol</string>
@@ -167,6 +169,8 @@
     <string name="measurement_type_label_unit">Einheit</string>
     <string name="measurement_type_label_goal">Ziel</string>
     <string name="my_goals_label">Meine Ziele</string>
+    <string name="user_detail_goals">%d Ziele</string>
+    <string name="user_detail_no_goals">Keine Ziele</string>
     <string name="delete_button_label">Löschen</string>
     <string name="dialog_title_edit_goal">Ziel bearbeiten: %1$s</string>
     <string name="dialog_title_add_goal">Ziel festlegen: %1$s</string>
