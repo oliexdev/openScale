@@ -18,15 +18,12 @@
 package com.health.openscale.ui.screen.settings
 
 import android.widget.Toast
-import androidx.compose.animation.core.copy
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -54,7 +51,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -71,12 +67,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -93,7 +86,7 @@ import com.health.openscale.core.data.UserIcon
 import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.screen.components.UserGoalChip
-import com.health.openscale.ui.screen.dialog.AmputationSettingsDialog
+import com.health.openscale.ui.screen.dialog.AmputationInputDialog
 import com.health.openscale.ui.screen.dialog.IconPickerDialog
 import com.health.openscale.ui.screen.dialog.UserGoalDialog
 import com.health.openscale.ui.shared.SharedViewModel
@@ -205,7 +198,7 @@ fun UserDetailScreen(
     }
 
     if (showAmputationDialog) {
-        AmputationSettingsDialog(
+        AmputationInputDialog(
             currentAmputations = amputations,
             onDismiss = { showAmputationDialog = false },
             onSave = { newAmputations ->

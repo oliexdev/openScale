@@ -54,7 +54,7 @@ import com.health.openscale.core.data.Limb
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AmputationSettingsDialog(
+fun AmputationInputDialog(
     currentAmputations: Map<Limb, AmputationPart>,
     onDismiss: () -> Unit,
     onSave: (Map<Limb, AmputationPart>) -> Unit
