@@ -212,4 +212,57 @@ class BodyCompositionUseCases @Inject constructor(
 
         return out
     }
+
+    /**
+     * Corrects the weight value in a list of measurements if the user has amputations.
+     *
+     * This function checks the user associated with the measurement. If amputations are
+     * recorded, it finds the weight measurement, calculates the corrected weight,
+     * and returns a new list of measurement values with the updated weight.
+     *
+     * @param measurement The measurement containing the user ID.
+     * @param values The original list of measurement values.
+     * @return A new list of measurement values with the corrected weight, or the original
+     * list if no correction was needed.
+     */
+    suspend fun applyAmputationCorrection(
+        measurement: Measurement,
+        values: List<MeasurementValue>
+    ): List<MeasurementValue> {
+        val user = userUseCases.observeUserById(measurement.userId).first()
+            ?: return values
+
+        if (user.amputations.isEmpty()) {
+            return values
+        }
+
+        val weightIndex = values.indexOfFirst { it.typeId == MeasurementTypeKey.WEIGHT.id }
+        if (weightIndex == -1) {
+            return values
+        }
+
+        val originalWeightValue = values[weightIndex]
+        val measuredWeight = originalWeightValue.floatValue ?: return values
+
+        val totalCorrection = user.amputations.values
+            .sumOf { it.correctionValue.toDouble() }
+            .toFloat()
+            .coerceIn(0f, 100f)
+
+        if (totalCorrection <= 0f) {
+            return values
+        }
+
+        val remainingPercentage = 100.0f - totalCorrection
+        val correctedWeight = if (remainingPercentage > 0f) {
+            (measuredWeight * 100.0f) / remainingPercentage
+        } else {
+            measuredWeight
+        }
+
+        val updatedValues = values.toMutableList()
+        updatedValues[weightIndex] = originalWeightValue.copy(floatValue = correctedWeight)
+
+        return updatedValues
+    }
 }

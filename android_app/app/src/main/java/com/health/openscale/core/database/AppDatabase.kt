@@ -46,7 +46,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext ctx: Context): AppDatabase =
         Room.databaseBuilder(ctx, AppDatabase::class.java, AppDatabase.Companion.DATABASE_NAME)
-            .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+            .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
             .build()
 
     @Provides
@@ -73,7 +73,7 @@ object DatabaseModule {
         MeasurementValue::class,
         MeasurementType::class,
     ],
-    version = 10,
+    version = 11,
     exportSchema = true
 )
 @TypeConverters(DatabaseConverters::class)
@@ -311,5 +311,11 @@ val MIGRATION_9_10 = object : Migration(9, 10) {
         """.trimIndent())
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_user_goals_userId` ON `user_goals` (`userId`)")
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_user_goals_measurementTypeId` ON `user_goals` (`measurementTypeId`)")
+    }
+}
+
+val MIGRATION_10_11 = object : Migration(10, 11) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `User` ADD COLUMN `amputations` TEXT NOT NULL DEFAULT ''")
     }
 }

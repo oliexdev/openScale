@@ -72,8 +72,11 @@ import androidx.compose.material.icons.filled.SquareFoot
 import androidx.compose.material.icons.filled.StackedLineChart
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import com.health.openscale.R
 import java.util.Locale
 
@@ -164,6 +167,43 @@ enum class WeightUnit {
                 2 -> return ST
             }
             return KG
+        }
+    }
+}
+
+enum class Limb(@StringRes val displayNameResId: Int) {
+    LEFT_ARM(R.string.amputation_left_arm),
+    RIGHT_ARM(R.string.amputation_right_arm),
+    LEFT_LEG(R.string.amputation_left_leg),
+    RIGHT_LEG(R.string.amputation_right_leg)
+}
+
+enum class AmputationPart(
+    @StringRes val displayNameResId: Int,
+    val correctionValue: Float
+) {
+    HAND(R.string.amputation_hand, 0.8f),
+    FOREARM(R.string.amputation_forearm, 3.0f),
+    FULL_ARM(R.string.amputation_full_arm, 11.5f),
+
+    FOOT(R.string.amputation_foot, 1.8f),
+    LOWER_LEG(R.string.amputation_lower_leg, 7.1f),
+    FULL_LEG(R.string.amputation_full_leg, 18.6f);
+
+    companion object {
+        @Composable
+        fun toSummaryString(amputations: Map<Limb, AmputationPart>): String {
+            if (amputations.isEmpty()) {
+                return stringResource(R.string.amputation_none)
+            }
+
+            val partSummaries = amputations.map { (limb, part) ->
+                val limbName = stringResource(limb.displayNameResId)
+                val partName = stringResource(part.displayNameResId)
+                "$limbName ($partName)"
+            }
+
+            return partSummaries.joinToString(", ")
         }
     }
 }

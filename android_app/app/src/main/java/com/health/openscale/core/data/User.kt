@@ -29,5 +29,6 @@ data class User(
     val gender: GenderType,
     val heightCm: Float,
     val activityLevel: ActivityLevel,
-    val useAssistedWeighing: Boolean
+    val useAssistedWeighing: Boolean,
+    val amputations: Map<Limb, AmputationPart> = emptyMap()
 )

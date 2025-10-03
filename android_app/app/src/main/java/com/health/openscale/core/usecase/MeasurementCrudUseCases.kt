@@ -68,7 +68,8 @@ class MeasurementCrudUseCases @Inject constructor(
         measurement: Measurement,
         values: List<MeasurementValue>
     ): Result<Int> = runCatching {
-        val finalValues : List<MeasurementValue> = bodyComposition.applySelectedFormulasForMeasurement(measurement, values)
+        val correctedValues = bodyComposition.applyAmputationCorrection(measurement, values)
+        val finalValues : List<MeasurementValue> = bodyComposition.applySelectedFormulasForMeasurement(measurement, correctedValues)
 
         if (measurement.id == 0) {
             // Insert path

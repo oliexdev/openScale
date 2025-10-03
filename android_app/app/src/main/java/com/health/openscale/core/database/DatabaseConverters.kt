@@ -18,10 +18,14 @@
 package com.health.openscale.core.database
 
 import androidx.room.TypeConverter
+import com.health.openscale.core.data.AmputationPart
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.InputFieldType
+import com.health.openscale.core.data.Limb
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.UnitType
+import kotlin.collections.joinToString
+import kotlin.collections.map
 
 class DatabaseConverters {
 
@@ -50,4 +54,30 @@ class DatabaseConverters {
 
     @TypeConverter
     fun toGender(value: String): GenderType = GenderType.valueOf(value)
+
+    @TypeConverter
+    fun fromAmputationMap(value: String?): Map<Limb, AmputationPart> {
+        if (value.isNullOrEmpty()) {
+            return emptyMap()
+        }
+        return value.split(',').mapNotNull { entry ->
+            val pair = entry.split(':')
+            if (pair.size == 2) {
+                try {
+                    val limb = Limb.valueOf(pair[0])
+                    val part = AmputationPart.valueOf(pair[1])
+                    limb to part
+                } catch (e: IllegalArgumentException) {
+                    null
+                }
+            } else {
+                null
+            }
+        }.toMap()
+    }
+
+    @TypeConverter
+    fun toAmputationMap(map: Map<Limb, AmputationPart>?): String {
+        return map?.map { "${it.key.name}:${it.value.name}" }?.joinToString(",") ?: ""
+    }
 }

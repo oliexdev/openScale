@@ -18,6 +18,7 @@
 package com.health.openscale.ui.screen.settings
 
 import android.widget.Toast
+import androidx.compose.animation.core.copy
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -72,13 +73,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.ActivityLevel
+import com.health.openscale.core.data.AmputationPart
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.IconResource
 import com.health.openscale.core.data.InputFieldType
@@ -89,6 +93,7 @@ import com.health.openscale.core.data.UserIcon
 import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.screen.components.UserGoalChip
+import com.health.openscale.ui.screen.dialog.AmputationSettingsDialog
 import com.health.openscale.ui.screen.dialog.IconPickerDialog
 import com.health.openscale.ui.screen.dialog.UserGoalDialog
 import com.health.openscale.ui.shared.SharedViewModel
@@ -147,6 +152,8 @@ fun UserDetailScreen(
 
     var activityLevel by remember { mutableStateOf(user?.activityLevel ?: ActivityLevel.SEDENTARY) }
     var useAssistedWeighing by remember(user) { mutableStateOf(user?.useAssistedWeighing ?: false) }
+    var amputations by remember(user) { mutableStateOf(user?.amputations ?: emptyMap()) }
+    var showAmputationDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val dateFormatter = remember {
@@ -197,6 +204,17 @@ fun UserDetailScreen(
         }
     }
 
+    if (showAmputationDialog) {
+        AmputationSettingsDialog(
+            currentAmputations = amputations,
+            onDismiss = { showAmputationDialog = false },
+            onSave = { newAmputations ->
+                amputations = newAmputations
+                showAmputationDialog = false
+            }
+        )
+    }
+
     LaunchedEffect(user, heightInputUnit) {
         user?.heightCm?.let { cmValue ->
             if (cmValue > 0f) {
@@ -234,7 +252,7 @@ fun UserDetailScreen(
             val newUserToSave = User(
                 id = 0, name = name, icon = selectedIcon, birthDate = birthDate,
                 gender = gender, heightCm = finalHeightCm, activityLevel = activityLevel,
-                useAssistedWeighing = useAssistedWeighing
+                useAssistedWeighing = useAssistedWeighing, amputations = amputations
             )
             val newGeneratedUserIdLong = settingsViewModel.addUser(newUserToSave)
             if (newGeneratedUserIdLong > 0) {
@@ -271,7 +289,8 @@ fun UserDetailScreen(
         settingsViewModel.viewModelScope.launch {
             val updatedUser = currentLoadedUser.copy(
                 name = name, icon = selectedIcon, birthDate = birthDate, gender = gender,
-                heightCm = finalHeightCm, activityLevel = activityLevel, useAssistedWeighing = useAssistedWeighing
+                heightCm = finalHeightCm, activityLevel = activityLevel, useAssistedWeighing = useAssistedWeighing,
+                amputations = amputations
             )
             settingsViewModel.updateUser(updatedUser)
 
@@ -461,6 +480,28 @@ fun UserDetailScreen(
                     )
                 }
             }
+        }
+
+        Box {
+            OutlinedTextField(
+                value = AmputationPart.toSummaryString(amputations),
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(R.string.amputation_correction_label)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = stringResource(R.string.amputation_correction_label)
+                    )
+                }
+            )
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clickable { showAmputationDialog = true }
+            )
         }
 
         Box {
