@@ -355,7 +355,6 @@ class SharedViewModel @Inject constructor(
 
     private val _typesToSmoothAndDisplay = MutableStateFlow<Set<Int>>(emptySet())
     val typesToSmoothAndDisplay: StateFlow<Set<Int>> = _typesToSmoothAndDisplay.asStateFlow()
-    fun setTypesToSmoothAndDisplay(typeIds: Set<Int>) { _typesToSmoothAndDisplay.value = typeIds }
 
     // --- Base enriched flow for current user ---
     val enrichedMeasurementsFlow: StateFlow<List<EnrichedMeasurement>> =
@@ -370,23 +369,6 @@ class SharedViewModel @Inject constructor(
         enrichedMeasurementsFlow
             .map { list -> list.firstOrNull()?.measurementWithValues }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-
-    // --- Full pipeline (time filter + smoothing) for current user ---
-    val processedMeasurementsFlow: StateFlow<List<EnrichedMeasurement>> =
-        selectedUserId
-            .flatMapLatest { uid ->
-                if (uid == null) flowOf(emptyList())
-                else measurementFacade.pipeline(
-                    userId = uid,
-                    measurementTypesFlow = measurementTypes,
-                    timeRangeFlow = selectedTimeRange,
-                    typesToSmoothFlow = typesToSmoothAndDisplay,
-                    algorithmFlow = selectedSmoothingAlgorithm,
-                    alphaFlow = smoothingAlpha,
-                    windowFlow = smoothingWindowSize
-                )
-            }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     // --- CRUD delegates (via MeasurementFacade) ---
     fun getMeasurementById(id: Int) : Flow<MeasurementWithValues?> {

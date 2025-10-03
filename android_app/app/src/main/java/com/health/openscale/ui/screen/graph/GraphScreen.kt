@@ -58,7 +58,6 @@ fun GraphScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val graphState by sharedViewModel.graphUiState.collectAsState()
-    val processed by sharedViewModel.processedMeasurementsFlow.collectAsState()
     val allMeasurementsWithValues = remember(graphState) {
         when (graphState) {
             is SharedViewModel.UiState.Success -> (graphState as SharedViewModel.UiState.Success<List<EnrichedMeasurement>>)
