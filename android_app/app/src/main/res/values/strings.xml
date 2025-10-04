@@ -382,6 +382,8 @@
     <string name="time_range_last_7_days">Last 7 Days</string>
     <string name="time_range_last_30_days">Last 30 Days</string>
     <string name="time_range_last_365_days">Last 365 Days</string>
+    <string name="time_range_custom">Custom Days</string>
+    <string name="time_range_custom_from_to">From %1$s to %2$s</string>
     <string name="line_chart_no_plottable_types">No plottable chart types available.</string>
     <string name="line_chart_no_data_to_display">No data to display.</string>
     <string name="line_chart_no_data_for_type_in_range">No data for %1$s in the selected range.</string>

@@ -63,7 +63,7 @@ import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.components.MeasurementChart
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
-import com.health.openscale.ui.screen.components.rememberContextualTimeRangeFilter
+import com.health.openscale.ui.screen.components.rememberResolvedTimeRangeState
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -107,13 +107,15 @@ data class MeasurementStatistics(
 @Composable
 fun StatisticsScreen(sharedViewModel: SharedViewModel) {
 
-    val uiSelectedTimeRange by rememberContextualTimeRangeFilter(
+    val timeRangeState by rememberResolvedTimeRangeState(
         screenContextName = SettingsPreferenceKeys.STATISTICS_SCREEN_CONTEXT,
-        observeString = { key, default -> sharedViewModel.observeSetting(key, default) }
+        sharedViewModel = sharedViewModel
     )
 
-    val statsUiState by remember(uiSelectedTimeRange) {
-        sharedViewModel.statisticsUiState(uiSelectedTimeRange)
+    val (uiSelectedTimeRange, startTimeMillis, endTimeMillis) = timeRangeState
+
+    val statsUiState by remember(startTimeMillis, endTimeMillis) {
+        sharedViewModel.statisticsUiState(startTimeMillis, endTimeMillis)
     }.collectAsState(initial = SharedViewModel.UiState.Loading)
 
     val allTypes by sharedViewModel.measurementTypes.collectAsState()

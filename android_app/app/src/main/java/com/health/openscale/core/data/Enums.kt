@@ -397,7 +397,8 @@ enum class TimeRangeFilter(@StringRes val displayNameResId: Int) {
     ALL_DAYS(R.string.time_range_all_days),
     LAST_7_DAYS(R.string.time_range_last_7_days),
     LAST_30_DAYS(R.string.time_range_last_30_days),
-    LAST_365_DAYS(R.string.time_range_last_365_days);
+    LAST_365_DAYS(R.string.time_range_last_365_days),
+    CUSTOM(R.string.time_range_custom);
 
     fun getDisplayName(context: android.content.Context): String {
         return context.getString(displayNameResId)

@@ -17,15 +17,11 @@
  */
 package com.health.openscale.core.facade
 
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.type
-import androidx.core.graphics.values
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.SmoothingAlgorithm
-import com.health.openscale.core.data.TimeRangeFilter
 import com.health.openscale.core.data.User
 import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.core.service.MeasurementEnricher
@@ -33,12 +29,10 @@ import com.health.openscale.core.usecase.MeasurementCrudUseCases
 import com.health.openscale.core.usecase.MeasurementFilterUseCases
 import com.health.openscale.core.usecase.MeasurementQueryUseCases
 import com.health.openscale.core.usecase.MeasurementSmoothingUseCases
-import com.health.openscale.core.usecase.SyncUseCases
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.usecase.MeasurementEvaluationUseCases
 import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
-import com.health.openscale.core.usecase.UserUseCases
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -93,19 +87,21 @@ class MeasurementFacade @Inject constructor(
     }
 
     /**
-     * Returns a time-filtered enriched flow.
-     *
-     * @param userId Database id of the user.
-     * @param measurementTypesFlow Global type catalog.
-     * @param range Selected time window.
-     */
+    * Returns a time-filtered enriched flow based on start and end timestamps.
+    *
+    * @param userId Database id of the user.
+    * @param measurementTypesFlow Global type catalog.
+    * @param startTimeMillis The start of the time range (inclusive), or null for no start bound.
+    * @param endTimeMillis The end of the time range (inclusive), or null for no end bound.
+    */
     fun timeFilteredEnrichedFlow(
         userId: Int,
         measurementTypesFlow: Flow<List<MeasurementType>>,
-        range: TimeRangeFilter
+        startTimeMillis: Long?,
+        endTimeMillis: Long?
     ): Flow<List<EnrichedMeasurement>> {
         val enriched = enrichedFlowForUser(userId, measurementTypesFlow)
-        return filter.getTimeFiltered(enriched, range)
+        return filter.getTimeFiltered(enriched, startTimeMillis, endTimeMillis)
     }
 
     /**
@@ -125,7 +121,8 @@ class MeasurementFacade @Inject constructor(
      *
      * @param userId Database id of the user.
      * @param measurementTypesFlow Global type catalog.
-     * @param timeRangeFlow Chosen time window as a flow.
+     * @param startTimeMillisFlow Flow emitting the start timestamp for filtering, or null for no start bound.
+     * @param endTimeMillisFlow Flow emitting the end timestamp for filtering, or null for no end bound.
      * @param typesToSmoothFlow Set of type ids to smooth.
      * @param algorithmFlow Selected smoothing algorithm.
      * @param alphaFlow Alpha for exponential smoothing (0..1).
@@ -135,7 +132,8 @@ class MeasurementFacade @Inject constructor(
     fun pipeline(
         userId: Int,
         measurementTypesFlow: Flow<List<MeasurementType>>,
-        timeRangeFlow: Flow<TimeRangeFilter>,
+        startTimeMillisFlow: Flow<Long?>,
+        endTimeMillisFlow: Flow<Long?>,
         typesToSmoothFlow: Flow<Set<Int>>,
         algorithmFlow: Flow<SmoothingAlgorithm>,
         alphaFlow: Flow<Float>,
@@ -146,8 +144,12 @@ class MeasurementFacade @Inject constructor(
 
         @OptIn(ExperimentalCoroutinesApi::class)
         val timeFiltered: Flow<List<EnrichedMeasurement>> =
-            combine(enriched, timeRangeFlow) { list, range ->
-                filter.getTimeFiltered(flowOf(list), range)
+            combine(
+                enriched,
+                startTimeMillisFlow,
+                endTimeMillisFlow
+            ) { list, startTime, endTime ->
+                filter.getTimeFiltered(flowOf(list), startTime, endTime)
             }.flatMapLatest { it }
 
         return smooth.applySmoothing(

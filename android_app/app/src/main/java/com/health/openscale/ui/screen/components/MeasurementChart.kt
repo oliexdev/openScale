@@ -18,6 +18,7 @@
 package com.health.openscale.ui.screen.components
 
 import android.text.Layout
+import android.text.format.DateFormat
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,12 +36,17 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -113,6 +119,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.temporal.WeekFields
+import java.util.Date
 import java.util.Locale
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -120,6 +127,8 @@ import kotlin.math.floor
 internal val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM")
 internal val X_TO_DATE_MAP_KEY = ExtraStore.Key<Map<Float, LocalDate>>() // Key for storing date mapping in chart model
 private const val TIME_RANGE_SUFFIX = "_time_range"
+private const val CUSTOM_START_DATE_MILLIS_SUFFIX = "_custom_start_date_millis"
+private const val CUSTOM_END_DATE_MILLIS_SUFFIX = "_custom_end_date_millis"
 private const val SELECTED_TYPES_SUFFIX = "_selected_types"
 private const val SHOW_TYPE_FILTER_ROW_SUFFIX = "_show_type_filter_row"
 
@@ -184,9 +193,17 @@ fun MeasurementChart(
         .showChartDataPoints
         .collectAsStateWithLifecycle(initialValue = true)
 
-    val uiSelectedTimeRange by rememberContextualTimeRangeFilter(
+    val timeRangeState by rememberResolvedTimeRangeState(
         screenContextName = screenContextName,
-        observeString = { key, default -> sharedViewModel.observeSetting(key, default) }
+        sharedViewModel = sharedViewModel
+    )
+
+    val (uiSelectedTimeRange, startTimeMillis, endTimeMillis) = timeRangeState
+
+    val filterTitle = rememberFilterTitle(
+        activeFilter = uiSelectedTimeRange,
+        startTimeMillis = startTimeMillis,
+        endTimeMillis = endTimeMillis
     )
 
     val currentSelectedTypeIdsStrings by rememberContextualSelectedTypeIds(
@@ -194,25 +211,27 @@ fun MeasurementChart(
         observeStringSet = { key, default -> sharedViewModel.observeSetting(key, default) },
         defaultSelectedTypeIds = defaultSelectedTypesValue
     )
-
     val currentSelectedTypeIntIds: Set<Int> = remember(currentSelectedTypeIdsStrings) {
-        currentSelectedTypeIdsStrings.mapNotNull { stringId: String -> stringId.toIntOrNull() }.toSet()
+        currentSelectedTypeIdsStrings.mapNotNull { it.toIntOrNull() }.toSet()
     }
-
-    // Flows to provide current filter state to the ViewModel's data fetching logic
-    val timeRangeFlow = remember { MutableStateFlow(uiSelectedTimeRange) }
-    LaunchedEffect(uiSelectedTimeRange) { timeRangeFlow.value = uiSelectedTimeRange }
 
     val typesToSmoothFlow = remember { MutableStateFlow(currentSelectedTypeIntIds) }
     LaunchedEffect(currentSelectedTypeIntIds) { typesToSmoothFlow.value = currentSelectedTypeIntIds }
 
-    // State for managing chart data loading
+    val startTimeMillisFlow = remember { MutableStateFlow(startTimeMillis) }
+    val endTimeMillisFlow = remember { MutableStateFlow(endTimeMillis) }
+    LaunchedEffect(startTimeMillis, endTimeMillis) {
+        startTimeMillisFlow.value = startTimeMillis
+        endTimeMillisFlow.value = endTimeMillis
+    }
+
     var isChartDataLoading by remember { mutableStateOf(true) }
     val initialChartDataValue = remember { emptyList<EnrichedMeasurement>() }
 
     val smoothedData by sharedViewModel
         .smoothedEnrichedMeasurements(
-            timeRangeFlow = timeRangeFlow,
+            startTimeMillisFlow = startTimeMillisFlow,
+            endTimeMillisFlow = endTimeMillisFlow,
             typesToSmoothAndDisplayFlow = typesToSmoothFlow
         )
         .collectAsStateWithLifecycle(initialValue = initialChartDataValue)
@@ -413,32 +432,6 @@ fun MeasurementChart(
                     }
                 }
             )
-        }
-
-        if (showFilterTitle) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp, horizontal = 16.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.CalendarToday,
-                    contentDescription = stringResource(R.string.content_description_time_range_icon),
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Text(
-                    text = stringResource(
-                        R.string.line_chart_filter_title_template,
-                        uiSelectedTimeRange.getDisplayName(context),
-                        measurementsWithValues.size
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center
-                )
-            }
         }
 
         if (showPeriodChart && periodChartData.isNotEmpty()) {
@@ -743,6 +736,32 @@ fun MeasurementChart(
                 )
             }
         }
+
+        if (showFilterTitle) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, bottom = 0.dp, start = 16.dp, end = 16.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CalendarToday,
+                    contentDescription = stringResource(R.string.content_description_time_range_icon),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text(
+                    text = stringResource(
+                        R.string.line_chart_filter_title_template,
+                        filterTitle,
+                        measurementsWithValues.size
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
     }
 }
 
@@ -756,6 +775,7 @@ fun MeasurementChart(
  * @param screenContextName The context name to scope the filter settings. If null, no action is provided.
  * @return A [SharedViewModel.TopBarAction] configuration for the filter menu, or null if context is not provided.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun provideFilterTopBarAction(
     sharedViewModel: SharedViewModel,
@@ -786,6 +806,49 @@ fun provideFilterTopBarAction(
         .collectAsState(initial = defaultShowFilterRowForTopBar)
 
     var showMenuState by remember { mutableStateOf(false) } // Controls dropdown menu visibility
+    var showDateRangePicker by remember { mutableStateOf(false) }
+
+    if (showDateRangePicker) {
+        val dateRangePickerState = rememberDateRangePickerState()
+        DatePickerDialog(
+            onDismissRequest = { showDateRangePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDateRangePicker = false
+                        val startMillis = dateRangePickerState.selectedStartDateMillis
+                        val endMillis = dateRangePickerState.selectedEndDateMillis
+                        if (startMillis != null && endMillis != null) {
+                            scope.launch {
+                                sharedViewModel.saveSetting(
+                                    "${screenContextName}${CUSTOM_START_DATE_MILLIS_SUFFIX}",
+                                    startMillis
+                                )
+                                sharedViewModel.saveSetting(
+                                    "${screenContextName}${CUSTOM_END_DATE_MILLIS_SUFFIX}",
+                                    endMillis
+                                )
+                                sharedViewModel.saveSetting(
+                                    targetTimeRangeKeyName,
+                                    TimeRangeFilter.CUSTOM.name
+                                )
+                            }
+                        }
+                    },
+                    enabled = dateRangePickerState.selectedEndDateMillis != null
+                ) {
+                    Text(stringResource(R.string.dialog_ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDateRangePicker = false }) {
+                    Text(stringResource(R.string.cancel_button))
+                }
+            }
+        ) {
+            DateRangePicker(state = dateRangePickerState)
+        }
+    }
 
     return TopBarAction(
         icon = Icons.Default.FilterList,
@@ -815,9 +878,12 @@ fun provideFilterTopBarAction(
                         }
                     },
                     onClick = {
-                        scope.launch { sharedViewModel.saveSetting(targetTimeRangeKeyName, timeRange.name) }
-
-                        showMenuState = false // Close menu after selection
+                        showMenuState = false
+                        if (timeRange == TimeRangeFilter.CUSTOM) {
+                            showDateRangePicker = true
+                        } else {
+                            scope.launch { sharedViewModel.saveSetting(targetTimeRangeKeyName, timeRange.name) }
+                        }
                     }
                 )
             }
@@ -980,26 +1046,95 @@ fun rememberMarker(
 }
 
 /**
- * Remembers a [TimeRangeFilter] value that is persisted in [SettingsFacade]
- * based on the provided [screenContextName].
- *
- * @param screenContextName The unique context name for this setting.
- * @param settingsFacade The repository to observe and save the setting.
- * @param defaultFilter The default [TimeRangeFilter] to use if no setting is found.
- * @return A [State] holding the current [TimeRangeFilter].
+ * Creates a human-readable title for the current time filter state.
  */
 @Composable
-fun rememberContextualTimeRangeFilter(
-    screenContextName: String,
-    observeString: (key: String, default: String) -> kotlinx.coroutines.flow.Flow<String>,
-    defaultFilter: TimeRangeFilter = TimeRangeFilter.ALL_DAYS
-): State<TimeRangeFilter> {
-    val key = remember(screenContextName) { "${screenContextName}_time_range" }
-    val persisted by observeString(key, defaultFilter.name).collectAsState(initial = defaultFilter.name)
-    return remember(persisted) {
-        mutableStateOf(TimeRangeFilter.entries.find { it.name == persisted } ?: defaultFilter)
+private fun rememberFilterTitle(
+    activeFilter: TimeRangeFilter,
+    startTimeMillis: Long?,
+    endTimeMillis: Long?
+): String {
+    val context = LocalContext.current
+    val dateFormat = remember { DateFormat.getDateFormat(context) }
+
+    return when {
+        // If a custom range is selected AND has valid dates
+        activeFilter == TimeRangeFilter.CUSTOM && startTimeMillis != null && endTimeMillis != null -> {
+            val startDate = dateFormat.format(Date(startTimeMillis))
+            val endDate = dateFormat.format(Date(endTimeMillis))
+            stringResource(R.string.time_range_custom_from_to, startDate, endDate)
+        }
+        // For all predefined ranges (or if custom is somehow invalid)
+        else -> {
+            activeFilter.getDisplayName(context)
+        }
     }
 }
+
+/**
+ * Remembers and resolves the complete time filter state: the selected enum,
+ * and the calculated start/end timestamps. This is the single source of truth for the chart's time filtering.
+ *
+ * @return A [State] holding a [Triple] of (activeTimeRange, startTimeMillis, endTimeMillis).
+ */
+@Composable
+internal fun rememberResolvedTimeRangeState(
+    screenContextName: String,
+    sharedViewModel: SharedViewModel,
+    defaultFilter: TimeRangeFilter = TimeRangeFilter.ALL_DAYS
+): State<Triple<TimeRangeFilter, Long?, Long?>> {
+    // 1. Observe the selected TimeRangeFilter type from settings
+    val timeRangeKey = remember(screenContextName) { "${screenContextName}${TIME_RANGE_SUFFIX}" }
+    val persistedTimeRangeName by sharedViewModel
+        .observeSetting(timeRangeKey, defaultFilter.name)
+        .collectAsState(initial = defaultFilter.name)
+
+    val activeTimeRange = remember(persistedTimeRangeName) {
+        TimeRangeFilter.entries.find { it.name == persistedTimeRangeName } ?: defaultFilter
+    }
+
+    // 2. Observe the custom start/end dates from settings
+    val customStartKey = remember(screenContextName) { "${screenContextName}${CUSTOM_START_DATE_MILLIS_SUFFIX}" }
+    val customStartMillis by sharedViewModel.observeSetting(customStartKey, -1L).collectAsState(initial = -1L)
+
+    val customEndKey = remember(screenContextName) { "${screenContextName}${CUSTOM_END_DATE_MILLIS_SUFFIX}" }
+    val customEndMillis by sharedViewModel.observeSetting(customEndKey, -1L).collectAsState(initial = -1L)
+
+    // 3. Calculate the final start/end timestamps and combine everything into a Triple
+    return remember(activeTimeRange, customStartMillis, customEndMillis) {
+        mutableStateOf(
+            run {
+                val (start, end) = when (activeTimeRange) {
+                    TimeRangeFilter.ALL_DAYS -> null to null
+                    TimeRangeFilter.CUSTOM -> {
+                        val customStart = if (customStartMillis != -1L) customStartMillis else null
+                        val customEnd = if (customEndMillis != -1L) customEndMillis else null
+                        customStart to customEnd
+                    }
+                    else -> { // Predefined ranges
+                        val cal = java.util.Calendar.getInstance()
+                        val endTime = cal.timeInMillis
+                        when (activeTimeRange) {
+                            TimeRangeFilter.LAST_7_DAYS -> cal.add(java.util.Calendar.DAY_OF_YEAR, -7)
+                            TimeRangeFilter.LAST_30_DAYS -> cal.add(java.util.Calendar.DAY_OF_YEAR, -30)
+                            TimeRangeFilter.LAST_365_DAYS -> cal.add(java.util.Calendar.DAY_OF_YEAR, -365)
+                            else -> { /* no-op */ }
+                        }
+                        cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+                        cal.set(java.util.Calendar.MINUTE, 0)
+                        cal.set(java.util.Calendar.SECOND, 0)
+                        cal.set(java.util.Calendar.MILLISECOND, 0)
+                        val startTime = cal.timeInMillis
+                        startTime to endTime
+                    }
+                }
+
+                Triple(activeTimeRange, start, end)
+            }
+        )
+    }
+}
+
 
 /**
  * Remembers a set of selected measurement type IDs (as strings) that is persisted

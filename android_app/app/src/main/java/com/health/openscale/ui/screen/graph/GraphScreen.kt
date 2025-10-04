@@ -110,6 +110,7 @@ fun GraphScreen(
                         screenContextName = SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT,
                         showFilterControls = true,
                         showPeriodChart = true,
+                        showFilterTitle = true,
                         onPointSelected = { selectedTs ->
                             val result = sharedViewModel.findClosestMeasurement(selectedTs, allMeasurementsWithValues)
                                 ?: return@MeasurementChart

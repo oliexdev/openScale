@@ -258,7 +258,8 @@ class SharedViewModel @Inject constructor(
                             measurementFacade.pipeline(
                                 userId = uidFromFacade,
                                 measurementTypesFlow = measurementTypes,
-                                timeRangeFlow = selectedTimeRange,
+                                startTimeMillisFlow = flowOf(null), // TODO
+                                endTimeMillisFlow = flowOf(null), // TODO
                                 typesToSmoothFlow = typesToSmoothAndDisplay,
                                 algorithmFlow = selectedSmoothingAlgorithm,
                                 alphaFlow = smoothingAlpha,
@@ -280,14 +281,20 @@ class SharedViewModel @Inject constructor(
             )
 
     fun statisticsUiState(
-        range: TimeRangeFilter
+        startTimeMillis: Long?,
+        endTimeMillis: Long?
     ): Flow<UiState<List<EnrichedMeasurement>>> =
         selectedUserId.flatMapLatest { uid ->
             if (uid == null) {
                 flowOf(UiState.Success(emptyList()))
             } else {
                 measurementFacade
-                    .timeFilteredEnrichedFlow(uid, measurementTypes, range)
+                    .timeFilteredEnrichedFlow(
+                        userId = uid,
+                        measurementTypesFlow = measurementTypes,
+                        startTimeMillis = startTimeMillis,
+                        endTimeMillis = endTimeMillis
+                    )
                     .map<List<EnrichedMeasurement>, UiState<List<EnrichedMeasurement>>> { UiState.Success(it) }
                     .onStart { emit(UiState.Loading) }
                     .catch { emit(UiState.Error(it.message)) }
@@ -432,22 +439,28 @@ class SharedViewModel @Inject constructor(
 
     // --- Optional: ad-hoc pipeline with provided UI state ---
     fun smoothedEnrichedMeasurements(
-        timeRangeFlow: StateFlow<TimeRangeFilter>,
-        typesToSmoothAndDisplayFlow: StateFlow<Set<Int>>
-    ): Flow<List<EnrichedMeasurement>> =
-        selectedUserId.flatMapLatest { uid ->
-            if (uid == null) flowOf(emptyList())
-            else measurementFacade.pipeline(
-                userId = uid,
-                measurementTypesFlow = measurementTypes,
-                timeRangeFlow = timeRangeFlow,
-                typesToSmoothFlow = typesToSmoothAndDisplayFlow,
-                algorithmFlow = selectedSmoothingAlgorithm,
-                alphaFlow = smoothingAlpha,
-                windowFlow = smoothingWindowSize,
-                maxGapDaysFlow = smoothingMaxGapDays
-            )
+        startTimeMillisFlow: Flow<Long?>,
+        endTimeMillisFlow: Flow<Long?>,
+        typesToSmoothAndDisplayFlow: Flow<Set<Int>>
+    ): Flow<List<EnrichedMeasurement>> {
+        return selectedUserId.flatMapLatest { userId ->
+            if (userId == null) {
+                flowOf(emptyList())
+            } else {
+                measurementFacade.pipeline(
+                    userId = userId,
+                    measurementTypesFlow = measurementTypes,
+                    startTimeMillisFlow = startTimeMillisFlow,
+                    endTimeMillisFlow = endTimeMillisFlow,
+                    typesToSmoothFlow = typesToSmoothAndDisplayFlow,
+                    algorithmFlow = selectedSmoothingAlgorithm,
+                    alphaFlow = smoothingAlpha,
+                    windowFlow = smoothingWindowSize,
+                    maxGapDaysFlow = chartSmoothingMaxGapDays
+                )
+            }
         }
+    }
 
     fun evaluateMeasurement(
         typeKey: MeasurementTypeKey,

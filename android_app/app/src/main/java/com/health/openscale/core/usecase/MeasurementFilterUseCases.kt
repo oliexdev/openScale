@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.collections.filter
@@ -40,41 +39,29 @@ import kotlin.collections.filter
 class MeasurementFilterUseCases @Inject constructor() {
 
     /**
-     * Filters [enrichedFlow] by the given [selectedTimeRange].
+     * Filters [enrichedFlow] by the given start and end timestamps.
+     * If either timestamp is null, no filtering is applied.
      *
-     * The range is computed in local time:
-     * - `ALL_DAYS` → no filtering
-     * - `LAST_7_DAYS` / `LAST_30_DAYS` / `LAST_365_DAYS` → from midnight of (today - N) to now
+     * @param enrichedFlow The flow of measurements to filter.
+     * @param startTimeMillis The start of the time range (inclusive).
+     * @param endTimeMillis The end of the time range (inclusive).
+     * @return A flow of lists of [EnrichedMeasurement] filtered by the time range.
      */
     fun getTimeFiltered(
         enrichedFlow: Flow<List<EnrichedMeasurement>>,
-        selectedTimeRange: TimeRangeFilter
+        startTimeMillis: Long?,
+        endTimeMillis: Long?
     ): Flow<List<EnrichedMeasurement>> {
         return enrichedFlow
             .map { all ->
-                if (selectedTimeRange == TimeRangeFilter.ALL_DAYS) {
+                // If there's no valid time range, return everything.
+                if (startTimeMillis == null || endTimeMillis == null) {
                     all
                 } else {
-                    val cal = Calendar.getInstance()
-                    val endTime = cal.timeInMillis
-
-                    when (selectedTimeRange) {
-                        TimeRangeFilter.LAST_7_DAYS -> cal.add(Calendar.DAY_OF_YEAR, -7)
-                        TimeRangeFilter.LAST_30_DAYS -> cal.add(Calendar.DAY_OF_YEAR, -30)
-                        TimeRangeFilter.LAST_365_DAYS -> cal.add(Calendar.DAY_OF_YEAR, -365)
-                        else -> { /* no-op */ }
-                    }
-
-                    // normalize to local midnight
-                    cal.set(Calendar.HOUR_OF_DAY, 0)
-                    cal.set(Calendar.MINUTE, 0)
-                    cal.set(Calendar.SECOND, 0)
-                    cal.set(Calendar.MILLISECOND, 0)
-                    val startTime = cal.timeInMillis
-
+                    // Otherwise, filter the data. [6, 8]
                     all.filter { em ->
                         val ts = em.measurementWithValues.measurement.timestamp
-                        ts in startTime..endTime
+                        ts in startTimeMillis..endTimeMillis
                     }
                 }
             }
