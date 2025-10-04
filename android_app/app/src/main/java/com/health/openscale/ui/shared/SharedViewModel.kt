@@ -258,8 +258,8 @@ class SharedViewModel @Inject constructor(
                             measurementFacade.pipeline(
                                 userId = uidFromFacade,
                                 measurementTypesFlow = measurementTypes,
-                                startTimeMillisFlow = flowOf(null), // TODO
-                                endTimeMillisFlow = flowOf(null), // TODO
+                                startTimeMillisFlow = flowOf(null), // No time range filter
+                                endTimeMillisFlow = flowOf(null), // No time range filter
                                 typesToSmoothFlow = typesToSmoothAndDisplay,
                                 algorithmFlow = selectedSmoothingAlgorithm,
                                 alphaFlow = smoothingAlpha,
@@ -319,13 +319,6 @@ class SharedViewModel @Inject constructor(
         measurementFacade.getAllMeasurementTypes()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    // Convenience for UI that still calls through the VM:
-    fun filterEnrichedMeasurementsByTypes(
-        measurementsToFilter: List<EnrichedMeasurement>,
-        selectedTypeIds: Set<Int>
-    ): List<EnrichedMeasurement> =
-        measurementFacade.filterByTypes(measurementsToFilter, selectedTypeIds)
-
     // --- Current measurement (detail) ---
     private val _currentMeasurementId = MutableStateFlow<Int?>(null)
     val currentMeasurementWithValues: StateFlow<MeasurementWithValues?> =
@@ -355,10 +348,6 @@ class SharedViewModel @Inject constructor(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 7)
 
     // --- UI controls (local UI state) ---
-    private val _selectedTimeRange = MutableStateFlow(TimeRangeFilter.ALL_DAYS)
-    val selectedTimeRange: StateFlow<TimeRangeFilter> = _selectedTimeRange.asStateFlow()
-    fun setSelectedTimeRange(range: TimeRangeFilter) { _selectedTimeRange.value = range }
-
     private val _typesToSmoothAndDisplay = MutableStateFlow<Set<Int>>(emptySet())
     val typesToSmoothAndDisplay: StateFlow<Set<Int>> = _typesToSmoothAndDisplay.asStateFlow()
 
