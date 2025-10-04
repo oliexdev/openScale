@@ -464,6 +464,7 @@
     <string name="setting_smoothing_algorithm">Glättungsalgorithmus</string>
     <string name="setting_smoothing_alpha">Alpha</string>
     <string name="setting_smoothing_window_size">Fenstergröße</string>
+    <string name="setting_smoothing_max_gap_days">Max. Lücke für Glättung (Tage)</string>
     <string name="smoothing_algorithm_none">Keine Glättung</string>
     <string name="smoothing_algorithm_sma">Gleitender Durchschnitt</string>
     <string name="smoothing_algorithm_ses">Exponentielle Glättung</string>

@@ -85,6 +85,7 @@ object SettingsPreferenceKeys {
     val CHART_SMOOTHING_ALGORITHM = stringPreferencesKey("chart_smoothing_algorithm")
     val CHART_SMOOTHING_ALPHA = floatPreferencesKey("chart_smoothing_alpha")
     val CHART_SMOOTHING_WINDOW_SIZE = intPreferencesKey("chart_smoothing_window_size")
+    val CHART_SMOOTHING_MAX_GAP_DAYS = intPreferencesKey("chart_smoothing_max_gap_days")
 
     // --- Settings for Automatic Backups ---
     val AUTO_BACKUP_ENABLED_GLOBALLY = booleanPreferencesKey("auto_backup_enabled_globally")
@@ -178,6 +179,9 @@ interface SettingsFacade {
 
     val chartSmoothingWindowSize: Flow<Int>
     suspend fun setChartSmoothingWindowSize(windowSize: Int)
+
+    val chartSmoothingMaxGapDays: Flow<Int>
+    suspend fun setChartSmoothingMaxGapDays(days: Int)
 
     // --- Automatic Backup Settings ---
     val autoBackupEnabledGlobally: Flow<Boolean>
@@ -503,6 +507,19 @@ class SettingsFacadeImpl @Inject constructor(
         val validWindowSize = windowSize.coerceIn(2, 50)
         LogManager.d(TAG, "Setting chart smoothing window size to: $validWindowSize (raw input: $windowSize)")
         saveSetting(SettingsPreferenceKeys.CHART_SMOOTHING_WINDOW_SIZE.name, validWindowSize)
+    }
+
+    override val chartSmoothingMaxGapDays: Flow<Int> = observeSetting(
+        SettingsPreferenceKeys.CHART_SMOOTHING_MAX_GAP_DAYS.name,
+        7 // Default to 7 days
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing chartSmoothingMaxGapDays", exception)
+        emit(7) // Fallback to default on error
+    }
+
+    override suspend fun setChartSmoothingMaxGapDays(days: Int) {
+        LogManager.d(TAG, "Setting chart smoothing max gap to: $days days")
+        saveSetting(SettingsPreferenceKeys.CHART_SMOOTHING_MAX_GAP_DAYS.name, days)
     }
 
     override val autoBackupEnabledGlobally: Flow<Boolean> = observeSetting(

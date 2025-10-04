@@ -94,6 +94,10 @@ fun ChartSettingsScreen(
         .smoothingWindowSize
         .collectAsStateWithLifecycle(initialValue = 5)
 
+    val maxGapDays by sharedViewModel
+        .chartSmoothingMaxGapDays
+        .collectAsStateWithLifecycle(initialValue = 7)
+
     val availableAlgorithms = remember { SmoothingAlgorithm.values().toList() }
     var algorithmDropdownExpanded by remember { mutableStateOf(false) }
 
@@ -207,6 +211,18 @@ fun ChartSettingsScreen(
                         modifier = Modifier.padding(start = 16.dp)
                     )
                 }
+
+                IntegerStepper(
+                    label = stringResource(R.string.setting_smoothing_max_gap_days),
+                    value = maxGapDays,
+                    onValueChange = { newValue ->
+                        scope.launch {
+                            sharedViewModel.setChartSmoothingMaxGapDays(newValue)
+                        }
+                    },
+                    valueRange = 1..365,
+                    modifier = Modifier.padding(start = 16.dp)
+                )
             }
         }
     }

@@ -19,7 +19,6 @@ package com.health.openscale.ui.shared
 
 import android.content.ContentResolver
 import android.net.Uri
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.material3.SnackbarDuration
 import androidx.lifecycle.ViewModel
@@ -42,8 +41,6 @@ import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.usecase.MeasurementEvaluationResult
 import com.health.openscale.core.utils.LogManager
-import com.health.openscale.core.utils.LogManager.init
-import com.health.openscale.ui.screen.settings.SettingsViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -56,9 +53,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -71,7 +66,6 @@ import java.text.DateFormat
 import java.util.Date
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
-import kotlin.text.format
 
 /**
  * Shared VM coordinating user selection, measurement flows, and UI chrome.
@@ -268,7 +262,8 @@ class SharedViewModel @Inject constructor(
                                 typesToSmoothFlow = typesToSmoothAndDisplay,
                                 algorithmFlow = selectedSmoothingAlgorithm,
                                 alphaFlow = smoothingAlpha,
-                                windowFlow = smoothingWindowSize
+                                windowFlow = smoothingWindowSize,
+                                maxGapDaysFlow = smoothingMaxGapDays
                             )
                                 .map<List<EnrichedMeasurement>, UiState<List<EnrichedMeasurement>>> {
                                     UiState.Success(it)
@@ -337,16 +332,20 @@ class SharedViewModel @Inject constructor(
 
     // --- Chart smoothing config (via MeasurementFacade) ---
     val selectedSmoothingAlgorithm: StateFlow<SmoothingAlgorithm> =
-        measurementFacade.observeSmoothingAlgorithm()
+        chartSmoothingAlgorithm
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SmoothingAlgorithm.NONE)
 
     val smoothingAlpha: StateFlow<Float> =
-        measurementFacade.observeSmoothingAlpha()
+        chartSmoothingAlpha
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0.5f)
 
     val smoothingWindowSize: StateFlow<Int> =
-        measurementFacade.observeSmoothingWindow()
+        chartSmoothingWindowSize
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 5)
+
+    val smoothingMaxGapDays: StateFlow<Int> =
+        chartSmoothingMaxGapDays
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 7)
 
     // --- UI controls (local UI state) ---
     private val _selectedTimeRange = MutableStateFlow(TimeRangeFilter.ALL_DAYS)
@@ -445,7 +444,8 @@ class SharedViewModel @Inject constructor(
                 typesToSmoothFlow = typesToSmoothAndDisplayFlow,
                 algorithmFlow = selectedSmoothingAlgorithm,
                 alphaFlow = smoothingAlpha,
-                windowFlow = smoothingWindowSize
+                windowFlow = smoothingWindowSize,
+                maxGapDaysFlow = smoothingMaxGapDays
             )
         }
 

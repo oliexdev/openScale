@@ -467,6 +467,7 @@
     <string name="setting_smoothing_algorithm">Smoothing Algorithm</string>
     <string name="setting_smoothing_alpha">Alpha</string>
     <string name="setting_smoothing_window_size">Window Size</string>
+    <string name="setting_smoothing_max_gap_days">Max. gap for smoothing (days)</string>
     <string name="smoothing_algorithm_none">No Smoothing</string>
     <string name="smoothing_algorithm_sma">Moving Average</string>
     <string name="smoothing_algorithm_ses">Exponential Smoothing</string>

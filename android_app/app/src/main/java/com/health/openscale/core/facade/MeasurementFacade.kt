@@ -116,8 +116,12 @@ class MeasurementFacade @Inject constructor(
         selectedTypeIds: Set<Int>
     ): List<EnrichedMeasurement> = filter.filterByTypes(measurements, selectedTypeIds)
 
+
     /**
      * Full pipeline: query + enrich + time filter + (optional) smoothing for selected types.
+     *
+     * This orchestrates the entire data flow for the charts, including robust smoothing that
+     * handles irregular time intervals by splitting the data into blocks.
      *
      * @param userId Database id of the user.
      * @param measurementTypesFlow Global type catalog.
@@ -126,6 +130,7 @@ class MeasurementFacade @Inject constructor(
      * @param algorithmFlow Selected smoothing algorithm.
      * @param alphaFlow Alpha for exponential smoothing (0..1).
      * @param windowFlow Window for SMA (≥1).
+     * @param maxGapDaysFlow The maximum number of days between measurements before smoothing is reset.
      */
     fun pipeline(
         userId: Int,
@@ -134,14 +139,16 @@ class MeasurementFacade @Inject constructor(
         typesToSmoothFlow: Flow<Set<Int>>,
         algorithmFlow: Flow<SmoothingAlgorithm>,
         alphaFlow: Flow<Float>,
-        windowFlow: Flow<Int>
+        windowFlow: Flow<Int>,
+        maxGapDaysFlow: Flow<Int>
     ): Flow<List<EnrichedMeasurement>> {
         val enriched = enrichedFlowForUser(userId, measurementTypesFlow)
 
+        @OptIn(ExperimentalCoroutinesApi::class)
         val timeFiltered: Flow<List<EnrichedMeasurement>> =
             combine(enriched, timeRangeFlow) { list, range ->
-                filter.getTimeFiltered(flowOf(list), range) // returns Flow<List<...>>
-            }.flattenLatest()
+                filter.getTimeFiltered(flowOf(list), range)
+            }.flatMapLatest { it }
 
         return smooth.applySmoothing(
             baseEnrichedFlow = timeFiltered,
@@ -149,7 +156,8 @@ class MeasurementFacade @Inject constructor(
             measurementTypesFlow = measurementTypesFlow,
             algorithmFlow = algorithmFlow,
             alphaFlow = alphaFlow,
-            windowFlow = windowFlow
+            windowFlow = windowFlow,
+            maxGapDaysFlow = maxGapDaysFlow
         )
     }
 
@@ -235,15 +243,6 @@ class MeasurementFacade @Inject constructor(
 
     fun getMeasurementWithValuesById(id: Int): Flow<MeasurementWithValues?> =
         query.getMeasurementWithValuesById(id)
-
-    fun observeSmoothingAlgorithm(): Flow<SmoothingAlgorithm> =
-        smooth.observeAlgorithm()
-
-    fun observeSmoothingAlpha(): Flow<Float> =
-        smooth.observeAlpha()
-
-    fun observeSmoothingWindow(): Flow<Int> =
-        smooth.observeWindow()
 
     /**
      * Sets or clears the pending reference user for the next BLE measurement
