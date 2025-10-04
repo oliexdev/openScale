@@ -41,7 +41,7 @@ import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.core.model.ValueWithDifference
 import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.shared.SharedViewModel
-import com.health.openscale.ui.screen.components.LineChart
+import com.health.openscale.ui.screen.components.MeasurementChart
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
 import com.health.openscale.ui.screen.overview.MeasurementValueRow
 import kotlinx.coroutines.launch
@@ -104,14 +104,15 @@ fun GraphScreen(
                         Text(stringResource(R.string.no_data_available))
                     }
                 } else {
-                    LineChart(
+                    MeasurementChart(
                         modifier = Modifier.fillMaxSize(),
                         sharedViewModel = sharedViewModel,
                         screenContextName = SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT,
                         showFilterControls = true,
+                        showPeriodChart = true,
                         onPointSelected = { selectedTs ->
                             val result = sharedViewModel.findClosestMeasurement(selectedTs, allMeasurementsWithValues)
-                                ?: return@LineChart
+                                ?: return@MeasurementChart
                             val (idx, mwv) = result
                             val id = mwv.measurement.id
                             val now = System.currentTimeMillis()

@@ -61,11 +61,9 @@ import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.shared.SharedViewModel
-import com.health.openscale.ui.screen.components.LineChart
+import com.health.openscale.ui.screen.components.MeasurementChart
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
 import com.health.openscale.ui.screen.components.rememberContextualTimeRangeFilter
-import com.health.openscale.ui.shared.TopBarAction
-import java.text.DecimalFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -286,7 +284,7 @@ fun calculateStatisticsForType(
  * @param sharedViewModel The [SharedViewModel] instance.
  * @param measurementType The [MeasurementType] for which statistics are displayed.
  * @param statistics The calculated [MeasurementStatistics] for this type.
- * @param screenContextForChart A context name string used for the embedded [LineChart].
+ * @param screenContextForChart A context name string used for the embedded [MeasurementChart].
  */
 @Composable
 fun StatisticCard(
@@ -352,7 +350,7 @@ fun StatisticCard(
             Spacer(modifier = Modifier.height(10.dp))
 
             // --- MIDDLE: LineChart ---
-            LineChart(
+            MeasurementChart(
                 sharedViewModel = sharedViewModel,
                 screenContextName = screenContextForChart,
                 showFilterControls = false, // Filter controls are global for the screen

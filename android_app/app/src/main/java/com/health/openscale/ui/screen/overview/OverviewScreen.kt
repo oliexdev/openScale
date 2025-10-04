@@ -126,7 +126,7 @@ import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.settings.BluetoothViewModel
-import com.health.openscale.ui.screen.components.LineChart
+import com.health.openscale.ui.screen.components.MeasurementChart
 import com.health.openscale.ui.screen.components.UserGoalChip
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
 import com.health.openscale.ui.screen.dialog.UserGoalDialog
@@ -578,7 +578,7 @@ fun OverviewScreen(
 
                             // Chart
                             Box(modifier = Modifier.fillMaxWidth()) {
-                                LineChart(
+                                MeasurementChart(
                                     sharedViewModel = sharedViewModel,
                                     screenContextName = SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
                                     showFilterControls = true,

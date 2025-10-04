@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -105,10 +106,14 @@ import com.patrykandpatrick.vico.core.common.data.ExtraStore
 import com.patrykandpatrick.vico.core.common.shape.CorneredShape
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.time.temporal.WeekFields
+import java.util.Locale
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -135,11 +140,12 @@ private const val SHOW_TYPE_FILTER_ROW_SUFFIX = "_show_type_filter_row"
  *                                This is useful for focused views, like a detail screen for one measurement type.
  */
 @Composable
-fun LineChart(
+fun MeasurementChart(
     modifier: Modifier = Modifier,
     sharedViewModel: SharedViewModel,
     screenContextName: String,
     showFilterControls: Boolean,
+    showPeriodChart: Boolean = false,
     showFilterTitle: Boolean = false,
     showYAxis: Boolean = true,
     targetMeasurementTypeId: Int? = null,
@@ -218,13 +224,133 @@ fun LineChart(
         }
     }
 
-    val fullyFilteredEnrichedMeasurements = remember(smoothedData, currentSelectedTypeIntIds) {
-        sharedViewModel.filterEnrichedMeasurementsByTypes(smoothedData, currentSelectedTypeIntIds)
+    var selectedPeriod by remember { mutableStateOf<PeriodDataPoint?>(null) }
+
+    val lineChartMeasurements = remember(smoothedData, selectedPeriod) {
+        if (selectedPeriod == null) smoothedData
+        else smoothedData.filter { measurement ->
+            val ts = measurement.measurementWithValues.measurement.timestamp
+            ts >= selectedPeriod!!.startTimestamp && ts < selectedPeriod!!.endTimestamp
+        }
+    }
+
+    val measurementsForPeriodChart = remember(smoothedData) {
+        smoothedData.map { it.measurementWithValues }
+    }
+
+    val periodChartData = remember(measurementsForPeriodChart, uiSelectedTimeRange) {
+        if (measurementsForPeriodChart.isEmpty()) return@remember emptyList<PeriodDataPoint>()
+
+        // Determine min and max date of filtered measurements
+        val minDate = measurementsForPeriodChart.minOf {
+            Instant.ofEpochMilli(it.measurement.timestamp)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+        }
+        val maxDate = measurementsForPeriodChart.maxOf {
+            Instant.ofEpochMilli(it.measurement.timestamp)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+        }
+
+        // Decide grouping dynamically
+        val totalDays = ChronoUnit.DAYS.between(minDate, maxDate).toInt()
+        val groupingUnit: ChronoUnit
+        val intervalSize: Long
+
+        when {
+            totalDays <= 7 -> {
+                groupingUnit = ChronoUnit.DAYS
+                intervalSize = 1
+            }
+            totalDays <= 30 -> {
+                groupingUnit = ChronoUnit.WEEKS
+                intervalSize = 1
+            }
+            totalDays <= 365 -> {
+                groupingUnit = ChronoUnit.MONTHS
+                intervalSize = 1
+            }
+            else -> {
+                groupingUnit = ChronoUnit.YEARS
+                intervalSize = 1
+            }
+        }
+
+        // Generate periods from minDate to maxDate
+        val allPeriods = mutableListOf<LocalDate>()
+        var cursor = when (groupingUnit) {
+            ChronoUnit.DAYS -> minDate
+            ChronoUnit.WEEKS -> minDate.with(DayOfWeek.MONDAY)
+            ChronoUnit.MONTHS -> minDate.withDayOfMonth(1)
+            else -> minDate.withDayOfYear(1)
+        }
+
+        while (!cursor.isAfter(maxDate)) {
+            allPeriods.add(cursor)
+            cursor = when (groupingUnit) {
+                ChronoUnit.DAYS -> cursor.plusDays(intervalSize)
+                ChronoUnit.WEEKS -> cursor.plusWeeks(intervalSize)
+                ChronoUnit.MONTHS -> cursor.plusMonths(intervalSize)
+                else -> cursor.plusYears(intervalSize)
+            }
+        }
+
+        // Ensure minimum 5 periods for better chart appearance
+        while (allPeriods.size < 5) {
+            cursor = when (groupingUnit) {
+                ChronoUnit.DAYS -> allPeriods.first().minusDays(intervalSize)
+                ChronoUnit.WEEKS -> allPeriods.first().minusWeeks(intervalSize)
+                ChronoUnit.MONTHS -> allPeriods.first().minusMonths(intervalSize)
+                else -> allPeriods.first().minusYears(intervalSize)
+            }
+            allPeriods.add(0, cursor)
+        }
+
+        // Group measurements by period
+        val grouped = measurementsForPeriodChart.groupBy { mwv ->
+            val date = Instant.ofEpochMilli(mwv.measurement.timestamp)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+            when (groupingUnit) {
+                ChronoUnit.DAYS -> date
+                ChronoUnit.WEEKS -> date.with(DayOfWeek.MONDAY)
+                ChronoUnit.MONTHS -> date.withDayOfMonth(1)
+                else -> date.withDayOfYear(1)
+            }
+        }
+
+        // Localized label formatter
+        val locale = Locale.getDefault()
+        val labelFormatter: (LocalDate) -> String = { date ->
+            when (groupingUnit) {
+                ChronoUnit.DAYS -> date.format(DateTimeFormatter.ofPattern("d LLL", locale))
+                ChronoUnit.WEEKS -> "W${date.get(WeekFields.of(locale).weekOfWeekBasedYear())}"
+                ChronoUnit.MONTHS -> date.format(DateTimeFormatter.ofPattern("LLL yy", locale))
+                else -> date.year.toString()
+            }
+        }
+
+        // Map all periods to PeriodDataPoint, even empty ones
+        allPeriods.mapIndexed { index, periodStart ->
+            val periodEnd = if (index + 1 < allPeriods.size)
+                allPeriods[index + 1].atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            else
+                maxDate.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+            val measurementsInPeriod = grouped[periodStart] ?: emptyList()
+            PeriodDataPoint(
+                label = labelFormatter(periodStart),
+                count = measurementsInPeriod.size,
+                startTimestamp = periodStart.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                endTimestamp = periodEnd
+            )
+        }
     }
 
     // Extracting measurements with their values for plotting.
-    val measurementsWithValues = remember(fullyFilteredEnrichedMeasurements) {
-        fullyFilteredEnrichedMeasurements.map { it.measurementWithValues }
+    val measurementsWithValues = remember(lineChartMeasurements) {
+        lineChartMeasurements.map { it.measurementWithValues }
     }
 
     // Determine which measurement types to actually plot based on current selections,
@@ -311,6 +437,23 @@ fun LineChart(
                     ),
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center
+                )
+            }
+        }
+
+        if (showPeriodChart && periodChartData.isNotEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .padding(horizontal = 8.dp)
+            ) {
+                PeriodChart(
+                    data = periodChartData,
+                    selectedPeriod = selectedPeriod,
+                    onPeriodClick = { clicked ->
+                        selectedPeriod = if (selectedPeriod == clicked) null else clicked
+                    }
                 )
             }
         }
