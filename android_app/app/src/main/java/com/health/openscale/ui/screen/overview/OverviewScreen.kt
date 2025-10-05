@@ -32,6 +32,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -86,6 +87,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -99,9 +101,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.data.position
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -321,6 +325,9 @@ fun OverviewScreen(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var highlightedMeasurementId by rememberSaveable { mutableStateOf<Int?>(null) }
+    val upperPaneWeight by remember(SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT, sharedViewModel) {
+        sharedViewModel.observeSplitterWeight(SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT, 0.3f)
+    }.collectAsState(initial = 0.3f)
 
     // Time filter action for the top bar, specific to this screen's context
     val timeFilterAction = provideFilterTopBarAction(
@@ -577,14 +584,13 @@ fun OverviewScreen(
                             }
 
                             // Chart
-                            Box(modifier = Modifier.fillMaxWidth()) {
+                            Box(modifier = Modifier.weight(upperPaneWeight)) {
                                 MeasurementChart(
                                     sharedViewModel = sharedViewModel,
                                     screenContextName = SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
                                     showFilterControls = true,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(200.dp)
                                         .padding(bottom = 8.dp),
                                     showYAxis = false,
                                     onPointSelected = { selectedTs ->
@@ -607,7 +613,31 @@ fun OverviewScreen(
                                 )
                             }
 
-                            HorizontalDivider(Modifier.padding(bottom = 8.dp))
+                            // Draggable divider
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(16.dp)
+                                    .pointerInput(Unit) {
+                                        detectDragGestures { change, _ ->
+                                            change.consume()
+
+                                            val deltaY = (change.position.y - change.previousPosition.y)
+                                            val weightDelta = deltaY / 2000f
+                                            val newWeight = (upperPaneWeight + weightDelta).coerceIn(0.01f, 0.7f)
+                                            scope.launch {
+                                                sharedViewModel.setSplitterWeight(SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT, newWeight)
+                                            }
+                                        }
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(vertical = 6.dp),
+                                    thickness = 1.dp,
+                                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                                )
+                            }
 
                             // Goals Section
                             if (userGoals.isNotEmpty()) {
@@ -734,7 +764,7 @@ fun OverviewScreen(
                             LazyColumn(
                                 state = listState,
                                 modifier = Modifier
-                                    .weight(1f) // Takes remaining space in the Column
+                                    .weight(1f - upperPaneWeight) // Takes remaining space in the Column
                                     .fillMaxSize()
                                     .padding(horizontal = 16.dp, vertical = 8.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp)

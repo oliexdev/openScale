@@ -160,6 +160,9 @@ interface SettingsFacade {
     val myGoalsExpandedOverview: Flow<Boolean>
     suspend fun setMyGoalsExpandedOverview(isExpanded: Boolean)
 
+    fun observeSplitterWeight(keyPrefix: String, defaultValue: Float): Flow<Float>
+    suspend fun setSplitterWeight(keyPrefix : String, weight: Float)
+
     // Bluetooth scale settings
     fun observeSavedDevice(): Flow<ScannedDeviceInfo?>
     suspend fun saveSavedDevice(device: ScannedDeviceInfo)
@@ -359,6 +362,27 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun setMyGoalsExpandedOverview(isExpanded: Boolean) {
         saveSetting(SettingsPreferenceKeys.MY_GOALS_EXPANDED_OVERVIEW.name, isExpanded)
     }
+
+
+    override fun observeSplitterWeight(keyPrefix: String, defaultValue: Float): Flow<Float> {
+        val dynamicKey = floatPreferencesKey("${keyPrefix}_splitter_weight")
+        return dataStore.data
+            .catch { exception ->
+                LogManager.e(TAG, "Error observing splitter weight for key $dynamicKey", exception)
+                emit(emptyPreferences())
+            }
+            .map { preferences ->
+                preferences[dynamicKey] ?: defaultValue
+            }
+    }
+
+    override suspend fun setSplitterWeight(keyPrefix: String, weight: Float) {
+        val dynamicKey = floatPreferencesKey("${keyPrefix}_splitter_weight")
+        dataStore.edit { preferences ->
+            preferences[dynamicKey] = weight
+        }
+    }
+
 
     override fun observeSavedDevice(): Flow<ScannedDeviceInfo?> {
         val addrF  = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_ADDRESS.name,  null as String?)

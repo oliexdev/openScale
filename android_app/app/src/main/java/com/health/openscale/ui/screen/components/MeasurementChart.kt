@@ -17,14 +17,17 @@
  */
 package com.health.openscale.ui.screen.components
 
+import android.R.attr.data
 import android.text.Layout
 import android.text.format.DateFormat
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -61,6 +64,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -188,6 +192,11 @@ fun MeasurementChart(
             )
         }
     }
+
+    val upperPaneWeight by remember(SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT, sharedViewModel) {
+        sharedViewModel.observeSplitterWeight(SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT, 0.25f)
+    }.collectAsState(initial = 0.25f)
+
 
     val showDataPointsSetting by sharedViewModel
         .showChartDataPoints
@@ -437,15 +446,42 @@ fun MeasurementChart(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
+                    .weight(upperPaneWeight)
                     .padding(horizontal = 8.dp)
             ) {
                 PeriodChart(
+                    modifier = Modifier.fillMaxHeight(),
                     data = periodChartData,
                     selectedPeriod = selectedPeriod,
                     onPeriodClick = { clicked ->
                         selectedPeriod = if (selectedPeriod == clicked) null else clicked
                     }
+                )
+            }
+
+            // draggable divider
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(16.dp)
+                    .pointerInput(Unit) {
+                        detectDragGestures { change, _ ->
+                            change.consume()
+
+                            val deltaY = (change.position.y - change.previousPosition.y)
+                            val weightDelta = deltaY / 2000f
+                            val newWeight = (upperPaneWeight + weightDelta).coerceIn(0.01f, 0.7f)
+                            scope.launch {
+                                sharedViewModel.setSplitterWeight(SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT, newWeight)
+                            }
+                        }
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 6.dp),
+                    thickness = 1.dp,
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                 )
             }
         }
@@ -729,7 +765,7 @@ fun MeasurementChart(
                     modelProducer = modelProducer,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f),
+                        .weight(if (showPeriodChart) 1f - upperPaneWeight else 1f),
                     scrollState = scrollState,
                     zoomState = zoomState
                 )
