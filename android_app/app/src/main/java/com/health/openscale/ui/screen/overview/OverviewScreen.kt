@@ -29,6 +29,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -325,9 +328,15 @@ fun OverviewScreen(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var highlightedMeasurementId by rememberSaveable { mutableStateOf<Int?>(null) }
-    val upperPaneWeight by remember(SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT, sharedViewModel) {
+    val splitterWeight by remember(SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT, sharedViewModel) {
         sharedViewModel.observeSplitterWeight(SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT, 0.3f)
     }.collectAsState(initial = 0.3f)
+
+    var localSplitterWeight by remember { mutableStateOf(splitterWeight) }
+
+    LaunchedEffect(splitterWeight) {
+        localSplitterWeight = splitterWeight
+    }
 
     // Time filter action for the top bar, specific to this screen's context
     val timeFilterAction = provideFilterTopBarAction(
@@ -584,7 +593,7 @@ fun OverviewScreen(
                             }
 
                             // Chart
-                            Box(modifier = Modifier.weight(upperPaneWeight)) {
+                            Box(modifier = Modifier.weight(localSplitterWeight)) {
                                 MeasurementChart(
                                     sharedViewModel = sharedViewModel,
                                     screenContextName = SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
@@ -619,16 +628,22 @@ fun OverviewScreen(
                                     .fillMaxWidth()
                                     .height(16.dp)
                                     .pointerInput(Unit) {
-                                        detectDragGestures { change, _ ->
-                                            change.consume()
-
-                                            val deltaY = (change.position.y - change.previousPosition.y)
-                                            val weightDelta = deltaY / 2000f
-                                            val newWeight = (upperPaneWeight + weightDelta).coerceIn(0.01f, 0.7f)
-                                            scope.launch {
-                                                sharedViewModel.setSplitterWeight(SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT, newWeight)
-                                            }
-                                        }
+                                        detectDragGestures (
+                                            onDrag = { change, dragAmount ->
+                                                change.consume()
+                                                val deltaY = dragAmount.y
+                                                val weightDelta = deltaY / 2000f
+                                                localSplitterWeight = (localSplitterWeight + weightDelta).coerceIn(0.01f, 0.8f)
+                                            },
+                                            onDragEnd = {
+                                                scope.launch {
+                                                    sharedViewModel.setSplitterWeight(
+                                                        SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
+                                                        localSplitterWeight
+                                                    )
+                                                }
+                                            },
+                                        )
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
@@ -764,7 +779,7 @@ fun OverviewScreen(
                             LazyColumn(
                                 state = listState,
                                 modifier = Modifier
-                                    .weight(1f - upperPaneWeight) // Takes remaining space in the Column
+                                    .weight(1f - localSplitterWeight) // Takes remaining space in the Column
                                     .fillMaxSize()
                                     .padding(horizontal = 16.dp, vertical = 8.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp)

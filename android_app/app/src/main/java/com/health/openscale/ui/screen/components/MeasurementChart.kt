@@ -193,10 +193,15 @@ fun MeasurementChart(
         }
     }
 
-    val upperPaneWeight by remember(SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT, sharedViewModel) {
+    val splitterWeight by remember(SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT, sharedViewModel) {
         sharedViewModel.observeSplitterWeight(SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT, 0.25f)
     }.collectAsState(initial = 0.25f)
 
+    var localSplitterWeight by remember { mutableStateOf(splitterWeight) }
+
+    LaunchedEffect(splitterWeight) {
+        localSplitterWeight = splitterWeight
+    }
 
     val showDataPointsSetting by sharedViewModel
         .showChartDataPoints
@@ -446,7 +451,7 @@ fun MeasurementChart(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(upperPaneWeight)
+                    .weight(localSplitterWeight)
                     .padding(horizontal = 8.dp)
             ) {
                 PeriodChart(
@@ -465,16 +470,22 @@ fun MeasurementChart(
                     .fillMaxWidth()
                     .height(16.dp)
                     .pointerInput(Unit) {
-                        detectDragGestures { change, _ ->
-                            change.consume()
-
-                            val deltaY = (change.position.y - change.previousPosition.y)
-                            val weightDelta = deltaY / 2000f
-                            val newWeight = (upperPaneWeight + weightDelta).coerceIn(0.01f, 0.7f)
-                            scope.launch {
-                                sharedViewModel.setSplitterWeight(SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT, newWeight)
-                            }
-                        }
+                        detectDragGestures (
+                            onDrag = { change, dragAmount ->
+                                change.consume()
+                                val deltaY = dragAmount.y
+                                val weightDelta = deltaY / 2000f
+                                localSplitterWeight = (localSplitterWeight + weightDelta).coerceIn(0.01f, 0.8f)
+                            },
+                            onDragEnd = {
+                                scope.launch {
+                                    sharedViewModel.setSplitterWeight(
+                                        SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT,
+                                        localSplitterWeight
+                                    )
+                                }
+                            },
+                        )
                     },
                 contentAlignment = Alignment.Center
             ) {
@@ -765,7 +776,7 @@ fun MeasurementChart(
                     modelProducer = modelProducer,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(if (showPeriodChart) 1f - upperPaneWeight else 1f),
+                        .weight(if (showPeriodChart) 1f - localSplitterWeight else 1f),
                     scrollState = scrollState,
                     zoomState = zoomState
                 )
