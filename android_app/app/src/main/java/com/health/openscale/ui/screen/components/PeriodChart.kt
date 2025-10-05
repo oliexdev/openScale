@@ -21,6 +21,7 @@ import android.R.attr.textSize
 import android.text.Layout
 import android.text.TextUtils
 import android.util.Log
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -169,24 +170,22 @@ fun PeriodChart(
         chart = chart,
         modelProducer = modelProducer,
         modifier = modifier.pointerInput(data) {
-            while (true) {
-                awaitPointerEventScope {
-                    val event = awaitPointerEvent()
-                    if (event.changes.all { it.changedToUp() }) {
-                        hoveredIndex?.let { index ->
-                            if (index in data.indices) {
-                                val clickedData = data[index]
-                                // Toggle selection
-                                if (clickedData == selectedPeriod) {
-                                    onPeriodClick(null)
-                                } else {
-                                    onPeriodClick(clickedData)
-                                }
+            detectTapGestures(
+                onPress = {
+                    awaitRelease()
+                    hoveredIndex?.let { index ->
+                        if (index in data.indices) {
+                            val clickedData = data[index]
+                            // Toggle selection
+                            if (clickedData == selectedPeriod) {
+                                onPeriodClick(null)
+                            } else {
+                                onPeriodClick(clickedData)
                             }
                         }
                     }
                 }
-            }
+            )
         }
     )
 }
