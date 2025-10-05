@@ -72,7 +72,6 @@ import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.TimeRangeFilter
 import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.core.facade.SettingsFacade
-import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
@@ -226,19 +225,18 @@ fun MeasurementChart(
     }
 
     var isChartDataLoading by remember { mutableStateOf(true) }
-    val initialChartDataValue = remember { emptyList<EnrichedMeasurement>() }
 
-    val smoothedData by sharedViewModel
-        .smoothedEnrichedMeasurements(
+    val smoothedData by remember(startTimeMillis, endTimeMillis, currentSelectedTypeIntIds) {
+        sharedViewModel.smoothedEnrichedMeasurements(
             startTimeMillisFlow = startTimeMillisFlow,
             endTimeMillisFlow = endTimeMillisFlow,
             typesToSmoothAndDisplayFlow = typesToSmoothFlow
         )
-        .collectAsStateWithLifecycle(initialValue = initialChartDataValue)
+    }.collectAsStateWithLifecycle(initialValue = null)
 
     // Update loading state once data (or an empty list after loading) is received
     LaunchedEffect(smoothedData) {
-        if (smoothedData !== initialChartDataValue) {
+        if (smoothedData != null) {
             isChartDataLoading = false
         }
     }
@@ -247,14 +245,14 @@ fun MeasurementChart(
 
     val lineChartMeasurements = remember(smoothedData, selectedPeriod) {
         if (selectedPeriod == null) smoothedData
-        else smoothedData.filter { measurement ->
+        else (smoothedData ?: emptyList()).filter { measurement ->
             val ts = measurement.measurementWithValues.measurement.timestamp
             ts >= selectedPeriod!!.startTimestamp && ts < selectedPeriod!!.endTimestamp
         }
     }
 
     val measurementsForPeriodChart = remember(smoothedData) {
-        smoothedData.map { it.measurementWithValues }
+        (smoothedData ?: emptyList()).map { it.measurementWithValues }
     }
 
     val periodChartData = remember(measurementsForPeriodChart, uiSelectedTimeRange) {
@@ -369,7 +367,7 @@ fun MeasurementChart(
 
     // Extracting measurements with their values for plotting.
     val measurementsWithValues = remember(lineChartMeasurements) {
-        lineChartMeasurements.map { it.measurementWithValues }
+        (lineChartMeasurements?: emptyList()).map { it.measurementWithValues }
     }
 
     // Determine which measurement types to actually plot based on current selections,
@@ -557,7 +555,7 @@ fun MeasurementChart(
                     contentAlignment = Alignment.Center
                 ) {
                     val message = if (lineTypesToActuallyPlot.isEmpty() && effectiveShowTypeFilterRow) {
-                        if (currentSelectedTypeIntIds.isNotEmpty() && smoothedData.none { m -> m.measurementWithValues.values.any { v -> v.type.id in currentSelectedTypeIntIds } }) {
+                        if (currentSelectedTypeIntIds.isNotEmpty() && (smoothedData ?: emptyList()).none { m -> m.measurementWithValues.values.any { v -> v.type.id in currentSelectedTypeIntIds } }) {
                             stringResource(R.string.line_chart_no_data_for_selected_types)
                         } else if (currentSelectedTypeIntIds.isEmpty()){
                             stringResource(R.string.line_chart_please_select_types)
@@ -568,7 +566,7 @@ fun MeasurementChart(
                         if (allAvailableMeasurementTypes.none { it.isEnabled && (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) })
                             stringResource(R.string.line_chart_no_plottable_types)
                         else stringResource(R.string.line_chart_no_data_or_types_to_select)
-                    } else if (smoothedData.isEmpty() && measurementsWithValues.isEmpty() && currentSelectedTypeIntIds.isNotEmpty()){
+                    } else if ((smoothedData ?: emptyList()).isEmpty() && measurementsWithValues.isEmpty() && currentSelectedTypeIntIds.isNotEmpty()){
                         stringResource(R.string.line_chart_no_data_to_display)
                     }
                     else {
