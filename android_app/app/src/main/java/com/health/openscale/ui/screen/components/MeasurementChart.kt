@@ -55,6 +55,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -803,7 +804,7 @@ fun provideFilterTopBarAction(
         .observeSetting(targetShowFilterRowKeyName, defaultShowFilterRowForTopBar)
         .collectAsState(initial = defaultShowFilterRowForTopBar)
 
-    var showMenuState by remember { mutableStateOf(false) } // Controls dropdown menu visibility
+    var showMenuState by rememberSaveable { mutableStateOf(false) } // Controls dropdown menu visibility
     var showDateRangePicker by remember { mutableStateOf(false) }
 
     if (showDateRangePicker) {

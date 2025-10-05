@@ -194,12 +194,6 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
         scope.launch { drawerState.close() }
     }
 
-    // Reset top bar actions when the current route changes.
-    // This prevents actions from a previous screen from lingering on the new screen.
-    LaunchedEffect(currentRoute) {
-        sharedViewModel.setTopBarAction(null)
-    }
-
     LaunchedEffect(snackbarHostState, sharedViewModel, settingsViewModel, bluetoothViewModel) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             kotlinx.coroutines.flow.merge(

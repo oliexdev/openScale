@@ -133,6 +133,7 @@ fun SettingsScreen(
     val settingsScreenTitle = stringResource(R.string.route_title_settings)
     LaunchedEffect(Unit) {
         sharedViewModel.setTopBarTitle(settingsScreenTitle)
+        sharedViewModel.setTopBarActions(emptyList())
     }
 
     Column(
