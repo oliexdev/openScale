@@ -207,8 +207,7 @@ dependencies {
     implementation(libs.kotlin.csv.jvm)
 
     // Blessed Kotlin
-   // implementation(libs.blessed.kotlin)
-    implementation(libs.blessed.java)
+    implementation(libs.blessed.kotlin)
 
     // Test dependencies
     testImplementation(libs.junit)

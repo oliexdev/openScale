@@ -18,87 +18,44 @@
 package com.health.openscale.core.bluetooth
 
 import android.content.Context
-import com.health.openscale.core.bluetooth.modern.ScaleDeviceHandler
-import com.health.openscale.core.bluetooth.legacy.BluetoothActiveEraBF06
-import com.health.openscale.core.bluetooth.legacy.BluetoothBeurerBF105
-import com.health.openscale.core.bluetooth.legacy.BluetoothBeurerBF500
-import com.health.openscale.core.bluetooth.legacy.BluetoothBeurerBF600
-import com.health.openscale.core.bluetooth.legacy.BluetoothBeurerBF950
-import com.health.openscale.core.bluetooth.legacy.BluetoothBeurerSanitas
-import com.health.openscale.core.bluetooth.legacy.BluetoothBroadcastScale
-import com.health.openscale.core.bluetooth.legacy.BluetoothCommunication
-import com.health.openscale.core.bluetooth.legacy.BluetoothCustomOpenScale
-import com.health.openscale.core.bluetooth.legacy.BluetoothDigooDGSO38H
-import com.health.openscale.core.bluetooth.legacy.BluetoothES26BBB
-import com.health.openscale.core.bluetooth.legacy.BluetoothESCS20M
-import com.health.openscale.core.bluetooth.legacy.BluetoothExcelvanCF36xBLE
-import com.health.openscale.core.bluetooth.legacy.BluetoothExingtechY1
-import com.health.openscale.core.bluetooth.legacy.BluetoothHesley
-import com.health.openscale.core.bluetooth.legacy.BluetoothHoffenBBS8107
-import com.health.openscale.core.bluetooth.legacy.BluetoothHuaweiAH100
-import com.health.openscale.core.bluetooth.legacy.BluetoothIhealthHS3
-import com.health.openscale.core.bluetooth.legacy.BluetoothInlife
-import com.health.openscale.core.bluetooth.legacy.BluetoothMGB
-import com.health.openscale.core.bluetooth.legacy.BluetoothMedisanaBS44x
-import com.health.openscale.core.bluetooth.legacy.BluetoothMiScale
-import com.health.openscale.core.bluetooth.legacy.BluetoothMiScale2
-import com.health.openscale.core.bluetooth.legacy.BluetoothOKOK
-import com.health.openscale.core.bluetooth.legacy.BluetoothOKOK2
-import com.health.openscale.core.bluetooth.legacy.BluetoothOneByone
-import com.health.openscale.core.bluetooth.legacy.BluetoothOneByoneNew
-import com.health.openscale.core.bluetooth.legacy.BluetoothQNScale
-import com.health.openscale.core.bluetooth.legacy.BluetoothRenphoScale
-import com.health.openscale.core.bluetooth.legacy.BluetoothSanitasSBF72
-import com.health.openscale.core.bluetooth.legacy.BluetoothSenssun
-import com.health.openscale.core.bluetooth.legacy.BluetoothSinocare
-import com.health.openscale.core.bluetooth.legacy.BluetoothSoehnle
-import com.health.openscale.core.bluetooth.legacy.BluetoothTrisaBodyAnalyze
-import com.health.openscale.core.bluetooth.legacy.BluetoothYoda1Scale
-import com.health.openscale.core.bluetooth.legacy.BluetoothYunmaiSE_Mini
-import com.health.openscale.core.bluetooth.legacy.LegacyScaleAdapter
-import com.health.openscale.core.bluetooth.modern.AAAxHandler
-import com.health.openscale.core.bluetooth.modern.ActiveEraBF06Handler
-import com.health.openscale.core.bluetooth.modern.BeurerSanitasHandler
-import com.health.openscale.core.bluetooth.modern.BleBroadcastTuning
-import com.health.openscale.core.bluetooth.modern.BleGattTuning
-import com.health.openscale.core.bluetooth.modern.BroadcastScaleAdapter
-import com.health.openscale.core.bluetooth.modern.BtSppTuning
-import com.health.openscale.core.bluetooth.modern.CustomOpenScaleHandler
-import com.health.openscale.core.bluetooth.modern.DebugGattHandler
-import com.health.openscale.core.bluetooth.modern.DeviceSupport
-import com.health.openscale.core.bluetooth.modern.DigooDGSO38HHandler
-import com.health.openscale.core.bluetooth.modern.ESCS20mHandler
-import com.health.openscale.core.bluetooth.modern.ExcelvanCF36xHandler
-import com.health.openscale.core.bluetooth.modern.ExingtechY1Handler
-import com.health.openscale.core.bluetooth.modern.GattScaleAdapter
-import com.health.openscale.core.bluetooth.modern.HesleyHandler
-import com.health.openscale.core.bluetooth.modern.HoffenBbs8107Handler
-import com.health.openscale.core.bluetooth.modern.HuaweiAH100Handler
-import com.health.openscale.core.bluetooth.modern.IHealthHS3Handler
-import com.health.openscale.core.bluetooth.modern.InlifeHandler
-import com.health.openscale.core.bluetooth.modern.LinkMode
-import com.health.openscale.core.bluetooth.modern.MGBHandler
-import com.health.openscale.core.bluetooth.modern.MedisanaBs44xHandler
-import com.health.openscale.core.bluetooth.modern.MiScaleHandler
-import com.health.openscale.core.bluetooth.modern.OkOkHandler
-import com.health.openscale.core.bluetooth.modern.OneByoneHandler
-import com.health.openscale.core.bluetooth.modern.OneByoneNewHandler
-import com.health.openscale.core.bluetooth.modern.QNHandler
-import com.health.openscale.core.bluetooth.modern.RenphoES26BBHandler
-import com.health.openscale.core.bluetooth.modern.RenphoHandler
-import com.health.openscale.core.bluetooth.modern.SanitasSbf72Handler
-import com.health.openscale.core.bluetooth.modern.SenssunHandler
-import com.health.openscale.core.bluetooth.modern.SinocareHandler
-import com.health.openscale.core.bluetooth.modern.SoehnleHandler
-import com.health.openscale.core.bluetooth.modern.SppScaleAdapter
-import com.health.openscale.core.bluetooth.modern.StandardBeurerSanitasHandler
-import com.health.openscale.core.bluetooth.modern.TrisaBodyAnalyzeHandler
-import com.health.openscale.core.bluetooth.modern.TuningProfile
-import com.health.openscale.core.bluetooth.modern.Yoda1Handler
-import com.health.openscale.core.bluetooth.modern.YunmaiHandler
-import com.health.openscale.core.bluetooth.modern.forBroadcast
-import com.health.openscale.core.bluetooth.modern.forGatt
-import com.health.openscale.core.bluetooth.modern.forSpp
+import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
+import com.health.openscale.core.bluetooth.scales.AAAxHandler
+import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
+import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
+import com.health.openscale.core.bluetooth.scales.BroadcastScaleAdapter
+import com.health.openscale.core.bluetooth.scales.CustomOpenScaleHandler
+import com.health.openscale.core.bluetooth.scales.DebugGattHandler
+import com.health.openscale.core.bluetooth.scales.DeviceSupport
+import com.health.openscale.core.bluetooth.scales.DigooDGSO38HHandler
+import com.health.openscale.core.bluetooth.scales.ESCS20mHandler
+import com.health.openscale.core.bluetooth.scales.ExcelvanCF36xHandler
+import com.health.openscale.core.bluetooth.scales.ExingtechY1Handler
+import com.health.openscale.core.bluetooth.scales.GattScaleAdapter
+import com.health.openscale.core.bluetooth.scales.HesleyHandler
+import com.health.openscale.core.bluetooth.scales.HoffenBbs8107Handler
+import com.health.openscale.core.bluetooth.scales.HuaweiAH100Handler
+import com.health.openscale.core.bluetooth.scales.IHealthHS3Handler
+import com.health.openscale.core.bluetooth.scales.InlifeHandler
+import com.health.openscale.core.bluetooth.scales.LinkMode
+import com.health.openscale.core.bluetooth.scales.MGBHandler
+import com.health.openscale.core.bluetooth.scales.MedisanaBs44xHandler
+import com.health.openscale.core.bluetooth.scales.MiScaleHandler
+import com.health.openscale.core.bluetooth.scales.OkOkHandler
+import com.health.openscale.core.bluetooth.scales.OneByoneHandler
+import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
+import com.health.openscale.core.bluetooth.scales.QNHandler
+import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
+import com.health.openscale.core.bluetooth.scales.RenphoHandler
+import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler
+import com.health.openscale.core.bluetooth.scales.SenssunHandler
+import com.health.openscale.core.bluetooth.scales.SinocareHandler
+import com.health.openscale.core.bluetooth.scales.SoehnleHandler
+import com.health.openscale.core.bluetooth.scales.SppScaleAdapter
+import com.health.openscale.core.bluetooth.scales.StandardBeurerSanitasHandler
+import com.health.openscale.core.bluetooth.scales.TrisaBodyAnalyzeHandler
+import com.health.openscale.core.bluetooth.scales.TuningProfile
+import com.health.openscale.core.bluetooth.scales.Yoda1Handler
+import com.health.openscale.core.bluetooth.scales.YunmaiHandler
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
@@ -114,8 +71,7 @@ import javax.inject.Singleton
 
 /**
  * Factory class responsible for creating appropriate [ScaleCommunicator] instances
- * for different Bluetooth scale devices. It decides whether to use a modern Kotlin-based
- * handler or a legacy Java-based adapter.
+ * for different Bluetooth scale devices.
  */
 @Singleton
 class ScaleFactory @Inject constructor(
@@ -123,12 +79,10 @@ class ScaleFactory @Inject constructor(
     private val settingsFacade: SettingsFacade,
     private val measurementFacade: MeasurementFacade,
     private val userFacade: UserFacade,
-    private val legacyAdapterFactory: LegacyScaleAdapter.Factory
 ) {
     private val TAG = "ScaleHandlerFactory"
 
     // List of modern Kotlin-based device handlers.
-    // These are checked first for device compatibility.
     private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
         YunmaiHandler(isMini = false),
         YunmaiHandler(isMini = true),
@@ -163,206 +117,6 @@ class ScaleFactory @Inject constructor(
         AAAxHandler(),
         ActiveEraBF06Handler(),
         )
-
-    /**
-     * Attempts to create a legacy Java Bluetooth driver instance based on the device name.
-     * This method contains the logic to map device names to specific Java driver classes.
-     *
-     * @param context The application context.
-     * @param deviceInfo Information about the scanned Bluetooth device.
-     * @return A [BluetoothCommunication] instance if a matching driver is found, otherwise null.
-     */
-    private fun createLegacyJavaDriver(context: Context?, deviceInfo: ScannedDeviceInfo): BluetoothCommunication? {
-
-        return null // TODO don't use legacy drivers for now, modern handlers needs to be tested
-
-        val deviceName : String
-        val name : String
-
-        if (deviceInfo.name != null) {
-            deviceName = deviceInfo.name
-            name = deviceInfo.name.lowercase()
-        } else {
-            deviceName = deviceInfo.determinedHandlerDisplayName ?: "UnknownDevice"
-            name = deviceInfo.determinedHandlerDisplayName?.lowercase() ?: "UnknownDevice"
-        }
-
-        if (name.startsWith("BEURER BF700".lowercase())
-            || name.startsWith("BEURER BF800".lowercase())
-            || name.startsWith("BF-800".lowercase())
-            || name.startsWith("BF-700".lowercase())
-            || name.startsWith("RT-Libra-B".lowercase())
-            || name.startsWith("RT-Libra-W".lowercase())
-            || name.startsWith("Libra-B".lowercase())
-            || name.startsWith("Libra-W".lowercase())
-        ) {
-            return BluetoothBeurerSanitas(
-                context,
-                BluetoothBeurerSanitas.DeviceType.BEURER_BF700_800_RT_LIBRA
-            )
-        }
-        if (name.startsWith("BEURER BF710".lowercase())
-            || name == "BF700".lowercase()
-        ) {
-            return BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.BEURER_BF710)
-        }
-        if (name == "openScale".lowercase()) {
-            return BluetoothCustomOpenScale(context)
-        }
-        if (name == "Mengii".lowercase()) {
-            return BluetoothDigooDGSO38H(context)
-        }
-        if (name == "Electronic Scale".lowercase()) {
-            return BluetoothExcelvanCF36xBLE(context)
-        }
-        if (name == "VScale".lowercase()) {
-            return BluetoothExingtechY1(context)
-        }
-        if (name == "YunChen".lowercase()) {
-            return BluetoothHesley(context)
-        }
-        if (deviceName.startsWith("iHealth HS3")) {
-            return BluetoothIhealthHS3(context)
-        }
-
-        // BS444 || BS440
-        if (deviceName.startsWith("013197") || deviceName.startsWith("013198") || deviceName.startsWith(
-                "0202B6"
-            )
-        ) {
-            return BluetoothMedisanaBS44x(context, true)
-        }
-
-        //BS430
-        if (deviceName.startsWith("0203B")) {
-            return BluetoothMedisanaBS44x(context, false)
-        }
-
-        if (deviceName.startsWith("SWAN") || name == "icomon".lowercase() || name == "YG".lowercase()) {
-            return BluetoothMGB(context)
-        }
-        if (name == "MI_SCALE".lowercase() || name == "MI SCALE2".lowercase()) {
-            return BluetoothMiScale(context)
-        }
-        if (name == "MIBCS".lowercase() || name == "MIBFS".lowercase()) {
-            return BluetoothMiScale2(context)
-        }
-        if (name == "Health Scale".lowercase()) {
-            return BluetoothOneByone(context)
-        }
-        if (name == "1byone scale".lowercase()) {
-            return BluetoothOneByoneNew(context)
-        }
-
-        if (name == "SENSSUN FAT".lowercase()) {
-            return BluetoothSenssun(context)
-        }
-        if (name.startsWith("SANITAS SBF70".lowercase()) || name.startsWith("sbf75") || name.startsWith(
-                "AICDSCALE1".lowercase()
-            )
-        ) {
-            return BluetoothBeurerSanitas(
-                context,
-                BluetoothBeurerSanitas.DeviceType.SANITAS_SBF70_70
-            )
-        }
-        if (deviceName.startsWith("YUNMAI-SIGNAL") || deviceName.startsWith("YUNMAI-ISM")) {
-            return BluetoothYunmaiSE_Mini(context, true)
-        }
-        if (deviceName.startsWith("YUNMAI-ISSE")) {
-            return BluetoothYunmaiSE_Mini(context, false)
-        }
-        if (deviceName.startsWith("01257B") || deviceName.startsWith("11257B")) {
-            // Trisa Body Analyze 4.0, aka Transtek GBF-1257-B
-            return BluetoothTrisaBodyAnalyze(context)
-        }
-        if (deviceName == "000FatScale01" || deviceName == "000FatScale02"
-            || deviceName == "042FatScale01"
-        ) {
-            return BluetoothInlife(context)
-        }
-        if (deviceName.startsWith("QN-Scale")) {
-            return BluetoothQNScale(context)
-        }
-        if (deviceName.startsWith("Shape200") || deviceName.startsWith("Shape100") || deviceName.startsWith(
-                "Shape50"
-            ) || deviceName.startsWith("Style100")
-        ) {
-            return BluetoothSoehnle(context)
-        }
-        if (deviceName == "Hoffen BS-8107") {
-            return BluetoothHoffenBBS8107(context)
-        }
-        if (deviceName == "ADV" || deviceName == "Chipsea-BLE") {
-            return BluetoothOKOK(context)
-        }
-        if (deviceName == "NoName OkOk") {
-            return BluetoothOKOK2(context)
-        }
-        if (deviceName == "BF105" || deviceName == "BF720") {
-            return BluetoothBeurerBF105(context)
-        }
-        if (deviceName == "BF500") {
-            return BluetoothBeurerBF500(context, deviceName)
-        }
-        if (deviceName == "BF600" || deviceName == "BF850") {
-            return BluetoothBeurerBF600(context, deviceName)
-        }
-        if (deviceName == "SBF77" || deviceName == "SBF76" || deviceName == "BF950") {
-            return BluetoothBeurerBF950(context, deviceName)
-        }
-        if (deviceName == "SBF72" || deviceName == "BF915" || deviceName == "SBF73") {
-            return BluetoothSanitasSBF72(context, deviceName)
-        }
-        if (deviceName == "Weight Scale") {
-            return BluetoothSinocare(context)
-        }
-        if (deviceName == "CH100") {
-            return BluetoothHuaweiAH100(context)
-        }
-        if (deviceName == "ES-26BB-B") {
-            return BluetoothES26BBB(context)
-        }
-        if (deviceName == "Yoda1") {
-            return BluetoothYoda1Scale(context)
-        }
-        if (deviceName == "AAA002" || deviceName == "AAA007" || deviceName == "AAA013") {
-            return BluetoothBroadcastScale(context)
-        }
-        if (deviceName == "AE BS-06") {
-            return BluetoothActiveEraBF06(context)
-        }
-        if (deviceName == "Renpho-Scale") {
-            /* Driver for Renpho ES-WBE28, which has device name of "Renpho-Scale".
-               "Renpho-Scale" is quite generic, not sure if other Renpho scales with different
-               protocol match this name.
-             */
-            return BluetoothRenphoScale(context)
-        }
-        if (deviceName == "ES-CS20M") {
-            return BluetoothESCS20M(context)
-        }
-
-        return null
-    }
-
-    /**
-     * Creates a [ScaleCommunicator] using the legacy Java driver approach.
-     * It wraps a [BluetoothCommunication] instance (Java driver) in a [LegacyScaleAdapter].
-     *
-     * @param deviceInfo The device information used to find a legacy Java driver.
-     * @return A [LegacyScaleAdapter] instance if a suitable Java driver is found, otherwise null.
-     */
-    private fun createLegacyCommunicator(deviceInfo: ScannedDeviceInfo): ScaleCommunicator? {
-        val javaDriverInstance = createLegacyJavaDriver(applicationContext, deviceInfo)
-        return if (javaDriverInstance != null) {
-            LogManager.i(TAG, "Creating LegacyScaleAdapter via Hilt factory for '${javaDriverInstance.javaClass.simpleName}'.")
-            legacyAdapterFactory.create(javaDriverInstance)
-        } else {
-            LogManager.w(TAG, "Could not create LegacyScaleAdapter: No Java driver found for '${deviceInfo.name}'.")
-            null
-        }
-    }
 
     /**
      * Creates a [ScaleCommunicator] based on a modern [ScaleDeviceHandler].
@@ -426,7 +180,6 @@ class ScaleFactory @Inject constructor(
 
     /**
      * Creates the most suitable [ScaleCommunicator] for the given scanned device.
-     * It prioritizes modern Kotlin-based handlers and falls back to legacy adapters if necessary.
      *
      * @param deviceInfo Information about the scanned Bluetooth device.
      * @return A [ScaleCommunicator] instance if a suitable handler or adapter is found, otherwise null.
@@ -448,17 +201,8 @@ class ScaleFactory @Inject constructor(
                 LogManager.w(TAG, "Modern handler '${support.displayName}' supports '$primaryIdentifier', but no communicator is available.")
             }
         }
-        LogManager.d(TAG, "No modern Kotlin handler actively supported '$primaryIdentifier' or could create a communicator.")
 
-        // 2. Fallback to legacy adapter if no modern handler matched or created a communicator.
-        LogManager.i(TAG, "Attempting fallback to legacy adapter for identifier '${deviceInfo.name}'.")
-        val legacyCommunicator = createLegacyCommunicator(deviceInfo)
-        if (legacyCommunicator != null) {
-            LogManager.i(TAG, "Legacy communicator '${legacyCommunicator.javaClass.simpleName}' created for device ('${deviceInfo.name}').")
-            return legacyCommunicator
-        }
-
-        LogManager.w(TAG, "No suitable communicator (neither modern nor legacy) found for device (name: '${deviceInfo.name}', address: '${deviceInfo.address}', handler hint: '${deviceInfo.determinedHandlerDisplayName}').")
+        LogManager.w(TAG, "No suitable communicator found for device (name: '${deviceInfo.name}', address: '${deviceInfo.address}', handler hint: '${deviceInfo.determinedHandlerDisplayName}').")
         return null
     }
 
@@ -468,7 +212,7 @@ class ScaleFactory @Inject constructor(
     }
 
     /**
-     * Checks if any known handler (modern Kotlin or legacy Java-based) can theoretically support the given device.
+     * Checks if any known handler can theoretically support the given device.
      * This can be used by the UI to indicate if a device is potentially recognizable.
      *
      * @param deviceInfo Information about the scanned Bluetooth device.
@@ -481,14 +225,6 @@ class ScaleFactory @Inject constructor(
             if (support != null) return true to support.displayName
         }
 
-        // Then check if a legacy driver would exist based on the name
-        if (deviceInfo.name != null) {
-            val legacyJavaDriver = createLegacyJavaDriver(applicationContext, deviceInfo)
-            if (legacyJavaDriver != null) {
-                // Return the driver name from the BluetoothCommunication interface if available and meaningful.
-                return true to legacyJavaDriver.driverName() // Assumes BluetoothCommunication has a driverName() method.
-            }
-        }
         return false to null
     }
 }

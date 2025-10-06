@@ -243,7 +243,7 @@ class BluetoothScannerManager(
 
     private val centralManagerCallback = object : BluetoothCentralManagerCallback() {
         @SuppressLint("MissingPermission") // Permissions are handled before scan initiation.
-        override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
+        override fun onDiscovered(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
             val deviceName = peripheral.name
             val deviceAddress = peripheral.address
             val rssi = scanResult.rssi

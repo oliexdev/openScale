@@ -22,7 +22,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
-import com.health.openscale.core.bluetooth.modern.TuningProfile
+import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.facade.BluetoothFacade
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.ui.shared.SnackbarEvent

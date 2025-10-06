@@ -22,7 +22,6 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -54,8 +53,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
@@ -84,11 +81,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.glance.layout.height
 import com.health.openscale.R
-import com.health.openscale.core.bluetooth.modern.DeviceCapability
-import com.health.openscale.core.bluetooth.modern.DeviceSupport
-import com.health.openscale.core.bluetooth.modern.TuningProfile
+import com.health.openscale.core.bluetooth.scales.DeviceCapability
+import com.health.openscale.core.bluetooth.scales.DeviceSupport
+import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.shared.SharedViewModel
@@ -138,6 +134,7 @@ fun BluetoothScreen(
 
     LaunchedEffect(Unit) {
         hasPermissions = hasBtPermissions(context)
+        sharedViewModel.setTopBarActions(emptyList())
     }
 
     // Ensure scanning stops when leaving the screen
