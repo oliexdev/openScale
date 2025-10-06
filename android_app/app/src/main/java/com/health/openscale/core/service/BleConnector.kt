@@ -398,18 +398,16 @@ class BleConnector(
      * @param interactionType The type of interaction this feedback corresponds to.
      * @param appUserId The ID of the current application user.
      * @param feedbackData Data provided by the user.
-     * @param uiHandler A [android.os.Handler] required by the underlying communicator.
      */
     fun provideUserInteractionFeedback(
         interactionType: BluetoothEvent.UserInteractionType,
         appUserId: Int,
-        feedbackData: Any,
-        uiHandler: Handler
+        feedbackData: Any
     ) {
         scope.launch {
             activeCommunicator?.let { comm ->
                 LogManager.d(TAG, "Forwarding user interaction feedback to communicator: type=$interactionType, appUserId=$appUserId")
-                comm.processUserInteractionFeedback(interactionType, appUserId, feedbackData, uiHandler)
+                comm.processUserInteractionFeedback(interactionType, appUserId, feedbackData)
             } ?: LogManager.w(TAG, "provideUserInteractionFeedback called but no active communicator.")
         }
     }

@@ -17,7 +17,6 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
-import android.os.Handler
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
@@ -636,11 +635,10 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
 
     // ---- UI round-trips (user selection & consent) ----------------------------
 
-    override fun onUserInteractionFeedback(
+    override suspend fun onUserInteractionFeedback(
         interactionType: UserInteractionType,
         appUserId: Int,
-        feedbackData: Any,
-        uiHandler: Handler
+        feedbackData: Any
     ) {
         logD("UserInteractionFeedback received: type=$interactionType appUserId=$appUserId feedbackData=$feedbackData")
 

@@ -17,7 +17,6 @@
  */
 package com.health.openscale.core.bluetooth
 
-import android.os.Handler
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import kotlinx.coroutines.flow.SharedFlow
@@ -97,10 +96,9 @@ interface ScaleCommunicator {
     fun getEventsFlow(): SharedFlow<BluetoothEvent>
 
     /** Deliver feedback for a previously requested user interaction. */
-    fun processUserInteractionFeedback(
+    suspend fun processUserInteractionFeedback(
         interactionType: BluetoothEvent.UserInteractionType,
         appUserId: Int,
-        feedbackData: Any,
-        uiHandler: Handler
+        feedbackData: Any
     )
 }

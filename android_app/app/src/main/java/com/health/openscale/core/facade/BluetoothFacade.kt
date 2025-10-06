@@ -200,8 +200,10 @@ class BluetoothFacade @Inject constructor(
             connection.clearUserInteractionEvent()
             return
         }
-        connection.provideUserInteractionFeedback(type, user.id, feedbackData, Handler(Looper.getMainLooper()))
-        connection.clearUserInteractionEvent()
+        scope.launch {
+            connection.provideUserInteractionFeedback(type,user.id, feedbackData)
+            connection.clearUserInteractionEvent()
+        }
     }
 
     fun clearErrors() {

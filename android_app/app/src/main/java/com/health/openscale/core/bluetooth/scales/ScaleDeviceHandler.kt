@@ -18,7 +18,6 @@
 package com.health.openscale.core.bluetooth.scales
 
 import android.bluetooth.le.ScanResult
-import android.os.Handler
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoGraph
@@ -282,11 +281,10 @@ abstract class ScaleDeviceHandler {
             ?: logW("requestUserInteraction dropped: $interactionType")
     }
 
-    open fun onUserInteractionFeedback(
+    open suspend fun onUserInteractionFeedback(
         interactionType: UserInteractionType,
         appUserId: Int,
-        feedbackData: Any,
-        uiHandler: Handler) { /* no-op */ }
+        feedbackData: Any) { /* no-op */ }
 
     // --- Wiring provided by the adapter ---------------------------------------
 

@@ -370,15 +370,14 @@ abstract class ModernScaleAdapter(
         )
     }
 
-    override fun processUserInteractionFeedback(
+    override suspend fun processUserInteractionFeedback(
         interactionType: BluetoothEvent.UserInteractionType,
         appUserId: Int,
-        feedbackData: Any,
-        uiHandler: Handler
+        feedbackData: Any
     ) {
         scope.launch {
             runCatching {
-                handler.onUserInteractionFeedback(interactionType, appUserId, feedbackData, uiHandler)
+                handler.onUserInteractionFeedback(interactionType, appUserId, feedbackData)
             }.onFailure { t ->
                 val addr = targetAddress ?: "unknown"
                 LogManager.e(TAG, "Delivering user feedback failed: ${t.message}", t)
