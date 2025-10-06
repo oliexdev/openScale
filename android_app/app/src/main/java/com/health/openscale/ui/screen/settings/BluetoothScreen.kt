@@ -22,6 +22,7 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +32,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -41,10 +43,12 @@ import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
 import androidx.compose.material.icons.filled.BluetoothDisabled
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -62,6 +66,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -79,6 +84,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.glance.layout.height
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.modern.DeviceCapability
 import com.health.openscale.core.bluetooth.modern.DeviceSupport
@@ -87,6 +93,7 @@ import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.shared.SharedViewModel
 import kotlinx.coroutines.launch
+import androidx.core.net.toUri
 
 /**
  * Main Bluetooth settings screen.
@@ -123,6 +130,8 @@ fun BluetoothScreen(
     var pendingScan by remember { mutableStateOf(false) }
     var showSavedMenu by remember { mutableStateOf(false) }
     var showTuningMenu by remember { mutableStateOf(false) }
+    var showCompatibilityDialog by remember { mutableStateOf(false) }
+    var deviceToSave by remember { mutableStateOf<ScannedDeviceInfo?>(null) }
 
     // Simple flag: a saved name of "Debug" indicates debug mode is active.
     val isDebugActive = (savedDevice?.name.orEmpty() == "Debug")
@@ -451,6 +460,30 @@ fun BluetoothScreen(
             }
         }
 
+
+        if (showCompatibilityDialog) {
+            CompatibilityAlertDialog(
+                onConfirm = {
+                    deviceToSave?.let {
+                        bluetoothViewModel.saveDeviceAsPreferred(it)
+                        scope.launch {
+                            sharedViewModel.showSnackbar(
+                                context.getString(
+                                    R.string.device_saved_as_preferred,
+                                    it.name
+                                ),
+                                duration = SnackbarDuration.Short
+                            )
+                        }
+                    }
+                },
+                onDismiss = {
+                    showCompatibilityDialog = false
+                    deviceToSave = null
+                }
+            )
+        }
+
         // Combined scan/connection error presentation
         if (hasPermissions && btEnabled) {
             val errorToShow = connectionError ?: scanError
@@ -476,18 +509,9 @@ fun BluetoothScreen(
                             deviceInfo = device,
                             savedAddress = savedDevice?.address,
                             onSavePreferred = {
-                                bluetoothViewModel.requestStopDeviceScan()
                                 if (device.isSupported) {
-                                    bluetoothViewModel.saveDeviceAsPreferred(device)
-                                    scope.launch {
-                                        sharedViewModel.showSnackbar(
-                                            context.getString(
-                                                R.string.device_saved_as_preferred,
-                                                device.name ?: context.getString(R.string.unknown_device)
-                                            ),
-                                            duration = SnackbarDuration.Short
-                                        )
-                                    }
+                                    deviceToSave = device
+                                    showCompatibilityDialog = true
                                 } else {
                                     scope.launch {
                                         sharedViewModel.showSnackbar(
@@ -596,6 +620,55 @@ private fun DebugBanner() {
             )
         }
     }
+}
+
+/**
+ * Shows a disclaimer dialog before saving a device.
+ * The user must acknowledge the disclaimer to proceed with saving.
+ */
+@Composable
+private fun CompatibilityAlertDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    val projectUrl = "https://github.com/oliexdev/openScale/"
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(Icons.Default.Info, contentDescription = null) },
+        title = { Text(stringResource(R.string.compatibility_dialog_title)) },
+        text = {
+            Column {
+                Text(stringResource(R.string.bluetooth_compatibility_disclaimer))
+                Spacer(Modifier.height(16.dp))
+                TextButton(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, projectUrl.toUri())
+                        context.startActivity(intent)
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text(stringResource(id = R.string.go_to_project_website_button))
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirm()
+                    onDismiss()
+                }
+            ) {
+                Text(stringResource(R.string.compatibility_dialog_confirm_button))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel_button))
+            }
+        }
+    )
 }
 
 /**

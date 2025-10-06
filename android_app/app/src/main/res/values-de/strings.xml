@@ -346,6 +346,10 @@
     <string name="bluetooth_disabled_message_enable_for_scan">Bitte aktivieren Sie Bluetooth, um nach Waagen zu suchen.</string>
     <string name="enable_bluetooth_button">Bluetooth aktivieren</string>
     <string name="error_icon_desc">Fehlersymbol</string>
+    <string name="compatibility_dialog_title">Wichtiger Hinweis</string>
+    <string name="bluetooth_compatibility_disclaimer">openScale ist ein Open-Source-Projekt und ich besitze nicht jede Waage selbst. Bitte beachten Sie, dass die Kompatibilität nicht in allen Fällen garantiert werden kann, da sich Bluetooth-Protokolle ändern oder unbekannt sein können.\n\nAls Open-Source-Projekt sind Beiträge und Pull-Requests zur Verbesserung der Waagen-Unterstützung sehr willkommen!</string>
+    <string name="compatibility_dialog_confirm_button">Verstanden &amp; Speichern</string>
+    <string name="go_to_project_website_button">Zur Projekt-Webseite</string>
 
     <!-- LegacyScaleAdapter (Bluetooth-Treiber) -->
     <string name="legacy_adapter_event_initializing">Initialisierungsprozess...</string>

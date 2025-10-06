@@ -349,6 +349,10 @@
     <string name="bluetooth_disabled_message_enable_for_scan">Please enable Bluetooth to search for scales.</string>
     <string name="enable_bluetooth_button">Enable Bluetooth</string>
     <string name="error_icon_desc">Error icon</string>
+    <string name="compatibility_dialog_title">Important Notice</string>
+    <string name="bluetooth_compatibility_disclaimer">openScale is an open-source project, and I don\'t own every scale. Please note that compatibility cannot be guaranteed in all cases, as Bluetooth protocols may change or be undocumented.\n\nAs an open-source project, pull requests and contributions to improve scale support are very welcome!</string>
+    <string name="compatibility_dialog_confirm_button">Acknowledge &amp; Save</string>
+    <string name="go_to_project_website_button">Go to Project Website</string>
 
     <!-- LegacyScaleAdapter (Bluetooth Driver) -->
     <string name="legacy_adapter_event_initializing">Initialization process...</string>
