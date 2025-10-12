@@ -20,8 +20,6 @@ package com.health.openscale.core.utils
 import com.health.openscale.core.data.MeasureUnit
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.WeightUnit
-import java.text.NumberFormat
-import java.util.Locale
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
