@@ -60,7 +60,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
 
     private val SVC_USER_DATA                  = uuid16(0x181C)
     private val CHR_DATABASE_CHANGE_INCREMENT  = uuid16(0x2A99) // NOTIFY/READ/WRITE
-    private val CHR_USER_CONTROL_POINT         = uuid16(0x2A9F) // Indication
+    protected val CHR_USER_CONTROL_POINT         = uuid16(0x2A9F) // Indication
 
     // UDS user attributes
     private val CHR_USER_DATE_OF_BIRTH         = uuid16(0x2A85) // Year-Month-Day

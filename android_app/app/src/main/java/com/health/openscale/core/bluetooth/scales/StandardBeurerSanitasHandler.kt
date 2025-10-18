@@ -17,7 +17,10 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
+import androidx.datastore.preferences.core.PreferencesSerializer.writeTo
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler.Companion.CHR_SBF72_USER_LIST
+import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler.Companion.SVC_SBF72_CUSTOM
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.nio.ByteBuffer
 import java.util.UUID
@@ -129,8 +132,17 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             return
         }
 
-        logD("Setting notifications on service=${p.service} for chrUserList=${p.chrUserList}")
-        setNotifyOn(p.service, p.chrUserList)
+        val scaleIndex = findKnownScaleIndexForAppUser(user.id) ?: -1
+        if (loadConsentForScaleIndex(scaleIndex) == -1) {
+            profile?.chrUserList?.let { chr ->
+                profile?.service?.let { svc ->
+                    logD("Setting custom user list notifications on service=${svc} for chrUserList=${chr}")
+
+                    setNotifyOn(svc, chr)
+                    writeTo(svc, chr, byteArrayOf(0x00.toByte()))
+                }
+            }
+        }
 
         p.chrActivity?.let {
             logD("Writing activity level for userId=${user.id} to chrActivity=${it}")
@@ -145,6 +157,22 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
         p.chrTargetWeight?.let {
             logD("Writing target weight for userId=${user.id} to chrTargetWeight=${it}")
             writeTargetWeight(user)
+        }
+    }
+
+    override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
+        val p = profile
+        if (p == null) {
+            logW("No profile available after connection for userId=${user.id}")
+            return
+        }
+
+        when (characteristic) {
+            p.chrUserList       -> {
+                super.onNotification(CHR_USER_CONTROL_POINT, data, user)
+            }
+            else ->
+                super.onNotification(characteristic, data, user)
         }
     }
 
