@@ -621,7 +621,6 @@ fun OverviewScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(16.dp)
                                     .pointerInput(Unit) {
                                         detectDragGestures (
                                             onDrag = { change, dragAmount ->
@@ -643,7 +642,6 @@ fun OverviewScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 HorizontalDivider(
-                                    modifier = Modifier.padding(vertical = 6.dp),
                                     thickness = 1.dp,
                                     color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                                 )
@@ -651,7 +649,7 @@ fun OverviewScreen(
 
                             // Goals Section
                             if (userGoals.isNotEmpty()) {
-                                Column(modifier = Modifier.padding(bottom = 8.dp)) {
+                                Column {
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -661,7 +659,7 @@ fun OverviewScreen(
                                                     sharedViewModel.setMyGoalsExpandedOverview(newIsGoalsSectionExpanded)
                                                 }
                                             }
-                                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                                            .padding(horizontal = 16.dp, vertical = 8.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                     ) {
                                         Box(
@@ -674,7 +672,6 @@ fun OverviewScreen(
                                                     style = MaterialTheme.typography.titleMedium
                                                 )
                                                 if (!isGoalsSectionExpanded && userGoals.isNotEmpty()) {
-                                                    Spacer(Modifier.width(6.dp))
                                                     Text(
                                                         text = "(${userGoals.size})",
                                                         style = MaterialTheme.typography.titleMedium,
@@ -698,7 +695,6 @@ fun OverviewScreen(
                                                     modifier = Modifier.fillMaxWidth(),
                                                     contentPadding = PaddingValues(
                                                         horizontal = 16.dp,
-                                                        vertical = 8.dp
                                                     ),
                                                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                                                 ) {

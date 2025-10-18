@@ -62,12 +62,16 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.text.DecimalFormat
 import androidx.compose.ui.graphics.Color
+import androidx.glance.LocalSize
+import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.state.updateAppWidgetState
 import com.health.openscale.core.data.IconResource
+import kotlin.collections.firstOrNull
 
 class MeasurementWidget : GlanceAppWidget() {
     // Enable currentState<Preferences>() inside provideContent
     override val stateDefinition = PreferencesGlanceStateDefinition
+    override val sizeMode = SizeMode.Exact
 
     companion object {
         /** Recompose all widget instances. */
@@ -192,7 +196,7 @@ class MeasurementWidget : GlanceAppWidget() {
                                     label = t.getDisplayName(context),
                                     icon = t.icon,
                                     badgeColor = if (t.color != 0)
-                                        ColorProvider(androidx.compose.ui.graphics.Color(t.color)) else null,
+                                        ColorProvider(Color(t.color)) else null,
                                     symbol = symbol,
                                     evaluationState = evalState,
                                     valueWithUnit = valueWithUnit,
@@ -206,10 +210,17 @@ class MeasurementWidget : GlanceAppWidget() {
                 val themeColors = GlanceTheme.colors
                 val launch = Intent(context, MainActivity::class.java)
 
+                val size = LocalSize.current
+
+                val scaleFactor = minOf(
+                    size.width.value / 110f,
+                    size.height.value / 40f,
+                    4f
+                ).coerceAtLeast(0.5f)
+
                 Box(
                     modifier = GlanceModifier
                         .fillMaxSize()
-                        .padding(8.dp)
                         .clickable(actionStartActivity(launch)),
                     contentAlignment = Alignment.Center
                 ) {
@@ -234,7 +245,8 @@ class MeasurementWidget : GlanceAppWidget() {
                             circleColor = uiPayload!!.badgeColor ?: themeColors.secondary,
                             textColor = textColor,
                             subTextColor = subTextColor,
-                            symbolColor = ColorProvider(uiPayload!!.evaluationState.toColor())
+                            symbolColor = ColorProvider(uiPayload!!.evaluationState.toColor()),
+                            scaleFactor = scaleFactor
                         )
                     }
                 }
@@ -278,20 +290,22 @@ private fun ValueWithDeltaRow(
     circleColor: ColorProvider,
     textColor: ColorProvider,
     subTextColor: ColorProvider,
-    symbolColor: ColorProvider
+    symbolColor: ColorProvider,
+    scaleFactor : Float
 ) {
-    Row(modifier = GlanceModifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-        GlanceRoundMeasurementIcon(icon, iconContentDescription, 28.dp, circleColor, R.drawable.ic_weight)
-        Spacer(GlanceModifier.size(10.dp))
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        val fontSize = 8.sp
+        GlanceRoundMeasurementIcon(icon, iconContentDescription, 21.dp * scaleFactor, circleColor, R.drawable.ic_weight)
+        Spacer(GlanceModifier.size(10.dp * scaleFactor))
         Column {
-            Text(text = label, style = TextStyle(fontWeight = FontWeight.Medium, color = textColor))
+            Text(text = label, style = TextStyle(fontSize = fontSize * scaleFactor, fontWeight = FontWeight.Medium, color = textColor))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = valueWithUnit, style = TextStyle(color = textColor))
-                Spacer(GlanceModifier.size(6.dp))
-                Text(text = symbol, style = TextStyle(color = symbolColor))
+                Text(text = valueWithUnit, style = TextStyle(fontSize = fontSize * scaleFactor, color = textColor))
+                Spacer(GlanceModifier.size(6.dp*scaleFactor))
+                Text(text = symbol, style = TextStyle(fontSize = fontSize * scaleFactor, color = symbolColor))
             }
             if (deltaText.isNotBlank()) {
-                Text(text = deltaText, style = TextStyle(fontSize = 12.sp, color = subTextColor))
+                Text(text = deltaText, style = TextStyle(fontSize = fontSize * scaleFactor, color = subTextColor))
             }
         }
     }
@@ -312,8 +326,8 @@ private fun GlanceRoundMeasurementIcon(
     }
     Box(
         modifier = GlanceModifier
-            .size(size + 18.dp)
-            .cornerRadius((size + 18.dp) / 2)
+            .size(size + 24.dp)
+            .cornerRadius((size + 18.dp) / 2f)
             .background(circleColor),
         contentAlignment = Alignment.Center
     ) {
