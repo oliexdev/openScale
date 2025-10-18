@@ -21,8 +21,12 @@ import androidx.datastore.preferences.core.PreferencesSerializer.writeTo
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler.Companion.CHR_SBF72_USER_LIST
 import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler.Companion.SVC_SBF72_CUSTOM
+import com.health.openscale.core.data.ActivityLevel
+import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.service.ScannedDeviceInfo
+import com.welie.blessed.BluetoothBytesParser
 import java.nio.ByteBuffer
+import java.util.GregorianCalendar
 import java.util.UUID
 
 /**
@@ -32,6 +36,7 @@ import java.util.UUID
 class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
 
     private enum class Model { BEURER_BF105, BEURER_BF950, BEURER_BF500, BEURER_BF600 }
+    private val scaleUserList = mutableListOf<ScaleUser>()
 
     private data class Profile(
         val service: UUID,
@@ -169,7 +174,7 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
 
         when (characteristic) {
             p.chrUserList       -> {
-                super.onNotification(CHR_USER_CONTROL_POINT, data, user)
+                handleUserList(data, user)
             }
             else ->
                 super.onNotification(characteristic, data, user)
@@ -184,6 +189,67 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
     }
 
     // ---- Vendor write helpers -------------------------------------------------
+
+    private fun handleUserList(data: ByteArray, user : ScaleUser) {
+        val parser = BluetoothBytesParser(data)
+
+        val userListStatus = parser.getUInt8().toInt()
+
+        when (userListStatus) {
+            2 -> {
+                // Status=2 -> no user on scale
+                logD("no user on scale")
+                return
+            }
+
+            1 -> {
+                // Status=1 -> user list complete
+                logD("User-list received")
+                val scaleIndex = findKnownScaleIndexForAppUser(user.id) ?: -1
+                if (loadConsentForScaleIndex(scaleIndex) == -1) {
+                    presentChooseFromIndices(scaleUserList.map { it.id })
+                }
+
+                return
+            }
+
+            else -> {
+                // Normal user data
+                val index = parser.getUInt8().toInt()
+                var initials = parser.getString()
+                val end = if (3 > initials.length) initials.length else 3
+                initials = initials.substring(0, end)
+                if (initials.length == 3) {
+                    if (initials.get(0).code == 0xff && initials.get(1).code == 0xff && initials.get(
+                            2
+                        ).code == 0xff
+                    ) {
+                        initials = "unknown"
+                    }
+                }
+                parser.offset = 5
+                val year = parser.getUInt16().toInt()
+                val month = parser.getUInt8().toInt()
+                val day = parser.getUInt8().toInt()
+                val height = parser.getUInt8().toInt()
+                val gender = parser.getUInt8().toInt()
+                val activityLevel = parser.getUInt8().toInt()
+
+                val calendar = GregorianCalendar(year, month - 1, day)
+                val scaleUser = ScaleUser().apply {
+                    this.userName = initials
+                    this.birthday = calendar.time
+                    this.bodyHeight = height.toFloat()
+                    this.gender = if (gender == 0) GenderType.MALE else GenderType.FEMALE
+                    this.activityLevel = ActivityLevel.fromInt(activityLevel - 1)
+                    this.id = index
+                }
+                scaleUserList.add(scaleUser)
+                logD("ScaleUser added: $scaleUser")
+            }
+        }
+    }
+
     private fun writeActivityLevel(user: ScaleUser) {
         val lvl = (user.activityLevel.toInt() + 1).coerceIn(1, 5)
         profile?.chrActivity?.let { chr ->
