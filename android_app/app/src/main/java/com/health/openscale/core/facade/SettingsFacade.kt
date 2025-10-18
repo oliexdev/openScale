@@ -18,6 +18,8 @@
 package com.health.openscale.core.facade
 
 import android.content.Context
+import android.util.Base64
+import android.util.SparseArray
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -47,12 +49,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+import androidx.core.util.size
+import org.json.JSONObject
+import androidx.core.util.isNotEmpty
 
 // DataStore instance for user settings
 val Context.settingsDataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
@@ -78,6 +82,8 @@ object SettingsPreferenceKeys {
     val SAVED_BLUETOOTH_DEVICE_RSSI           = intPreferencesKey("saved_bluetooth_device_rssi")
     val SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS  = stringSetPreferencesKey("saved_bluetooth_device_service_uuids")
     val SAVED_BLUETOOTH_DEVICE_HANDLER_HINT   = stringPreferencesKey("saved_bluetooth_device_handler_hint")
+    val SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA   = stringPreferencesKey("saved_bluetooth_device_manufacturer_data")
+
     val SAVED_BLUETOOTH_TUNE_PROFILE = stringPreferencesKey("saved_bluetooth_tune_profile")
 
     // Settings for chart
@@ -390,8 +396,16 @@ class SettingsFacadeImpl @Inject constructor(
         val rssiF  = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_RSSI.name,     0)
         val uuidsF = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS.name, emptySet<String>())
         val hintF  = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT.name,  null as String?)
+        val manDataF = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA.name, null as String?)
 
-        return combine(addrF, nameF, rssiF, uuidsF, hintF) { addr, name, rssi, uuidStrSet, hint ->
+        return combine(addrF, nameF, rssiF, uuidsF, hintF, manDataF) { array ->
+            val addr        = array[0] as String?
+            val name        = array[1] as String?
+            val rssi        = array[2] as Int
+            val uuidStrSet = (array[3] as? Set<*>)?.filterIsInstance<String>() ?: emptySet()
+            val hint        = array[4] as String?
+            val manDataJson = array[5] as String?
+
             if (addr.isNullOrBlank() || name.isNullOrBlank()) {
                 null
             } else {
@@ -400,12 +414,24 @@ class SettingsFacadeImpl @Inject constructor(
                     .mapNotNull { runCatching { UUID.fromString(it) }.getOrNull() }
                     .sortedBy { it.toString() }
 
+                // ManufacturerData
+                val manData = SparseArray<ByteArray>()
+                manDataJson?.let { jsonStr ->
+                    runCatching {
+                        val jsonObj = JSONObject(jsonStr)
+                        jsonObj.keys().forEach { key ->
+                            val value = Base64.decode(jsonObj.getString(key), Base64.NO_WRAP)
+                            manData.put(key.toInt(), value)
+                        }
+                    }
+                }
+
                 ScannedDeviceInfo(
                     name = name,
                     address = addr,
                     rssi = rssi,
                     serviceUuids = uuids,
-                    manufacturerData = null,
+                    manufacturerData = if (manData.isNotEmpty()) manData else null,
                     isSupported = false,
                     determinedHandlerDisplayName = hint
                 )
@@ -418,7 +444,7 @@ class SettingsFacadeImpl @Inject constructor(
             .distinctUntilChanged()
     }
 
-    override suspend fun saveSavedDevice(device: com.health.openscale.core.service.ScannedDeviceInfo) {
+    override suspend fun saveSavedDevice(device: ScannedDeviceInfo) {
         LogManager.i(TAG, "Saving device snapshot: addr=${device.address}, name=${device.name}, uuids=${device.serviceUuids.size}, hint=${device.determinedHandlerDisplayName}")
         dataStore.edit { prefs ->
             prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_ADDRESS]       = device.address
@@ -428,6 +454,16 @@ class SettingsFacadeImpl @Inject constructor(
             device.determinedHandlerDisplayName?.let {
                 prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT] = it
             } ?: prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT)
+
+            val manData = JSONObject()
+            device.manufacturerData?.let { sparse ->
+                for (i in 0 until sparse.size) {
+                    val key = sparse.keyAt(i).toString()
+                    val value = Base64.encodeToString(sparse.valueAt(i), Base64.NO_WRAP)
+                    manData.put(key, value)
+                }
+            }
+            prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA] = manData.toString()
         }
     }
 
@@ -439,6 +475,7 @@ class SettingsFacadeImpl @Inject constructor(
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_RSSI)
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS)
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT)
+            prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA)
         }
     }
 

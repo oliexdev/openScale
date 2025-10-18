@@ -161,7 +161,7 @@ class MiScaleHandler : ScaleDeviceHandler() {
         } else {
             // ---- v2: keep robust modern order (same as legacy v2 effectively) ----
             setNotifyOn(svcPrimary, CHAR_MI_HISTORY)
-            runCatching { setNotifyOn(svcPrimary, CHAR_WEIGHT_MEAS) } // optional
+           // runCatching { setNotifyOn(svcPrimary, CHAR_WEIGHT_MEAS) } // optional
             writeTo(svcPrimary, CHAR_MI_HISTORY, ENABLE_HISTORY_MAGIC, withResponse = true)
 
             val uniq = unique16()
