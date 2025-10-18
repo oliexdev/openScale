@@ -189,13 +189,13 @@ class MGBHandler : ScaleDeviceHandler() {
         p += 6
 
         // weight (uint16 LE * 0.1)
-        m.weight = readDeciLE(d, p); p += 2
+        m.weight = readDeciBE(d, p); p += 2
 
         // BMI (ignored)
         /* val bmi = readDeciLE(d, p); */ p += 2
 
         // fat %
-        m.fat = readDeciLE(d, p); p += 2
+        m.fat = readDeciBE(d, p); p += 2
 
         // two unknown bytes
         p += 2
@@ -214,10 +214,10 @@ class MGBHandler : ScaleDeviceHandler() {
 
         var p = 2 // after 01 00 header
 
-        m.muscle = readDeciLE(d, p); p += 2
+        m.muscle = readDeciBE(d, p); p += 2
         /* val bmr = readDeciLE(d, p); */ p += 2
-        m.bone = readDeciLE(d, p); p += 2
-        m.water = readDeciLE(d, p); p += 2
+        m.bone = readDeciBE(d, p); p += 2
+        m.water = readDeciBE(d, p); p += 2
         /* val age = d[p].toUByte().toInt(); */ p += 1
         /* val protein = readDeciLE(d, p); */ p += 2
         // Skip remaining bytes (unknown/padding)
@@ -232,6 +232,13 @@ class MGBHandler : ScaleDeviceHandler() {
     private fun readDeciLE(d: ByteArray, off: Int): Float {
         val lo = d[off].toUByte().toInt()
         val hi = d[off + 1].toUByte().toInt()
+        val v = (hi shl 8) or lo
+        return v / 10.0f
+    }
+
+    private fun readDeciBE(d: ByteArray, off: Int): Float {
+        val hi = d[off].toUByte().toInt()
+        val lo = d[off + 1].toUByte().toInt()
         val v = (hi shl 8) or lo
         return v / 10.0f
     }
