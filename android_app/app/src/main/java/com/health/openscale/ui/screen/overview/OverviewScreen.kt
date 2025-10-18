@@ -84,6 +84,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -107,6 +108,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.ConnectionStatus
@@ -496,42 +500,45 @@ fun OverviewScreen(
         }
     )
 
-    // LaunchedEffect to configure the top bar based on the current state
-    LaunchedEffect(
-        selectedUserId,
-        hasData,
-        bluetoothTopBarAction,
-        selectedLineTypesForOverviewChart.isNotEmpty(),
-        timeFilterAction,
-        savedDeviceAddress,
-        connectionStatus,
-        connectedDeviceAddr
-    ) {
-        sharedViewModel.setTopBarTitle(context.getString(R.string.route_title_overview))
-        val actions = mutableListOf<TopBarAction>()
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-        // 0. Add Bluetooth action (if determined) at the beginning
-        bluetoothTopBarAction?.let { btAction ->
-            actions.add(btAction)
+    // DisposableEffect to configure the top bar based on the current state
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_CREATE || event == Lifecycle.Event.ON_RESUME) {
+                sharedViewModel.setTopBarTitle(context.getString(R.string.route_title_overview))
+                val actions = mutableListOf<TopBarAction>()
+
+                // 0. Add Bluetooth action (if determined) at the beginning
+                bluetoothTopBarAction?.let { btAction ->
+                    actions.add(btAction)
+                }
+
+                // 1. Add "Add Measurement" icon
+                actions.add(
+                    TopBarAction(
+                        icon = Icons.Default.Add,
+                        contentDescription = context.getString(R.string.action_add_measurement_desc),
+                        onClick = {
+                            if (selectedUserId != null) {
+                                navController.navigate(Routes.measurementDetail(measurementId = null, userId = selectedUserId!!))
+                            } else {
+                                Toast.makeText(context, context.getString(R.string.toast_select_user_first), Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    )
+                )
+
+                timeFilterAction?.let { actions.add(it) }
+                sharedViewModel.setTopBarActions(actions)
+            }
         }
 
-        // 1. Add "Add Measurement" icon
-        actions.add(
-            TopBarAction(
-                icon = Icons.Default.Add,
-                contentDescription = context.getString(R.string.action_add_measurement_desc),
-                onClick = {
-                    if (selectedUserId != null) {
-                        navController.navigate(Routes.measurementDetail(measurementId = null, userId = selectedUserId!!))
-                    } else {
-                        Toast.makeText(context, context.getString(R.string.toast_select_user_first), Toast.LENGTH_SHORT).show()
-                    }
-                }
-            )
-        )
+        lifecycleOwner.lifecycle.addObserver(observer)
 
-        timeFilterAction?.let { actions.add(it) }
-        sharedViewModel.setTopBarActions(actions)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     when {
@@ -622,12 +629,16 @@ fun OverviewScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .pointerInput(Unit) {
-                                        detectDragGestures (
+                                        detectDragGestures(
                                             onDrag = { change, dragAmount ->
                                                 change.consume()
                                                 val deltaY = dragAmount.y
                                                 val weightDelta = deltaY / 2000f
-                                                localSplitterWeight = (localSplitterWeight + weightDelta).coerceIn(0.01f, 0.8f)
+                                                localSplitterWeight =
+                                                    (localSplitterWeight + weightDelta).coerceIn(
+                                                        0.01f,
+                                                        0.8f
+                                                    )
                                             },
                                             onDragEnd = {
                                                 scope.launch {
@@ -654,9 +665,12 @@ fun OverviewScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
-                                                val newIsGoalsSectionExpanded = !isGoalsSectionExpanded
+                                                val newIsGoalsSectionExpanded =
+                                                    !isGoalsSectionExpanded
                                                 scope.launch {
-                                                    sharedViewModel.setMyGoalsExpandedOverview(newIsGoalsSectionExpanded)
+                                                    sharedViewModel.setMyGoalsExpandedOverview(
+                                                        newIsGoalsSectionExpanded
+                                                    )
                                                 }
                                             }
                                             .padding(horizontal = 16.dp, vertical = 8.dp),
