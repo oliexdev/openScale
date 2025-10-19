@@ -30,22 +30,25 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
+import com.health.openscale.core.data.User
 import com.health.openscale.core.utils.CalculationUtils
 import com.health.openscale.ui.components.RoundMeasurementIcon
+import com.health.openscale.ui.screen.dialog.DeleteConfirmationDialog
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
 import kotlinx.coroutines.launch
@@ -77,7 +80,20 @@ fun UserSettingsScreen(
     val editActionContentDescription = stringResource(id = R.string.user_settings_content_description_edit)
     val deleteActionContentDescription = stringResource(id = R.string.user_settings_content_description_delete)
     val addUserContentDescription = stringResource(id = R.string.user_settings_content_description_add_user)
+    var userToDelete by remember { mutableStateOf<User?>(null) }
 
+    userToDelete?.let { user ->
+        DeleteConfirmationDialog(
+            onDismissRequest = { userToDelete = null },
+            onConfirm = {
+                coroutineScope.launch {
+                    settingsViewModel.deleteUser(user)
+                }
+            },
+            title = stringResource(R.string.dialog_title_delete_user, user.name),
+            text = stringResource(R.string.dialog_text_delete_user)
+        )
+    }
 
     LaunchedEffect(Unit, usersTitle) { // Add usersTitle to keys to re-run if it could change (e.g. language change)
         sharedViewModel.setTopBarTitle(usersTitle) // "Users"
@@ -132,9 +148,7 @@ fun UserSettingsScreen(
                         }
                         IconButton(
                             onClick = {
-                                coroutineScope.launch {
-                                    settingsViewModel.deleteUser(user)
-                                }
+                                userToDelete = user
                             }
                         ) {
                             Icon(

@@ -27,7 +27,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,14 +37,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.Trend
 import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.core.model.ValueWithDifference
+import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.components.MeasurementChart
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
+import com.health.openscale.ui.screen.dialog.DeleteConfirmationDialog
 import com.health.openscale.ui.screen.overview.MeasurementValueRow
 import kotlinx.coroutines.launch
 import java.text.DateFormat
@@ -71,6 +76,7 @@ fun GraphScreen(
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     var sheetMeasurementId by rememberSaveable { mutableStateOf<Int?>(null) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     var lastTapId by rememberSaveable { mutableStateOf<Int?>(null) }
     var lastTapAt by rememberSaveable { mutableStateOf(0L) }
@@ -84,6 +90,42 @@ fun GraphScreen(
     LaunchedEffect(timeFilterAction) {
         sharedViewModel.setTopBarTitle(context.getString(R.string.route_title_graph))
         sharedViewModel.setTopBarActions(listOfNotNull(timeFilterAction))
+    }
+
+    val sheetEnrichedMeasurement = remember(sheetMeasurementId, allMeasurementsWithValues) {
+        val graphStateSuccess = graphState as? SharedViewModel.UiState.Success<List<EnrichedMeasurement>>
+        graphStateSuccess?.data?.firstOrNull { it.measurementWithValues.measurement.id == sheetMeasurementId }
+    }
+
+    if (showDeleteDialog && sheetEnrichedMeasurement != null) {
+        val enrichedItem = sheetEnrichedMeasurement
+        val weightValue = enrichedItem.valuesWithTrend.find {
+            it.currentValue.type.key == MeasurementTypeKey.WEIGHT
+        }
+        val weightString = weightValue?.currentValue?.let {
+            LocaleUtils.formatValueForDisplay(it.value.floatValue.toString(), it.type.unit)
+        } ?: ""
+        val formattedDate = remember(enrichedItem.measurementWithValues.measurement.timestamp) {
+            DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault())
+                .format(Date(enrichedItem.measurementWithValues.measurement.timestamp))
+        }
+
+        DeleteConfirmationDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            onConfirm = {
+                scope.launch {
+                    sharedViewModel.deleteMeasurement(enrichedItem.measurementWithValues.measurement)
+                }
+                sheetMeasurementId = null
+                showDeleteDialog = false
+            },
+            title = stringResource(R.string.dialog_title_delete_item),
+            text = stringResource(
+                R.string.dialog_message_delete_item,
+                formattedDate,
+                weightString
+            )
+        )
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -195,12 +237,7 @@ fun GraphScreen(
                     IconButton(
                         enabled = uid != null,
                         onClick = {
-                            sheetMeasurementId = null
-                            if (uid != null) {
-                                scope.launch {
-                                   sharedViewModel.deleteMeasurement(mwv.measurement)
-                                }
-                            }
+                            showDeleteDialog = true
                         }
                     ) {
                         Icon(

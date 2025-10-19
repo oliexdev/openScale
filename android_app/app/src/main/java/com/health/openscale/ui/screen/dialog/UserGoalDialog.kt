@@ -102,6 +102,24 @@ fun UserGoalDialog(
     }
     var typeDropdownExpanded by remember { mutableStateOf(false) }
 
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    if (showDeleteDialog) {
+        val typeName = selectedTypeState?.getDisplayName(context)
+            ?: context.getString(R.string.measurement_type_custom_default_name)
+        DeleteConfirmationDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            onConfirm = {
+                if (existingUserGoal != null) {
+                    onDelete(existingUserGoal.userId, existingUserGoal.measurementTypeId)
+                }
+                onDismiss()
+            },
+            title = stringResource(R.string.dialog_title_delete_goal, typeName),
+            text = stringResource(R.string.dialog_text_delete_goal)
+        )
+    }
+
     LaunchedEffect(selectedTypeState?.id, isEditing) {
         if (!isEditing) {
             currentGoalValueString = ""
@@ -228,12 +246,9 @@ fun UserGoalDialog(
         },
         dismissButton = {
             Row {
-                if (isEditing && existingUserGoal != null && selectedTypeState != null) {
+                if (isEditing && selectedTypeState != null) {
                     TextButton(
-                        onClick = {
-                            onDelete(existingUserGoal.userId, existingUserGoal.measurementTypeId)
-                            onDismiss()
-                        }
+                        onClick = { showDeleteDialog = true }
                     ) {
                         Text(
                             stringResource(R.string.delete_button_label),

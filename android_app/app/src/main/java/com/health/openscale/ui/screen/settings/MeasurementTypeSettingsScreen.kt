@@ -17,6 +17,7 @@
  */
 package com.health.openscale.ui.screen.settings
 
+import androidx.activity.result.launch
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -47,6 +48,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,10 +59,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.ui.components.RoundMeasurementIcon
+import com.health.openscale.ui.screen.dialog.DeleteConfirmationDialog
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -81,6 +87,8 @@ fun MeasurementTypeSettingsScreen(
     settingsViewModel: SettingsViewModel,
     onEditType: (Int?) -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     val measurementTypes by sharedViewModel.measurementTypes.collectAsState()
     // Remember and sort the list based on displayOrder. This list is used by the reorderable component.
     var list by remember(measurementTypes) {
@@ -104,6 +112,8 @@ fun MeasurementTypeSettingsScreen(
         }
     )
 
+    var typeToDelete by remember { mutableStateOf<MeasurementType?>(null) }
+
     // Retrieve string for the top bar title in the Composable context
     val screenTitle = stringResource(R.string.measurement_type_settings_title)
     val dragHandleContentDesc = stringResource(R.string.content_desc_drag_handle_sort)
@@ -116,6 +126,19 @@ fun MeasurementTypeSettingsScreen(
             TopBarAction(icon = Icons.Default.Add, onClick = {
                 onEditType(null) // Request to add a new type
             })
+        )
+    }
+
+    typeToDelete?.let { type ->
+        DeleteConfirmationDialog(
+            onDismissRequest = { typeToDelete = null },
+            onConfirm = {
+                coroutineScope.launch {
+                    settingsViewModel.deleteMeasurementType(type)
+                }
+            },
+            title = stringResource(R.string.dialog_title_delete_type),
+            text = stringResource(R.string.dialog_text_delete_type, type.getDisplayName(context))
         )
     }
 
@@ -184,7 +207,7 @@ fun MeasurementTypeSettingsScreen(
                         }
                         // Delete button, only for custom types
                         if (type.key == MeasurementTypeKey.CUSTOM) {
-                            IconButton(onClick = { settingsViewModel.deleteMeasurementType(type) }) {
+                            IconButton(onClick = { typeToDelete = type }) {
                                 Icon(
                                     Icons.Default.Delete,
                                     contentDescription = deleteContentDesc

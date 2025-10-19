@@ -86,6 +86,7 @@ import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.screen.components.MeasurementTypeFilterRow
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.core.utils.LocaleUtils
+import com.health.openscale.ui.screen.dialog.DeleteConfirmationDialog
 import com.health.openscale.ui.screen.dialog.UserInputDialog
 import com.health.openscale.ui.shared.TopBarAction
 import kotlinx.coroutines.flow.firstOrNull
@@ -404,45 +405,23 @@ fun TableScreen(
     }
 
     if (showDeleteConfirmDialog) {
-        AlertDialog(
+        val messageResId = if (selectedItemIds.size == 1) {
+            R.string.dialog_message_delete_selected_item
+        } else {
+            R.string.dialog_message_delete_selected_items
+        }
+
+        DeleteConfirmationDialog(
             onDismissRequest = {
                 showDeleteConfirmDialog = false
             },
-            title = {
-                Text(text = stringResource(id = R.string.dialog_title_delete_items))
+            onConfirm = {
+                deleteSelectedItems(selectedItemIds.toList())
+                isInSelectionMode = false
+                selectedItemIds.clear()
             },
-            text = {
-                val messageResId = if (selectedItemIds.size == 1) {
-                    R.string.dialog_message_delete_item
-                } else {
-                    R.string.dialog_message_delete_items
-                }
-                Text(text = stringResource(id = messageResId, selectedItemIds.size))
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        deleteSelectedItems(selectedItemIds.toList())
-                        showDeleteConfirmDialog = false
-                        isInSelectionMode = false
-                        selectedItemIds.clear()
-                    }
-                ) {
-                    Text(stringResource(id = R.string.delete_button_label).uppercase(Locale.getDefault()))
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        showDeleteConfirmDialog = false
-                    }
-                ) {
-                    Text(stringResource(id = R.string.cancel_button).uppercase(Locale.getDefault()))
-                }
-            },
-            icon = {
-                Icon(Icons.Filled.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-            }
+            title = stringResource(id = R.string.dialog_title_delete_selected_items),
+            text = stringResource(id = messageResId, selectedItemIds.size)
         )
     }
 

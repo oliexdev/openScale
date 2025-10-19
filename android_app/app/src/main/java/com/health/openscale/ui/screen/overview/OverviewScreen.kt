@@ -117,6 +117,7 @@ import com.health.openscale.core.data.ConnectionStatus
 import com.health.openscale.core.data.EvaluationState
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementTypeIcon
+import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.Trend
 import com.health.openscale.core.data.User
 import com.health.openscale.core.data.UserGoals
@@ -135,6 +136,7 @@ import com.health.openscale.ui.screen.settings.BluetoothViewModel
 import com.health.openscale.ui.screen.components.MeasurementChart
 import com.health.openscale.ui.screen.components.UserGoalChip
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
+import com.health.openscale.ui.screen.dialog.DeleteConfirmationDialog
 import com.health.openscale.ui.screen.dialog.UserGoalDialog
 import com.health.openscale.ui.screen.dialog.UserInputDialog
 import com.health.openscale.ui.shared.TopBarAction
@@ -147,6 +149,7 @@ import kotlin.collections.filter
 import kotlin.collections.find
 import kotlin.collections.firstOrNull
 import kotlin.collections.isNotEmpty
+import kotlin.let
 import kotlin.math.abs
 
 /**
@@ -388,6 +391,33 @@ fun OverviewScreen(
         } else {
             null
         }
+    }
+
+    var measurementToDelete by remember { mutableStateOf<EnrichedMeasurement?>(null) }
+
+    measurementToDelete?.let { enrichedItem ->
+        val weightValue = enrichedItem.valuesWithTrend.find {
+            it.currentValue.type.key == MeasurementTypeKey.WEIGHT
+        }
+        val weightString = weightValue?.currentValue?.let {
+            LocaleUtils.formatValueForDisplay(it.value.floatValue.toString(), it.type.unit)
+        } ?: ""
+
+        val formattedDate = remember(enrichedItem.measurementWithValues.measurement.timestamp) {
+            DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault())
+                .format(Date(enrichedItem.measurementWithValues.measurement.timestamp))
+        }
+
+        DeleteConfirmationDialog(
+            onDismissRequest = { measurementToDelete = null },
+            onConfirm = {
+                scope.launch {
+                    sharedViewModel.deleteMeasurement(enrichedItem.measurementWithValues.measurement)
+                }
+            },
+            title = stringResource(R.string.dialog_title_delete_item),
+            text = stringResource(R.string.dialog_message_delete_item,formattedDate, weightString)
+        )
     }
 
     // --- End of reverted chart selection logic ---
@@ -826,9 +856,7 @@ fun OverviewScreen(
                                             )
                                         },
                                         onDelete = {
-                                            scope.launch {
-                                                sharedViewModel.deleteMeasurement(enrichedItem.measurementWithValues.measurement)
-                                            }
+                                            measurementToDelete = enrichedItem
                                         },
                                         isHighlighted = (highlightedMeasurementId == enrichedItem.measurementWithValues.measurement.id)
                                     )
