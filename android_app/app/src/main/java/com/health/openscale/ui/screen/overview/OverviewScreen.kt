@@ -503,34 +503,50 @@ fun OverviewScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
 
     // DisposableEffect to configure the top bar based on the current state
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_CREATE || event == Lifecycle.Event.ON_RESUME) {
-                sharedViewModel.setTopBarTitle(context.getString(R.string.route_title_overview))
-                val actions = mutableListOf<TopBarAction>()
+    DisposableEffect(
+        lifecycleOwner,
+        selectedUserId,
+        hasData,
+        bluetoothTopBarAction,
+        selectedLineTypesForOverviewChart.isNotEmpty(),
+        timeFilterAction,
+        savedDeviceAddress,
+        connectionStatus,
+        connectedDeviceAddr
+    ) {
+        fun updateTopBar() {
+            sharedViewModel.setTopBarTitle(context.getString(R.string.route_title_overview))
+            val actions = mutableListOf<TopBarAction>()
 
-                // 0. Add Bluetooth action (if determined) at the beginning
-                bluetoothTopBarAction?.let { btAction ->
-                    actions.add(btAction)
-                }
+            // 0. Add Bluetooth action (if determined) at the beginning
+            bluetoothTopBarAction?.let { btAction ->
+                actions.add(btAction)
+            }
 
-                // 1. Add "Add Measurement" icon
-                actions.add(
-                    TopBarAction(
-                        icon = Icons.Default.Add,
-                        contentDescription = context.getString(R.string.action_add_measurement_desc),
-                        onClick = {
-                            if (selectedUserId != null) {
-                                navController.navigate(Routes.measurementDetail(measurementId = null, userId = selectedUserId!!))
-                            } else {
-                                Toast.makeText(context, context.getString(R.string.toast_select_user_first), Toast.LENGTH_SHORT).show()
-                            }
+            // 1. Add "Add Measurement" icon
+            actions.add(
+                TopBarAction(
+                    icon = Icons.Default.Add,
+                    contentDescription = context.getString(R.string.action_add_measurement_desc),
+                    onClick = {
+                        if (selectedUserId != null) {
+                            navController.navigate(Routes.measurementDetail(measurementId = null, userId = selectedUserId!!))
+                        } else {
+                            Toast.makeText(context, context.getString(R.string.toast_select_user_first), Toast.LENGTH_SHORT).show()
                         }
-                    )
+                    }
                 )
+            )
 
-                timeFilterAction?.let { actions.add(it) }
-                sharedViewModel.setTopBarActions(actions)
+            timeFilterAction?.let { actions.add(it) }
+            sharedViewModel.setTopBarActions(actions)
+        }
+
+        updateTopBar()
+
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                updateTopBar()
             }
         }
 
