@@ -33,7 +33,6 @@ import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.byteArrayOf
-import kotlin.experimental.or
 import kotlin.math.min
 
 /**
@@ -262,12 +261,12 @@ class HuaweiAH100Handler : ScaleDeviceHandler() {
 
     private fun sendUserInfo(user: ScaleUser, weightTenthKg: Int?) {
         // payload = auth(7) + [age|sexBit, height, 0, weightLE(2), impedanceLE(2), 0x1C, 0xE2]
-        val sexBit: Byte = (if (user.gender.isMale()) 0x00 else 0x80) as Byte
+        val sexBit = (if (user.gender.isMale()) 0x00.toByte() else 0x80.toByte())
         val age = user.age.toByte()
         val height = user.bodyHeight.toInt().toByte()
         val w = (weightTenthKg ?: (user.initialWeight * 10f).toInt()).coerceAtLeast(0)
         val tail = ByteArrayOutputStream().apply {
-            write(byteArrayOf((age or sexBit), height, 0))
+            write(byteArrayOf((age.toInt() or sexBit.toInt()).toByte(), height, 0))
             write(le16(w))
             write(byteArrayOf(0xFF.toByte(), 0xFF.toByte())) // resistance unknown
             write(byteArrayOf(0x1C.toByte(), 0xE2.toByte())) // constant as in legacy
