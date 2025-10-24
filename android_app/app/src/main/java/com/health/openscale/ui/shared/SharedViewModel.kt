@@ -452,13 +452,13 @@ class SharedViewModel @Inject constructor(
     }
 
     fun evaluateMeasurement(
-        typeKey: MeasurementTypeKey,
+        type: MeasurementType,
         value: Float,
         userEvaluationContext: UserEvaluationContext,
         measuredAtMillis: Long
     ): MeasurementEvaluationResult? {
         return measurementFacade.evaluate(
-            typeKey = typeKey,
+            type = type,
             value = value,
             userEvaluationContext = userEvaluationContext,
             measuredAtMillis = measuredAtMillis

@@ -119,6 +119,7 @@ import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.Trend
+import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
 import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.model.MeasurementWithValues
@@ -126,6 +127,7 @@ import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.model.ValueWithDifference
+import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.components.LinearGauge
@@ -1363,7 +1365,7 @@ fun MeasurementValueRow(
     val evalResult = remember(valueWithTrend, userEvaluationContext, measuredAtMillis) {
         if (userEvaluationContext != null && numeric != null) {
             sharedViewModel.evaluateMeasurement(
-                typeKey = type.key,
+                type = type,
                 value = numeric,
                 userEvaluationContext = userEvaluationContext,
                 measuredAtMillis = measuredAtMillis
@@ -1565,7 +1567,7 @@ fun MeasurementRowExpandable(
             null
         } else {
             sharedViewModel.evaluateMeasurement(
-                typeKey = type.key,
+                type = type,
                 value = numeric,
                 userEvaluationContext = userEvaluationContext,
                 measuredAtMillis = measuredAtMillis
@@ -1634,18 +1636,37 @@ fun MeasurementRowExpandable(
                 }
                 // Normal evaluation → show gauge
                 evalResult != null -> {
+
+                    val (displayValue, displayLow, displayHigh) = remember(evalResult, type.unit) {
+                        val targetUnit = type.unit
+                        val baseUnit = when (type.key) {
+                            MeasurementTypeKey.WEIGHT, MeasurementTypeKey.LBM -> UnitType.KG
+                            MeasurementTypeKey.WAIST -> UnitType.CM
+                            else -> UnitType.PERCENT
+                        }
+
+                        if (baseUnit != targetUnit) {
+                            val convertedValue = ConverterUtils.convertFloatValueUnit(evalResult.value, baseUnit, targetUnit)
+                            val convertedLow = if (evalResult.lowLimit >= 0f) ConverterUtils.convertFloatValueUnit(evalResult.lowLimit, baseUnit, targetUnit) else null
+                            val convertedHigh = ConverterUtils.convertFloatValueUnit(evalResult.highLimit, baseUnit, targetUnit)
+                            Triple(convertedValue, convertedLow, convertedHigh)
+                        } else {
+                            Triple(evalResult.value, if (evalResult.lowLimit < 0f) null else evalResult.lowLimit, evalResult.highLimit)
+                        }
+                    }
+
                     Column(
                         Modifier.padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 2.dp)
                     ) {
                         LinearGauge(
-                            value = evalResult.value,
-                            lowLimit = if (evalResult.lowLimit < 0f) null else evalResult.lowLimit,
-                            highLimit = evalResult.highLimit,
+                            value = displayValue,
+                            lowLimit = displayLow,
+                            highLimit = displayHigh,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(gaugeHeightDp),
-                            labelProvider = { v ->
-                                String.format(Locale.getDefault(), "%,.1f %s", v, unit)
+                            labelProvider = { value ->
+                                LocaleUtils.formatValueForDisplay(value.toString(), type.unit)
                             }
                         )
                     }

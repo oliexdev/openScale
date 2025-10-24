@@ -231,11 +231,11 @@ class MeasurementFacade @Inject constructor(
     ) = query.findClosestMeasurement(selectedTimestamp, items)
 
     fun evaluate(
-        typeKey: MeasurementTypeKey,
+        type: MeasurementType,
         value: Float,
         userEvaluationContext: UserEvaluationContext,
         measuredAtMillis: Long
-    ) = evaluationUseCases.evaluate(typeKey, value, userEvaluationContext, measuredAtMillis)
+    ) = evaluationUseCases.evaluate(type, value, userEvaluationContext, measuredAtMillis)
 
     fun plausiblePercentRangeFor(typeKey: MeasurementTypeKey) =
         evaluationUseCases.plausiblePercentRangeFor(typeKey)

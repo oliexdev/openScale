@@ -20,6 +20,8 @@ package com.health.openscale.core.usecase
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.data.EvaluationState
+import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.service.MeasurementEvaluator.evalBmi
 import com.health.openscale.core.service.MeasurementEvaluator.evalBodyFat
 import com.health.openscale.core.service.MeasurementEvaluator.evalLBM
@@ -31,6 +33,7 @@ import com.health.openscale.core.service.MeasurementEvaluator.evalWaistCm
 import com.health.openscale.core.service.MeasurementEvaluator.evalWater
 import com.health.openscale.core.service.MeasurementEvaluator.evalWeightAgainstTargetRange
 import com.health.openscale.core.utils.CalculationUtils
+import com.health.openscale.core.utils.ConverterUtils
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -46,7 +49,7 @@ class MeasurementEvaluationUseCases @Inject constructor() {
     /**
      * Central entry point for evaluation in UI.
      *
-     * @param typeKey           The measurement type key.
+     * @param type           The measurement type.
      * @param value             The numeric value to evaluate.
      * @param userEvaluationContext   User context (gender, height, birthDate).
      * @param measuredAtMillis  Timestamp of the measurement (for age-on calculation).
@@ -54,7 +57,7 @@ class MeasurementEvaluationUseCases @Inject constructor() {
      * @return MeasurementEvaluationResult or null if type is not supported.
      */
     fun evaluate(
-        typeKey: MeasurementTypeKey,
+        type: MeasurementType,
         value: Float,
         userEvaluationContext: UserEvaluationContext,
         measuredAtMillis: Long
@@ -66,25 +69,43 @@ class MeasurementEvaluationUseCases @Inject constructor() {
             userEvaluationContext.birthDateMillis
         )
 
-        return when (typeKey) {
-            MeasurementTypeKey.BODY_FAT -> evalBodyFat(value, ageYears, userEvaluationContext.gender)
-            MeasurementTypeKey.WATER    -> evalWater(value, ageYears, userEvaluationContext.gender)
-            MeasurementTypeKey.MUSCLE   -> evalMuscle(value, ageYears, userEvaluationContext.gender)
-            MeasurementTypeKey.LBM      -> evalLBM(value, ageYears, userEvaluationContext.gender)
+        val typeKey = type.key
+        val unit = type.unit
 
+        return when (typeKey) {
+            MeasurementTypeKey.WEIGHT   -> {
+                val weightKg = ConverterUtils.convertFloatValueUnit(value, unit, UnitType.KG)
+                evalWeightAgainstTargetRange(
+                    weightKg = weightKg,
+                    age = ageYears,
+                    heightCm = userEvaluationContext.heightCm.toInt(),
+                    gender = userEvaluationContext.gender
+                )
+            }
+            MeasurementTypeKey.BODY_FAT -> {
+                val fatPercent = ConverterUtils.convertFloatValueUnit(value, unit, UnitType.PERCENT)
+                evalBodyFat(fatPercent, ageYears, userEvaluationContext.gender)
+            }
+            MeasurementTypeKey.WATER    -> {
+                val waterPercent = ConverterUtils.convertFloatValueUnit(value, unit, UnitType.PERCENT)
+                evalWater(waterPercent, ageYears, userEvaluationContext.gender)
+            }
+            MeasurementTypeKey.MUSCLE   -> {
+                val musclePercent = ConverterUtils.convertFloatValueUnit(value, unit, UnitType.PERCENT)
+                evalMuscle(musclePercent, ageYears, userEvaluationContext.gender)
+            }
+            MeasurementTypeKey.LBM      -> {
+                val weightKg = ConverterUtils.convertFloatValueUnit(value, unit, UnitType.KG)
+                evalLBM(weightKg, ageYears, userEvaluationContext.gender)
+            }
+            MeasurementTypeKey.WAIST    -> {
+                val waistCm = ConverterUtils.convertFloatValueUnit(value, unit, UnitType.CM)
+                evalWaistCm(waistCm, ageYears, userEvaluationContext.gender)
+            }
             MeasurementTypeKey.BMI      -> evalBmi(value, ageYears, userEvaluationContext.gender)
             MeasurementTypeKey.WHTR     -> evalWHtR(value, ageYears)
             MeasurementTypeKey.WHR      -> evalWHR(value, ageYears, userEvaluationContext.gender)
             MeasurementTypeKey.VISCERAL_FAT -> evalVisceralFat(value, ageYears)
-
-            MeasurementTypeKey.WAIST    -> evalWaistCm(value, ageYears, userEvaluationContext.gender)
-            MeasurementTypeKey.WEIGHT   -> evalWeightAgainstTargetRange(
-                weightKg = value,
-                age = ageYears,
-                heightCm = userEvaluationContext.heightCm.toInt(),
-                gender = userEvaluationContext.gender
-            )
-
             else -> null
         }
     }

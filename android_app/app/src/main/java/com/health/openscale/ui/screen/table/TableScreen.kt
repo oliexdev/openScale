@@ -233,7 +233,7 @@ fun TableScreen(
                         val ctx = userEvaluationContext
                         val evalResult = if (ctx != null && numeric != null) {
                             sharedViewModel.evaluateMeasurement(
-                                typeKey = actualType.key,
+                                type = actualType,
                                 value = numeric,
                                 userEvaluationContext = ctx,
                                 measuredAtMillis = ts
