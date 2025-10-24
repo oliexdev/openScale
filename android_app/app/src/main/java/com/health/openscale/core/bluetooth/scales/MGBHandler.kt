@@ -214,10 +214,10 @@ class MGBHandler : ScaleDeviceHandler() {
 
         var p = 2 // after 01 00 header
 
-        m.muscle = readDeciBE(d, p); p += 2
+        m.muscle = readDeciLE(d, p); p += 2
         /* val bmr = readDeciLE(d, p); */ p += 2
-        m.bone = readDeciBE(d, p); p += 2
-        m.water = readDeciBE(d, p); p += 2
+        m.bone = readDeciLE(d, p); p += 2
+        m.water = readDeciLE(d, p); p += 2
         /* val age = d[p].toUByte().toInt(); */ p += 1
         /* val protein = readDeciLE(d, p); */ p += 2
         // Skip remaining bytes (unknown/padding)
