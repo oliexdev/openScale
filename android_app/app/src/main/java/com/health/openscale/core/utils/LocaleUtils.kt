@@ -143,7 +143,7 @@ object LocaleUtils {
                 val (st, lb) = ConverterUtils.decimalStToStLb(absVal)
                 "$signPrefix$st st $lb lb"
             }
-            UnitType.KG  -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} kg"
+            UnitType.KG  -> "$signPrefix${formatNumber(absVal, maxFraction = 2, locale)} kg"
             UnitType.LB  -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} lb"
             UnitType.PERCENT -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} %"
             UnitType.CM  -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} cm"
