@@ -17,7 +17,7 @@
     <string name="label_delete">Elimina</string>
     <string name="label_add_user">Aggiungi utente</string>
     <string name="label_share">Condividi</string>
-    <string name="label_share_subject">Esportazione dei dati openScale (%s)</string>
+    <string name="label_share_subject">Esporta dati openScale (%s)</string>
     <string name="label_weight">Peso</string>
     <string name="label_bmi">Indice massa corporea (IMC)</string>
     <string name="label_bmr">Metabolismo basale (MB)</string>
@@ -39,7 +39,7 @@
     <string name="label_birthday">Data di nascita</string>
     <string name="label_user_name">Nome</string>
     <string name="label_height">Altezza</string>
-    <string name="label_scale_unit">Unità di misura</string>
+    <string name="label_scale_unit">Unità di misura della bilancia</string>
     <string name="label_gender">Sesso</string>
     <string name="label_male">Maschio</string>
     <string name="label_female">Femmina</string>
@@ -58,7 +58,7 @@
     <string name="error_initial_weight_required">Peso iniziale richiesto</string>
     <string name="error_goal_weight_required">Obiettivo di peso richiesto</string>
     <string name="info_data_deleted">Misurazione cancellata</string>
-    <string name="info_data_all_deleted">Tutti le misurazioni sono state cancellate</string>
+    <string name="info_data_all_deleted">Cancellate tutte le misurazioni</string>
     <string name="info_data_exported">Esportato su</string>
     <string name="info_data_imported">Importato da</string>
     <string name="info_enter_value_in">Valore in</string>
@@ -268,10 +268,10 @@
     <string name="label_is_on_right_axis">Su asse destro</string>
     <string name="label_trend">Tendenza</string>
     <string name="label_prediction">Predizione</string>
-    <string name="label_trend_line">Tendenza</string>
-    <string name="info_assisted_weighing_choose_reference_user">Scegli un utente a cui sottrarre il peso</string>
+    <string name="label_trend_line">Linea di tendenza</string>
+    <string name="info_assisted_weighing_choose_reference_user">Scegli l\'utente di riferimento a cui sottrarre il peso</string>
     <string name="info_assisted_weighing_no_reference_user">Nessun utente presente, creane uno</string>
-    <string name="info_assisted_weighing_old_reference_measurement">Attenzione: L\'ultima misurazione è più vecchia di un giorno</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Attenzione: l\'ultima misurazione è più vecchia di un giorno</string>
     <string name="info_assisted_weighing_no_reference_measurements">L\'utente non ha effettuato misurazioni</string>
     <string name="label_amputation_right">Amputazione destra</string>
     <string name="label_amputation_left">Amputazione sinistra</string>
@@ -289,8 +289,8 @@
     <string name="label_goal_enabled">Obiettivo abilitato</string>
     <string name="label_measurements">misure</string>
     <string name="info_select_auto_backup_export_dir">Seleziona la directory di esportazione del backup automatico</string>
-    <string name="label_is_sticky">È appiccicoso</string>
-    <string name="label_time_period_last_30_days">ultimi 7 giorni</string>
+    <string name="label_is_sticky">È fissato</string>
+    <string name="label_time_period_last_30_days">ultimi 30 giorni</string>
     <string name="label_abbr_min">min</string>
     <string name="label_abbr_max">max</string>
     <string name="label_auto_backup_lacation">Nessuna posizione di backup automatico selezionata</string>
