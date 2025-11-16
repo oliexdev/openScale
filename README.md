@@ -12,10 +12,10 @@ Open-source weight and body metrics tracker, with support for Bluetooth scales
 </a>
 
 > [!NOTE]
-> On [Google Play](https://play.google.com/store/apps/details?id=com.health.openscale.oss) only the **openScale 3.0 beta** version is offered as an open beta.  For stable releases, please use [F-Droid](https://f-droid.org/packages/com.health.openscale).
+> On [Google Play](https://play.google.com/store/apps/details?id=com.health.openscale.oss) the **openScale** version is offered as an open beta.
 > 
-> For the latest development state, install either the latest [openScale 2.x dev](https://github.com/oliexdev/openScale/releases/tag/dev-build) build or the [openScale 3.0 beta](https://github.com/oliexdev/openScale/releases/tag/beta-build) build from the [GitHub release page](https://github.com/oliexdev/openScale/releases).
-> Please be aware that these are development/beta versions, may contain bugs, and will not receive automatic updates.
+> For the latest development state, install the latest [openScale dev](https://github.com/oliexdev/openScale/releases/tag/dev-build) build from the [GitHub release page](https://github.com/oliexdev/openScale/releases).
+> Please be aware that the development version, may contain bugs, and will not receive automatic updates.
 
 > [!IMPORTANT]
 > **Help to test the openScale 3.0 Beta - Your Feedback is Key!**
@@ -66,7 +66,7 @@ Please see [openScale wikipage](https://github.com/oliexdev/openScale/wiki/Suppo
 For scales without Bluetooth, or Bluetooth scales not (yet) supported by openScale, measurements can be manually entered in a quick and easy way.
 
 # Supported metrics :chart_with_upwards_trend:
-Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fat, bone mass, waist circumference, waist-to-height ratio, hip circumference, waist-hip ratio, visceral fat, chest circumference, thigh circumference, biceps circumference, neck circumference, body fat caliper, BMR (basal metabolic rate), TDEE (Total Daily Energy Expenditure) and Calories. Each entry can also have an optional comment.
+Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fat, bone mass, waist circumference, waist-to-height ratio, hip circumference, waist-hip ratio, visceral fat, chest circumference, thigh circumference, biceps circumference, neck circumference, body fat caliper, BMR (basal metabolic rate), TDEE (Total Daily Energy Expenditure), Calories and custom metrics. Each entry can also have an optional comment.
 
 <b>Note:</b> don't worry if you think the list is too long: metrics you don't use can be disabled and hidden.
 
@@ -81,7 +81,7 @@ Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fa
 - Support for multiple users
 - Support for assisted weighing (e.g. for babies or pets)
 - Support for people with amputations
-- Partially or fully translated into more than 27 languages, see [weblate project site](https://hosted.weblate.org/projects/openscale/#languages) for the full list
+- Partially or fully translated, see [weblate project site](https://hosted.weblate.org/projects/openscale/#languages) for the full list
 - Optional dark theme selectable
 
 # Privacy :lock:
@@ -153,7 +153,7 @@ If you want to help to translate the app in your language please see [here](http
 
 openScale is licensed under the GPL v3, see LICENSE file for full notice.
 
-    Copyright (C) 2014  olie.xdev <olie.xdev@googlemail.com>
+    Copyright (C) 2025  olie.xdev <olie.xdeveloper@googlemail.com>
     
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
