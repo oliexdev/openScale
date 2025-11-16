@@ -34,22 +34,19 @@ class ScaleUser {
     var birthday: Date
 
     @JvmField
-    var bodyHeight: Float
+    var bodyHeight: Float // always in cm
 
     @JvmField
     var gender: GenderType
 
     @JvmField
-    var initialWeight: Float = 0f // TODO implement in GUI
+    var initialWeight: Float = 0f // always in kg
 
     @JvmField
-    var goalWeight: Float = 0f // TODO implement in GUI
+    var goalWeight: Float = 0f // always in kg
 
     @JvmField
-    var scaleUnit: WeightUnit // TODO implement in GUI
-
-    @JvmField
-    var measureUnit: MeasureUnit // TODO implement in GUI
+    var scaleUnit: WeightUnit
 
     @JvmField
     var activityLevel: ActivityLevel
@@ -59,7 +56,6 @@ class ScaleUser {
         bodyHeight = -1f
         gender = GenderType.MALE
         scaleUnit = WeightUnit.KG
-        measureUnit = MeasureUnit.CM
         activityLevel = ActivityLevel.SEDENTARY
     }
 
@@ -93,6 +89,6 @@ class ScaleUser {
     }
 
     override fun toString() : String {
-        return "ScaleUser(id=$id, userName=$userName, birthday=$birthday, bodyHeight=$bodyHeight, gender=$gender, initialWeight=$initialWeight, goalWeight=$goalWeight, scaleUnit=$scaleUnit, measureUnit=$measureUnit, activityLevel=$activityLevel)"
+        return "ScaleUser(id=$id, userName=$userName, birthday=$birthday, bodyHeight=$bodyHeight, gender=$gender, initialWeight=$initialWeight, goalWeight=$goalWeight, scaleUnit=$scaleUnit, activityLevel=$activityLevel)"
     }
 }

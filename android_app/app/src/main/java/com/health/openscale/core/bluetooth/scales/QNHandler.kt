@@ -110,6 +110,7 @@ class QNHandler : ScaleDeviceHandler() {
             setNotifyOn(SVC_T2, CHR_T2_NOTIFY_WEIGHT_TIME)
         }
         // Configure unit on both flavors (the non-matching write will be ignored by the stack).
+        logD("ScaleUser $user")
         val unitByte = when (user.scaleUnit) {
             WeightUnit.LB, WeightUnit.ST -> 0x02 // LB (vendor uses LB also for ST in their apps)
             else -> 0x01 // KG
@@ -192,14 +193,14 @@ class QNHandler : ScaleDeviceHandler() {
         // Heuristic fallback: some “type 2” devices report with /10 even before 0x12 arrives.
         // If weight looks unreasonably small or large, try the /10 fallback once.
         if (weightKg <= 5f || weightKg >= 250f) {
-            weightKg = raw / 10.0f
+            weightKg = weightKg / 10.0f
         }
 
         // Optional resistances (often two values). We primarily use the first one.
         val r1 = u16be(data[6], data[7])
         val r2 = u16be(data[8], data[9])
 
-        logD( "QN weight=$weightKg kg, r1=$r1, r2=$r2 (scale=$weightScaleFactor)")
+        logD( "QN weight=$weightKg kg, r1=$r1, r2=$r2 (weight scale factor is = $weightScaleFactor)")
 
         if (weightKg > 0f) {
             val m = ScaleMeasurement().apply {

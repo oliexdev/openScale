@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.material.icons.filled.SignalCellularAlt1Bar
 import androidx.compose.material.icons.outlined.SignalCellularAlt2Bar
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.key.key
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.ScaleCommunicator
@@ -33,11 +34,13 @@ import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
+import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
 import com.health.openscale.core.model.MeasurementWithValues
+import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -456,6 +459,49 @@ abstract class ModernScaleAdapter(
             runCatching { bodyHeight = u.heightCm }
             runCatching { gender = u.gender }
             runCatching { activityLevel = u.activityLevel }
+
+            runCatching {
+                runBlocking(scope.coroutineContext) {
+                    val userGoals = userFacade.getAllGoalsForUser(u.id).first()
+
+                    val goalWeightGoal = userGoals.find { it.measurementTypeId == MeasurementTypeKey.WEIGHT.id }
+                    if (goalWeightGoal != null) {
+                        val goalType = measurementFacade.getAllMeasurementTypes().first()
+                            .find { it.id == goalWeightGoal.measurementTypeId }
+
+                        if (goalType != null) {
+                            goalWeight = ConverterUtils.convertFloatValueUnit(
+                                value = goalWeightGoal.goalValue,
+                                fromUnit = goalType.unit,
+                                toUnit = UnitType.KG
+                            )
+                        }
+                    }
+
+                    val allMeasurements = measurementFacade.getMeasurementsForUser(u.id).first()
+
+                    val oldestWeightMeasurementValue = allMeasurements
+                        .sortedBy { it.measurement.timestamp }
+                        .firstNotNullOfOrNull { measurementWithValues ->
+                            measurementWithValues.values.find { it.type.key == MeasurementTypeKey.WEIGHT }
+                        }
+
+                    if (oldestWeightMeasurementValue != null) {
+                        initialWeight = ConverterUtils.convertFloatValueUnit(
+                            value = oldestWeightMeasurementValue.value.floatValue ?: 0f,
+                            fromUnit = oldestWeightMeasurementValue.type.unit,
+                            toUnit = UnitType.KG
+                        )
+                    }
+
+                    val allTypes = measurementFacade.getAllMeasurementTypes().first()
+
+                    val weightType = allTypes.find { it.key == MeasurementTypeKey.WEIGHT }
+                    if (weightType != null) {
+                        scaleUnit = weightType.unit.toWeightUnit()
+                    }
+                }
+            }
         }
 
     protected fun mapMeasurement(mwv: MeasurementWithValues?): ScaleMeasurement? {

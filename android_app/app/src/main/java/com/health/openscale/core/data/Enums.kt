@@ -378,6 +378,14 @@ enum class UnitType(val displayName: String) {
     fun isWeightUnit(): Boolean {
         return this == KG || this == LB || this == ST
     }
+
+    fun toWeightUnit(): WeightUnit {
+        return when (this) {
+            LB -> WeightUnit.LB
+            ST -> WeightUnit.ST
+            else -> WeightUnit.KG
+        }
+    }
 }
 
 enum class InputFieldType {

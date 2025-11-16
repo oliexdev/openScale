@@ -173,8 +173,7 @@ class OneByoneNewHandler : ScaleDeviceHandler() {
 
         // The legacy driver used ConverterUtils.fromCentimeter(heightCm, user.measureUnit) here.
         // We keep the same call to preserve parity with historical values expected by the vendor lib.
-        val heightForLib: Float =
-            ConverterUtils.fromCentimeter(u.bodyHeight, u.measureUnit)
+        val heightForLib: Float =u.bodyHeight
 
         val lib = OneByoneNewLib(gender, u.age, heightForLib, u.activityLevel.toInt())
 
