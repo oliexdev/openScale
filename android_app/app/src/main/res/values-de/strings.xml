@@ -1,304 +1,718 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="action_settings">Einstellungen</string>
-    <string name="error_height_required">Körpergröße ist erforderlich</string>
-    <string name="error_exporting">Fehler beim Exportieren</string>
-    <string name="error_importing">Fehler beim Importieren</string>
-    <string name="error_user_name_required">Benutzername erforderlich</string>
-    <string name="info_data_all_deleted">Alle Einträge wurden gelöscht</string>
-    <string name="info_data_deleted">Eintrag wurde gelöscht</string>
-    <string name="info_data_exported">Exportiert nach</string>
-    <string name="info_data_imported">Importiert von</string>
-    <string name="info_enter_comment">Gib einen optionalen Kommentar ein</string>
-    <string name="info_enter_user_name">Dein Name</string>
-    <string name="info_enter_value_in">Wert in</string>
-    <string name="info_is_not_visible">ist nicht sichtbar</string>
-    <string name="info_is_visible">ist sichtbar</string>
-    <string name="info_is_not_available">nicht verfügbar</string>
-    <string name="info_no_selected_user">Kein Benutzer vorhanden. Bitte erzeugen Sie einen neuen Benutzer in den Einstellungen.</string>
-    <string name="label_birthday">Geburtstag</string>
-    <string name="label_bluetooth_enable">Verbinde mit Waage beim Start</string>
-    <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_bmi">Body-Mass-Index (BMI)</string>
-    <string name="label_height">Körpergröße</string>
-    <string name="label_comment">Kommentar</string>
-    <string name="label_date">Datum</string>
-    <string name="label_days_left">Tage übrig</string>
-    <string name="label_delete">Löschen</string>
-    <string name="label_delete_all">Alles löschen</string>
-    <string name="label_enable_labels">Datenpunktnotiz</string>
-    <string name="label_export">Exportieren</string>
-    <string name="label_fat">Körperfett</string>
-    <string name="label_gender">Geschlecht</string>
-    <string name="label_goal_date">Zieldatum</string>
-    <string name="label_goal_weight">Zielgewicht</string>
-    <string name="label_import">Importieren</string>
-    <string name="label_male">Männlich</string>
-    <string name="label_muscle">Muskelmasse</string>
-    <string name="label_no">Nein</string>
-    <string name="label_ok">OK</string>
-    <string name="label_scale_unit">Einheit</string>
-    <string name="label_time">Zeit</string>
-    <string name="label_title_user">Benutzer</string>
-    <string name="label_user_name">Name</string>
-    <string name="label_water">Wassergehalt</string>
-    <string name="label_weight">Gewicht</string>
-    <string name="label_weight_difference">Gewichtsunterschied</string>
-    <string name="label_female">Weiblich</string>
-    <string name="label_yes">Ja</string>
-    <string name="question_really_delete_user">Benutzer löschen?</string>
-    <string name="question_really_delete_all">Wollen Sie wirklich alle Benutzereinträge löschen?</string>
-    <string name="title_table">Tabelle</string>
-    <string name="title_graph">Diagramm</string>
-    <string name="title_overview">Übersicht</string>
-    <string name="title_users">Benutzer</string>
-    <string name="label_add_user">Benutzer hinzufügen</string>
-    <string name="label_add_measurement">Messung hinzufügen</string>
-    <string name="error_goal_weight_required">Zielgewicht ist erforderlich</string>
-    <string name="info_is_not_enable">ausgeschaltet</string>
-    <string name="info_is_enable">eingeschaltet</string>
-    <string name="label_waist">Taillenumfang</string>
-    <string name="label_hip">Hüftumfang</string>
-    <string name="info_no_evaluation_available">Kann den Wert nicht ermitteln</string>
-    <string name="label_whtr">Taille-zu-Größe Verhältnis</string>
-    <string name="label_whr">Taille-Hüft-Verhältnis</string>
-    <string name="action_bluetooth_status">Bluetooth-Status</string>
-    <string name="info_bluetooth_connection_error">Unerwarteter Bluetooth-Fehler</string>
-    <string name="info_bluetooth_connection_lost">Bluetooth-Verbindung verloren</string>
-    <string name="info_bluetooth_connection_successful">Verbunden</string>
-    <string name="info_bluetooth_no_device">Kein Bluetooth Gerät gefunden</string>
-    <string name="info_bluetooth_try_connection">Verbinde mit:</string>
-    <string name="info_bluetooth_init">Initialisiere Bluetooth-Gerät</string>
-    <string name="label_smartUserAssign">Intelligente Benutzer-Zuweisung</string>
-    <string name="default_value_reminder_notify_text">Zeit zum Wiegen</string>
-    <string name="label_reminder">Erinnerung</string>
-    <string name="label_reminder_notify_text">Benachrichtigungstext</string>
-    <string name="label_reminder_time">Zeit</string>
-    <string name="label_reminder_weekdays">Wochentage</string>
-    <string name="title_measurements">Messwerte</string>
-    <string name="label_delete_confirmation">Löschbestätigung</string>
-    <string name="question_really_delete">Eintrag löschen?</string>
-    <string name="label_enable_points">Datenpunkt</string>
-    <string name="Monday">Montag</string>
-    <string name="Tuesday">Dienstag</string>
-    <string name="Wednesday">Mittwoch</string>
-    <string name="Thursday">Donnerstag</string>
-    <string name="Friday">Freitag</string>
-    <string name="Saturday">Samstag</string>
-    <string name="Sunday">Sonntag</string>
-    <string name="error_value_range">Wert außerhalb Wertebereich</string>
-    <string name="error_value_required">Wert erforderlich</string>
-    <string name="title_statistics">Statistiken</string>
-    <string name="label_cancel">Abbrechen</string>
-    <string name="label_backup">Datensicherung</string>
-    <string name="label_exportBackup">Exportiere Datensicherung</string>
-    <string name="label_importBackup">Importiere Datensicherung</string>
-    <string name="label_export_dir">Export-Ordner</string>
-    <string name="label_ignoreOutOfRange">Ignoriere Daten außerhalb des zulässigen Bereiches</string>
-    <string name="label_initial_weight">Anfangsgewicht</string>
-    <string name="error_initial_weight_required">Anfangsgewicht ist erforderlich</string>
-    <string name="label_bt_device_no_support">Gerät wird nicht unterstützt</string>
-    <string name="label_goal_line">Ziellinie</string>
-    <string name="label_bluetooth_searching">Suche nach Ihrer Bluetooth Waagen</string>
-    <string name="label_bone">Knochenmasse</string>
-    <string name="label_bmr">Grundumsatz (BMR)</string>
-    <string name="info_measuring">Messe Gewicht: %.2f</string>
-    <string name="info_new_data_added">%1$.2f%2$s [%3$s] hinzugefügt zu %4$s</string>
-    <string name="error_max_scale_users">Maximale Anzahl gleichzeitiger Benutzer erreicht</string>
-    <string name="info_step_on_scale_for_reference">Bitte steigen Sie barfuß auf die Waage zur Referenzmessung</string>
-    <string name="label_automatic">auto</string>
-    <string name="label_category_measurement_database">Messwertedatenbank</string>
-    <string name="label_lbm">Fettfreie Körpermasse</string>
-    <string name="label_license">Lizenz</string>
-    <string name="label_maintainer">Hauptentwickler</string>
-    <string name="label_website">Webseite</string>
-    <string name="title_about">Über</string>
-    <string name="info_bluetooth_no_device_set">Wählen Sie ein Bluetooth-Gerät aus</string>
-    <string name="info_new_data_duplicated">Messung mit gleichen Datum und Uhrzeit existiert bereits</string>
-    <string name="label_feedback_message_enjoying">Gefällt Dir openScale?</string>
-    <string name="label_feedback_message_rate_app">Wie wäre es dann mit einer Bewertung bei GooglePlay oder bei GitHub?</string>
-    <string name="label_feedback_message_yes">Ja</string>
-    <string name="label_feedback_message_no">Nicht wirklich</string>
-    <string name="label_feedback_message_positive">Ja klar</string>
-    <string name="label_feedback_message_negative">Nein danke</string>
-    <string name="label_feedback_message_issue">Würdest Du uns etwas Feedback geben?</string>
-    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Ein unerwarteter Fehler ist aufgetreten.
-\n 
-\n Bitte erstellen Sie ein neues Issue mit detailliertem Fehlerbericht auf 
-\nhttps://github.com/oliexdev/openScale/issues</string>
-    <string name="customactivityoncrash_error_activity_restart_app">App Neustart</string>
-    <string name="customactivityoncrash_error_activity_close_app">Schließe App</string>
-    <string name="customactivityoncrash_error_activity_error_details">Fehlerdetails</string>
-    <string name="customactivityoncrash_error_activity_error_details_title">Fehlerdetails</string>
-    <string name="customactivityoncrash_error_activity_error_details_close">Schließen</string>
-    <string name="customactivityoncrash_error_activity_error_details_copy">Kopieren in die Zwischenablage</string>
-    <string name="customactivityoncrash_error_activity_error_details_copied">in Zwischenablage kopiert</string>
-    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Fehlerinformationen</string>
-    <string name="title_general">Allgemein</string>
-    <string name="label_theme">Farbschema</string>
-    <string name="label_share">Teilen</string>
-    <string name="label_bluetooth_searching_finished">Suche beendet</string>
-    <string name="label_help">Hilfe</string>
-    <string name="toggle_expand">Umschalten expandieren</string>
-    <string name="edit">Editieren</string>
-    <string name="save">Speichern</string>
-    <string name="label_month_view">Monatsansicht</string>
-    <string name="label_weeks_view">Wochenansicht</string>
-    <string name="permission_not_granted">Zugriff verweigert</string>
-    <string name="permission_bluetooth_info">Erlaubnis für Standort Zugriff benötigt, um nach Bluetooth-Geräten zu suchen. Sobald das Gerät gefunden wurde kann diese widerrufen werden.</string>
-    <string name="permission_bluetooth_info_title">Information</string>
-    <string name="label_next">Weiter</string>
-    <string name="label_set_default_order">Standardreihenfolge wiederherstellen</string>
-    <string name="label_share_subject">openScale datenexport (%s)</string>
-    <string name="label_mergeWithLastMeasurement">Zusammenführen mit der letzten Messung</string>
-    <string name="label_export_overwrite">Vorherigen Export überschreiben %s?</string>
-    <string name="label_measurement_in_percent">Messwert in %</string>
-    <string name="label_estimate_measurement">Geschätzte Messung</string>
-    <string name="label_estimation_formula">Schätzformel</string>
-    <string name="language_default">Systemstandard</string>
-    <string name="label_language">Sprache</string>
+    <!-- App & Allgemein -->
+    <string name="app_logo_content_description">App-Logo</string>
+    <string name="text_none">Keine</string>
+    <string name="not_available">N.V.</string> <!-- N.V. = Nicht verfügbar -->
+    <string name="placeholder_empty_value">-</string>
     <string name="theme_light">Hell</string>
     <string name="theme_dark">Dunkel</string>
-    <string name="label_contribute_translation">Übersetzung beitragen</string>
-    <string name="label_add_or_fix_translation">Neue hinzufügen oder bestehende korrigieren</string>
-    <string name="label_percent">Prozent</string>
-    <string name="label_estimated">Geschätzt</string>
-    <string name="label_estimate_measurement_summary">Basierend auf Gewicht, Größe, Alter, Geschlecht, etc.</string>
-    <string name="label_scale_not_supported">Wird deine Waage nicht unterstützt?</string>
-    <string name="label_click_to_help_add_support">Klicke hier, wenn du helfen möchtest</string>
-    <string name="label_auto_backup">Automatisches Backup</string>
-    <string name="label_auto_backup_schedule">Sicherungszeitplan</string>
-    <string name="label_overwrite_backup">Sicherungen überschreiben</string>
-    <string name="label_daily">täglich</string>
-    <string name="label_weekly">wöchentlich</string>
-    <string name="label_monthly">monatlich</string>
-    <string name="label_long_press_drag_reorder">Langes Drücken und Halten zum Neuordnen</string>
-    <string name="label_development">Entwicklung</string>
-    <string name="label_select_measurement">Messwert auswählen</string>
-    <string name="label_select_user">Benutzer auswählen</string>
-    <string name="label_configure_widget">Widget konfigurieren</string>
-    <string name="label_visceral_fat">Viszeralfett</string>
-    <string name="label_chest">Brustumfang</string>
-    <string name="label_thigh">Oberschenkelumfang</string>
-    <string name="label_biceps">Bizepsumfang</string>
-    <string name="label_neck">Halsumfang</string>
-    <string name="label_fat_caliper">Körperfett Caliper</string>
-    <string name="label_caliper1_male">Brustfalte</string>
-    <string name="label_caliper2_male">Bauchfalte</string>
-    <string name="label_caliper3_male">Oberschenkelfalte</string>
-    <string name="label_caliper1_female">Trizepsfalte</string>
-    <string name="label_caliper2_female">Bauchfalte</string>
-    <string name="label_caliper3_female">Hüftfalte</string>
-    <string name="label_debug_log">Speichere Fehlerbericht</string>
-    <string name="label_your_bluetooth_scale">Ihre Bluetooth Waage</string>
-    <string name="label_measure_unit">Maßeinheit</string>
-    <string name="label_activity_level">Aktivitätslevel</string>
-    <string name="activity_level_sedentary">Sitzende Tätigkeit</string>
-    <string name="activity_level_mild">Milde Tätigkeit</string>
-    <string name="activity_level_moderate">Moderate Tätigkeit</string>
-    <string name="activity_level_heavy">Schwere Tätigkeit</string>
-    <string name="activity_level_extreme">Extreme Tätigkeit</string>
+
+    <!-- Generische UI-Elemente & Aktionen -->
+    <string name="enable_button">Aktivieren</string>
+    <string name="cancel_button">Abbrechen</string>
+    <string name="confirm_button">Bestätigen</string>
+    <string name="dialog_ok">OK</string>
+    <string name="switch_on">An</string>
+    <string name="switch_off">Aus</string>
+    <string name="open_link_content_description">Link öffnen</string>
+    <string name="content_desc_warning_icon">Warnsymbol</string>
+    <string name="content_desc_restore_icon">Wiederherstellen-Symbol</string>
+    <string name="content_desc_information">Information</string>
+    <string name="content_desc_open_menu">Menü öffnen</string>
+    <string name="content_desc_back">Zurück</string>
+    <string name="content_desc_selected">Ausgewählt</string>
+    <string name="derived_backfill_start">Berechne abgeleitete Werte …</string>
+    <string name="derived_backfill_done">Abgeleitete Werte wurden erfolgreich aktualisiert.</string>
+
+    <!-- Allgemeine Fehlermeldungen -->
+    <string name="error_generic">Es ist ein Fehler aufgetreten.</string>
+    <string name="error_loading_data">Daten konnten nicht geladen werden.</string>
+    <string name="error_try_again">Bitte versuchen Sie es erneut.</string>
+
+    <!-- Keine Daten verfügbar -->
+    <string name="no_data_available">Keine Daten verfügbar.</string>
+    <string name="no_measurements_found">Keine Messungen gefunden.</string>
+    <string name="no_entries_found">Keine Einträge vorhanden.</string>
+
+    <!-- Routen- & Bildschirmtitel -->
+    <string name="route_title_overview">Übersicht</string>
+    <string name="route_title_graph">Diagramme</string>
+    <string name="route_title_table">Tabelle</string>
+    <string name="route_title_statistics">Statistiken</string>
+    <string name="route_title_settings">Einstellungen</string>
+    <string name="title_new_measurement">Neue Messung</string>
+    <string name="title_edit_measurement">Messung bearbeiten</string>
+    <string name="about_screen_title">Über</string>
+    <string name="measurement_type_detail_title_edit">Typ bearbeiten</string>
+    <string name="measurement_type_detail_title_add">Typ hinzufügen</string>
+    <string name="measurement_type_settings_title">Messarten</string>
+    <string name="user_detail_edit_user_title">Benutzer bearbeiten</string>
+    <string name="user_detail_add_user_title">Benutzer hinzufügen</string>
+    <string name="user_settings_title">Benutzer</string>
+
+    <!-- Benutzerverwaltung & Details -->
+    <string name="manage_users">Benutzer verwalten</string>
+    <string name="content_desc_switch_user">Benutzer wechseln. Ausgewählt: %1$s</string>
+    <string name="content_desc_selected_user_indicator">Indikator für ausgewählten Benutzer</string>
+    <string name="error_selecting_user">Benutzer konnte nicht ausgewählt werden.</string>
+    <string name="action_add_user">Benutzer hinzufügen</string>
+    <string name="toast_no_user_selected">Kein Benutzer ausgewählt.</string>
+    <string name="toast_select_user_first">Bitte wählen Sie zuerst einen Benutzer aus.</string>
+    <string name="no_user_selected_title">Kein Benutzer aktiv</string>
+    <string name="no_user_selected_message">Bitte erstellen Sie einen neuen Benutzer oder wählen Sie einen vorhandenen aus, um Ihre Messungen zu sehen und zu verwalten.</string>
+    <string name="user_deleted_successfully">Benutzer %1$s wurde erfolgreich gelöscht.</string>
+    <string name="user_deleted_error">Fehler beim Löschen von Benutzer %1$s.</string>
+    <string name="user_updated_successfully">Benutzer %1$s erfolgreich aktualisiert.</string>
+    <string name="user_updated_error">Fehler beim Aktualisieren von Benutzer %1$s.</string>
+    <string name="user_detail_label_name">Name</string>
+    <string name="user_detail_label_height">Größe</string>
+    <string name="user_detail_label_gender">Geschlecht</string>
+    <string name="gender_male">Männlich</string>
+    <string name="gender_female">Weiblich</string>
+    <string name="amputation_correction_label">Amputationskorrektur</string>
+    <string name="amputation_none">Keine</string>
+    <string name="amputation_hand">Hand</string>
+    <string name="amputation_forearm">Unterarm</string>
+    <string name="amputation_full_arm">Ganzer Arm</string>
+    <string name="amputation_foot">Fuß</string>
+    <string name="amputation_lower_leg">Unterschenkel</string>
+    <string name="amputation_full_leg">Ganzes Bein</string>
+    <string name="amputation_dialog_description">Wählen Sie die betroffenen Gliedmaßen aus und geben Sie für jede den Amputationsgrad an.</string>
+    <string name="amputation_left_arm">Linker Arm</string>
+    <string name="amputation_right_arm">Rechter Arm</string>
+    <string name="amputation_left_leg">Linkes Bein</string>
+    <string name="amputation_right_leg">Rechtes Bein</string>
+    <string name="user_detail_label_activity_level">Aktivitätslevel</string>
+    <string name="user_detail_label_assisted_weighting">Unterstütztes Wiegen</string>
+    <string name="dialog_title_select_reference_user_for">Referenzperson für %1$s auswählen</string>
+    <string name="error_no_reference_users_available">Keine geeigneten Referenzpersonen verfügbar. Bitte lege einen Benutzer an, der nicht assistiertes Wiegen nutzt.</string>
+    <string name="error_assisted_weighing_reference_user_missing">Für assistiertes Wiegen muss eine Referenzperson ausgewählt werden.</string>
+    <string name="user_detail_label_birth_date">Geburtsdatum</string>
+    <string name="user_detail_error_invalid_data">Bitte geben Sie gültige Daten ein</string>
+    <string name="height_value_cm">%.1f cm</string>
+    <string name="user_settings_item_details_conditional">Alter: %1$d, Geschlecht: %2$s</string>
+    <string name="user_settings_content_description_edit">Benutzer bearbeiten</string>
+    <string name="user_settings_content_description_delete">Benutzer löschen</string>
+    <string name="user_settings_content_description_add_user">Neuen Benutzer hinzufügen</string>
+    <string name="user_detail_content_description_change_unit">Einheit ändern</string>
+
+    <!-- Messung CRUD & Operationen -->
+    <string name="success_measurement_updated">Messung erfolgreich aktualisiert</string>
+    <string name="success_measurement_saved">Messung erfolgreich gespeichert</string>
+    <string name="error_saving_measurement">Fehler beim Speichern der Messung</string>
+    <string name="success_measurement_deleted">Messung %1$s erfolgreich gelöscht</string>
+    <string name="error_deleting_measurement">Fehler beim Löschen der Messung</string>
+    <string name="action_save_measurement">Messung speichern</string>
+    <string name="action_add_measurement">Messung hinzufügen</string>
+    <string name="action_add_measurement_desc">Neue Messung hinzufügen</string>
+    <string name="action_edit_measurement_desc">Messung vom %1$s bearbeiten</string> <!-- %1$s ist Datum -->
+    <string name="action_delete_measurement_desc">Messung vom %1$s löschen</string> <!-- %1$s ist Datum -->
+    <string name="toast_duplicate_timestamp">Dieser Zeitstempel entspricht Ihrer letzten Messung. Bitte wählen Sie einen anderen Zeitstempel.</string>
+    <string name="no_measurements_title">Noch keine Messungen</string>
+    <string name="no_measurements_message">Fügen Sie Ihre erste Messung hinzu, um Ihren Fortschritt zu verfolgen.</string>
+    <string name="no_active_values_for_measurement">Keine aktiven Messwerte für diesen Eintrag.</string>
+
+    <!-- Messwert-Eingabe & Validierungs-Toasts -->
+    <string name="toast_invalid_number_format">Ungültige Zahl für %1$s: \'%2$s\'</string>
+    <string name="toast_invalid_integer_format">Ungültige Ganzzahl für %1$s: \'%2$s\'</string>
+    <string name="toast_invalid_number_format_short">Ungültige Zahl für %1$s</string>
+    <string name="toast_invalid_integer_format_short">Ungültige Ganzzahl für %1$s</string>
+    <string name="toast_enter_valid_data">Bitte geben Sie gültige Daten ein.</string>
+
+    <!-- Dialoge (Allgemein & Messwertbearbeitung) -->
+    <string name="dialog_title_edit_value">%1$s bearbeiten</string> <!-- Beispiel: "Gewicht bearbeiten" -->
+    <string name="dialog_title_change_value">%1$s ändern</string> <!-- Beispiel: "Datum ändern" oder "Messdatum ändern" -->
+    <string name="dialog_title_select_color">Farbe auswählen</string>
+    <string name="dialog_title_select_icon">Symbol auswählen</string>
+    <string name="dialog_title_input_value">Wert eingeben</string>
+    <string name="dialog_title_input_text">Text eingeben</string>
+    <string name="dialog_title_hour">Stunde</string>
+    <string name="dialog_title_minute">Minute</string>
+    <string name="label_date">Datum</string>
+    <string name="label_time">Uhrzeit</string>
+
+    <!-- Inhaltsbeschreibungen für Bearbeitung & Trends -->
+    <string name="content_desc_increase_value">%1$s erhöhen</string>
+    <string name="content_desc_decrease_value">%1$s verringern</string>
+    <string name="content_desc_edit_value">%1$s bearbeiten</string>
+    <string name="action_show_less_desc">Weniger anzeigen</string>
+    <string name="action_show_more_desc">Mehr anzeigen</string>
+    <string name="trend_increased_desc">Wert gestiegen</string>
+    <string name="trend_decreased_desc">Wert gesunken</string>
+    <string name="trend_stable_desc">Wert stabil oder keine Änderung</string>
+
+    <!-- Messarten -->
+    <string name="measurement_type_icon_desc">Symbol für %1$s</string>
+    <string name="measurement_type_icon_unknown_desc">Symbol für unbekannte Messart: %1$s</string>
+    <string name="content_desc_unknown_type">Unbekannter Typ: %1$s</string>
+    <string name="measurement_type_weight">Gewicht</string>
+    <string name="measurement_type_bmi">BMI</string>
+    <string name="measurement_type_body_fat">Körperfett</string>
+    <string name="measurement_type_water">Wasser</string>
+    <string name="measurement_type_muscle">Muskel</string>
+    <string name="measurement_type_lbm">Fettfreie Masse</string>
+    <string name="measurement_type_bone">Knochen</string>
+    <string name="measurement_type_waist">Taille</string>
+    <string name="measurement_type_whr">Taille-Hüft-Verhältnis</string>
+    <string name="measurement_type_whtr">Taille-Größe-Verhältnis</string>
+    <string name="measurement_type_hips">Hüfte</string>
+    <string name="measurement_type_visceral_fat">Viszeralfett</string>
+    <string name="measurement_type_chest">Brust</string>
+    <string name="measurement_type_thigh">Oberschenkel</string>
+    <string name="measurement_type_biceps">Bizeps</string>
+    <string name="measurement_type_neck">Nacken</string>
+    <string name="measurement_type_caliper1">Caliper 1</string>
+    <string name="measurement_type_caliper2">Caliper 2</string>
+    <string name="measurement_type_caliper3">Caliper 3</string>
+    <string name="measurement_type_fat_caliper">Fett-Caliper</string>
+    <string name="measurement_type_bmr">Grundumsatz</string>
+    <string name="measurement_type_tdee">Gesamtumsatz</string>
+    <string name="measurement_type_calories">Kalorien</string>
+    <string name="measurement_type_comment">Kommentar</string>
+    <string name="measurement_type_date">Datum</string>
+    <string name="measurement_type_time">Uhrzeit</string>
+    <string name="measurement_type_user">Benutzer</string>
+    <string name="measurement_type_custom_default_name">Benutzerdefinierter Typ</string>
+
+    <!-- Einstellungen für Messarten -->
+    <string name="measurement_type_label_enabled">Aktiviert</string>
+    <string name="measurement_type_label_name">Name</string>
+    <string name="measurement_type_label_color">Farbe</string>
+    <string name="measurement_type_label_icon">Symbol</string>
+    <string name="measurement_type_label_unit">Einheit</string>
+    <string name="measurement_type_label_goal">Ziel</string>
+    <string name="my_goals_label">Meine Ziele</string>
+    <string name="user_detail_goals">%d Ziele</string>
+    <string name="user_detail_no_goals">Keine Ziele</string>
+    <string name="delete_button_label">Löschen</string>
+    <string name="dialog_title_edit_goal">Ziel bearbeiten: %1$s</string>
+    <string name="dialog_title_add_goal">Ziel festlegen: %1$s</string>
+    <string name="info_no_targetable_types">Keine Typen zur Zielsetzung verfügbar.</string>
+    <string name="placeholder_select_type">Typ auswählen</string>
+    <string name="measurement_type_label_goal_value_for">Zielwert für %1$s</string>
+    <string name="toast_goal_value_cannot_be_empty">Der Zielwert darf für ein neues Ziel nicht leer sein.</string>
+    <string name="toast_select_measurement_type">Bitte zuerst einen Messtyp auswählen.</string>
+    <string name="toast_goal_deleted">Ziel gelöscht</string>
+    <string name="measurement_type_label_input_type">Eingabetyp</string>
+    <string name="measurement_type_label_pinned">Angeheftet</string>
+    <string name="measurement_type_label_on_right_y_axis">Auf rechter Y-Achse</string>
+    <string name="content_desc_selected_icon_preview">Vorschau des ausgewählten Symbols</string>
+    <string name="content_desc_drag_handle_sort">Sortieren</string>
+    <string name="content_desc_edit_type">Bearbeiten</string>
+    <string name="content_desc_delete_type">Löschen</string>
+    <string name="measurement_type_added_successfully">Messart \'%1$s\' erfolgreich hinzugefügt.</string>
+    <string name="measurement_type_added_error">Fehler beim Hinzufügen der Messart \'%1$s\'.</string>
+    <string name="measurement_type_deleted_successfully">Messart \'%1$s\' erfolgreich gelöscht.</string>
+    <string name="measurement_type_deleted_error">Fehler beim Löschen der Messart \'%1$s\'.</string>
+    <string name="measurement_type_updated_successfully">Messart \'%1$s\' erfolgreich aktualisiert.</string>
+    <string name="measurement_type_updated_error">Fehler beim Aktualisieren der Messart \'%1$s\'.</string>
+    <string name="measurement_type_updated_and_values_converted_successfully">Typ \'%1$s\' aktualisiert und %2$s Wert(e) erfolgreich konvertiert.</string>
+    <string name="measurement_type_update_error_conversion_failed">Fehler beim Konvertieren der Werte für Typ \'%1$s\'. Die Typdefinition wurde nicht aktualisiert.</string>
+    <string name="measurement_type_updated_unit_changed_no_values_converted">Typ \'%1$s\' aktualisiert. Einheit geändert, aber es mussten keine vorhandenen Werte konvertiert werden.</string>
+    <string name="measurement_type_dialog_confirm_unit_change_title">Einheitenänderung bestätigen</string>
+    <string name="measurement_type_dialog_confirm_unit_change_message">Wenn Sie die Einheit für \'%1$s\' von %2$s auf %3$s ändern, werden alle vorhandenen Datenpunkte konvertiert. Dieser Vorgang kann einige Zeit dauern und kann nicht einfach rückgängig gemacht werden. Möchten Sie fortfahren?</string>
+
+    <string name="formula_label_body_fat">Körperfett-Formel</string>
+    <string name="formula_label_body_water">Körperwasser-Formel</string>
+    <string name="formula_label_lbm">Magermasse-Formel</string>
+    <string name="formula_warning_title">Formelberechnung</string>
+    <string name="formula_warning_message">Diese Messgröße wird schreibgeschützt und automatisch berechnet. Sie aktualisiert sich bei Änderungen der Basiswerte. Gilt für neue oder bearbeitete Messungen; bestehende bleiben unverändert.</string>
+    <string name="formula_off">Aus</string>
+    <string name="formula_bf_deurenberg_1991">Deurenberg (1991)</string>
+    <string name="formula_bf_deurenberg_1992">Deurenberg (1992)</string>
+    <string name="formula_bf_eddy_1976">Eddy et al. (1976)</string>
+    <string name="formula_bf_gallagher_2000_non_asian">Gallagher (2000) – Nicht-asiatisch</string>
+    <string name="formula_bf_gallagher_2000_asian">Gallagher (2000) – Asiatisch</string>
+    <string name="formula_bw_behnke_1963">Behnke et al. (1963)</string>
+    <string name="formula_bw_delwaide_crenier_1973">Delwaide &amp; Crenier (1973)</string>
+    <string name="formula_bw_hume_weyers_1971">Hume &amp; Weyers (1971)</string>
+    <string name="formula_bw_lee_song_kim_2001">Lee, Song &amp; Kim (2001)</string>
+    <string name="formula_lbm_boer_1984">Boer (1984)</string>
+    <string name="formula_lbm_hume_1966">Hume (1966)</string>
+    <string name="formula_lbm_weight_minus_body_fat">Gewicht − Körperfett</string>
+
+    <string name="formula_desc_off_short">Keine automatische Berechnung</string>
+    <string name="formula_desc_off_long">Diese Messgröße wird nicht automatisch berechnet. Werte können manuell eingegeben werden.</string>
+    <string name="bf_deurenberg_1991_short">Klassische Regression (Erw.)</string>
+    <string name="bf_deurenberg_1991_long">Weit verbreitete Bevölkerungsformel von 1991. Für die Allgemeinbevölkerung gedacht; bei sehr schlanken oder sehr muskulösen Personen ggf. ungenauer.</string>
+    <string name="bf_deurenberg_1992_short">Angepasst für Jugend &amp; Erw.</string>
+    <string name="bf_deurenberg_1992_long">Variante mit Anpassung für jüngere Nutzer. Allgemeine Schätzung; sportliche oder atypische Körperbauten können abweichen.</string>
+    <string name="bf_eddy_1976_short">Frühes, geschlechtsspez. Modell</string>
+    <string name="bf_eddy_1976_long">Ältere Regression mit getrennten Koeffizienten für Männer und Frauen. Einfach, aber nicht für Spezialpopulationen optimiert.</string>
+    <string name="bf_gallagher_2000_non_asian_short">Gallagher (Nicht-asiatisch)</string>
+    <string name="bf_gallagher_2000_non_asian_long">Referenzmodell von 2000 für nicht-asiatische Populationen. Nützliche Basis; Genauigkeit variiert je nach Körpertyp.</string>
+    <string name="bf_gallagher_2000_asian_short">Gallagher (Asiatisch)</string>
+    <string name="bf_gallagher_2000_asian_long">Variante für asiatische Populationen. Verwenden, wenn dies besser zum Nutzerhintergrund passt.</string>
+    <string name="bw_behnke_1963_short">Behnke TBW-Schätzung</string>
+    <string name="bw_behnke_1963_long">Klassische Schätzung des Gesamtkörperwassers. Einfach, jedoch nicht für Athleten oder Randfälle individualisiert.</string>
+    <string name="bw_delwaide_crenier_1973_short">Delwaide &amp; Crenier</string>
+    <string name="bw_delwaide_crenier_1973_long">TBW-Formel mit Fokus auf Körpermasse. Gute allgemeine Schätzung; Präzision variiert mit dem Körpertyp.</string>
+    <string name="bw_hume_weyers_1971_short">Hume–Weyers TBW</string>
+    <string name="bw_hume_weyers_1971_long">Weit verbreitetes TBW-Modell mit Körpergröße und Gewicht, geschlechtsspezifisch.</string>
+    <string name="bw_lee_song_kim_2001_short">Lee–Song–Kim</string>
+    <string name="bw_lee_song_kim_2001_long">Neuere TBW-Schätzung, kalibriert an koreanischen Kollektiven. Sinnvoll, wenn dies zum Nutzer passt.</string>
+    <string name="lbm_boer_1984_short">Boer LBM (klinisch)</string>
+    <string name="lbm_boer_1984_long">Fettfreie Masse, häufig in der Klinik genutzt. Geschlechtsspezifische Regression aus Größe und Gewicht.</string>
+    <string name="lbm_hume_1966_short">Hume LBM</string>
+    <string name="lbm_hume_1966_long">Frühes LBM-Modell. Einfach und verbreitet; für sehr sportliche Körpertypen weniger angepasst.</string>
+    <string name="lbm_weight_minus_bf_short">Gewicht − Körperfett</string>
+    <string name="lbm_weight_minus_bf_long">Berechnet LBM als Gesamtgewicht minus Fettmasse aus der gewählten Körperfettformel. Genauigkeit hängt von der BF-Schätzung ab.</string>
+
+    <!-- Bluetooth -->
+    <string name="info_bluetooth_connection_error_scale_offline">Verbindung zur Waage fehlgeschlagen, bitte stellen Sie sicher, dass sie eingeschaltet ist.</string>
+    <string name="fallback_device_name_saved_scale">gespeicherte Waage</string>
+    <string name="bluetooth_action_connecting_disconnecting_desc">Bluetooth-Verarbeitung</string>
+    <string name="bluetooth_action_no_scale_saved_desc">Bluetooth-Waage einrichten</string>
+    <string name="bluetooth_action_disconnect_desc">Verbindung zu %1$s trennen</string>
+    <string name="bluetooth_action_retry_connection_desc">Verbindung zu %1$s erneut versuchen</string>
+    <string name="bluetooth_action_error_check_settings_desc">Bluetooth-Fehler, Einstellungen prüfen</string>
+    <string name="bluetooth_action_connect_to_desc">Mit %1$s verbinden</string>
+    <string name="bluetooth_action_check_settings_desc">Bluetooth-Einstellungen prüfen</string>
+    <string name="snackbar_bluetooth_connecting_to">Verbinde mit %1$s…</string>
+    <string name="snackbar_bluetooth_disconnecting_from">Trenne Verbindung von %1$s…</string>
+    <string name="snackbar_bluetooth_processing_with">Verarbeite mit %1$s…</string>
+    <string name="snackbar_bluetooth_no_scale_saved">Keine Bluetooth-Waage gespeichert. Bitte fügen Sie eine Waage in den Einstellungen hinzu.</string>
+    <string name="snackbar_bluetooth_retry_connection">Versuche erneut, Verbindung zu %1$s herzustellen…</string>
+    <string name="snackbar_bluetooth_error_check_settings">Bluetooth-Fehler. Bitte Einstellungen prüfen.</string>
+    <string name="snackbar_bluetooth_attempting_connection">Versuche, Verbindung zu %1$s herzustellen…</string>
+    <string name="snackbar_bluetooth_check_settings">Bitte Bluetooth-Einstellungen prüfen.</string>
+    <string name="bluetooth_enable_for_scan">Bitte aktivieren Sie Bluetooth, um den Scan zu starten.</string>
+    <string name="bluetooth_permissions_required_for_scan">Bluetooth-Berechtigungen sind für das Scannen erforderlich.</string>
+    <string name="bluetooth_enabled_permissions_missing">Bluetooth aktiviert, aber Berechtigungen fehlen noch.</string>
+    <string name="bluetooth_must_be_enabled_for_scan">Bluetooth muss aktiviert sein, um nach Waagen zu suchen.</string>
+    <string name="saved_scale_label">Gespeicherte Waage:</string>
+    <string name="unknown_device">Unbekannt</string>
+    <string name="stop_scan_button">Scan stoppen</string>
+    <string name="search_for_scales_button">Nach Waagen suchen</string>
+    <string name="search_for_scales_button_desc">Schaltfläche "Nach Waagen suchen"</string>
+    <string name="found_devices_label">Gefundene Geräte:</string>
+    <string name="device_saved_as_preferred">\'%1$s\' als bevorzugte Waage gespeichert.</string>
+    <string name="device_not_supported">%1$s wird derzeit nicht unterstützt.</string>
+    <string name="no_devices_found_start_scan">Keine Geräte gefunden. Starten Sie einen neuen Scan.</string>
+    <string name="saved_scale_icon_desc">Indikator für gespeicherte Waage</string>
+    <string name="supported_icon_desc">Unterstütztes Gerät</string>
+    <string name="not_supported_icon_desc">Nicht unterstütztes Gerät</string>
+    <string name="supported_label">Unterstützt</string>
+    <string name="not_supported_label">Nicht unterstützt</string>
+    <string name="rssi_format">%1$d dBm</string>
+    <string name="menu_remove_saved_device">Gerät entfernen</string>
+    <string name="menu_enable_debug">Debug aktivieren</string>
+    <string name="menu_save_as_preferred">Als bevorzugtes Gerät speichern</string>
+    <string name="menu_save_as_debug">Als Debug speichern</string>
+    <string name="snackbar_saved_device_removed">Gespeichertes Gerät entfernt.</string>
+    <string name="snackbar_debug_enable_logs">Debug aktiviert. Bitte Log-Datei aktivieren: Einstellungen → Allgemein → Log-Datei aktivieren.</string>
+    <string name="snackbar_debug_for_device_enable_logs">Debug für dieses Gerät aktiviert. Bitte Log-Datei aktivieren: Einstellungen → Allgemein → Log-Datei aktivieren.</string>
+    <string name="debug_banner_active">Debug-Modus aktiv – es werden keine Messwerte gespeichert.</string>
+    <string name="debug_banner_enable_logs_hint">Bitte Log-Datei einschalten: Einstellungen → Allgemein → Log-Datei aktivieren.</string>
+    <string name="capabilities_header">Fähigkeiten</string>
+    <string name="tuning_title">Bluetooth Tuning-Profil</string>
+    <string name="tuning_snackbar">Bluetooth Tuning: %1$s</string>
+    <string name="cap_body_composition">Körperzusammensetzung</string>
+    <string name="cap_time_sync">Zeitsynchronisierung</string>
+    <string name="cap_user_sync">Benutzer-Sync</string>
+    <string name="cap_history_read">Verlauf lesen</string>
+    <string name="cap_live_weight">Live-Gewicht</string>
+    <string name="cap_unit_config">Einheit konfigurieren</string>
+    <string name="cap_battery">Batterie</string>
+    <string name="cap_state_implemented">Implementiert: %1$s</string>
+    <string name="cap_state_supported_only">Unterstützt (nicht implementiert): %1$s</string>
+    <string name="more_options_cd">Weitere Optionen</string>
+    <string name="tuning_balanced">Ausgewogen</string>
+    <string name="tuning_conservative">Konservativ</string>
+    <string name="tuning_aggressive">Aggressiv</string>
+
+    <!-- Bluetooth Connector -->
+    <string name="bluetooth_connector_connected_to">Verbunden mit %1$s</string>
+    <string name="bluetooth_connector_connection_failed">Verbindung zu %1$s fehlgeschlagen: %2$s</string>
+    <string name="bluetooth_connector_device_error">Fehler bei %1$s: %2$s</string>
+    <string name="bluetooth_connector_device_not_supported">%1$s wird nicht unterstützt.</string>
+    <string name="bluetooth_connector_driver_not_found">Treiber für %1$s nicht gefunden oder interner Fehler.</string>
+    <string name="bluetooth_connector_measurement_user_missing">Messung von %1$s kann keinem Benutzer zugeordnet werden.</string>
+    <string name="bluetooth_connector_measurement_types_not_loaded">Fehler: Messtypen konnten nicht geladen werden.</string>
+    <string name="bluetooth_connector_measurement_no_values">Keine gültigen Messwerte von %1$s empfangen.</string>
+    <string name="bluetooth_connector_measurement_saved">Messung (%1$.1f kg) von %2$s gespeichert.</string>
+    <string name="bluetooth_connector_measurement_save_error">Fehler beim Speichern der Messung von %1$s.</string>
+    <string name="bluetooth_connector_device_message">%1$s: %2$s</string>
+    <string name="bluetooth_connector_listening_for_device">Suche nach %1$s …</string>
+    <string name="bluetooth_connector_broadcast_complete">Messung von %1$s empfangen.</string>
+
+    <!-- Bluetooth Berechtigungen & Aktivierungs-Karten -->
+    <string name="permissions_required_icon_desc">Symbol für erforderliche Berechtigungen</string>
+    <string name="permissions_required_title">Berechtigungen erforderlich</string>
+    <string name="permissions_required_message_bluetooth">Um nach Waagen zu suchen, benötigen wir Zugriff auf Bluetooth.</string>
+    <string name="grant_permissions_button">Berechtigungen erteilen</string>
+    <string name="bluetooth_disabled_icon_desc">Symbol für deaktiviertes Bluetooth</string>
+    <string name="bluetooth_disabled_title">Bluetooth deaktiviert</string>
+    <string name="bluetooth_disabled_message_enable_for_scan">Bitte aktivieren Sie Bluetooth, um nach Waagen zu suchen.</string>
+    <string name="enable_bluetooth_button">Bluetooth aktivieren</string>
+    <string name="error_icon_desc">Fehlersymbol</string>
+    <string name="compatibility_dialog_title">Wichtiger Hinweis</string>
+    <string name="bluetooth_compatibility_disclaimer">openScale ist ein Open-Source-Projekt und ich besitze nicht jede Waage selbst. Bitte beachten Sie, dass die Kompatibilität nicht in allen Fällen garantiert werden kann, da sich Bluetooth-Protokolle ändern oder unbekannt sein können.\n\nAls Open-Source-Projekt sind Beiträge und Pull-Requests zur Verbesserung der Waagen-Unterstützung sehr willkommen!</string>
+    <string name="compatibility_dialog_confirm_button">Verstanden &amp; Speichern</string>
+    <string name="go_to_project_website_button">Zur Projekt-Webseite</string>
+
+    <!-- LegacyScaleAdapter (Bluetooth-Treiber) -->
+    <string name="legacy_adapter_event_initializing">Initialisierungsprozess...</string>
+    <string name="legacy_adapter_event_connection_lost">Verbindung verloren</string>
+    <string name="legacy_adapter_event_connection_disconnected">Verbindung getrennt</string>
+    <string name="legacy_adapter_event_device_not_found">Gerät nicht gefunden. %s</string>
+    <string name="legacy_adapter_event_unexpected_error">Unerwarteter Fehler: %s</string>
+    <string name="legacy_adapter_event_unexpected_data">Unerwarteter Datentyp empfangen: %s</string>
+    <string name="legacy_adapter_event_scale_message_fallback">Nachricht von Waage (ID: %1$d, Wert: %2$s)</string>
+    <string name="legacy_adapter_event_user_selection_required">Benutzerauswahl erforderlich</string>
+    <string name="legacy_adapter_event_user_details">Benutzer #%1$d (Alter: %2$d, Größe: %3$d)</string>
+    <string name="legacy_adapter_event_user_consent_required">Zustimmung für Benutzer %1$d (Index %2$d) erforderlich.</string>
+    <string name="legacy_adapter_event_unknown_status">Unbekannter Status oder Nachricht vom Treiber: %s</string>
+    <string name="legacy_adapter_connect_busy">Adapter ist bereits mit einem anderen Gerät beschäftigt (%s).</string>
+    <string name="legacy_adapter_connect_exception">Fehler beim Starten des Verbindungsprozesses zu %1$s: %2$s</string>
+    <string name="legacy_adapter_request_measurement_not_connected">Nicht verbunden für Messanforderung.</string>
+    <string name="legacy_adapter_request_measurement_auto">Messung sollte automatisch starten (Legacy-Treiber).</string>
+    <string name="legacy_adapter_event_missing_user_data">Fehler: Fehlende Benutzerdaten für Auswahl.</string>
+    <string name="legacy_adapter_event_invalid_consent_data">Fehler: Ungültige Daten für Zustimmung empfangen.</string>
+    <string name="legacy_adapter_event_missing_consent_data">Fehler: Fehlende Daten für Zustimmung erforderlich.</string>
+    <string name="legacy_adapter_event_invalid_interaction_payload">Fehler: Ungültige Daten-Nutzlast für Benutzerinteraktion empfangen.</string>
+
+    <!-- Diagramme (LineChart) -->
+    <string name="content_description_time_range_icon">Zeitraumsymbol</string>
+    <string name="content_description_filter_chart_data">Diagrammdaten filtern</string>
+    <string name="content_description_time_range_selected">%s ausgewählt</string> <!-- Beispiel: "Letzte 7 Tage ausgewählt" -->
+    <string name="content_description_measurement_filter_visible">Messfilter ist sichtbar</string>
+    <string name="content_description_measurement_filter_hidden">Messfilter ist ausgeblendet</string>
+    <string name="line_chart_filter_title_template">%1$s (%2$d Einträge)</string> <!-- Beispiel: "Letzte 30 Tage (15 Einträge)" -->
+    <string name="time_range_all_days">Alle Tage</string>
+    <string name="time_range_last_7_days">Letzte 7 Tage</string>
+    <string name="time_range_last_30_days">Letzte 30 Tage</string>
+    <string name="time_range_last_365_days">Letzte 365 Tage</string>
+    <string name="time_range_custom">Benutzerdefinierte Tage</string>
+    <string name="time_range_custom_from_to">Von %1$s bis %2$s</string>
+    <string name="line_chart_no_plottable_types">Keine darstellbaren Diagrammtypen verfügbar.</string>
+    <string name="line_chart_no_data_to_display">Keine Daten zum Anzeigen.</string>
+    <string name="line_chart_no_data_for_type_in_range">Keine Daten für %1$s im ausgewählten Bereich.</string>
+    <string name="line_chart_this_type_placeholder">diesen Typ</string>
+    <string name="line_chart_please_select_types">Bitte wählen Sie Messarten für das Diagramm aus.</string>
+    <string name="line_chart_no_data_or_types_to_select">Keine Daten zum Anzeigen oder Typen zur Auswahl.</string>
+    <string name="line_chart_no_data_for_selected_types">Keine Daten für die ausgewählten Typen verfügbar.</string>
+    <string name="menu_item_measurement_filter">Messfilter ein-/ausblenden</string>
+
+    <!-- Tabellen-Bildschirm -->
+    <string name="table_header_date">Datum</string>
+    <string name="table_message_no_columns_or_measurements">Keine Spalten ausgewählt oder keine Messungen verfügbar.</string>
+    <string name="table_message_no_columns_selected">Keine Spalten zur Anzeige ausgewählt.</string>
+    <string name="table_message_no_data_for_selection">Keine Daten für die aktuelle Spaltenauswahl verfügbar.</string>
+    <string name="table_trend_up">Trend steigend</string>
+    <string name="table_trend_down">Trend fallend</string>
+    <string name="desc_enter_selection_mode">Elemente auswählen</string>
+    <string name="items_selected_count">%1$d ausgewählt</string>
+    <string name="desc_cancel_selection_mode">Auswahl abbrechen</string>
+    <string name="desc_change_user">Nutzer für ausgewählte Elemente wechseln</string>
+    <string name="desc_export_selected">Ausgewählte Elemente exportieren</string>
+    <string name="desc_delete_selected">Ausgewählte Elemente löschen</string>
+    <string name="dialog_title_delete_user">Benutzer %1$s löschen?</string>
+    <string name="dialog_text_delete_user">Alle Daten für diesen Benutzer werden endgültig gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="dialog_title_delete_goal">Ziel für %1$s löschen?</string>
+    <string name="dialog_text_delete_goal">Dadurch wird das Ziel entfernt. Dein Messverlauf ist davon nicht betroffen.</string>
+    <string name="dialog_title_delete_item">Messung löschen?</string>
+    <string name="dialog_message_delete_item">Möchtest du die Messung vom %1$s (%2$s) wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="dialog_title_delete_selected_items">Elemente löschen?</string>
+    <string name="dialog_message_delete_selected_item">Möchten Sie das ausgewählte Element wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="dialog_message_delete_selected_items">Möchten Sie die ausgewählten %1$d Elemente wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="dialog_title_delete_type">Typ löschen?</string>
+    <string name="dialog_text_delete_type">Möchtest du den benutzerdefinierten Typ „%1$s“ wirklich löschen? Alle zugehörigen Messungen werden ebenfalls endgültig gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="snackbar_items_deleted_successfully">%1$d Elemente erfolgreich gelöscht.</string>
+    <string name="snackbar_error_deleting_items">Fehler beim Löschen der Elemente.</string>
+    <string name="dialog_title_select_user_for_assignment">Nutzer für Zuweisung auswählen</string>
+    <string name="snackbar_no_other_users_to_change_to">Keine anderen Nutzer vorhanden, zu denen gewechselt werden kann.</string>
+    <string name="snackbar_items_user_changed_successfully">Nutzer für %1$d Elemente erfolgreich geändert.</string>
+    <string name="snackbar_error_user_changed_items">Fehler beim Ändern des Nutzers für einige Elemente.</string>
+
+    <!-- Statistik-Bildschirm -->
+    <string name="statistics_no_relevant_types">Keine relevanten Messarten verfügbar oder für Statistiken konfiguriert.</string>
+    <string name="statistics_label_min">Min</string>
+    <string name="statistics_label_max">Max</string>
+    <string name="statistics_label_average">Durchschn.</string>
+    <string name="statistics_content_desc_increase">Anstieg</string>
+    <string name="statistics_content_desc_decrease">Abnahme</string>
+    <string name="statistics_content_desc_no_change">Keine Änderung</string>
+
+    <!-- Einstellungsbildschirm & Unterbildschirme -->
+    <string name="settings_item_general">Allgemein</string>
+    <string name="settings_item_user">Benutzer</string>
+    <string name="settings_item_measurement_types">Messarten</string>
+    <string name="settings_item_bluetooth">Bluetooth</string>
+    <string name="settings_item_chart">Diagramm</string>
+    <string name="settings_item_data_management">Datenverwaltung</string>
+    <string name="settings_item_about">Über</string>
+
+    <!-- Allgemeine Einstellungen -->
+    <string name="settings_general_title">Allgemeine Einstellungen</string>
+    <string name="settings_language_label">Sprache</string>
+    <string name="settings_reminder_title">Erinnerung</string>
+    <string name="settings_reminder_enable_label">Erinnerungsfunktion</string>
+    <string name="settings_reminder_text_label">Erinnerungstext</string>
+    <string name="settings_reminder_text_placeholder">Erinnerungstext bitte hier einfügen</string>
+    <string name="settings_reminder_time_label">Uhrzeit</string>
+    <string name="reminder_enabled_snackbar">Erinnerung aktiviert</string>
+    <string name="reminder_disabled_snackbar">Erinnerung deaktiviert</string>
+    <string name="reminder_default_text">Zeit zum Wiegen</string>
+    <string name="reminder_channel_name">Erinnerungen</string>
+    <string name="reminder_notification_title">openScale</string>
+    <string name="settings_reminder_days_label">Tage</string>
+    <string name="permission_denied">Erinnerungsfunktion-Berechtigungen abgelehnt</string>
+
+    <string name="monday_short">Mo</string>
+    <string name="tuesday_short">Di</string>
+    <string name="wednesday_short">Mi</string>
+    <string name="thursday_short">Do</string>
+    <string name="friday_short">Fr</string>
+    <string name="saturday_short">Sa</string>
+    <string name="sunday_short">So</string>
+    <string name="all">Alle</string>
+
+    <string name="settings_feedback_title">Feedback</string>
+    <string name="settings_haptics_label">Vibration bei neuem Messwert</string>
+    <string name="settings_haptics_enabled_snackbar">Vibration bei Messwerten aktiviert</string>
+    <string name="settings_haptics_disabled_snackbar">Vibration bei Messwerten deaktiviert</string>
+
+    <!-- Diagramm Einstellungen -->
+    <string name="setting_show_chart_points">Datenpunkte anzeigen</string>
+    <string name="setting_smoothing_algorithm">Glättungsalgorithmus</string>
+    <string name="setting_smoothing_alpha">Alpha</string>
+    <string name="setting_smoothing_window_size">Fenstergröße</string>
+    <string name="setting_smoothing_max_gap_days">Max. Lücke für Glättung (Tage)</string>
+    <string name="smoothing_algorithm_none">Keine Glättung</string>
+    <string name="smoothing_algorithm_sma">Gleitender Durchschnitt</string>
+    <string name="smoothing_algorithm_ses">Exponentielle Glättung</string>
+
+    <!-- Über-Bildschirm & Diagnose -->
+    <string name="version_info">Version: %1$s (%2$s)</string>
+    <string name="project_information_title">Projektinformationen</string>
+    <string name="maintainer_label">Hauptentwickler</string>
+    <string name="maintainer_icon_content_description">Hauptentwickler-Symbol</string>
+    <string name="project_homepage_display">Projekt auf GitHub</string>
+    <string name="official_project_page_label">Offizielle Projektseite</string>
+    <string name="homepage_icon_content_description">Homepage-Symbol</string>
+    <string name="software_license_details_label">Details zur Softwarelizenz</string>
+    <string name="license_icon_content_description">Lizenzsymbol</string>
+    <string name="diagnostics_title">Diagnose</string>
+    <string name="file_logging_icon_content_description">Symbol für Datei-Protokollierung</string>
+    <string name="file_logging_label">Datei-Protokollierung</string>
+    <string name="enable_file_logging_dialog_title">Datei-Protokollierung aktivieren?</string>
+    <string name="enable_file_logging_dialog_message">Wenn aktiviert, speichert die App detaillierte Protokolle lokal auf Ihrem Gerät. Diese sind nützlich für die Fehlerbehebung. Die Dateien können vertrauliche Informationen enthalten. Teilen Sie sie nur mit vertrauenswürdigen Personen.</string>
+    <string name="enable_file_logging_dialog_message_warning">Beim Aktivieren wird sofort eine neue Protokollierung gestartet. Dabei wird eine neue Logdatei angelegt und die alte gelöscht.</string>
+    <string name="file_logging_enabled_snackbar">Datei-Protokollierung aktiviert</string>
+    <string name="file_logging_disabled_snackbar">Datei-Protokollierung deaktiviert</string>
+    <string name="log_export_success">Protokolldatei erfolgreich exportiert.</string>
+    <string name="log_export_error">Fehler beim Exportieren der Protokolldatei.</string>
+    <string name="log_export_no_file">Keine Protokolldatei zum Exportieren gefunden.</string>
+    <string name="log_export_no_file_to_export">Keine Protokolldatei zum Exportieren verfügbar.</string>
+    <string name="log_export_cancelled">Export abgebrochen.</string>
+    <string name="log_export_no_app_error">Keine passende App zum Exportieren der Datei gefunden.</string>
+    <string name="export_log_file_button">Protokolldatei exportieren</string>
+
+    <!-- Datenverwaltung (Export, Import, Backup, Wiederherstellung, Löschen) -->
+    <string name="settings_export_measurements_csv">Messungen exportieren (CSV)</string>
+    <string name="settings_import_measurements_csv">Messungen importieren (CSV)</string>
+    <string name="settings_backup_database">Datenbank sichern</string>
+    <string name="settings_restore_database">Datenbank wiederherstellen</string>
+    <string name="settings_delete_all_measurement_data">Alle Messdaten löschen</string>
+    <string name="settings_delete_entire_database">Gesamte Datenbank löschen</string>
+    <string name="settings_danger_zone">Gefahrenzone</string>
+    <string name="settings_unknown_error">Unbekannter Fehler</string>
+    <string name="settings_auto_backup_title">Automatische Sicherungen</string>
+    <string name="settings_enable_auto_backups">Automatische Sicherungen aktivieren</string>
+    <string name="content_desc_auto_backups_toggle">Automatische Sicherungen umschalten</string>
+    <string name="settings_last_backup_status_label">Status der letzten Sicherung</string>
+    <string name="content_desc_backup_status_icon">Informationen zum Sicherungsstatus</string>
+    <string name="settings_backup_location_label">Sicherungsort</string>
+    <string name="content_desc_backup_location_icon">Einstellung Sicherungsort</string>
+    <string name="content_desc_open_backup_location_icon">Sicherungsort öffnen</string>
+    <string name="content_desc_change_backup_location_icon">Sicherungsort ändern</string>
+    <string name="settings_backup_interval_label">Sicherungsintervall</string>
+    <string name="content_desc_backup_interval_icon">Einstellung Sicherungsintervall</string>
+    <string name="content_desc_change_interval_icon">Sicherungsintervall ändern</string>
+    <string name="settings_backup_behavior_label">Sicherungsverhalten</string>
+    <string name="content_desc_backup_behavior_icon">Einstellung Sicherungsverhalten</string>
+    <string name="settings_last_backup_status_placeholder">Letzte Sicherung: %1$s</string>
+    <string name="settings_auto_backups_disabled">Automatische Sicherungen deaktiviert</string>
+    <string name="settings_backup_behavior_new_file">Immer neue Sicherungsdatei erstellen</string>
+    <string name="settings_backup_behavior_overwrite">Vorhandene Sicherungsdatei überschreiben</string>
+    <string name="settings_backup_location_default">Standard: App-spezifischer Ordner</string>
+    <string name="settings_backup_location_simulated_user_choice">Simuliert: Benutzer hat einen Ordner ausgewählt</string>
+    <string name="dialog_title_select_backup_interval">Sicherungsintervall auswählen</string>
+    <string name="settings_backup_location_not_configured">Sicherungsort nicht konfiguriert</string>
+    <string name="settings_backup_location_not_configured_for_auto">Ort nicht konfiguriert. Automatische Sicherungen pausiert.</string>
+    <string name="settings_backup_location_error_accessing">Fehler beim Zugriff auf Sicherungsort</string>
+    <string name="content_desc_delete_icon">Löschen-Symbol</string>
+    <string name="dialog_title_select_backup_directory">Sicherungsverzeichnis auswählen</string>
+    <string name="settings_backup_location_select_action">Sicherungsort auswählen</string>
+    <string name="settings_backup_location_selected_folder">Ausgewählter Ordner</string>
+    <string name="settings_backup_location_open_error_no_app">Keine Anwendung zum Öffnen des Ordners gefunden.</string>
+    <string name="settings_backup_location_open_error">Sicherungsort konnte nicht geöffnet werden.</string>
+    <string name="settings_backup_location_selected_toast">Sicherungsort festgelegt auf: %1$s</string>
+    <string name="settings_backup_location_selection_cancelled">Ordnerauswahl abgebrochen. Automatisches Backup nicht aktiviert.</string>
+    <string name="settings_last_backup_status_successful">Letztes Backup: %1$s</string>
+    <string name="settings_last_backup_status_never">Letztes Backup: Nie</string>
+    <string name="interval_daily">Täglich</string>
+    <string name="interval_weekly">Wöchentlich</string>
+    <string name="interval_monthly">Monatlich</string>
+
+    <!-- Datenverwaltung Dialogtitel -->
+    <string name="dialog_title_export_select_user">Export: Benutzer auswählen</string>
+    <string name="dialog_title_import_select_user">Import: Benutzer auswählen</string>
+    <string name="dialog_title_delete_select_user">Löschen: Benutzer auswählen</string>
+    <string name="dialog_title_delete_user_data_confirmation">Dauerhaft löschen?</string>
+    <string name="dialog_title_delete_entire_database_confirmation">ACHTUNG! Gesamte Datenbank löschen?</string>
+    <string name="dialog_title_restore_database_confirmation">Datenbank wiederherstellen?</string>
+    <string name="delete_db_confirmation_title">Löschen der Datenbank bestätigen</string> <!-- Ähnlich wie oben, könnte zusammengefasst werden -->
+
+    <!-- Datenverwaltung Dialognachrichten & Schaltflächen -->
+    <string name="dialog_message_delete_user_data_confirmation">Sind Sie sicher, dass Sie ALLE Messdaten für Benutzer \"%1$s\" dauerhaft löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="button_yes_delete_all">JA, ALLE LÖSCHEN</string>
+    <string name="dialog_message_delete_entire_database_confirmation">Dies wird UNWIDERRUFLICH alle Daten dieser App löschen, einschließlich aller Benutzer, Einstellungen und Messdaten. Diese Aktion KANN NICHT rückgängig gemacht werden. Sind Sie absolut sicher?\n\nNach dieser Aktion ist ein Neustart der App erforderlich.</string>
+    <string name="dialog_message_restore_database_confirmation">Sind Sie sicher, dass Sie die aktuelle Datenbank mit einer Sicherung überschreiben möchten? Alle aktuellen, nicht gespeicherten Daten gehen verloren. Die App muss möglicherweise nach der Wiederherstellung neu gestartet werden.</string>
+    <string name="button_yes_restore">JA, WIEDERHERSTELLEN</string>
+    <string name="delete_db_confirmation_message">Sind Sie sicher, dass Sie die gesamte Datenbank löschen möchten? Dies entfernt ALLE Benutzer und ALLE Daten und kann nicht rückgängig gemacht werden.</string> <!-- Ähnlich wie oben -->
+
+    <!-- Datenexport Nachrichten -->
+    <string name="export_successful">Daten erfolgreich exportiert.</string>
+    <string name="export_error_no_specific_fields">Export nicht möglich: Keine spezifischen Datenfelder für den Export definiert.</string>
+    <string name="export_error_no_measurements">Keine Messungen für diesen Benutzer zum Exportieren verfügbar.</string>
+    <string name="export_error_no_exportable_values">Keine exportierbaren Messwerte für diesen Benutzer gefunden.</string>
+    <string name="export_error_cannot_create_file">Export fehlgeschlagen: Datei konnte nicht erstellt werden.</string>
+    <string name="export_error_generic">Fehler beim Export: %1$s</string>
+    <string name="export_no_users_available">Keine Benutzer zum Exportieren verfügbar.</string>
+
+    <!-- Datenimport Nachrichten -->
+    <string name="import_successful_records">"%1$d Messdatensätze erfolgreich importiert."</string>
+    <string name="import_successful_records_with_details">%1$d Datensätze erfolgreich importiert%2$s.</string> <!-- %2$s für detaillierte Zusammenfassung -->
+    <string name="import_summary_details_base">"%1$d Messdatensätze erfolgreich importiert."</string> <!-- Basis zur Erstellung der Zusammenfassung -->
+    <string name="import_summary_ignored_duplicated_timestamp">"%1$d Zeilen ingoriert (doppelter Zeitstempel)."</string>
+    <string name="import_summary_skipped_missing_dates">"%1$d Zeilen wegen fehlender Daten übersprungen."</string>
+    <string name="import_summary_skipped_date_parse_errors">"%1$d Zeilen wegen Datums-Analysefehlern übersprungen."</string>
+    <string name="import_summary_values_skipped_parse_errors">"%1$d einzelne Werte konnten nicht analysiert werden."</string>
+    <string name="import_error_no_valid_data">Keine gültigen Daten in der CSV-Datei gefunden oder alle Zeilen enthielten Fehler.</string>
+    <string name="import_error_missing_date_column">Import fehlgeschlagen: Die obligatorische Spalte Datum fehlt in der CSV-Kopfzeile.</string>
+    <string name="import_error_cannot_read_file">Import fehlgeschlagen: Datei konnte nicht gelesen werden.</string>
+    <string name="import_error_generic">Fehler beim Import: %1$s</string>
+    <string name="import_no_users_available">Keine Benutzer zum Importieren verfügbar.</string>
+
+    <!-- Datenlöschung Nachrichten (Benutzerspezifisch) -->
+    <string name="delete_data_no_users_available">Keine Benutzerdaten zum Löschen verfügbar.</string>
+    <string name="delete_data_user_successful">Alle Messdaten für %1$s wurden gelöscht.</string>
+    <string name="delete_data_user_no_data_found">Keine Messdaten für %1$s gefunden.</string>
+    <string name="delete_data_user_error">Fehler beim Löschen der Daten für %1$s.</string>
+    <string name="delete_data_error_no_user_selected">Löschvorgang konnte nicht gestartet werden: Kein Benutzer ausgewählt.</string>
+
+    <!-- Datenbank Backup Nachrichten -->
+    <string name="backup_error_db_name_not_retrieved">Fehler: Datenbankname konnte nicht abgerufen werden.</string>
+    <string name="backup_error_main_db_not_found">Fehler: Hauptdatenbankdatei \'%1$s\' nicht gefunden.</string>
+    <string name="backup_error_no_output_stream">Sicherung fehlgeschlagen: Sicherungsdatei konnte am ausgewählten Speicherort nicht erstellt werden.</string>
+    <string name="backup_error_generic">Fehler bei der Datenbanksicherung: %1$s</string>
+    <string name="backup_successful">Datenbank erfolgreich gesichert.</string>
+
+    <!-- Datenbank Wiederherstellung Nachrichten -->
+    <string name="restore_error_no_input_stream">Wiederherstellung fehlgeschlagen: Sicherungsdatei konnte nicht gelesen werden.</string>
+    <string name="restore_error_zip_format">Wiederherstellung fehlgeschlagen: Sicherungsdatei ist kein gültiges ZIP-Archiv oder ist beschädigt.</string>
+    <string name="restore_error_db_files_missing">Wiederherstellung fehlgeschlagen: Essenzielle Datenbankdateien in der Sicherung nicht gefunden.</string>
+    <string name="restore_error_generic">Fehler bei der Datenbankwiederherstellung: %1$s</string>
+    <string name="restore_successful">Datenbank erfolgreich wiederhergestellt. Bitte starten Sie die App neu.</string>
+
+    <!-- Nachrichten zur Löschung der gesamten Datenbank -->
+    <string name="delete_db_successful">Gesamte Datenbank wurde gelöscht.</string>
+    <string name="delete_db_error">Fehler beim Löschen der gesamten Datenbank.</string>
+
+    <!-- Evaluation Nachrichten -->
+    <string name="eval_no_age_band">Keine Bewertung möglich: Kein passender Altersbereich zum Messzeitpunkt.</string>
+    <string name="eval_out_of_plausible_range_percent">Auffälliger Wert: außerhalb des plausiblen Bereichs (%1$.0f–%2$.0f%%).</string>
+
+    <!-- Bluetooth Waagen Nachrichten -->
+    <string name="bluetooth_scale_trisa_message_not_paired_instruction">Diese Waage wurde nicht gekoppelt!\n\nHalten Sie die Taste an der Unterseite der Waage gedrückt, um sie in den Kopplungsmodus zu versetzen, und verbinden Sie sich dann erneut, um das Gerätepasswort abzurufen.</string>
+    <string name="bluetooth_scale_trisa_success_pairing">Kopplung erfolgreich!\n\nVerbinden Sie sich erneut, um Messdaten abzurufen.</string>
+    <string name="bluetooth_scale_info_create_user_instruction">Neuen Benutzer auf der Waage erstellen.</string>
+    <string name="bluetooth_scale_warning_low_battery">Niedriger Batteriestand (%d%%), bitte Batterien der Waage aufladen oder ersetzen.</string>
+    <string name="bluetooth_scale_info_step_on_for_reference">Bitte stellen Sie sich barfuß auf die Waage für Referenzmessungen.</string>
+    <string name="bluetooth_scale_info_measuring_weight">Gewichtsmessung: %.2f</string>
+    <string name="bluetooth_scale_error_max_users_reached">Maximale Anzahl gleichzeitiger Waagenbenutzer erreicht.</string>
+
     <string name="permission_read_write_data_description">Auslesen der openScale Daten, inkl. Benutzerinformationen und aller gespeicherten Messungen</string>
-    <string name="permission_read_write_data_label">Auslesen der openScale Daten</string>
-    <string name="trisa_scale_not_paired">Diese Waage ist nicht gekoppelt!
-\n
-\nHalten Sie die Taste an der Unterseite der Waage gedrückt, um sie in den Kopplungsmodus zu versetzen und verbinden Sie sie dann erneut, um das Gerätepasswort abzurufen.</string>
-    <string name="trisa_scale_pairing_succeeded">Die Kopplung ist erfolgreich!
-\n
-\nWieder verbinden, um Messdaten abzurufen.</string>
-    <string name="info_bluetooth_no_device_retrying">Kann keine Verbindung herstellen; versuche erneut…</string>
-    <string name="label_tdee">Gesamttagesenergieumsatz (TDEE)</string>
-    <string name="label_calories">Kalorien</string>
-    <string name="info_bluetooth_connection_disconnected">Bluetooth Verbindung getrennt</string>
-    <string name="info_step_on_scale">Bitte Barfuß auf die Wage stellen</string>
-    <string name="label_enable_legend">Diagrammlegende</string>
-    <string name="label_day_view">Tagesansicht</string>
-    <string name="label_year_view">Jahresansicht</string>
-    <string name="label_measurement_bar">Messwertanzeige</string>
-    <string name="permission_location_service_info">Gewährleisten Sie den Standortzugriff in den Android-Einstellungen, um nach Bluetooth-Geräten zu suchen. Sie können es anschließend wieder widerrufen.</string>
-    <string name="label_is_on_right_axis">Auf der rechten Achse</string>
-    <string name="action_donation">Spende</string>
-    <string name="info_scale_low_battery">Niedriger Batteriestand (%d%%), bitte aufladen oder Batterien der Waage austauschen</string>
-    <string name="info_bluetooth_connection_error_scale_offline">Keine Verbindung zur Waage, bitte prüfen Sie, ob Ihre Waage eingeschaltet ist.</string>
-    <string name="label_empty">leer</string>
-    <string name="label_age">Alter</string>
-    <string name="label_slide_welcome_top_text">Willkommen zu
-\nopenScale</string>
-    <string name="label_slide_welcome_main_text">Open-Source Tracker für Gewichts- und Körpermetriken, mit Unterstützung für Bluetooth-Waagen.</string>
-    <string name="label_slide_privacy_top_text">Schützt Ihre persönlichen Gesundheitsdaten.</string>
-    <string name="label_slide_privacy_main_text">openScale sendet keine Daten an eine Cloud und die fehlende Zugriffsberechtigung auf das Internet ist eine starke Garantie dafür.
-\n
-\nWenn Sie Ihr Gewicht wirklich mit GoogleFit oder mit MQTT synchronisieren wollen, können Sie <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a> installieren.</string>
-    <string name="label_slide_user_top_text">Es werden mehrere Benutzer unterstützt.</string>
-    <string name="label_slide_user_main_text">openScale verlangt nicht, dass Sie ein Online-Konto erstellen.
-\n
-\nKörpermetriken werden anhand der Messwerte berechnet.</string>
-    <string name="label_slide_opensource_top_text">Es handelt sich um Open-Source Software mit einem hohen Maß an Transparenz.</string>
-    <string name="label_slide_opensource_main_text">openScale ist lizenziert unter der <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.
-\n
-\nAlle Körperberechnungen sind transparent und es werden keine versteckten Datenübertragungsfunktionen oder Benutzeridentifikationen durchgeführt.
-\n
-\nDen vollständigen Quellcode finden Sie unter <a href="https://github.com/oliexdev/openScale">GitHub</a>. Überzeugen Sie sich selbst von openScale, indem Sie sich das Projekt anschauen.</string>
-    <string name="label_slide_bluetooth_top_text">Es werden unterschiedliche Bluetooth Waagen verschiedener Hersteller unterstützt.</string>
-    <string name="label_slide_bluetooth_main_text">openScale hat eine integrierte Unterstützung für eine Reihe von Bluetooth Waagen verschiedener Hersteller.
-\n
-\nWir verbessern und erweitern ständig den Umfang der unterstützten Waagen. Die vollständige Liste und den Grad der Unterstützung für jede Waage finden Sie auf <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
-    <string name="label_slide_metrics_top_text">Verfolgen und analysieren Sie Ihre Körpermetriken.</string>
-    <string name="label_slide_metrics_main_text">openScale unterstützt über 22 Körpermetriken.
-\n
-\nEs kann individuell konfiguriert werden, um nur die Körpermetriken anzuzeigen, die Ihnen wichtig sind.
-\n
-\nWenn Ihre Waage Körperfett, Körperwasser und Muskelmasse nicht unterstützt, können Sie diese Werte auf der Grundlage von <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">wissenschaftlichen Publikationen</a> schätzen lassen.</string>
-    <string name="label_slide_support_top_text">Helfen Sie uns, openScale zu verbessern.</string>
-    <string name="label_slide_support_main_text">openScale braucht dich! Erstelle ein <a href="https://github.com/oliexdev/openScale/issues">neues Ticket</a> auf GitHub, wenn du einen Fehler gefunden hast, eine Idee oder eine Frage hast oder helfen möchtest, deine Bluetooth Waage zu unterstützen.
-\n
-\nWenn Sie den Entwickler dieses Projekts in der Weiterentwicklung und der kontinuierlichen Pflege motivieren möchten, geben Sie openScale gerne eine positive Bewertung auf <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> oder einen Stern auf <a href="https://github.com/oliexdev/openScale">GitHub</a>.
-\n
-\nIhre Unterstützung und Ihre positive Rückmeldung sind herzlichst willkommen. Vielen Dank.</string>
-    <string name="app_intro_skip_button">Überspringen</string>
-    <string name="app_intro_next_button">Weiter</string>
-    <string name="app_intro_back_button">Zurück</string>
-    <string name="app_intro_done_button">Fertig</string>
-    <string name="amputation_level_leg">Bein</string>
-    <string name="amputation_level_lower_leg_foot">Unterschenkel und Fuß</string>
-    <string name="amputation_level_foot">Fuß</string>
-    <string name="amputation_level_arm">Arm</string>
-    <string name="amputation_level_forearm_hand">Unterarm und Bein</string>
-    <string name="amputation_level_hand">Hand</string>
-    <string name="amputation_level_none">Keine Amputation</string>
-    <string name="info_assisted_weighing_choose_reference_user">Wählen Sie den Referenz Benutzer, von dem das Gewicht subtrahiert wird</string>
-    <string name="info_assisted_weighing_no_reference_user">Kein Referenz Benutzer verfügbar, bitte erstellen sie einen</string>
-    <string name="info_assisted_weighing_old_reference_measurement">Warnung: letzte Messung ist älter als ein Tag</string>
-    <string name="info_assisted_weighing_no_reference_measurements">Referenz-Benutzer hat keine Messwerte</string>
-    <string name="label_amputation_right">Amputation rechts</string>
-    <string name="label_amputation_left">Amputation links</string>
-    <string name="label_assisted_weighing">Assistiertes Wiegen</string>
-    <string name="label_trend">Tendenz</string>
-    <string name="label_prediction">Prognose</string>
-    <string name="label_trend_line">Trendlinie</string>
-    <string name="info_select_scale_user">Waagen-Benutzer auswählen</string>
-    <string name="info_enter_consent_code_for_scale_user">PIN/Zustimmungscode eingeben für Benutzer %s</string>
-    <string name="info_create_new_user_on_scale">Neuen Benutzer auf der Waage erstellen.</string>
-    <string name="label_time_period">Zeitraum</string>
-    <string name="label_time_period_all_days">alle Tage</string>
-    <string name="label_time_period_last_7_days">letzten 7 Tage</string>
-    <string name="label_time_period_last_30_days">letzten 30 Tage</string>
-    <string name="label_time_period_set_reference_day">setze Referenztag</string>
-    <string name="label_time_period_set_custom_range">setze benutzerdefinierten Zeitraum</string>
-    <string name="label_with">mit</string>
-    <string name="label_abbr_min">min</string>
-    <string name="label_abbr_max">max</string>
-    <string name="label_abbr_avg">MW</string>
-    <string name="label_goal_enabled">Ziel eingeschaltet</string>
-    <string name="label_measurements">Messwerten</string>
-    <string name="info_select_auto_backup_export_dir">Wähle Auto-Backup Export Verzeichnis</string>
-    <string name="label_is_sticky">In der Übersicht Angeheftet</string>
-    <string name="label_auto_backup_lacation">Kein Auto-Sicherungs-Verzeichnis ausgewählt</string>
-    <string name="permission_notification_info">Benachrichtigungserlaubnis erforderlich, um Benachrichtigung anzuzeigen</string>
-    <string name="label_y_axis">Y-Achse</string>
-    <string name="label_simple_moving_average">Einfacher gleitender Durchschnitt</string>
-    <string name="label_trendline_computation_method">Methode zur Berechnung der Trendlinie</string>
-    <string name="label_exponentially_smoothed_moving_average">Exponentiell geglätteter gleitender Durchschnitt</string>
-    <string name="label_trendline_future">Zukunftstrend</string>
-    <string name="label_simple_moving_average_num_days">Anzahl der Tage, über die gemittelt werden soll</string>
+    <string name="permission_read_write_data_label">Lese- und Schreibzugriff auf openScale Daten</string>
+
+    <string name="dialog_bt_interaction_title_choose_user">Benutzer auf Waage auswählen</string>
+    <string name="dialog_bt_interaction_desc_choose_user_default">Wählen Sie Ihren Benutzer aus der Liste oder erstellen Sie einen neuen.</string>
+    <string name="dialog_bt_icon_desc_choose_user">Benutzerauswahl</string>
+
+    <string name="dialog_bt_interaction_title_enter_consent">Bestätigungscode eingeben</string>
+    <string name="dialog_bt_interaction_desc_enter_consent_default">Bitte geben Sie den auf Ihrer Waage angezeigten Code ein.</string>
+    <string name="dialog_bt_icon_desc_enter_consent">Code-Eingabe</string>
+
+    <string name="dialog_bt_label_consent_code">Bestätigungscode</string>
+
+    <string name="dialog_bt_error_loading_user_list_empty">Benutzerliste ist leer oder fehlerhaft.</string>
+    <string name="dialog_bt_error_loading_user_list_format">Fehler: Benutzerdaten konnten nicht korrekt geladen werden.</string>
+    <string name="dialog_bt_select_user_prompt">Bitte einen Benutzer auswählen.</string>
+    <string name="dialog_bt_enter_valid_code_prompt">Bitte einen gültigen Code eingeben.</string>
+    <string name="saved_measurements_message">%1$d Messungen gespeichert</string>
+
+    <!-- Allgemeine Infos -->
+    <string name="bt_info_step_on_scale">Bitte barfuß auf die Waage steigen</string>
+
+    <!-- Mapping / Consent -->
+    <string name="bt_info_using_existing_mapping">Bestehende Zuordnung verwenden: App-Benutzer %1$d ↔ Waagen-Slot %2$d.</string>
+    <string name="bt_info_consent_needed">Bitte den Consent-Code für Slot %1$d eingeben.</string>
+    <string name="bt_info_read_only_mode_no_consent">Kein Consent-Code vorhanden. Messungen können gelesen werden, Benutzereinstellungen können jedoch nicht geändert werden.</string>
+    <string name="bt_info_suggest_create_new_user">Für den vollen Funktionsumfang bitte einen neuen Benutzer auf der Waage anlegen.</string>
+    <string name="bt_info_register_new_user_started">Neuen Benutzer auf der Waage anlegen …</string>
+    <string name="bt_info_no_mapping_creating_user">Keine Zuordnung gefunden; neuer Benutzer wird auf der Waage erstellt…</string>
+    <string name="bt_info_waiting_for_measurements">Warte auf Messung über Benachrichtigungen.</string>
+    <string name="bt_info_linked_app_user_to_slot">App-Benutzer %1$d mit Waagen-Slot %2$d verknüpft.</string>
+
+    <!-- Warnungen -->
+    <string name="bt_warn_low_battery">Batterie der Waage ist schwach (%1$d%%).</string>
+    <string name="bt_warn_register_failed_with_code">Benutzeranlage auf der Waage fehlgeschlagen (Code %1$d).</string>
+    <string name="bt_warn_slots_full">Die Waage hat keine freien Benutzerslots. Bitte einen Benutzer auf dem Gerät löschen und erneut versuchen.</string>
+    <string name="bt_warn_notify_failed">Benachrichtigungen für %1$s konnten nicht aktiviert werden.</string>
+    <string name="bt_warn_write_failed">Schreiben auf %1$s fehlgeschlagen.</string>
+    <string name="bt_warn_notify_state_failed">Ändern des Benachrichtigungszustands für %1$s fehlgeschlagen.</string>
+    <string name="bt_warn_consent_wrong_retry">Einwilligungscode wurde nicht akzeptiert. Bitte prüfen und erneut versuchen.</string>
+
+    <!-- Fehler -->
+    <string name="bt_error_ucp_not_authorized">Consent-Code wurde nicht akzeptiert. Bitte prüfen und erneut eingeben.</string>
+    <string name="bt_error_delivery_user_feedback">Fehler beim Übermitteln der Nutzerantwort: %1$s</string>
+    <string name="bt_info_reconnecting_try">Erneuter Verbindungsversuch … (Versuch %1$d/%2$d)</string>
+    <string name="bt_info_waiting_for_measurement">Warte auf Messwerte über Benachrichtigungen.</string>
+
+    <!-- Adapter: warnings/errors -->
+    <string name="bt_warn_no_peripheral_for_setnotify">Kein Gerät für setNotifyOn(%1$s)</string>
+    <string name="bt_warn_characteristic_not_found">Charakteristik %1$s nicht gefunden</string>
+    <string name="bt_warn_no_peripheral_for_write">Kein Gerät für write(%1$s)</string>
+    <string name="bt_warn_no_peripheral_for_read">Kein Gerät für read(%1$s)</string>
+    <string name="bt_warn_write_failed_status">Schreiben auf %1$s fehlgeschlagen: %2$s</string>
+    <string name="bt_warn_notify_state_failed_status">Benachrichtigungsstatus für %1$s fehlgeschlagen: %2$s</string>
+
+    <!-- Adapter: generic errors -->
+    <string name="bt_error_no_user_selected">Kein Benutzer ausgewählt</string>
+    <string name="bt_error_generic">Fehler</string>
+
+    <string name="bt_error_handler_connect_failed">Handler-Fehler beim Verbinden: %1$s</string>
+    <string name="bt_error_handler_parse_error">Handler-Parserfehler für %1$s: %2$s</string>
+    <string name="bt_error_no_bluetooth_adapter">Kein Bluetooth-Adapter auf diesem Gerät vorhanden.</string>
+    <string name="bt_error_no_device_found">Gerät nicht gefunden. Bitte sicherstellen, dass es eingeschaltet ist und sich in Reichweite befindet.</string>
+    <string name="bt_info_using_existing_mapping_auto_consent">Verwende bestehende Zuordnung für Benutzer %1$s zu Waagenplatz %2$s. Automatisches Bestätigen wird versucht.</string>
+    <string name="bt_error_pin_format_invalid">Ungültiges PIN-Format. Bitte geben Sie eine gültige Zahl ein.</string>
+    <string name="bt_error_uds_register_failed">Benutzer konnte nicht auf der Waage registriert werden. Fehler: %1$s</string>
+    <string name="bt_error_uds_consent_failed">Benutzer konnte nicht auf der Waage bestätigt werden. Fehler: %1$s</string>
+    <string name="bt_error_uds_list_users_failed">Benutzerliste konnte nicht von der Waage abgerufen werden. Fehler: %1$s</string>
+    <string name="bt_error_user_setup_failed_no_list">Benutzereinrichtung fehlgeschlagen. Benutzerliste konnte nicht von der Waage abgerufen werden.</string>
+
+    <string name="bluetooth_scale_info_create_user_instruction_uds">Neuen Benutzer auf Waage erstellen (UDS weist Platz zu)</string>
+    <string name="bt_uds_choice_slot_current_user">Platz P%1$d: %2$s (Aktueller App-Benutzer)</string>
+    <string name="bt_uds_choice_slot_other_user">Platz P%1$d: Verwendet von %2$s (Auswählen zum Übernehmen?)</string>
+    <string name="bt_uds_choice_slot_occupied_unmapped">Platz P%1$d: Belegt (Nicht zugeordnet)</string>
+
+    <!-- SBF72 Spezifisch (können in einem allgemeinen BT-Strings-Abschnitt sein oder spezifisch, falls später benötigt) -->
+    <!-- Diese wurden für SanitasSbf72Handler angefragt, stelle sicher, dass sie eindeutig sind, wenn sie von beiden verwendet werden -->
+    <string name="bt_sbf72_choice_slot_current_user">P%1$d: %2$s (Aktuell)</string>
+    <string name="bt_sbf72_choice_slot_other_user">P%1$d: Verwendet von %2$s (Übernehmen?)</string>
+    <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Belegt (Nicht verknüpft)</string>
+    <string name="bt_sbf72_choice_slot_create_new">P%1$d: \'%2$s\' hier erstellen</string>
 </resources>

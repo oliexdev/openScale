@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
-    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
-    <!-- Permission to allow read of data from the database through a ContentProvider.
-         Marked "dangerous" so that explicit user approval is required to read this data, not
-         just the permission implied from installing the app from the Play Store. -->
     <permission
         android:name="${applicationId}.READ_WRITE_DATA"
         android:description="@string/permission_read_write_data_description"
@@ -23,67 +17,84 @@
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
 
     <queries>
+        <package android:name="com.health.openscale.sync.debug" />
         <package android:name="com.health.openscale.sync.oss" />
         <package android:name="com.health.openscale.sync" />
     </queries>
 
     <application
+        android:name=".OpenScaleApp"
         android:allowBackup="true"
-        android:requestLegacyExternalStorage="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
         android:icon="${appIcon}"
-        android:roundIcon="${appIconRound}"
-        android:label="@string/app_name"
-        android:name=".core.Application"
-        android:theme="@style/AppTheme" >
+        android:label="${appName}"
+        android:roundIcon="${appRoundIcon}"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.OpenScale">
         <activity
-            android:name=".gui.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:exported="true">
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.OpenScale">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".gui.slides.AppIntroActivity" android:theme="@style/AppTheme.NoActionBar" android:exported="true"/>
-        <activity android:name=".gui.slides.SlideToNavigationAdapter" android:theme="@style/AppTheme.NoActionBar" android:exported="true"/>
-
-        <receiver android:name=".core.alarm.ReminderBootReceiver" android:enabled="false" android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-            </intent-filter>
-        </receiver>
-
-        <receiver android:name=".gui.widget.WidgetProvider" android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data android:name="android.appwidget.provider"
-                android:resource="@xml/widget_info" />
-        </receiver>
-
-        <activity android:name=".gui.widget.WidgetConfigure" android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
-            </intent-filter>
-        </activity>
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
-            android:grantUriPermissions="true"
-            android:exported="false">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_provider_paths" />
+            android:authorities="${applicationId}.file_provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+        <meta-data
+            android:name="android.support.FILE_PROVIDER_PATHS"
+            android:resource="@xml/file_paths" />
         </provider>
         <provider
-            android:name=".core.database.ScaleDatabaseProvider"
+            android:name=".core.database.DatabaseProvider"
             android:authorities="${applicationId}.provider"
             android:enabled="true"
             android:exported="true"
             android:permission="${applicationId}.READ_WRITE_DATA">
         </provider>
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+        <receiver
+            android:name=".core.worker.BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name="com.health.openscale.ui.widget.MeasurementWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/measurement_widget" />
+        </receiver>
+        <activity
+            android:name=".ui.widget.MeasurementWidgetConfigActivity"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

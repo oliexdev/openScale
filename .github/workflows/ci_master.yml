@@ -43,3 +43,4 @@ jobs:
           title: "openScale development build"
           files: |
             android_app/app/build/outputs/apk/debug/openScale-debug.apk
+

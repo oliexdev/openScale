@@ -22,12 +22,12 @@ default_platform(:android)
 
 platform :android do 
     versionName = get_version_name(
-        gradle_file_path:"android_app/app/build.gradle",
+        gradle_file_path:"android_app/app/build.gradle.kts",
         ext_constant_name:"versionName"
     )
 
     versionCode = get_version_name(
-        gradle_file_path:"android_app/app/build.gradle",
+        gradle_file_path:"android_app/app/build.gradle.kts",
         ext_constant_name:"versionCode"
     )
 
@@ -51,7 +51,7 @@ platform :android do
             project_dir: 'android_app/'
         )
         gradle(
-            task: "assemble",
+            task: "bundle",
             project_dir: 'android_app/',
             build_type: "oss"
         )
@@ -64,7 +64,7 @@ platform :android do
             project_dir: 'android_app/'
         )
         gradle(
-            task: "assemble",
+            task: "bundle",
             project_dir: 'android_app/',
             build_type: "oss"
         )
@@ -72,7 +72,7 @@ platform :android do
             package_name: "com.health.openscale.oss",
             track: "production",
             metadata_path: "fastlane/metadata/android/",
-            apk: "android_app/app/build/outputs/apk/oss/openScale-#{versionName}-oss.apk"
+            apk: "android_app/app/build/outputs/bundle/oss/openScale-#{versionName}-oss.apk"
         )
     end
 
