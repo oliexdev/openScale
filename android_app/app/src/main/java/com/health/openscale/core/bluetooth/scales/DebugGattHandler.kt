@@ -184,19 +184,4 @@ class DebugGattHandler : ScaleDeviceHandler() {
         if ((p and BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS) != 0) flags += "EXT"
         return if (flags.isEmpty()) "0" else flags.joinToString("|")
     }
-
-    /**
-     * ASCII preview of the first `max` bytes; non-printable bytes are rendered as '?'.
-     */
-    private fun ByteArray.toAsciiPreview(max: Int = 64): String {
-        if (isEmpty()) return ""
-        val n = min(size, max)
-        val sb = StringBuilder(n)
-        for (i in 0 until n) {
-            val ch = (this[i].toInt() and 0xFF).toChar()
-            sb.append(if (ch.isISOControl()) '?' else ch)
-        }
-        if (size > max) sb.append("…(+").append(size - max).append("b)")
-        return sb.toString()
-    }
 }

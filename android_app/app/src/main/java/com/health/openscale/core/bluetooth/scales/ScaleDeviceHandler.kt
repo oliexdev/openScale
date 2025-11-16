@@ -353,4 +353,19 @@ abstract class ScaleDeviceHandler {
         sb.append(']')
         return sb.toString()
     }
+
+    /**
+     * ASCII preview of the first `max` bytes; non-printable bytes are rendered as '?'.
+     */
+    fun ByteArray.toAsciiPreview(max: Int = 64): String {
+        if (isEmpty()) return ""
+        val n = min(size, max)
+        val sb = StringBuilder(n)
+        for (i in 0 until n) {
+            val ch = (this[i].toInt() and 0xFF).toChar()
+            sb.append(if (ch.isISOControl()) '?' else ch)
+        }
+        if (size > max) sb.append("…(+").append(size - max).append("b)")
+        return sb.toString()
+    }
 }
