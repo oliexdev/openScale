@@ -19,46 +19,21 @@ package com.health.openscale.core.bluetooth.data
 
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
-import com.health.openscale.core.data.MeasureUnit
 import com.health.openscale.core.data.WeightUnit
 import java.util.Calendar
 import java.util.Date
 
-class ScaleUser {
-    @JvmField
-    var id: Int = 0
-
-    @JvmField
-    var userName: String = ""
-    @JvmField
-    var birthday: Date
-
-    @JvmField
-    var bodyHeight: Float // always in cm
-
-    @JvmField
-    var gender: GenderType
-
-    @JvmField
-    var initialWeight: Float = 0f // always in kg
-
-    @JvmField
-    var goalWeight: Float = 0f // always in kg
-
-    @JvmField
-    var scaleUnit: WeightUnit
-
-    @JvmField
-    var activityLevel: ActivityLevel
-
-    init {
-        birthday = Date()
-        bodyHeight = -1f
-        gender = GenderType.MALE
-        scaleUnit = WeightUnit.KG
-        activityLevel = ActivityLevel.SEDENTARY
-    }
-
+data class ScaleUser (
+    var id: Int = 0,
+    var userName: String = "",
+    var birthday: Date = Date(),
+    var bodyHeight: Float = -1f, // always in cm
+    var gender: GenderType = GenderType.MALE,
+    var initialWeight: Float = 0f, // always in kg
+    var goalWeight: Float = 0f, // always in kg
+    var scaleUnit: WeightUnit = WeightUnit.KG,
+    var activityLevel: ActivityLevel = ActivityLevel.SEDENTARY
+){
     fun getAge(todayDate: Date?): Int {
         val calToday = Calendar.getInstance()
         if (todayDate != null) {
@@ -86,9 +61,5 @@ class ScaleUser {
             years -= 1
         }
         return years
-    }
-
-    override fun toString() : String {
-        return "ScaleUser(id=$id, userName=$userName, birthday=$birthday, bodyHeight=$bodyHeight, gender=$gender, initialWeight=$initialWeight, goalWeight=$goalWeight, scaleUnit=$scaleUnit, activityLevel=$activityLevel)"
     }
 }
