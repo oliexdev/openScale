@@ -13,7 +13,7 @@ For scales without Bluetooth, or Bluetooth scales not (yet) supported by openSca
 This app has no ads and requests no unnecessary permissions. The location permission is only needed to find a Bluetooth scale. Once found the permission can be revoked (or never granted if Bluetooth isn't used).
 
 <h2><b>Supported metrics</b></h2>
-Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fat, bone mass, waist circumference, waist-to-height ratio, hip circumference, waist-hip ratio, visceral fat, chest circumference, thigh circumference, biceps circumference, neck circumference, body fat caliper, BMR (basal metabolic rate), TDEE (Total Daily Energy Expenditure) and Calories. Each entry can also have an optional comment.
+Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fat, bone mass, waist circumference, waist-to-height ratio, hip circumference, waist-hip ratio, visceral fat, chest circumference, thigh circumference, biceps circumference, neck circumference, body fat caliper, BMR (basal metabolic rate), TDEE (Total Daily Energy Expenditure), Calories and custom metrics. Each entry can also have an optional comment.
 
 <b>Note:</b> don't worry if you think the list is too long: metrics you don't use can be disabled and hidden.
 
@@ -28,7 +28,7 @@ Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fa
 - Support for multiple users
 - Support for assisted weighing (e.g. for babies or pets)
 - Support for people with amputations
-- Partially or fully translated into more than 27 languages
+- Partially or fully translated
 - Optional dark theme selectable
 
 <h2><b>Supported Bluetooth scales</b></h2>
