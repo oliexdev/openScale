@@ -188,16 +188,6 @@ fun MeasurementTypeSettingsScreen(
                             color = textColor
                         )
 
-                        // Drag handle for reordering
-                        IconButton(
-                            modifier = Modifier.draggableHandle(), // Provided by the reorderable library
-                            onClick = {} // onClick is typically handled by the reorderable mechanism
-                        ) {
-                            Icon(
-                                Icons.Default.DragHandle,
-                                contentDescription = dragHandleContentDesc
-                            )
-                        }
                         // Edit button
                         IconButton(onClick = { onEditType(type.id) }) {
                             Icon(
@@ -213,6 +203,18 @@ fun MeasurementTypeSettingsScreen(
                                     contentDescription = deleteContentDesc
                                 )
                             }
+                        }
+
+                        // Drag handle for reordering
+                        IconButton(
+                            modifier = Modifier.draggableHandle() // Provided by the reorderable library
+                                .padding(start = 8.dp), // ensure small padding for separation
+                            onClick = {} // onClick is typically handled by the reorderable mechanism
+                        ) {
+                            Icon(
+                                Icons.Default.DragHandle,
+                                contentDescription = dragHandleContentDesc
+                            )
                         }
                     }
                 }
