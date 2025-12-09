@@ -1,3 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="text_none">Aucun</string>
+    <string name="not_available">N/A</string>
+    <string name="placeholder_empty_value">-</string>
+    <string name="theme_light">Clair</string>
+    <string name="theme_dark">Sombre</string>
+    <string name="enable_button">Activer</string>
+    <string name="cancel_button">Annuler</string>
+    <string name="confirm_button">Confirmer</string>
+    <string name="dialog_ok">D\'accord</string>
+    <string name="switch_on">Marche</string>
+    <string name="switch_off">Arrêt</string>
+    <string name="open_link_content_description">Liason ouverte</string>
+    <string name="content_desc_warning_icon">Icône d\'alerte</string>
+    <string name="content_desc_restore_icon">Icône de restauration</string>
+    <string name="content_desc_information">Information</string>
+    <string name="content_desc_open_menu">Menu ouvert</string>
+    <string name="content_desc_back">Retour</string>
+    <string name="content_desc_selected">Sélectionné</string>
+    <string name="derived_backfill_start">Calcul en cours des valeurs dérivées …</string>
+    <string name="derived_backfill_done">Valeurs dérivées actualisées avec succès.</string>
+    <string name="error_generic">Une erreur s\'est produite.</string>
+    <string name="error_loading_data">Le chargement des données a échoué.</string>
+    <string name="error_try_again">Merci d\'essayer à nouveau.</string>
+    <string name="no_data_available">Pas de données valables.</string>
+    <string name="no_measurements_found">Aucune mesure trouvée.</string>
+    <string name="no_entries_found">Pas d\'entrée valable.</string>
+    <string name="route_title_overview">Aperçu</string>
+    <string name="route_title_graph">Graphiques</string>
+    <string name="route_title_table">Tableau</string>
+    <string name="route_title_statistics">Statistiques</string>
+    <string name="route_title_settings">Paramètres</string>
+    <string name="title_new_measurement">Nouvelle mesure</string>
+    <string name="title_edit_measurement">Éditer la mesure</string>
+    <string name="about_screen_title">À propos</string>
+    <string name="measurement_type_detail_title_edit">Éditer le type</string>
+    <string name="measurement_type_detail_title_add">Ajouter un type</string>
+    <string name="measurement_type_settings_title">Types de mesure</string>
+    <string name="user_detail_edit_user_title">Éditer le profil</string>
+    <string name="user_detail_add_user_title">Ajouter un profil</string>
+    <string name="user_settings_title">Profils</string>
+    <string name="manage_users">Gérer les profils</string>
+    <string name="content_desc_switch_user">Changer de profil. Sélectionné : %1$s</string>
 </resources>
