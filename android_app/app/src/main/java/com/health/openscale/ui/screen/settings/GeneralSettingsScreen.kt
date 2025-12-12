@@ -24,6 +24,7 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -84,6 +85,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -95,6 +97,7 @@ import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.SupportedLanguage
+import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.screen.dialog.TimeInputDialog
 import com.health.openscale.ui.shared.SharedViewModel
@@ -110,6 +113,7 @@ fun GeneralSettingsScreen(
     settingsViewModel: SettingsViewModel
 ) {
     val context = LocalContext.current
+    val activity = LocalView.current.context as ComponentActivity
     val scope = rememberCoroutineScope()
 
     val scrollState = rememberScrollState()
@@ -335,6 +339,7 @@ fun GeneralSettingsScreen(
                                 if (currentLanguageCode != langEnumEntry.code) {
                                     scope.launch {
                                         sharedViewModel.setAppLanguageCode(langEnumEntry.code)
+                                        LocaleUtils.updateAppLocale(activity, langEnumEntry.code)
                                     }
                                 }
                                 expandedLanguageMenu = false

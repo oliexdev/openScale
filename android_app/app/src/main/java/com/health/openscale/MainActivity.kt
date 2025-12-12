@@ -17,25 +17,24 @@
  */
 package com.health.openscale
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.lifecycleScope
-import com.health.openscale.core.data.SupportedLanguage
-import com.health.openscale.core.utils.LogManager
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.health.openscale.core.facade.SettingsFacade
-import com.health.openscale.core.utils.LocaleUtils
+import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.navigation.AppNavigation
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.theme.OpenScaleTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -43,6 +42,7 @@ import javax.inject.Inject
  * The main entry point of the application.
  * This activity hosts the Jetpack Compose UI and initializes essential components
  * like the database, repositories, and ViewModels.
+ * The language handling follows the official Android guide for per-app language preferences.
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -55,37 +55,29 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // --- Language initializing ---
-        lifecycleScope.launch {
-            settingsFacade.appLanguageCode.collectLatest { languageCode ->
-                val currentActivityLocale = resources.configuration.locales.get(0).language
-                val targetLanguage = languageCode ?: SupportedLanguage.getDefault().code
-
-                LogManager.d(TAG, "Observed language code: $languageCode, Current activity locale: $currentActivityLocale, Target: $targetLanguage")
-
-                if (currentActivityLocale != targetLanguage) {
-                    LogManager.i(TAG, "Language changed or first load. Applying locale: $targetLanguage and recreating activity.")
-                    LocaleUtils.updateAppLocale(this@MainActivity, targetLanguage)
-
-                    if (!isFinishing) {
-                        recreate()
-                    }
-                } else {
-                    if (!isFinishing && !isChangingConfigurations) {
-                        initializeAndSetContent()
-                    }
-                }
-            }
-        }
-    }
-
-    private fun initializeAndSetContent() {
-        LogManager.d(TAG, "Initializing and setting content.")
         enableEdgeToEdge()
 
         setContent {
             OpenScaleTheme {
+                // For APIs before Android 13 (Tiramisu), we need to manually
+                // listen for language changes and recreate the activity.
+                // For API 33+, the system handles this automatically via LocaleManager.
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    val languageCode by settingsFacade.appLanguageCode.collectAsStateWithLifecycle(initialValue = null)
+
+                    // This effect runs when languageCode changes.
+                    LaunchedEffect(languageCode) {
+                        val currentActivityLocale = this@MainActivity.resources.configuration.locales[0]
+
+                        // Only recreate if the language has been set and differs from the current activity locale.
+                        if (languageCode != null && currentActivityLocale.language != languageCode) {
+                            LogManager.i(TAG, "Language setting changed to '$languageCode' on pre-Tiramisu device. Recreating activity.")
+                            recreate()
+                        }
+                    }
+                }
+
+                // The main UI of the app.
                 val sharedViewModel: SharedViewModel = hiltViewModel()
 
                 val view = LocalView.current
