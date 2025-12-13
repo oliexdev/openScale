@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_light">Jasny</string>
+    <string name="theme_dark">Ciemny</string>
+    <string name="label_date">Data</string>
+    <string name="label_time">Czas</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Nie można połączyć się z wagą, upewnij się, że jest włączona.</string>
+    <string name="permission_read_write_data_description">odczyt/zapis danych openScale, w tym informacji o użytkowniku i wszystkich zapisanych pomiarach</string>
+    <string name="permission_read_write_data_label">Odczyt/Zapis danych openScale</string>
+    <string name="app_logo_content_description">Logo aplikacji</string>
+</resources>
