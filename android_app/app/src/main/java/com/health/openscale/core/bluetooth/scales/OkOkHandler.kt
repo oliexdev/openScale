@@ -81,7 +81,11 @@ class OkOkHandler : ScaleDeviceHandler() {
             device.name = NamelessAlias
         val name = device.name
 
-        val supports = name.equals(NamelessAlias) || name.equals("ADV") || name.equals("Chipsea-BLE")
+        val supports = name.equals(NamelessAlias)
+                    || name.equals("ADV")
+                    || name.equals("Chipsea-BLE")
+                    || name.startsWith("Yoda0", ignoreCase = true)
+                    || name.startsWith("Yoda1", ignoreCase = true)
         if (!supports) return null
 
         val variantName = when {
