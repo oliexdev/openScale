@@ -8,4 +8,24 @@
     <string name="permission_read_write_data_description">odczyt/zapis danych openScale, w tym informacji o użytkowniku i wszystkich zapisanych pomiarach</string>
     <string name="permission_read_write_data_label">Odczyt/Zapis danych openScale</string>
     <string name="app_logo_content_description">Logo aplikacji</string>
+    <string name="not_available">Niedostępny</string>
+    <string name="placeholder_empty_value">-</string>
+    <string name="enable_button">Domyślne elementy i akcje UI</string>
+    <string name="cancel_button">Anuluj</string>
+    <string name="confirm_button">Potwierdź</string>
+    <string name="dialog_ok">OK</string>
+    <string name="switch_on">Zał.</string>
+    <string name="switch_off">Wył.</string>
+    <string name="open_link_content_description">Otwórz link</string>
+    <string name="content_desc_warning_icon">Ikona ostrzeżenia</string>
+    <string name="content_desc_restore_icon">Ikona przywracania</string>
+    <string name="content_desc_information">Informacje</string>
+    <string name="content_desc_open_menu">Otwórz menu</string>
+    <string name="content_desc_back">Powrót</string>
+    <string name="content_desc_selected">Wybrane</string>
+    <string name="derived_backfill_start">Obliczanie wartości pochodnych…</string>
+    <string name="derived_backfill_done">Wartości pochodne zaktualizowane pomyślnie.</string>
+    <string name="error_generic">Napotkano błąd.</string>
+    <string name="error_loading_data">Odczyt danych zakończony niepowodzeniem.</string>
+    <string name="error_try_again">Spróbuj ponownie.</string>
 </resources>
