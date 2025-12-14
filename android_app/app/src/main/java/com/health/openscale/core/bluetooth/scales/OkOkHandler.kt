@@ -30,7 +30,7 @@ import com.health.openscale.core.utils.ConverterUtils
  *  - "OKOK V20"  (manufacturer id 0x20CA): stable flag + XOR checksum
  *  - "OKOK V11"  (manufacturer id 0x11CA): XOR checksum, unit & resolution in body properties
  *  - "OKOK VF0"  (manufacturer id 0xF0FF): simple weight field
- *  - "OKOK Nameless" (any manufacturer id where low byte == 0xC0): MAC-embedded, unit & resolution in attrib
+ *  - "OKOK C0" (any manufacturer id where low byte == 0xC0): MAC-embedded, unit & resolution in attrib
  *
  * Link mode: BROADCAST_ONLY (no GATT connection).
  */
@@ -59,13 +59,16 @@ class OkOkHandler : ScaleDeviceHandler() {
     private val IDX_VF0_WEIGHT_MSB = 3
     private val IDX_VF0_WEIGHT_LSB = 2
 
-    // Nameless/0xC0 indices
+    // 0xC0 indices
     private val IDX_WEIGHT_MSB = 0
     private val IDX_WEIGHT_LSB = 1
     private val IDX_ATTRIB     = 6
     private val UNIT_KG   = 0
+    private val UNIT_JIN  = 1
     private val UNIT_LB   = 2
     private val UNIT_STLB = 3
+
+    private val NamelessAlias = "OKOK Nameless"
 
     /**
      * Decide support + build a *dynamic* displayName based on manufacturer data present
@@ -74,16 +77,22 @@ class OkOkHandler : ScaleDeviceHandler() {
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val m = device.manufacturerData ?: return null
 
+        if (device.name.isEmpty() && containsLowByteC0(m))
+            device.name = NamelessAlias
         val name = device.name
 
-        val supports = name.equals("NoName OkOk") || name.equals("ADV") || name.equals("Chipsea-BLE")
+        val supports = name.equals(NamelessAlias)
+                    || name.equals("ADV")
+                    || name.equals("Chipsea-BLE")
+                    || name.startsWith("Yoda0", ignoreCase = true)
+                    || name.startsWith("Yoda1", ignoreCase = true)
         if (!supports) return null
 
         val variantName = when {
             hasKey(m, MANUF_V20) -> "OKOK V20"
             hasKey(m, MANUF_V11) -> "OKOK V11"
             hasKey(m, MANUF_VF0) -> "OKOK VF0"
-            containsLowByteC0(m) -> "OKOK Nameless"
+            containsLowByteC0(m) -> "OKOK C0"
             else -> null
         } ?: return null
 
@@ -128,8 +137,8 @@ class OkOkHandler : ScaleDeviceHandler() {
             return BroadcastAction.CONSUMED_STOP
         }
 
-        // Fallback: nameless 0xC0 vendor
-        parseNameless(m)?.let { kg ->
+        // Fallback: 0xC0 vendor
+        parseC0(m)?.let { kg ->
             publish(ScaleMeasurement().apply { userId = user.id; weight = kg })
             return BroadcastAction.CONSUMED_STOP
         }
@@ -186,10 +195,10 @@ class OkOkHandler : ScaleDeviceHandler() {
 
         // unit ((props >> 3) & 3)
         return when ((props shr 3) and 0x3) {
-            0 -> weight / divider                              // kg
-            1 -> weight / (divider * 2.0f)                      // jin → kg (approx.)
-            2 -> (weight / divider) / 2.204623f                 // lb  → kg
-            3 -> {                                              // st&lb
+            UNIT_KG -> weight / divider
+            UNIT_JIN -> weight / (divider * 2.0f)
+            UNIT_LB -> (weight / divider) / 2.204623f
+            UNIT_STLB -> {
                 val stones = (weight shr 8)
                 val pounds = (weight and 0xFF) / divider
                 stones * 6.350293f + pounds * 0.453592f
@@ -205,7 +214,7 @@ class OkOkHandler : ScaleDeviceHandler() {
         return raw / 10.0f
     }
 
-    private fun parseNameless(m: SparseArray<ByteArray>): Float? {
+    private fun parseC0(m: SparseArray<ByteArray>): Float? {
         val key = firstKeyWithLowByteC0(m) ?: return null
         val data = m.get(key) ?: return null
         if (data.size < 13) return null
@@ -225,6 +234,10 @@ class OkOkHandler : ScaleDeviceHandler() {
             UNIT_KG -> {
                 val raw = u16be(data[IDX_WEIGHT_MSB], data[IDX_WEIGHT_LSB])
                 raw / divider
+            }
+            UNIT_JIN -> {
+                val raw = u16be(data[IDX_WEIGHT_MSB], data[IDX_WEIGHT_LSB])
+                raw / divider / 2
             }
             UNIT_LB -> {
                 val raw = u16be(data[IDX_WEIGHT_MSB], data[IDX_WEIGHT_LSB])

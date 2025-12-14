@@ -54,7 +54,6 @@ import com.health.openscale.core.bluetooth.scales.SppScaleAdapter
 import com.health.openscale.core.bluetooth.scales.StandardBeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.TrisaBodyAnalyzeHandler
 import com.health.openscale.core.bluetooth.scales.TuningProfile
-import com.health.openscale.core.bluetooth.scales.Yoda1Handler
 import com.health.openscale.core.bluetooth.scales.YunmaiHandler
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
@@ -86,7 +85,6 @@ class ScaleFactory @Inject constructor(
     private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
         YunmaiHandler(isMini = false),
         YunmaiHandler(isMini = true),
-        Yoda1Handler(),
         TrisaBodyAnalyzeHandler(),
         SanitasSbf72Handler(),
         StandardBeurerSanitasHandler(),

@@ -52,7 +52,7 @@ import androidx.core.util.isNotEmpty
  * @property determinedHandlerDisplayName The display name of the handler determined for this device, if any.
  */
 data class ScannedDeviceInfo(
-    val name: String,
+    var name: String,
     val address: String,
     val rssi: Int,
     val serviceUuids: List<UUID>,
