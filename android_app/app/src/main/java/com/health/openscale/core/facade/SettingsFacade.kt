@@ -92,6 +92,7 @@ object SettingsPreferenceKeys {
     val CHART_SMOOTHING_ALPHA = floatPreferencesKey("chart_smoothing_alpha")
     val CHART_SMOOTHING_WINDOW_SIZE = intPreferencesKey("chart_smoothing_window_size")
     val CHART_SMOOTHING_MAX_GAP_DAYS = intPreferencesKey("chart_smoothing_max_gap_days")
+    val CHART_SHOW_GOAL_LINES = booleanPreferencesKey("chart_show_goal_lines")
 
     // --- Settings for Automatic Backups ---
     val AUTO_BACKUP_ENABLED_GLOBALLY = booleanPreferencesKey("auto_backup_enabled_globally")
@@ -191,6 +192,9 @@ interface SettingsFacade {
 
     val chartSmoothingMaxGapDays: Flow<Int>
     suspend fun setChartSmoothingMaxGapDays(days: Int)
+
+    val showChartGoalLines: Flow<Boolean>
+    suspend fun setShowChartGoalLines(show: Boolean)
 
     // --- Automatic Backup Settings ---
     val autoBackupEnabledGlobally: Flow<Boolean>
@@ -581,6 +585,18 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun setChartSmoothingMaxGapDays(days: Int) {
         LogManager.d(TAG, "Setting chart smoothing max gap to: $days days")
         saveSetting(SettingsPreferenceKeys.CHART_SMOOTHING_MAX_GAP_DAYS.name, days)
+    }
+
+    override val showChartGoalLines: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.CHART_SHOW_GOAL_LINES.name,
+        false
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing showChartGoalLines", exception)
+        emit(false)
+    }
+
+    override suspend fun setShowChartGoalLines(show: Boolean) {
+        saveSetting(SettingsPreferenceKeys.CHART_SHOW_GOAL_LINES.name, show)
     }
 
     override val autoBackupEnabledGlobally: Flow<Boolean> = observeSetting(

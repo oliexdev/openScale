@@ -17,7 +17,6 @@
  */
 package com.health.openscale.ui.screen.components
 
-import android.R.attr.data
 import android.text.Layout
 import android.text.format.DateFormat
 import androidx.compose.animation.AnimatedVisibility
@@ -63,6 +62,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -75,15 +75,20 @@ import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.TimeRangeFilter
+import com.health.openscale.core.data.UnitType
+import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.core.facade.SettingsFacade
+import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
+import com.health.openscale.ui.theme.White
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisGuidelineComponent
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberEnd
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
+import com.patrykandpatrick.vico.compose.cartesian.layer.dashed
 import com.patrykandpatrick.vico.compose.cartesian.layer.point
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.marker.rememberDefaultCartesianMarker
@@ -91,11 +96,14 @@ import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
 import com.patrykandpatrick.vico.compose.common.component.fixed
+import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
 import com.patrykandpatrick.vico.compose.common.component.rememberShapeComponent
 import com.patrykandpatrick.vico.compose.common.component.rememberTextComponent
+import com.patrykandpatrick.vico.compose.common.component.shapeComponent
 import com.patrykandpatrick.vico.compose.common.fill
 import com.patrykandpatrick.vico.compose.common.insets
 import com.patrykandpatrick.vico.compose.common.shape.markerCorneredShape
+import com.patrykandpatrick.vico.compose.common.shape.rounded
 import com.patrykandpatrick.vico.core.cartesian.Zoom
 import com.patrykandpatrick.vico.core.cartesian.axis.Axis
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
@@ -104,17 +112,20 @@ import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
+import com.patrykandpatrick.vico.core.cartesian.decoration.HorizontalLine
 import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarker
 import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarkerVisibilityListener
 import com.patrykandpatrick.vico.core.cartesian.marker.DefaultCartesianMarker
 import com.patrykandpatrick.vico.core.common.Fill
+import com.patrykandpatrick.vico.core.common.Insets
 import com.patrykandpatrick.vico.core.common.LayeredComponent
 import com.patrykandpatrick.vico.core.common.component.ShapeComponent
 import com.patrykandpatrick.vico.core.common.component.TextComponent
 import com.patrykandpatrick.vico.core.common.data.ExtraStore
 import com.patrykandpatrick.vico.core.common.shape.CorneredShape
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.Instant
@@ -206,6 +217,10 @@ fun MeasurementChart(
     val showDataPointsSetting by sharedViewModel
         .showChartDataPoints
         .collectAsStateWithLifecycle(initialValue = true)
+
+    val showGoalLinesSetting by sharedViewModel
+        .showChartGoalLines
+        .collectAsStateWithLifecycle(initialValue = false)
 
     val timeRangeState by rememberResolvedTimeRangeState(
         screenContextName = screenContextName,
@@ -398,6 +413,17 @@ fun MeasurementChart(
         }
     }
 
+    val selectedUserId by sharedViewModel.selectedUserId.collectAsStateWithLifecycle()
+
+    val goalsToActuallyPlot by remember(selectedUserId, lineTypesToActuallyPlot) {
+        sharedViewModel.getAllGoalsForUser(selectedUserId ?: -1)
+            .map { allGoals ->
+                allGoals.filter { goal ->
+                    lineTypesToActuallyPlot.any { type -> type.id == goal.measurementTypeId }
+                }
+            }
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
+
     Column(modifier = modifier) {
         AnimatedVisibility(visible = effectiveShowTypeFilterRow) {
             MeasurementTypeFilterRow(
@@ -470,12 +496,13 @@ fun MeasurementChart(
                     .fillMaxWidth()
                     .height(16.dp)
                     .pointerInput(Unit) {
-                        detectDragGestures (
+                        detectDragGestures(
                             onDrag = { change, dragAmount ->
                                 change.consume()
                                 val deltaY = dragAmount.y
                                 val weightDelta = deltaY / 2000f
-                                localSplitterWeight = (localSplitterWeight + weightDelta).coerceIn(0.01f, 0.8f)
+                                localSplitterWeight =
+                                    (localSplitterWeight + weightDelta).coerceIn(0.01f, 0.8f)
                             },
                             onDragEnd = {
                                 scope.launch {
@@ -744,6 +771,15 @@ fun MeasurementChart(
                     listOfNotNull(lineLayerForStartAxis, lineLayerForEndAxis)
                 }
 
+                val goalDecorations = if (showGoalLinesSetting) {
+                    goalsToActuallyPlot.map { goal ->
+                        val typeForGoal = allAvailableMeasurementTypes.find { it.id == goal.measurementTypeId }
+                        rememberGoalLine(goal = goal, type = typeForGoal)
+                    }
+                } else {
+                    emptyList()
+                }
+
                 val lastX = remember { mutableStateOf<Float?>(null) }
                 val markerVisibilityListener = remember(xToDatesMapForStore, onPointSelected) {
                     object : CartesianMarkerVisibilityListener {
@@ -768,7 +804,8 @@ fun MeasurementChart(
                     bottomAxis = xAxis,
                     endAxis = endYAxis,
                     marker = rememberMarker(),
-                    markerVisibilityListener = markerVisibilityListener
+                    markerVisibilityListener = markerVisibilityListener,
+                    decorations = goalDecorations
                 )
 
                 CartesianChartHost(
@@ -1027,6 +1064,47 @@ private fun createLineSpec(color: Color, statisticsMode : Boolean, showPoints: B
         pointConnector = LineCartesianLayer.PointConnector.cubic()
     )
 }
+
+/**
+ * A private helper composable that creates and remembers a [HorizontalLine] decoration for a given goal.
+ *
+ * @param goal The [UserGoals] object for which to create the line.
+ * @param type The corresponding [MeasurementType] to get the color and axis position from.
+ * @return A remembered [HorizontalLine] object.
+ */
+@Composable
+private fun rememberGoalLine(goal: UserGoals, type: MeasurementType?): HorizontalLine {
+    val goalColor = type?.let { Color(it.color) } ?: MaterialTheme.colorScheme.onSurface
+    val goalFill = fill(goalColor.copy(alpha = 0.7f))
+    val line = rememberLineComponent(
+        fill = goalFill,
+        thickness = 2.dp,
+    )
+
+    val labelComponent =
+        rememberTextComponent(
+            color = White,
+            margins = insets(start = 6.dp),
+            padding = insets(start = 8.dp, end = 8.dp, bottom = 2.dp, top = 2.dp),
+            background =
+                shapeComponent(goalFill, CorneredShape.rounded(topLeft = 4.dp, topRight = 4.dp, bottomLeft = 4.dp, bottomRight = 4.dp)),
+        )
+
+    return remember(goal, line) {
+        HorizontalLine(
+            y = { goal.goalValue.toDouble() },
+            line = line,
+            labelComponent = labelComponent,
+            label = { LocaleUtils.formatValueForDisplay(goal.goalValue.toString(), type?.unit ?: UnitType.NONE) },
+            verticalAxisPosition = if (type?.isOnRightYAxis == true) {
+                Axis.Position.Vertical.End
+            } else {
+                Axis.Position.Vertical.Start
+            }
+        )
+    }
+}
+
 
 /**
  * Remembers and configures a [CartesianMarker] for displaying details when a data point is interacted with.

@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
+import com.health.openscale.core.data.EvaluationState
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.model.MeasurementWithValues
@@ -77,9 +77,8 @@ fun UserGoalChip(
     )
 
     var displayDifferenceStr: String? = null
-    var percentageDifference: Float? = null // For coloring the difference text
+    var percentageDifference: Float? = null
 
-    // Calculate difference string and percentage only if needed and possible
     if (showDifference && currentValue != null && targetValue != 0f) {
         val differenceNum = currentValue - targetValue
         displayDifferenceStr = LocaleUtils.formatValueForDisplay(
@@ -87,7 +86,8 @@ fun UserGoalChip(
             unit = measurementType.unit,
             includeSign = true
         )
-        percentageDifference = (kotlin.math.abs(differenceNum) / targetValue) * 100f
+        // We calculate percentageDifference to determine the evaluation state
+        percentageDifference = (currentValue - targetValue) / targetValue
     }
 
     val formattedTargetDate = remember(userGoal.goalTargetDate) {
@@ -96,12 +96,21 @@ fun UserGoalChip(
         }
     }
 
-    val differenceTextColor = when {
-        percentageDifference == null -> LocalContentColor.current // Default color or if no difference shown
-        percentageDifference <= 4f -> Color(0xFF66BB6A)   // Green
-        percentageDifference <= 15f -> Color(0xFFFFCA28)  // Yellow
-        else -> Color(0xFFEF5350)                         // Red
+    val goalEvalState = when {
+        percentageDifference == null -> EvaluationState.UNDEFINED
+        // Example logic: +/- 4% is "NORMAL", more is "HIGH" or "LOW"
+        kotlin.math.abs(percentageDifference) <= 0.04f -> EvaluationState.NORMAL
+        percentageDifference > 0.04f -> EvaluationState.HIGH
+        else -> EvaluationState.LOW
     }
+
+    val evalSymbol = when (goalEvalState) {
+        EvaluationState.LOW -> "▼"
+        EvaluationState.NORMAL -> "●"
+        EvaluationState.HIGH -> "▲"
+        EvaluationState.UNDEFINED -> null
+    }
+    val evalColor = goalEvalState.toColor()
 
     Card(
         modifier = modifier
@@ -119,7 +128,6 @@ fun UserGoalChip(
                 size = 20.dp,
             )
 
-            // Column for multi-line information
             Column(verticalArrangement = Arrangement.Center) {
                 // ROW 1: Target date (if available)
                 if (formattedTargetDate != null) {
@@ -158,11 +166,22 @@ fun UserGoalChip(
 
                 // ROW 3: Value difference (if available)
                 if (displayDifferenceStr != null) {
-                    Text(
-                        text = displayDifferenceStr,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = differenceTextColor
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = displayDifferenceStr,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        if (evalSymbol != null) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = evalSymbol,
+                                color = evalColor,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
                 }
             }
         }

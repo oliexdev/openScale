@@ -477,6 +477,7 @@
 
     <!-- Diagramm Einstellungen -->
     <string name="setting_show_chart_points">Datenpunkte anzeigen</string>
+    <string name="setting_show_chart_goal_lines">Ziellinien anzeigen</string>
     <string name="setting_smoothing_algorithm">Glättungsalgorithmus</string>
     <string name="setting_smoothing_alpha">Alpha</string>
     <string name="setting_smoothing_window_size">Fenstergröße</string>

@@ -480,6 +480,7 @@
 
     <!-- Chart Settings Screen -->
     <string name="setting_show_chart_points">Show data points</string>
+    <string name="setting_show_chart_goal_lines">Show goal lines</string>
     <string name="setting_smoothing_algorithm">Smoothing Algorithm</string>
     <string name="setting_smoothing_alpha">Alpha</string>
     <string name="setting_smoothing_window_size">Window Size</string>

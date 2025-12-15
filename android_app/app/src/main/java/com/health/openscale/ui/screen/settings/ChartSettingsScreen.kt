@@ -98,6 +98,11 @@ fun ChartSettingsScreen(
         .chartSmoothingMaxGapDays
         .collectAsStateWithLifecycle(initialValue = 7)
 
+    val showGoalLines by sharedViewModel
+        .showChartGoalLines
+        .collectAsStateWithLifecycle(initialValue = false)
+
+
     val availableAlgorithms = remember { SmoothingAlgorithm.values().toList() }
     var algorithmDropdownExpanded by remember { mutableStateOf(false) }
 
@@ -122,6 +127,25 @@ fun ChartSettingsScreen(
                 onCheckedChange = { newValue ->
                     scope.launch {
                         sharedViewModel.setShowChartDataPoints(newValue)
+                    }
+                }
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = stringResource(R.string.setting_show_chart_goal_lines),
+                style = MaterialTheme.typography.titleMedium
+            )
+            Switch(
+                checked = showGoalLines,
+                onCheckedChange = { newValue ->
+                    scope.launch {
+                        sharedViewModel.setShowChartGoalLines(newValue)
                     }
                 }
             )
