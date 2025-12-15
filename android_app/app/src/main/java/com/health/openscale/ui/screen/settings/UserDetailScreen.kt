@@ -617,7 +617,7 @@ fun UserDetailScreen(
             allMeasurementTypes = allMeasurementTypes,
             allGoalsOfCurrentUser = pendingUserGoals,
             onDismiss = { sharedViewModel.dismissUserGoalDialogWithContext() },
-            onConfirm = { measurementTypeId, goalValueString ->
+            onConfirm = { measurementTypeId, goalValueString, goalTargetDate ->
                 val goalValueFloat = goalValueString.replace(',', '.').toFloatOrNull()
 
                 if (goalValueFloat == null) {
@@ -634,7 +634,8 @@ fun UserDetailScreen(
                 val newOrUpdatedPendingGoal = UserGoals(
                     userId = targetUserIdForPendingGoal,
                     measurementTypeId = measurementTypeId,
-                    goalValue = goalValueFloat
+                    goalValue = goalValueFloat,
+                    goalTargetDate = goalTargetDate
                 )
 
                 val existingIndex = pendingUserGoals.indexOfFirst { it.measurementTypeId == newOrUpdatedPendingGoal.measurementTypeId && it.userId == newOrUpdatedPendingGoal.userId }

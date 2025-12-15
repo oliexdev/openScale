@@ -183,6 +183,8 @@
     <string name="measurement_type_label_icon">Icon</string>
     <string name="measurement_type_label_unit">Unit</string>
     <string name="measurement_type_label_goal">Goal</string>
+    <string name="goal_target_date_label">Goal target date</string>
+    <string name="content_desc_select_date">Select date</string>
     <string name="my_goals_label">My Goals</string>
     <string name="user_detail_goals">%d Goals</string>
     <string name="user_detail_no_goals">No Goals</string>

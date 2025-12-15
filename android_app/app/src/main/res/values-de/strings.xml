@@ -181,6 +181,8 @@
     <string name="measurement_type_label_icon">Symbol</string>
     <string name="measurement_type_label_unit">Einheit</string>
     <string name="measurement_type_label_goal">Ziel</string>
+    <string name="goal_target_date_label">Zieldatum</string>
+    <string name="content_desc_select_date">Datum auswählen</string>
     <string name="my_goals_label">Meine Ziele</string>
     <string name="user_detail_goals">%d Ziele</string>
     <string name="user_detail_no_goals">Keine Ziele</string>

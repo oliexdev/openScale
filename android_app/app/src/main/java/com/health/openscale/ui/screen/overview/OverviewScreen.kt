@@ -917,13 +917,14 @@ fun OverviewScreen(
                 onDismiss = {
                     sharedViewModel.dismissUserGoalDialogWithContext()
                 },
-                onConfirm = { measurementTypeId, goalValueString ->
+                onConfirm = { measurementTypeId, goalValueString, goalTargetDate ->
                     val finalGoalValueFloat = goalValueString.replace(',', '.').toFloatOrNull()
                     if (finalGoalValueFloat != null) {
                         val goalToProcess = UserGoals(
                             userId = userIdForDialogDisplay,
                             measurementTypeId = measurementTypeId,
-                            goalValue = finalGoalValueFloat
+                            goalValue = finalGoalValueFloat,
+                            goalTargetDate = goalTargetDate
                         )
                         if (dialogContext.existingGoalForDialog != null) {
                             sharedViewModel.updateUserGoal(goalToProcess)

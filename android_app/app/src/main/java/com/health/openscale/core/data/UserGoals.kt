@@ -43,5 +43,6 @@ import androidx.room.Index
 data class UserGoals (
     val userId: Int,
     val measurementTypeId: Int,
-    var goalValue: Float
+    var goalValue: Float,
+    var goalTargetDate: Long? = null
 )

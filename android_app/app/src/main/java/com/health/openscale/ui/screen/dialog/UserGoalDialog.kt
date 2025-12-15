@@ -18,12 +18,38 @@
 package com.health.openscale.ui.screen.dialog
 
 import android.widget.Toast
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,8 +62,11 @@ import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.UserGoals
-import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.components.RoundMeasurementIcon
+import com.health.openscale.ui.navigation.Routes
+import java.text.DateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,7 +76,7 @@ fun UserGoalDialog(
     allMeasurementTypes: List<MeasurementType>,
     allGoalsOfCurrentUser: List<UserGoals>,
     onDismiss: () -> Unit,
-    onConfirm: (measurementTypeId: Int, goalValueString: String) -> Unit,
+    onConfirm: (measurementTypeId: Int, goalValueString: String, goalTargetDate: Long?) -> Unit,
     onDelete: (userId: Int, measurementTypeId: Int) -> Unit
 ) {
     val context = LocalContext.current
@@ -62,11 +91,9 @@ fun UserGoalDialog(
             baseTargetableTypes
         } else {
             val typesWithExistingGoalsIds = allGoalsOfCurrentUser.map { it.measurementTypeId }.toSet()
-            baseTargetableTypes.filter { it.id !in typesWithExistingGoalsIds }.also {
-            }
+            baseTargetableTypes.filter { it.id !in typesWithExistingGoalsIds }
         }
     }
-
 
     var selectedTypeState by remember(targetableTypes, existingUserGoal, isEditing) {
         mutableStateOf(
@@ -88,6 +115,16 @@ fun UserGoalDialog(
         )
     }
 
+    val initialDateMillis = existingUserGoal?.goalTargetDate
+    var selectedDateMillis by remember { mutableStateOf(initialDateMillis) }
+    var showGoalDatePicker by remember { mutableStateOf(false) }
+
+    val formattedDate = remember(selectedDateMillis) {
+        selectedDateMillis?.let {
+            DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault()).format(Date(it))
+        } ?: context.getString(R.string.text_none)
+    }
+
     val dialogTitle = remember(isEditing, selectedTypeState) {
         val typeName = selectedTypeState?.getDisplayName(context) ?: context.getString(R.string.measurement_type_custom_default_name)
         if (isEditing) {
@@ -101,7 +138,6 @@ fun UserGoalDialog(
         mutableStateOf(isEditing || (!isEditing && selectedTypeState != null))
     }
     var typeDropdownExpanded by remember { mutableStateOf(false) }
-
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     if (showDeleteDialog) {
@@ -118,6 +154,37 @@ fun UserGoalDialog(
             title = stringResource(R.string.dialog_title_delete_goal, typeName),
             text = stringResource(R.string.dialog_text_delete_goal)
         )
+    }
+
+    if (showGoalDatePicker) {
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = selectedDateMillis)
+        DatePickerDialog(
+            onDismissRequest = { showGoalDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    selectedDateMillis = datePickerState.selectedDateMillis
+                    showGoalDatePicker = false
+                }) {
+                    Text(stringResource(R.string.dialog_ok))
+                }
+            },
+            dismissButton = {
+                Row {
+                    TextButton(onClick = {
+                        selectedDateMillis = null
+                        showGoalDatePicker = false
+                    }) {
+                        Text(stringResource(R.string.text_none))
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TextButton(onClick = { showGoalDatePicker = false }) {
+                        Text(stringResource(R.string.cancel_button))
+                    }
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
     }
 
     LaunchedEffect(selectedTypeState?.id, isEditing) {
@@ -185,7 +252,9 @@ fun UserGoalDialog(
                                     }
                                 }
                             },
-                            modifier = Modifier.menuAnchor().fillMaxWidth(),
+                            modifier = Modifier
+                                .menuAnchor(MenuAnchorType.PrimaryEditable)
+                                .fillMaxWidth(),
                             enabled = !isEditing && targetableTypes.isNotEmpty()
                         )
                         if (!isEditing && targetableTypes.isNotEmpty()) {
@@ -222,6 +291,29 @@ fun UserGoalDialog(
                         },
                         label = stringResource(R.string.measurement_type_label_goal)
                     )
+
+                    Box {
+                        OutlinedTextField(
+                            value = formattedDate,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text(stringResource(R.string.goal_target_date_label)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.DateRange,
+                                    contentDescription = stringResource(R.string.content_desc_select_date)
+                                )
+                            }
+                        )
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clickable(onClick = {
+                                    showGoalDatePicker = true
+                                })
+                        )
+                    }
                 }
             }
         },
@@ -230,7 +322,7 @@ fun UserGoalDialog(
                 onClick = {
                     if (selectedTypeState != null) {
                         if (currentGoalValueString.isNotBlank() || isEditing) {
-                            onConfirm(selectedTypeState!!.id, currentGoalValueString)
+                            onConfirm(selectedTypeState!!.id, currentGoalValueString, selectedDateMillis)
                             onDismiss()
                         } else {
                             Toast.makeText(context, R.string.toast_goal_value_cannot_be_empty, Toast.LENGTH_SHORT).show()
@@ -264,4 +356,3 @@ fun UserGoalDialog(
         }
     )
 }
-

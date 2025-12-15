@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -34,6 +35,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,6 +48,9 @@ import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.components.RoundMeasurementIcon
+import java.text.DateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun UserGoalChip(
@@ -85,6 +90,12 @@ fun UserGoalChip(
         percentageDifference = (kotlin.math.abs(differenceNum) / targetValue) * 100f
     }
 
+    val formattedTargetDate = remember(userGoal.goalTargetDate) {
+        userGoal.goalTargetDate?.let {
+            DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault()).format(Date(it))
+        }
+    }
+
     val differenceTextColor = when {
         percentageDifference == null -> LocalContentColor.current // Default color or if no difference shown
         percentageDifference <= 4f -> Color(0xFF66BB6A)   // Green
@@ -108,45 +119,51 @@ fun UserGoalChip(
                 size = 20.dp,
             )
 
-            if (showDifference && displayDifferenceStr != null) {
-                // Layout WITH difference: Icon | Column (Goal, Difference)
-                Column(verticalArrangement = Arrangement.Center) {
+            // Column for multi-line information
+            Column(verticalArrangement = Arrangement.Center) {
+                // ROW 1: Target date (if available)
+                if (formattedTargetDate != null) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Outlined.Flag,
-                            contentDescription = stringResource(R.string.measurement_type_label_goal),
-                            modifier = Modifier.size(16.dp),
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = stringResource(R.string.goal_target_date_label),
+                            modifier = Modifier.size(12.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = displayTargetStr,
+                            text = formattedTargetDate,
                             style = MaterialTheme.typography.bodyMedium,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    // Difference text is only shown in this branch
+                }
+
+                // ROW 2: Goal value (always shown)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Outlined.Flag,
+                        contentDescription = stringResource(R.string.measurement_type_label_goal),
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = displayTargetStr,
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                // ROW 3: Value difference (if available)
+                if (displayDifferenceStr != null) {
                     Text(
                         text = displayDifferenceStr,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = differenceTextColor
                     )
                 }
-            } else {
-                Icon(
-                    imageVector = Icons.Outlined.Flag,
-                    contentDescription = stringResource(R.string.measurement_type_label_goal),
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                // Spacer(modifier = Modifier.width(4.dp)) // Optional: for fine-tuning space
-                Text(
-                    text = displayTargetStr,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
             }
         }
     }
