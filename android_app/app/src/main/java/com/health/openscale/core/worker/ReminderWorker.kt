@@ -49,15 +49,14 @@ class ReminderWorker @AssistedInject constructor(
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
-        val enabled = runCatching { settings.reminderEnabled.first() }.getOrElse { false }
-        if (!enabled) return Result.success()
+        if (reminderUseCase.isReminderNeeded()) {
+            val customText = runCatching { settings.reminderText.first() }.getOrElse { "" }
+            val content = customText.ifBlank {
+                appContext.getString(R.string.reminder_default_text)
+            }
 
-        val customText = runCatching { settings.reminderText.first() }.getOrElse { "" }
-        val content = customText.ifBlank {
-            appContext.getString(R.string.reminder_default_text)
+            showNotification(content)
         }
-
-        showNotification(content)
 
         // Schedule next occurrence
         runCatching { reminderUseCase.rescheduleNext() }

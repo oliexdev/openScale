@@ -18,9 +18,11 @@
 package com.health.openscale.core.usecase
 
 import android.content.Context
+import android.text.format.DateUtils
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.worker.ReminderWorker
 import dagger.Module
@@ -56,8 +58,36 @@ object TimeModule {
 class ReminderUseCase @Inject constructor(
     @ApplicationContext private val context: Context,
     private val settings: SettingsFacade,
+    private val measurementQuery: MeasurementQueryUseCases,
     private val clock: Clock
 ) {
+
+    /**
+     * Checks if a reminder should be triggered for the current user.
+     * It returns false if reminders are disabled OR if a weight measurement already exists for today.
+     */
+    suspend fun isReminderNeeded(): Boolean {
+        if (!settings.reminderEnabled.first()) return false
+
+        val currentUserId = settings.currentUserId.first() ?: return false
+
+        val allMeasurements = measurementQuery.getMeasurementsForUser(currentUserId).first()
+        if (allMeasurements.isEmpty()) return true
+
+        val today = System.currentTimeMillis()
+        val closestMatchResult = measurementQuery.findClosestMeasurement(today, allMeasurements)
+            ?: return true
+
+        val measurementTimestamp = closestMatchResult.second.measurement.timestamp
+        val isSameDay = DateUtils.isToday(measurementTimestamp)
+
+        if (!isSameDay) return true
+
+        val hasWeightValue = closestMatchResult.second.values.any { it.type.key == MeasurementTypeKey.WEIGHT }
+
+        return !hasWeightValue
+    }
+
     /** Recompute and (re)schedule the next reminder. Cancels if disabled or no days selected. */
     suspend fun rescheduleNext() {
         val enabled = runCatching { settings.reminderEnabled.first() }.getOrElse { false }
