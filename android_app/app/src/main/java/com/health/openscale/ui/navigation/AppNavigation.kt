@@ -117,6 +117,7 @@ import com.health.openscale.ui.screen.graph.GraphScreen
 import com.health.openscale.ui.screen.overview.MeasurementDetailScreen
 import com.health.openscale.ui.screen.overview.OverviewScreen
 import com.health.openscale.ui.screen.settings.AboutScreen
+import com.health.openscale.ui.screen.settings.BluetoothDetailScreen
 import com.health.openscale.ui.screen.settings.BluetoothScreen
 import com.health.openscale.ui.screen.settings.ChartSettingsScreen
 import com.health.openscale.ui.screen.settings.DataManagementSettingsScreen
@@ -670,6 +671,14 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                     }
                     composable(Routes.BLUETOOTH_SETTINGS) {
                         BluetoothScreen(
+                            navController = navController,
+                            sharedViewModel = sharedViewModel,
+                            bluetoothViewModel = bluetoothViewModel
+                        )
+                    }
+                    composable(Routes.BLUETOOTH_DETAIL) {
+                        BluetoothDetailScreen(
+                            navController = navController,
                             sharedViewModel = sharedViewModel,
                             bluetoothViewModel = bluetoothViewModel
                         )

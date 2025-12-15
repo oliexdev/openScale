@@ -83,8 +83,10 @@ object SettingsPreferenceKeys {
     val SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS  = stringSetPreferencesKey("saved_bluetooth_device_service_uuids")
     val SAVED_BLUETOOTH_DEVICE_HANDLER_HINT   = stringPreferencesKey("saved_bluetooth_device_handler_hint")
     val SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA   = stringPreferencesKey("saved_bluetooth_device_manufacturer_data")
-
     val SAVED_BLUETOOTH_TUNE_PROFILE = stringPreferencesKey("saved_bluetooth_tune_profile")
+    val SAVED_BLUETOOTH_SMART_ASSIGNMENT_ENABLED = booleanPreferencesKey("saved_bluetooth_smart_assignment_enabled")
+    val SAVED_BLUETOOTH_TOLERANCE_PERCENT = intPreferencesKey("saved_bluetooth_tolerance_percent")
+    val SAVED_BLUETOOTH_IGNORE_OUTSIDE_TOLERANCE = booleanPreferencesKey("saved_bluetooth_ignore_outside_tolerance")
 
     // Settings for chart
     val CHART_SHOW_DATA_POINTS = booleanPreferencesKey("chart_show_data_points")
@@ -177,6 +179,15 @@ interface SettingsFacade {
 
     val savedBluetoothTuneProfile: Flow<String?>
     suspend fun saveBluetoothTuneProfile(name: String?)
+
+    val isSmartAssignmentEnabled : Flow<Boolean>
+    suspend fun setSmartAssignmentEnabled(enabled: Boolean)
+
+    val smartAssignmentTolerancePercent: Flow<Int>
+    suspend fun setSmartAssignmentTolerancePercent(tolerance: Int)
+
+    val smartAssignmentIgnoreOutsideTolerance: Flow<Boolean>
+    suspend fun setSmartAssignmentIgnoreOutsideTolerance(ignore: Boolean)
 
     val showChartDataPoints: Flow<Boolean>
     suspend fun setShowChartDataPoints(show: Boolean)
@@ -506,6 +517,33 @@ class SettingsFacadeImpl @Inject constructor(
                 preferences.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_TUNE_PROFILE)
             }
         }
+    }
+
+    override val isSmartAssignmentEnabled: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.SAVED_BLUETOOTH_SMART_ASSIGNMENT_ENABLED.name,
+        false
+    )
+
+    override suspend fun setSmartAssignmentEnabled(enabled: Boolean) {
+        saveSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_SMART_ASSIGNMENT_ENABLED.name, enabled)
+    }
+
+    override val smartAssignmentTolerancePercent: Flow<Int> = observeSetting(
+        SettingsPreferenceKeys.SAVED_BLUETOOTH_TOLERANCE_PERCENT.name,
+        10
+    )
+
+    override suspend fun setSmartAssignmentTolerancePercent(tolerance: Int) {
+        saveSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_TOLERANCE_PERCENT.name, tolerance)
+    }
+
+    override val smartAssignmentIgnoreOutsideTolerance: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.SAVED_BLUETOOTH_IGNORE_OUTSIDE_TOLERANCE.name,
+        false
+    )
+
+    override suspend fun setSmartAssignmentIgnoreOutsideTolerance(ignore: Boolean) {
+        saveSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_IGNORE_OUTSIDE_TOLERANCE.name, ignore)
     }
 
     override val showChartDataPoints: Flow<Boolean> = observeSetting(

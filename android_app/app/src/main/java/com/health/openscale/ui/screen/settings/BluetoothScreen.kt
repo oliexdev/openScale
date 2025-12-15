@@ -45,6 +45,7 @@ import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
@@ -90,6 +91,8 @@ import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.shared.SharedViewModel
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
+import androidx.navigation.NavController
+import com.health.openscale.ui.navigation.Routes
 
 /**
  * Main Bluetooth settings screen.
@@ -106,6 +109,7 @@ import androidx.core.net.toUri
  */
 @Composable
 fun BluetoothScreen(
+    navController: NavController,
     sharedViewModel: SharedViewModel,
     bluetoothViewModel: BluetoothViewModel
 ) {
@@ -124,13 +128,8 @@ fun BluetoothScreen(
     // Local UI state
     var hasPermissions by remember { mutableStateOf(false) }
     var pendingScan by remember { mutableStateOf(false) }
-    var showSavedMenu by remember { mutableStateOf(false) }
-    var showTuningMenu by remember { mutableStateOf(false) }
     var showCompatibilityDialog by remember { mutableStateOf(false) }
     var deviceToSave by remember { mutableStateOf<ScannedDeviceInfo?>(null) }
-
-    // Simple flag: a saved name of "Debug" indicates debug mode is active.
-    val isDebugActive = (savedDevice?.name.orEmpty() == "Debug")
 
     LaunchedEffect(Unit) {
         hasPermissions = hasBtPermissions(context)
@@ -259,134 +258,13 @@ fun BluetoothScreen(
                                 )
                             }
 
-                            // Overflow anchored to the 3-dots icon (right side)
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    savedSupport?.let { support ->
-                                        val label = stringResource(support.tuningProfile.labelRes)
-
-                                        Box { // Anker für Icon + Dropdown
-                                            IconButton(onClick = { showTuningMenu = true }) {
-                                                Icon(
-                                                    imageVector = support.tuningProfile.icon,
-                                                    contentDescription = label,
-                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                            }
-                                            DropdownMenu(
-                                                expanded = showTuningMenu,
-                                                onDismissRequest = { showTuningMenu = false }
-                                            ) {
-                                                Text(
-                                                    text = stringResource(R.string.tuning_title),
-                                                    style = MaterialTheme.typography.labelMedium,
-                                                    color = MaterialTheme.colorScheme.primary,
-                                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                                                )
-                                                HorizontalDivider()
-                                                DropdownMenuItem(
-                                                    text = { Text(stringResource(R.string.tuning_conservative)) },
-                                                    leadingIcon = {
-                                                        Icon(
-                                                            TuningProfile.Conservative.icon,
-                                                            null
-                                                        )
-                                                    },
-                                                    onClick = {
-                                                        showTuningMenu = false
-                                                        bluetoothViewModel.setSavedTuning(
-                                                            TuningProfile.Conservative
-                                                        )
-                                                    }
-                                                )
-                                                DropdownMenuItem(
-                                                    text = { Text(stringResource(R.string.tuning_balanced)) },
-                                                    leadingIcon = {
-                                                        Icon(
-                                                            TuningProfile.Balanced.icon,
-                                                            null
-                                                        )
-                                                    },
-                                                    onClick = {
-                                                        showTuningMenu = false
-                                                        bluetoothViewModel.setSavedTuning(
-                                                            TuningProfile.Balanced
-                                                        )
-                                                    }
-                                                )
-                                                DropdownMenuItem(
-                                                    text = { Text(stringResource(R.string.tuning_aggressive)) },
-                                                    leadingIcon = {
-                                                        Icon(
-                                                            TuningProfile.Aggressive.icon,
-                                                            null
-                                                        )
-                                                    },
-                                                    onClick = {
-                                                        showTuningMenu = false
-                                                        bluetoothViewModel.setSavedTuning(
-                                                            TuningProfile.Aggressive
-                                                        )
-                                                    }
-                                                )
-                                            }
-                                        }
-
-                                        Spacer(Modifier.width(6.dp))
-                                    }
-                                }
-
-                                Box {
-                                    IconButton(onClick = { showSavedMenu = true }) {
-                                        Icon(
-                                            imageVector = Icons.Default.MoreVert,
-                                            contentDescription = "More"
-                                        )
-                                    }
-                                    DropdownMenu(
-                                        expanded = showSavedMenu,
-                                        onDismissRequest = { showSavedMenu = false }
-                                    ) {
-                                        DropdownMenuItem(
-                                            text = { Text(stringResource(R.string.menu_remove_saved_device)) },
-                                            onClick = {
-                                                showSavedMenu = false
-                                                bluetoothViewModel.removeSavedDevice()
-                                                scope.launch {
-                                                    sharedViewModel.showSnackbar(
-                                                        message = context.getString(R.string.snackbar_saved_device_removed),
-                                                        duration = SnackbarDuration.Short
-                                                    )
-                                                }
-                                            }
-                                        )
-                                        if (!isDebugActive && savedDevice != null) {
-                                            DropdownMenuItem(
-                                                text = { Text(stringResource(R.string.menu_enable_debug)) },
-                                                onClick = {
-                                                    showSavedMenu = false
-                                                    // Persist a "Debug" placeholder for the same MAC
-                                                    bluetoothViewModel.saveDeviceAsPreferred(
-                                                        ScannedDeviceInfo(
-                                                            name = "Debug",
-                                                            address = savedDevice?.name!!,
-                                                            rssi = 0,
-                                                            serviceUuids = emptyList(),
-                                                            manufacturerData = null,
-                                                            isSupported = true,
-                                                            determinedHandlerDisplayName = "Debug"
-                                                        )
-                                                    )
-                                                    scope.launch {
-                                                        sharedViewModel.showSnackbar(
-                                                            message = context.getString(R.string.snackbar_debug_enable_logs),
-                                                            duration = SnackbarDuration.Long
-                                                        )
-                                                    }
-                                                }
-                                            )
-                                        }
-                                    }
+                                IconButton(onClick = { navController.navigate(Routes.BLUETOOTH_DETAIL) }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Settings,
+                                        contentDescription = stringResource(R.string.content_desc_edit_type),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
                                 }
                             }
                         }
@@ -396,7 +274,6 @@ fun BluetoothScreen(
                             CapabilityIconsRow(
                                 support = support,
                                 onExplain = { label, implemented ->
-                                    // optional: kurzer Hinweis, was das Icon bedeutet
                                     scope.launch {
                                         sharedViewModel.showSnackbar(
                                             message = if (implemented)
@@ -410,14 +287,6 @@ fun BluetoothScreen(
                             )
                         }
                     }
-
-                    // Debug banner below the header block
-                    if (isDebugActive) {
-                        Spacer(modifier = Modifier.size(16.dp))
-
-                        DebugBanner()
-                    }
-
 
                     Spacer(modifier = Modifier.size(16.dp))
                 }
@@ -537,7 +406,7 @@ fun BluetoothScreen(
                                 )
                                 scope.launch {
                                     sharedViewModel.showSnackbar(
-                                        message = context.getString(R.string.snackbar_debug_for_device_enable_logs),
+                                        message = context.getString(R.string.snackbar_developer_for_device_enable_logs),
                                         duration = SnackbarDuration.Long
                                     )
                                 }
@@ -582,39 +451,6 @@ private fun ScanButton(
             )
             Spacer(Modifier.size(ButtonDefaults.IconSpacing))
             Text(stringResource(R.string.search_for_scales_button))
-        }
-    }
-}
-
-/** Debug banner under the saved device card header. */
-@Composable
-private fun DebugBanner() {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .fillMaxWidth()
-    ) {
-        Column(Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Filled.Warning,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    text = stringResource(R.string.debug_banner_active),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-            Spacer(Modifier.size(6.dp))
-            Text(
-                text = stringResource(R.string.debug_banner_enable_logs_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }
@@ -812,7 +648,7 @@ fun DeviceCardItem(
                             )
                         }
                         DropdownMenuItem(
-                            text = { Text(stringResource(R.string.menu_save_as_debug)) },
+                            text = { Text(stringResource(R.string.menu_save_as_developer)) },
                             onClick = {
                                 showMenu = false
                                 onSaveDebug()

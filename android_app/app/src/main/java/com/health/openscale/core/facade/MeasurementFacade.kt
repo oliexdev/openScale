@@ -32,6 +32,7 @@ import com.health.openscale.core.usecase.MeasurementSmoothingUseCases
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.usecase.MeasurementEvaluationUseCases
+import com.health.openscale.core.usecase.MeasurementTransformationUseCase
 import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -54,6 +55,7 @@ class MeasurementFacade @Inject constructor(
     private val query: MeasurementQueryUseCases,
     private val filter: MeasurementFilterUseCases,
     private val smooth: MeasurementSmoothingUseCases,
+    private val transformation: MeasurementTransformationUseCase,
     private val crud: MeasurementCrudUseCases,
     private val typeCrud: MeasurementTypeCrudUseCases,
     private val enricher: MeasurementEnricher,
@@ -194,24 +196,17 @@ class MeasurementFacade @Inject constructor(
         values: List<MeasurementValue>
     ) {
         val currentReferenceUser = pendingReferenceUser
-        val currentWeight = values.find { it.typeId == MeasurementTypeKey.WEIGHT.id }?.floatValue ?: 0f
 
         if (currentReferenceUser != null) {
-            val lastReferenceMeasurement = query.getMeasurementsForUser(currentReferenceUser.id).first()
-            val lastReferenceWeight = lastReferenceMeasurement.firstNotNullOfOrNull { measurementWithValues ->
-                measurementWithValues.values.find { mv -> mv.type.key == MeasurementTypeKey.WEIGHT}?.value?.floatValue } ?: 0f
+            val finalValues = transformation.applyAssistedWeighing(measurement, values, currentReferenceUser)
 
-            val diffWeight = currentWeight - lastReferenceWeight
-
-            val diffWeightMeasurementValue = MeasurementValue(
-                measurementId = measurement.id,
-                typeId = MeasurementTypeKey.WEIGHT.id,
-                floatValue = diffWeight,
-            )
-
-            crud.saveMeasurement(measurement, listOf(diffWeightMeasurementValue))
+            crud.saveMeasurement(measurement, finalValues)
         } else {
-            crud.saveMeasurement(measurement, values)
+            val finalMeasurement = transformation.applySmartUserAssignment(measurement, values)
+
+            if (finalMeasurement != null) {
+                crud.saveMeasurement(finalMeasurement, values)
+            }
         }
     }
 

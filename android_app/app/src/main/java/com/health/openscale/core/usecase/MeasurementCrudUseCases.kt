@@ -46,7 +46,7 @@ class MeasurementCrudUseCases @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val settingsFacade: SettingsFacade,
     private val sync: SyncUseCases,
-    private val bodyComposition: BodyCompositionUseCases,
+    private val transformation: MeasurementTransformationUseCase,
     private val databaseRepository: DatabaseRepository
     ) {
     private var lastVibrateTime = 0L
@@ -68,8 +68,8 @@ class MeasurementCrudUseCases @Inject constructor(
         measurement: Measurement,
         values: List<MeasurementValue>
     ): Result<Int> = runCatching {
-        val correctedValues = bodyComposition.applyAmputationCorrection(measurement, values)
-        val finalValues : List<MeasurementValue> = bodyComposition.applySelectedFormulasForMeasurement(measurement, correctedValues)
+        val correctedValues = transformation.applyAmputationCorrection(measurement, values)
+        val finalValues : List<MeasurementValue> = transformation.applySelectedFormulasForMeasurement(measurement, correctedValues)
 
         if (measurement.id == 0) {
             // Insert path

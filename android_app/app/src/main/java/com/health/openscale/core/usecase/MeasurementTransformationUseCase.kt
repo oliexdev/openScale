@@ -17,21 +17,129 @@
  */
 package com.health.openscale.core.usecase
 
-import com.health.openscale.core.data.*
+import com.health.openscale.core.data.BodyFatFormulaOption
+import com.health.openscale.core.data.BodyWaterFormulaOption
+import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.data.LbmFormulaOption
+import com.health.openscale.core.data.Measurement
+import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementValue
+import com.health.openscale.core.data.UnitType
+import com.health.openscale.core.data.User
+import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.utils.CalculationUtils
 import com.health.openscale.core.utils.ConverterUtils
-import kotlinx.coroutines.flow.first
+import com.health.openscale.core.utils.LogManager
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.abs
+import kotlin.math.roundToInt
+import kotlinx.coroutines.flow.first
 import kotlin.math.pow
 
+/**
+ * A use case responsible for transforming raw incoming measurements based on
+ * business logic like "Assisted Weighing" or "Smart User Assignment".
+ * It prepares the data for the final save operation.
+ */
 @Singleton
-class BodyCompositionUseCases @Inject constructor(
+class MeasurementTransformationUseCase @Inject constructor(
     private val settings: SettingsFacade,
     private val userUseCases: UserUseCases,
-    private val measurementQuery: MeasurementQueryUseCases
+    private val query: MeasurementQueryUseCases
 ) {
+
+    /**
+     * Transforms a measurement by applying "Assisted Weighing" logic.
+     * It calculates the weight difference and returns the new list of values.
+     *
+     * @return A new list containing only the calculated difference value.
+     */
+    suspend fun applyAssistedWeighing(
+        measurement: Measurement,
+        totalWeightValues: List<MeasurementValue>,
+        referenceUser: User
+    ): List<MeasurementValue> {
+        val totalWeight = totalWeightValues.find { it.typeId == MeasurementTypeKey.WEIGHT.id }?.floatValue ?: 0f
+        val lastReferenceWeight = query.getMeasurementsForUser(referenceUser.id).first()
+            .firstNotNullOfOrNull { m -> m.values.find { v -> v.type.key == MeasurementTypeKey.WEIGHT }?.value?.floatValue } ?: 0f
+
+        val diffWeight = totalWeight - lastReferenceWeight
+        val diffWeightMeasurementValue = MeasurementValue(
+            typeId = MeasurementTypeKey.WEIGHT.id,
+            floatValue = diffWeight,
+            measurementId = measurement.id // placeholder
+        )
+
+        LogManager.i("MeasurementTransformation", "Assisted Weighing: Total=$totalWeight, Ref=$lastReferenceWeight, Diff=$diffWeight.")
+        return listOf(diffWeightMeasurementValue)
+    }
+
+    /**
+     * Transforms a standard measurement by applying "Smart User Assignment" logic if enabled.
+     * It determines the correct user or decides to ignore the measurement.
+     *
+     * @return The (potentially modified) Measurement object, or null if the measurement should be ignored.
+     */
+    suspend fun applySmartUserAssignment(
+        measurement: Measurement,
+        values: List<MeasurementValue>
+    ): Measurement? {
+        val isSmartAssignment = settings.isSmartAssignmentEnabled.first()
+        if (!isSmartAssignment) {
+            return measurement
+        }
+
+        val newWeight = values.find { it.typeId == MeasurementTypeKey.WEIGHT.id }?.floatValue
+        if (newWeight == null) {
+            return measurement // No weight to assign, save as is
+        }
+
+        // 1. Find candidates
+        val allUsers = userUseCases.observeAllUsers().first()
+        val userDiffs = allUsers.mapNotNull { user ->
+            val lastWeight = query.getMeasurementsForUser(user.id).first()
+                .firstNotNullOfOrNull { m -> m.values.find { v -> v.type.key == MeasurementTypeKey.WEIGHT }?.value?.floatValue }
+
+            if (lastWeight != null && lastWeight > 0) {
+                val diffPercent = (abs(newWeight - lastWeight) / lastWeight) * 100
+                LogManager.d("SmartAssignment", "User ${user.name}: last weight=$lastWeight, new=$newWeight, diff=${diffPercent.roundToInt()}%")
+                Triple(user, lastWeight, diffPercent)
+            } else {
+                null
+            }
+        }
+
+        if (userDiffs.isEmpty()) {
+            LogManager.i("SmartAssignment", "No users with previous weight found. Assigning to current user.")
+            return measurement
+        }
+
+        // 2. Find best candidate
+        val bestMatch = userDiffs.minByOrNull { it.third }!!
+
+        // 3. Plausibility check
+        val tolerancePercent = settings.smartAssignmentTolerancePercent.first()
+        val ignoreOutsideTolerance = settings.smartAssignmentIgnoreOutsideTolerance.first()
+
+        val winningUser: User? = if (bestMatch.third <= tolerancePercent) {
+            bestMatch.first
+        } else {
+            if (ignoreOutsideTolerance) null else allUsers.find { it.id == measurement.userId }
+        }
+
+        // 4. Return result
+        return if (winningUser != null) {
+            LogManager.i("SmartAssignment", "Assigning measurement to ${winningUser.name}.")
+            measurement.copy(userId = winningUser.id)
+        } else {
+            LogManager.i("SmartAssignment", "Ignoring measurement as no user is within tolerance.")
+            null // Signal to ignore
+        }
+    }
+
     /**
      * Apply selected body-composition formulas for the given measurement.
      *
@@ -56,7 +164,7 @@ class BodyCompositionUseCases @Inject constructor(
         ) return values
 
         val user  = userUseCases.observeUserById(measurement.userId).first() ?: return values
-        val types = measurementQuery.getAllMeasurementTypes().first()
+        val types = query.getAllMeasurementTypes().first()
         val byKey = types.associateBy { it.key }
 
         // Anchor: weight (in kg)

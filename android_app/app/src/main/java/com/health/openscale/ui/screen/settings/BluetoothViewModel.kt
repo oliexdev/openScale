@@ -17,13 +17,34 @@
  */
 package com.health.openscale.ui.screen.settings
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.facade.BluetoothFacade
+import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.ui.shared.SnackbarEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,7 +66,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class BluetoothViewModel @Inject constructor(
-    private val bt: BluetoothFacade
+    private val bt: BluetoothFacade,
+    private val settingsFacade: SettingsFacade
 ) : ViewModel() {
 
     companion object { private const val SCAN_DURATION_MS = 20_000L }
@@ -62,6 +84,22 @@ class BluetoothViewModel @Inject constructor(
     val pendingUserInteractionEvent = bt.pendingUserInteractionEvent
     val savedDevice = bt.savedDevice
     val savedDeviceSupport = bt.savedDeviceSupport
+
+    val isSmartAssignmentEnabled = settingsFacade.isSmartAssignmentEnabled
+    val smartAssignmentTolerancePercent = settingsFacade.smartAssignmentTolerancePercent
+    val smartAssignmentIgnoreOutsideTolerance = settingsFacade.smartAssignmentIgnoreOutsideTolerance
+
+    fun setSmartAssignmentEnabled(enabled: Boolean) = viewModelScope.launch {
+        settingsFacade.setSmartAssignmentEnabled(enabled)
+    }
+
+    fun setSmartAssignmentTolerancePercent(tolerance: Int) = viewModelScope.launch {
+        settingsFacade.setSmartAssignmentTolerancePercent(tolerance)
+    }
+
+    fun setSmartAssignmentIgnoreOutsideTolerance(ignore: Boolean) = viewModelScope.launch {
+        settingsFacade.setSmartAssignmentIgnoreOutsideTolerance(ignore)
+    }
 
     // --- Snackbar events for UI ---
     private val _snackbarEvents = MutableSharedFlow<SnackbarEvent>(replay = 0, extraBufferCapacity = 1)

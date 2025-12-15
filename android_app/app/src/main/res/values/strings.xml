@@ -300,18 +300,14 @@
     <string name="supported_label">Supported</string>
     <string name="not_supported_label">Not Supported</string>
     <string name="rssi_format">%1$d dBm</string>
-    <string name="menu_remove_saved_device">Remove device</string>
-    <string name="menu_enable_debug">Enable debug</string>
     <string name="menu_save_as_preferred">Save as preferred</string>
-    <string name="menu_save_as_debug">Save as debug</string>
+    <string name="menu_save_as_developer">Save as developer mode</string>
     <string name="snackbar_saved_device_removed">Saved device removed.</string>
-    <string name="snackbar_debug_enable_logs">Debug enabled. Please enable log file: Settings → General → Enable log file.</string>
-    <string name="snackbar_debug_for_device_enable_logs">Debug enabled for this device. Please enable log file: Settings → General → Enable log file.</string>
-    <string name="debug_banner_active">Debug mode is active — no measurements will be saved.</string>
-    <string name="debug_banner_enable_logs_hint">Please enable log file: Settings → General → Enable log file.</string>
+    <string name="snackbar_developer_enable_logs">Developer mode enabled. Please enable log file: Settings → General → Enable log file.</string>
+    <string name="snackbar_developer_for_device_enable_logs">Developer mode enabled for this device. Please enable log file: Settings → General → Enable log file.</string>
+    <string name="developer_banner_active">Developer mode is active — no measurements will be saved.</string>
+    <string name="developer_banner_enable_logs_hint">Please enable log file: Settings → General → Enable log file.</string>
     <string name="capabilities_header">Capabilities</string>
-    <string name="tuning_title">Bluetooth Tuning profile</string>
-    <string name="tuning_snackbar">Bluetooth Tuning: %1$s</string>
     <string name="cap_body_composition">Body composition</string>
     <string name="cap_time_sync">Time sync</string>
     <string name="cap_user_sync">User sync</string>
@@ -322,9 +318,28 @@
     <string name="cap_state_implemented">Implemented: %1$s</string>
     <string name="cap_state_supported_only">Supported (not implemented): %1$s</string>
     <string name="more_options_cd">More options</string>
+
+
+    <!-- Bluetooth Detail Screen -->
+    <string name="title_device_settings_for">"%1$s Settings"</string>
+    <string name="bluetooth_tuning_title">Bluetooth Tuning</string>
+    <string name="tuning_profile_label">Tuning Profile</string>
+    <string name="bluetooth_measurement_title">Bluetooth Measurement</string>
+    <string name="smart_assignment_assignment">Smart user assignment</string>
+    <string name="tolerance_label">Tolerance</string>
+    <string name="ignore_outside_tolerance_title">Ignore uncertain measurements</string>
+    <string name="ignore_outside_tolerance_desc">If a measurement is outside the tolerance for all users, it will not be saved.</string>
+    <string name="device_actions_title">Device Actions</string>
+    <string name="bluetooth_developer_mode">Developer mode</string>
+    <string name="bluetooth_remove_saved_device">Remove saved device</string>
+    <string name="tuning_title">Bluetooth Tuning profile</string>
+    <string name="tuning_snackbar">Bluetooth Tuning: %1$s</string>
     <string name="tuning_balanced">Balanced</string>
     <string name="tuning_conservative">Conservative</string>
     <string name="tuning_aggressive">Aggressive</string>
+    <string name="tolerance_desc">Max. weight deviation to automatically assign to a user.</string>
+    <string name="developer_section_title">Developer</string>
+    <string name="danger_zone_title">Danger Zone</string>
 
     <!-- Bluetooth Connector -->
     <string name="bluetooth_connector_connected_to">Connected to %1$s</string>
