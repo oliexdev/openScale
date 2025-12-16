@@ -239,4 +239,10 @@
     <string name="not_supported_icon_desc">Périphérique non supporté</string>
     <string name="supported_label">Supporté</string>
     <string name="not_supported_label">Non supporté</string>
+    <string name="content_desc_select_date">Sélectionner une date</string>
+    <string name="bf_gallagher_2000_non_asian_short">Gallagher (non asiatique)</string>
+    <string name="bf_gallagher_2000_non_asian_long">Modèle de référence de 2000 pour les populations non asiatiques. Niveau de référence utile ; la précision varie selon les types de corps.</string>
+    <string name="bf_gallagher_2000_asian_short">Gallagher (Asian)</string>
+    <string name="lbm_weight_minus_bf_short">Tour de taille − Graisse corporelle</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Impossible de se connecter à la balance, assurez-vous qu’elle est allumée.</string>
 </resources>
