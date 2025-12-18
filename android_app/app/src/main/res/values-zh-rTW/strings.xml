@@ -28,4 +28,19 @@
     <string name="route_title_table">表格</string>
     <string name="route_title_statistics">數據統計</string>
     <string name="route_title_settings">設定</string>
+    <string name="title_new_measurement">新測量</string>
+    <string name="title_edit_measurement">編輯測量</string>
+    <string name="about_screen_title">關於</string>
+    <string name="measurement_type_detail_title_edit">編輯類型</string>
+    <string name="measurement_type_detail_title_add">增加類型</string>
+    <string name="measurement_type_settings_title">測量類型</string>
+    <string name="user_detail_edit_user_title">編輯使用者</string>
+    <string name="user_detail_add_user_title">新增使用者</string>
+    <string name="user_settings_title">使用者</string>
+    <string name="manage_users">管理用戶</string>
+    <string name="content_desc_switch_user">切換用戶。已選擇：%1$s</string>
+    <string name="content_desc_selected_user_indicator">已選用戶指示器</string>
+    <string name="action_add_user">增加使用者</string>
+    <string name="error_selecting_user">用戶選擇失敗。</string>
+    <string name="toast_no_user_selected">未選擇使用者。</string>
 </resources>
