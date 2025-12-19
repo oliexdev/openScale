@@ -383,4 +383,7 @@
     <string name="restore_successful">Dados restaurados com sucesso. Por favor, reinicie o aplicativo.</string>
     <string name="developer_section_title">Desenvolvedor</string>
     <string name="delete_data_no_users_available">Não há dados disponíveis para serem deletados.</string>
+    <string name="backup_successful">Backup realizado com sucesso.</string>
+    <string name="restore_error_no_input_stream">Falha ao recuperar dados: Não foi possível ler o arquivo de backup</string>
+    <string name="restore_error_zip_format">Falha ao recuperar dados: O arquivo de backup não é um ZIP válido ou está corrompido</string>
 </resources>
