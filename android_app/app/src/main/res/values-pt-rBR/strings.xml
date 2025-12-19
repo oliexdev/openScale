@@ -376,4 +376,11 @@
     <string name="bt_error_ucp_not_authorized">Código de autorização não aceito. Por favor, verifique e tente novamente.</string>
     <string name="bt_info_using_existing_mapping_auto_consent">Usando mapeamento existente do usuário %1$s para a posição %2$s da balança. Tentando autorização automática.</string>
     <string name="bt_error_uds_consent_failed">Falha ao confirmar o usuário na balança. Erro: %1$s</string>
+    <string name="content_desc_select_date">Selecione uma data</string>
+    <string name="friday_short">Sab</string>
+    <string name="backup_error_db_name_not_retrieved">Erro: Não foi possivel recuperar o nome do banco de dados</string>
+    <string name="backup_error_no_output_stream">Falha de Backup: Não foi possível criar o arquivo de backup no local selecionado.</string>
+    <string name="restore_successful">Dados restaurados com sucesso. Por favor, reinicie o aplicativo.</string>
+    <string name="developer_section_title">Desenvolvedor</string>
+    <string name="delete_data_no_users_available">Não há dados disponíveis para serem deletados.</string>
 </resources>
