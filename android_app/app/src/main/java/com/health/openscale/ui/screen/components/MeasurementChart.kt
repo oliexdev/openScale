@@ -62,7 +62,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -79,6 +78,8 @@ import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.core.facade.SettingsFacade
+import com.health.openscale.core.model.EnrichedMeasurement
+import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
@@ -118,7 +119,6 @@ import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarker
 import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarkerVisibilityListener
 import com.patrykandpatrick.vico.core.cartesian.marker.DefaultCartesianMarker
 import com.patrykandpatrick.vico.core.common.Fill
-import com.patrykandpatrick.vico.core.common.Insets
 import com.patrykandpatrick.vico.core.common.LayeredComponent
 import com.patrykandpatrick.vico.core.common.component.ShapeComponent
 import com.patrykandpatrick.vico.core.common.component.TextComponent
@@ -136,16 +136,35 @@ import java.time.temporal.ChronoUnit
 import java.time.temporal.WeekFields
 import java.util.Date
 import java.util.Locale
+import kotlin.collections.firstOrNull
 import kotlin.math.ceil
 import kotlin.math.floor
 
-internal val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM")
-internal val X_TO_DATE_MAP_KEY = ExtraStore.Key<Map<Float, LocalDate>>() // Key for storing date mapping in chart model
 private const val TIME_RANGE_SUFFIX = "_time_range"
 private const val CUSTOM_START_DATE_MILLIS_SUFFIX = "_custom_start_date_millis"
 private const val CUSTOM_END_DATE_MILLIS_SUFFIX = "_custom_end_date_millis"
 private const val SELECTED_TYPES_SUFFIX = "_selected_types"
 private const val SHOW_TYPE_FILTER_ROW_SUFFIX = "_show_type_filter_row"
+
+/**
+ * Represents a single, plottable data point for the chart,
+ * holding both the application's domain value (LocalDate) and
+ * Vico's required numeric value (Float).
+ */
+private data class ChartPoint(
+    val date: LocalDate, // The original date from our application domain.
+    val x: Float,        // The numeric representation for Vico's X-axis (e.g., epoch day).
+    val y: Float         // The measurement value for the Y-axis.
+)
+
+/**
+ * Represents a full data series for one line in the chart, including its metadata.
+ */
+private data class ChartSeries(
+    val isProjected: Boolean,
+    val type: MeasurementType,   // Metadata like name, color, unit.
+    val points: List<ChartPoint> // The list of data points for this line.
+)
 
 /**
  * A Composable function that displays a line chart for visualizing measurement data over time.
@@ -285,120 +304,7 @@ fun MeasurementChart(
         (smoothedData ?: emptyList()).map { it.measurementWithValues }
     }
 
-    val periodChartData = remember(measurementsForPeriodChart, uiSelectedTimeRange) {
-        if (measurementsForPeriodChart.isEmpty()) return@remember emptyList<PeriodDataPoint>()
-
-        // Determine min and max date of filtered measurements
-        val minDate = measurementsForPeriodChart.minOf {
-            Instant.ofEpochMilli(it.measurement.timestamp)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-        }
-        val maxDate = measurementsForPeriodChart.maxOf {
-            Instant.ofEpochMilli(it.measurement.timestamp)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-        }
-
-        // Decide grouping dynamically
-        val totalDays = ChronoUnit.DAYS.between(minDate, maxDate).toInt()
-        val groupingUnit: ChronoUnit
-        val intervalSize: Long
-
-        when {
-            totalDays <= 7 -> {
-                groupingUnit = ChronoUnit.DAYS
-                intervalSize = 1
-            }
-            totalDays <= 30 -> {
-                groupingUnit = ChronoUnit.WEEKS
-                intervalSize = 1
-            }
-            totalDays <= 365 -> {
-                groupingUnit = ChronoUnit.MONTHS
-                intervalSize = 1
-            }
-            else -> {
-                groupingUnit = ChronoUnit.YEARS
-                intervalSize = 1
-            }
-        }
-
-        // Generate periods from minDate to maxDate
-        val allPeriods = mutableListOf<LocalDate>()
-        var cursor = when (groupingUnit) {
-            ChronoUnit.DAYS -> minDate
-            ChronoUnit.WEEKS -> minDate.with(DayOfWeek.MONDAY)
-            ChronoUnit.MONTHS -> minDate.withDayOfMonth(1)
-            else -> minDate.withDayOfYear(1)
-        }
-
-        while (!cursor.isAfter(maxDate)) {
-            allPeriods.add(cursor)
-            cursor = when (groupingUnit) {
-                ChronoUnit.DAYS -> cursor.plusDays(intervalSize)
-                ChronoUnit.WEEKS -> cursor.plusWeeks(intervalSize)
-                ChronoUnit.MONTHS -> cursor.plusMonths(intervalSize)
-                else -> cursor.plusYears(intervalSize)
-            }
-        }
-
-        // Ensure minimum 5 periods for better chart appearance
-        while (allPeriods.size < 5) {
-            cursor = when (groupingUnit) {
-                ChronoUnit.DAYS -> allPeriods.first().minusDays(intervalSize)
-                ChronoUnit.WEEKS -> allPeriods.first().minusWeeks(intervalSize)
-                ChronoUnit.MONTHS -> allPeriods.first().minusMonths(intervalSize)
-                else -> allPeriods.first().minusYears(intervalSize)
-            }
-            allPeriods.add(0, cursor)
-        }
-
-        // Group measurements by period
-        val grouped = measurementsForPeriodChart.groupBy { mwv ->
-            val date = Instant.ofEpochMilli(mwv.measurement.timestamp)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-            when (groupingUnit) {
-                ChronoUnit.DAYS -> date
-                ChronoUnit.WEEKS -> date.with(DayOfWeek.MONDAY)
-                ChronoUnit.MONTHS -> date.withDayOfMonth(1)
-                else -> date.withDayOfYear(1)
-            }
-        }
-
-        // Localized label formatter
-        val locale = Locale.getDefault()
-        val labelFormatter: (LocalDate) -> String = { date ->
-            when (groupingUnit) {
-                ChronoUnit.DAYS -> date.format(DateTimeFormatter.ofPattern("d LLL", locale))
-                ChronoUnit.WEEKS -> "W${date.get(WeekFields.of(locale).weekOfWeekBasedYear())}"
-                ChronoUnit.MONTHS -> date.format(DateTimeFormatter.ofPattern("LLL yy", locale))
-                else -> date.year.toString()
-            }
-        }
-
-        // Map all periods to PeriodDataPoint, even empty ones
-        allPeriods.mapIndexed { index, periodStart ->
-            val periodEnd = if (index + 1 < allPeriods.size)
-                allPeriods[index + 1].atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-            else
-                maxDate.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-
-            val measurementsInPeriod = grouped[periodStart] ?: emptyList()
-            PeriodDataPoint(
-                label = labelFormatter(periodStart),
-                count = measurementsInPeriod.size,
-                startTimestamp = periodStart.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(),
-                endTimestamp = periodEnd
-            )
-        }
-    }
-
-    // Extracting measurements with their values for plotting.
-    val measurementsWithValues = remember(lineChartMeasurements) {
-        (lineChartMeasurements?: emptyList()).map { it.measurementWithValues }
-    }
+    val periodChartData = rememberPeriodChartData(measurementsForPeriodChart, uiSelectedTimeRange)
 
     // Determine which measurement types to actually plot based on current selections,
     // target ID, and whether they are enabled and have a plottable input type.
@@ -528,16 +434,16 @@ fun MeasurementChart(
         var noDataMessageText by remember { mutableStateOf("") }
 
         LaunchedEffect(
-            isChartDataLoading, lineTypesToActuallyPlot, measurementsWithValues,
+            isChartDataLoading, lineTypesToActuallyPlot, lineChartMeasurements,
             effectiveShowTypeFilterRow, targetMeasurementTypeId, allAvailableMeasurementTypes
         ) {
             if (!isChartDataLoading) {
-                if (lineTypesToActuallyPlot.isEmpty() && measurementsWithValues.isEmpty() && !effectiveShowTypeFilterRow && targetMeasurementTypeId == null) {
+                if (lineTypesToActuallyPlot.isEmpty() && (lineChartMeasurements ?: emptyList()).isEmpty() && !effectiveShowTypeFilterRow && targetMeasurementTypeId == null) {
                     showNoDataMessage = true
                     noDataMessageText = if (allAvailableMeasurementTypes.none { it.isEnabled && (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) })
                         context.getString(R.string.line_chart_no_plottable_types)
                     else context.getString(R.string.line_chart_no_data_to_display)
-                } else if (lineTypesToActuallyPlot.isEmpty() && measurementsWithValues.isEmpty() && targetMeasurementTypeId != null) {
+                } else if (lineTypesToActuallyPlot.isEmpty() && (lineChartMeasurements ?: emptyList()).isEmpty() && targetMeasurementTypeId != null) {
                     showNoDataMessage = true
                     noDataMessageText = context.getString(
                         R.string.line_chart_no_data_for_type_in_range,
@@ -552,49 +458,10 @@ fun MeasurementChart(
             }
         }
 
-        // State to hold the processed series data for the chart.
-        var seriesEntries by remember { mutableStateOf<List<Pair<MeasurementType, List<Pair<LocalDate, Float>>>>>(emptyList()) }
-        // State to hold the mapping from X-axis float values (epoch days) back to LocalDate objects.
-        var xToDatesMapForStore by remember { mutableStateOf<Map<Float, LocalDate>>(emptyMap()) }
-
-        // Process measurement data into series for the chart when relevant inputs change.
-        LaunchedEffect(measurementsWithValues, lineTypesToActuallyPlot) {
-            val calculatedSeriesEntries = lineTypesToActuallyPlot.mapNotNull { type ->
-                val dateValuePairs = mutableMapOf<LocalDate, Float>()
-                measurementsWithValues.forEach { mwv -> // MeasurementWithValues
-                    mwv.values.find { it.type.id == type.id }?.let { valueWithType ->
-                        val yValue = when (type.inputType) {
-                            InputFieldType.FLOAT -> valueWithType.value.floatValue
-                            InputFieldType.INT -> valueWithType.value.intValue?.toFloat()
-                            else -> null // Should not happen due to lineTypesToActuallyPlot filter
-                        }
-                        yValue?.let {
-                            val date = Instant.ofEpochMilli(mwv.measurement.timestamp)
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate()
-                            // If multiple values exist for the same type on the same day,
-                            // the last one processed will overwrite previous ones.
-                            // Consider averaging or other aggregation if needed.
-                            dateValuePairs[date] = it
-                        }
-                    }
-                }
-                if (dateValuePairs.isNotEmpty()) {
-                    type to dateValuePairs.toList().sortedBy { it.first } // Sort by date for correct line plotting
-                } else {
-                    null // No data for this type
-                }
-            }
-            seriesEntries = calculatedSeriesEntries
-
-            // Create the X-axis value to LocalDate map for formatting axis labels.
-            if (calculatedSeriesEntries.isNotEmpty()) {
-                val allDates = calculatedSeriesEntries.flatMap { (_, pairs) -> pairs.map { it.first } }.distinct()
-                xToDatesMapForStore = allDates.associateBy { it.toEpochDay().toFloat() }
-            } else {
-                xToDatesMapForStore = emptyMap()
-            }
-        }
+        val chartSeries = rememberChartSeries(
+            enrichedMeasurements = lineChartMeasurements ?: emptyList(),
+            lineTypesToActuallyPlot = lineTypesToActuallyPlot
+        )
 
         when {
             isChartDataLoading -> {
@@ -622,7 +489,7 @@ fun MeasurementChart(
                     )
                 }
             }
-            seriesEntries.isEmpty() -> {
+            chartSeries.isEmpty() -> {
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -641,7 +508,7 @@ fun MeasurementChart(
                         if (allAvailableMeasurementTypes.none { it.isEnabled && (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) })
                             stringResource(R.string.line_chart_no_plottable_types)
                         else stringResource(R.string.line_chart_no_data_or_types_to_select)
-                    } else if ((smoothedData ?: emptyList()).isEmpty() && measurementsWithValues.isEmpty() && currentSelectedTypeIntIds.isNotEmpty()){
+                    } else if ((smoothedData ?: emptyList()).isEmpty() && (lineChartMeasurements ?: emptyList()).isEmpty() && currentSelectedTypeIntIds.isNotEmpty()){
                         stringResource(R.string.line_chart_no_data_to_display)
                     }
                     else {
@@ -656,120 +523,25 @@ fun MeasurementChart(
                 }
             }
             else -> {
-                val seriesEntriesForStartAxis = remember(seriesEntries) {
-                    seriesEntries.filter { (type, _) -> !type.isOnRightYAxis }
-                }
-                val typeColorsForStartAxis = remember(seriesEntriesForStartAxis) {
-                    seriesEntriesForStartAxis.map { (type, _) -> if (type.color != 0) Color(type.color) else Color.Gray }
-                }
-
-                val seriesEntriesForEndAxis = remember(seriesEntries) {
-                    seriesEntries.filter { (type, _) -> type.isOnRightYAxis }
-                }
-                val typeColorsForEndAxis = remember(seriesEntriesForEndAxis) {
-                    seriesEntriesForEndAxis.map { (type, _) -> if (type.color != 0) Color(type.color) else Color.Gray }
-                }
-
-                val modelProducer = remember { CartesianChartModelProducer() }
-
-                LaunchedEffect(seriesEntriesForStartAxis, seriesEntriesForEndAxis, xToDatesMapForStore) {
-                    if (seriesEntriesForStartAxis.isNotEmpty() || seriesEntriesForEndAxis.isNotEmpty()) {
-                        modelProducer.runTransaction {
-                            if (seriesEntriesForStartAxis.isNotEmpty()) {
-                                lineSeries {
-                                    seriesEntriesForStartAxis.forEach { (_, sortedDateValuePairs) ->
-                                        val xValues = sortedDateValuePairs.map { it.first.toEpochDay().toFloat() }
-                                        val yValues = sortedDateValuePairs.map { it.second }
-                                        if (xValues.isNotEmpty()) series(x = xValues, y = yValues)
-                                    }
-                                }
-                            }
-                            if (seriesEntriesForEndAxis.isNotEmpty()) {
-                                lineSeries {
-                                    seriesEntriesForEndAxis.forEach { (_, sortedDateValuePairs) ->
-                                        val xValues = sortedDateValuePairs.map { it.first.toEpochDay().toFloat() }
-                                        val yValues = sortedDateValuePairs.map { it.second }
-                                        if (xValues.isNotEmpty()) series(x = xValues, y = yValues)
-                                    }
-                                }
-                            }
-                            extras { it[X_TO_DATE_MAP_KEY] = xToDatesMapForStore }
-                        }
-                    } else {
-                        modelProducer.runTransaction {
-                            lineSeries {} // Clear primary series
-                            lineSeries {} // Clear secondary series
-                            extras { it.remove(X_TO_DATE_MAP_KEY) }
-                        }
-                    }
-                }
-
                 val scrollState = rememberVicoScrollState()
                 val zoomState = rememberVicoZoomState(zoomEnabled = true, initialZoom = Zoom.Content)
-                val xAxisValueFormatter = rememberXAxisValueFormatter(X_TO_DATE_MAP_KEY, DATE_FORMATTER)
+                val xAxisValueFormatter = rememberXAxisValueFormatter(chartSeries)
                 val yAxisValueFormatter = CartesianValueFormatter.decimal()
 
                 val xAxis = if (targetMeasurementTypeId == null) {
                     HorizontalAxis.rememberBottom(valueFormatter = xAxisValueFormatter, guideline = null)
                 } else null
 
-                val rangeProvider = remember {
-                    object : CartesianLayerRangeProvider {
-                        override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
-                            val r = maxY - minY
-                            return if (r == 0.0) minY - 1.0 else floor(minY - 0.1 * r)
-                        }
-                        override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
-                            val r = maxY - minY
-                            return if (r == 0.0) maxY + 1.0 else ceil(maxY + 0.1 * r)
-                        }
-                    }
-                }
-
                 val startYAxis = if (showYAxis) VerticalAxis.rememberStart(valueFormatter = yAxisValueFormatter) else null
                 val endYAxis = if (showYAxis) VerticalAxis.rememberEnd(valueFormatter = yAxisValueFormatter) else null
 
-                val lineProviderForStartAxis = remember(seriesEntriesForStartAxis, typeColorsForStartAxis, showDataPointsSetting, targetMeasurementTypeId) {
-                    LineCartesianLayer.LineProvider.series(
-                        seriesEntriesForStartAxis.mapIndexedNotNull { index, _ ->
-                            if (index < typeColorsForStartAxis.size) {
-                                createLineSpec(typeColorsForStartAxis[index], targetMeasurementTypeId != null, showDataPointsSetting)
-                            } else null
-                        }
-                    )
-                }
-                val lineLayerForStartAxis = if (seriesEntriesForStartAxis.isNotEmpty()) {
-                    rememberLineCartesianLayer(
-                        lineProvider = lineProviderForStartAxis,
-                        verticalAxisPosition = Axis.Position.Vertical.Start,
-                        rangeProvider = rangeProvider
-                    )
-                } else null
+                val modelProducer = rememberChartModelProducer(chartSeries = chartSeries)
 
-                val lineProviderForEndAxis = remember(seriesEntriesForEndAxis, typeColorsForEndAxis, showDataPointsSetting, targetMeasurementTypeId) {
-                    LineCartesianLayer.LineProvider.series(
-                        seriesEntriesForEndAxis.mapIndexedNotNull { index, _ ->
-                            if (index < typeColorsForEndAxis.size) {
-                                createLineSpec(
-                                    color = typeColorsForEndAxis[index],
-                                    statisticsMode = targetMeasurementTypeId != null,
-                                    showPoints = showDataPointsSetting
-                                )
-                            } else null
-                        }
-                    )
-                }
-                val lineLayerForEndAxis = if (seriesEntriesForEndAxis.isNotEmpty()) {
-                    rememberLineCartesianLayer(
-                        lineProvider = lineProviderForEndAxis,
-                        verticalAxisPosition = Axis.Position.Vertical.End,
-                        rangeProvider = rangeProvider
-                    )
-                } else null
-
-                val layers : List<LineCartesianLayer> = remember(lineLayerForStartAxis, lineLayerForEndAxis) {
-                    listOfNotNull(lineLayerForStartAxis, lineLayerForEndAxis)
-                }
+                val layers = rememberChartLayers(
+                    chartSeries = chartSeries,
+                    showDataPointsSetting = showDataPointsSetting,
+                    targetMeasurementTypeId = targetMeasurementTypeId,
+                )
 
                 val goalDecorations = if (showGoalLinesSetting) {
                     goalsToActuallyPlot.map { goal ->
@@ -780,23 +552,10 @@ fun MeasurementChart(
                     emptyList()
                 }
 
-                val lastX = remember { mutableStateOf<Float?>(null) }
-                val markerVisibilityListener = remember(xToDatesMapForStore, onPointSelected) {
-                    object : CartesianMarkerVisibilityListener {
-                        override fun onShown(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
-                            lastX.value = targets.lastOrNull()?.x?.toFloat()
-                        }
-                        override fun onUpdated(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
-                            lastX.value = targets.lastOrNull()?.x?.toFloat()
-                        }
-                        override fun onHidden(marker: CartesianMarker) {
-                            val x = lastX.value ?: return
-                            val date = xToDatesMapForStore[x] ?: LocalDate.ofEpochDay(x.toLong())
-                            val timestamp = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                            onPointSelected(timestamp)
-                        }
-                    }
-                }
+                val markerVisibilityListener = rememberMarkerVisibilityListener(
+                    chartSeries = chartSeries,
+                    onPointSelected = onPointSelected
+                )
 
                 val chart = rememberCartesianChart(
                     layers = layers.toTypedArray(),
@@ -838,7 +597,7 @@ fun MeasurementChart(
                     text = stringResource(
                         R.string.line_chart_filter_title_template,
                         filterTitle,
-                        measurementsWithValues.size
+                        lineChartMeasurements?.size ?: 0
                     ),
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center
@@ -847,6 +606,288 @@ fun MeasurementChart(
         }
     }
 }
+
+
+/**
+ * A private helper that remembers and processes a list of [EnrichedMeasurement] into a list of [ChartSeries].
+ * It creates separate [ChartSeries] for both the actual measurements and any available
+ * future projections, marking them with the `isProjected` flag.
+ *
+ * @param enrichedMeasurements The complete list of enriched measurement data, including potential projections.
+ * @param lineTypesToActuallyPlot The specific measurement types to include in the series.
+ * @return A memoized list of [ChartSeries] for both real and projected data, or an emptyList.
+ */
+@Composable
+private fun rememberChartSeries(
+    enrichedMeasurements: List<EnrichedMeasurement>,
+    lineTypesToActuallyPlot: List<MeasurementType>
+): List<ChartSeries> {
+    return remember(enrichedMeasurements, lineTypesToActuallyPlot) {
+        if (enrichedMeasurements.isEmpty() || lineTypesToActuallyPlot.isEmpty()) {
+            return@remember emptyList()
+        }
+
+        // --- Step 1: Create series for the REAL measurements ---
+        val realSeries = lineTypesToActuallyPlot.mapNotNull { type ->
+            val dateValuePairs = mutableMapOf<LocalDate, Float>()
+            enrichedMeasurements.forEach { em ->
+                val mwv = em.measurementWithValues
+                mwv.values.find { it.type.id == type.id }?.let { valueWithType ->
+                    val yValue = when (type.inputType) {
+                        InputFieldType.FLOAT -> valueWithType.value.floatValue
+                        InputFieldType.INT -> valueWithType.value.intValue?.toFloat()
+                        else -> null
+                    }
+                    yValue?.let {
+                        val date = Instant.ofEpochMilli(mwv.measurement.timestamp)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                        dateValuePairs[date] = it
+                    }
+                }
+            }
+
+            if (dateValuePairs.isNotEmpty()) {
+                val chartPoints = dateValuePairs.toList()
+                    .sortedBy { it.first }
+                    .map { (date, value) ->
+                        ChartPoint(date = date, x = date.toEpochDay().toFloat(), y = value)
+                    }
+                ChartSeries(isProjected = false, type = type, points = chartPoints) // isProjected = false
+            } else {
+                null
+            }
+        }
+
+        // --- Step 2: Create series for the PROJECTED measurements ---
+        val projectionData = enrichedMeasurements.firstOrNull()?.measurementWithValuesProjected ?: emptyList()
+
+        val projectedSeries = if (projectionData.isNotEmpty()) {
+            // Group the flat projection list by type
+            val groupedProjections = projectionData.groupBy { it.values.first().type.id }
+
+            lineTypesToActuallyPlot.mapNotNull { type ->
+                val projectedValuesForType = groupedProjections[type.id]
+                if (projectedValuesForType != null && projectedValuesForType.isNotEmpty()) {
+                    val chartPoints = projectedValuesForType.map { mwv ->
+                        val date = Instant.ofEpochMilli(mwv.measurement.timestamp)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                        ChartPoint(
+                            date = date,
+                            x = date.toEpochDay().toFloat(),
+                            y = mwv.values.first().value.floatValue!!
+                        )
+                    }.sortedBy { it.x }
+                    ChartSeries(isProjected = true, type = type, points = chartPoints) // isProjected = true
+                } else {
+                    null
+                }
+            }
+        } else {
+            emptyList()
+        }
+
+        // --- Step 3: Combine both lists ---
+        realSeries + projectedSeries
+    }
+}
+
+/**
+ * A private helper that creates, remembers, and updates a [CartesianChartModelProducer].
+ * It encapsulates the entire logic of transforming the prepared [ChartSeries] data
+ * into Vico's chart model, separating real from projected data.
+ *
+ * @param chartSeries The list of all processed series data to be plotted.
+ * @return A memoized and updated [CartesianChartModelProducer].
+ */
+@Composable
+private fun rememberChartModelProducer(
+    chartSeries: List<ChartSeries>
+): CartesianChartModelProducer {
+    // 1. Create and remember the model producer instance.
+    val modelProducer = remember { CartesianChartModelProducer() }
+
+    // 2. This LaunchedEffect observes the data and updates the producer.
+    //    It runs whenever the chartSeries data changes.
+    LaunchedEffect(chartSeries) {
+        // --- Separate the series into four distinct groups ---
+        val mainSeriesStart = chartSeries.filter { !it.isProjected && !it.type.isOnRightYAxis }
+        val mainSeriesEnd = chartSeries.filter { !it.isProjected && it.type.isOnRightYAxis }
+        val projectedSeriesStart = chartSeries.filter { it.isProjected && !it.type.isOnRightYAxis }
+        val projectedSeriesEnd = chartSeries.filter { it.isProjected && it.type.isOnRightYAxis }
+
+        // 3. Update the Vico model producer in a transaction.
+        modelProducer.runTransaction {
+            if (chartSeries.isNotEmpty()) {
+                // Layer 0: Main (solid) lines on the START axis
+                if (mainSeriesStart.isNotEmpty()) {
+                    lineSeries {
+                        mainSeriesStart.forEach { series ->
+                            series(
+                                x = series.points.map { it.x },
+                                y = series.points.map { it.y },
+                            )
+                        }
+                    }
+                }
+
+                // Layer 1: Main (solid) lines on the END axis
+                if (mainSeriesEnd.isNotEmpty()) {
+                    lineSeries {
+                        mainSeriesEnd.forEach { series ->
+                            series(
+                                x = series.points.map { it.x },
+                                y = series.points.map { it.y },
+                            )
+                        }
+                    }
+                }
+
+                // Layer 2: Projected (dashed) lines on the START axis
+                if (projectedSeriesStart.isNotEmpty()) {
+                    lineSeries {
+                        projectedSeriesStart.forEach { series ->
+                            series(
+                                x = series.points.map { it.x },
+                                y = series.points.map { it.y },
+                            )
+                        }
+                    }
+                }
+
+                // Layer 3: Projected (dashed) lines on the END axis
+                if (projectedSeriesEnd.isNotEmpty()) {
+                    lineSeries {
+                        projectedSeriesEnd.forEach { series ->
+                            series(
+                                x = series.points.map { it.x },
+                                y = series.points.map { it.y },
+                            )
+                        }
+                    }
+                }
+
+            } else {
+                // Clear all layers if there is no data.
+                lineSeries { }
+                lineSeries { }
+                lineSeries { }
+                lineSeries { }
+            }
+        }
+    }
+    // 4. Return the producer instance for the ChartHost to use.
+    return modelProducer
+}
+
+
+/**
+ * A private helper that creates and remembers the layers for drawing the lines on the chart.
+ * It creates separate layers for main (solid) and projected (dashed) lines.
+ *
+ * @param chartSeries The complete list of processed series data to be plotted.
+ * @param showDataPointsSetting Whether to display dots on the data points of the main series.
+ * @param targetMeasurementTypeId A flag to indicate if the chart is in a focused "statistics" mode.
+ * @return A list of [LineCartesianLayer]s to be rendered by the chart.
+ */
+@Composable
+private fun rememberChartLayers(
+    chartSeries: List<ChartSeries>,
+    showDataPointsSetting: Boolean,
+    targetMeasurementTypeId: Int?,
+): List<LineCartesianLayer> {
+    // 1. Separate series and their colors into four distinct groups.
+    val mainSeriesStart = remember(chartSeries) { chartSeries.filter { !it.isProjected && !it.type.isOnRightYAxis } }
+    val mainSeriesEnd = remember(chartSeries) { chartSeries.filter { !it.isProjected && it.type.isOnRightYAxis } }
+    val projectedSeriesStart = remember(chartSeries) { chartSeries.filter { it.isProjected && !it.type.isOnRightYAxis } }
+    val projectedSeriesEnd = remember(chartSeries) { chartSeries.filter { it.isProjected && it.type.isOnRightYAxis } }
+
+    val mainColorsStart = remember(mainSeriesStart) { mainSeriesStart.map { Color(it.type.color) } }
+    val mainColorsEnd = remember(mainSeriesEnd) { mainSeriesEnd.map { Color(it.type.color) } }
+    val projectedColorsStart = remember(projectedSeriesStart) { projectedSeriesStart.map { Color(it.type.color) } }
+    val projectedColorsEnd = remember(projectedSeriesEnd) { projectedSeriesEnd.map { Color(it.type.color) } }
+
+    // 2. Create a shared range provider.
+    val rangeProvider = remember {
+        object : CartesianLayerRangeProvider {
+            override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
+                val r = maxY - minY
+                return if (r == 0.0) minY - 1.0 else floor(minY - 0.1 * r)
+            }
+
+            override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
+                val r = maxY - minY
+                return if (r == 0.0) maxY + 1.0 else ceil(maxY + 0.1 * r)
+            }
+        }
+    }
+
+    // 3. Create the four layers, one for each group.
+
+    // Layer 0: Main (solid) lines on START axis
+    val mainLayerStart = if (mainSeriesStart.isNotEmpty()) {
+        rememberLineCartesianLayer(
+            lineProvider = LineCartesianLayer.LineProvider.series(
+                mainColorsStart.map { color ->
+                    createLineSpec(color, targetMeasurementTypeId != null, showDataPointsSetting, isProjection = false)
+                }
+            ),
+            verticalAxisPosition = Axis.Position.Vertical.Start,
+            rangeProvider = rangeProvider
+        )
+    } else null
+
+    // Layer 1: Main (solid) lines on END axis
+    val mainLayerEnd = if (mainSeriesEnd.isNotEmpty()) {
+        rememberLineCartesianLayer(
+            lineProvider = LineCartesianLayer.LineProvider.series(
+                mainColorsEnd.map { color ->
+                    createLineSpec(color, targetMeasurementTypeId != null, showDataPointsSetting, isProjection = false)
+                }
+            ),
+            verticalAxisPosition = Axis.Position.Vertical.End,
+            rangeProvider = rangeProvider
+        )
+    } else null
+
+    // Layer 2: Projected (dashed) lines on START axis
+    val projectionLayerStart = if (projectedSeriesStart.isNotEmpty()) {
+        rememberLineCartesianLayer(
+            lineProvider = LineCartesianLayer.LineProvider.series(
+                projectedColorsStart.map { color ->
+                    createLineSpec(color, statisticsMode = false, showPoints = false, isProjection = true)
+                }
+            ),
+            verticalAxisPosition = Axis.Position.Vertical.Start,
+            rangeProvider = rangeProvider
+        )
+    } else null
+
+    // Layer 3: Projected (dashed) lines on END axis
+    val projectionLayerEnd = if (projectedSeriesEnd.isNotEmpty()) {
+        rememberLineCartesianLayer(
+            lineProvider = LineCartesianLayer.LineProvider.series(
+                projectedColorsEnd.map { color ->
+                    createLineSpec(color, statisticsMode = false, showPoints = false, isProjection = true)
+                }
+            ),
+            verticalAxisPosition = Axis.Position.Vertical.End,
+            rangeProvider = rangeProvider
+        )
+    } else null
+
+    // 4. Return all non-null layers in the correct order for Vico.
+    return remember(mainLayerStart, mainLayerEnd, projectionLayerStart, projectionLayerEnd) {
+        listOfNotNull(
+            mainLayerStart,
+            mainLayerEnd,
+            projectionLayerStart,
+            projectionLayerEnd
+        )
+    }
+}
+
 
 
 /**
@@ -1009,25 +1050,149 @@ fun provideFilterTopBarAction(
 
 
 /**
+ * A private helper that remembers and calculates the data needed for the [PeriodChart].
+ * It groups measurements by a dynamic time unit (day, week, month, year)
+ * based on the total time span of the provided data.
+ *
+ * @param measurementsForPeriodChart The list of measurements to be processed.
+ * @param uiSelectedTimeRange The currently active time range filter.
+ * @return A memoized list of [PeriodDataPoint]s ready for rendering.
+ */
+@Composable
+private fun rememberPeriodChartData(
+    measurementsForPeriodChart: List<MeasurementWithValues>,
+    uiSelectedTimeRange: TimeRangeFilter
+): List<PeriodDataPoint> {
+    return remember(measurementsForPeriodChart, uiSelectedTimeRange) {
+        if (measurementsForPeriodChart.isEmpty()) return@remember emptyList()
+
+        // Determine min and max date of filtered measurements
+        val minDate = measurementsForPeriodChart.minOf {
+            Instant.ofEpochMilli(it.measurement.timestamp)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+        }
+        val maxDate = measurementsForPeriodChart.maxOf {
+            Instant.ofEpochMilli(it.measurement.timestamp)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+        }
+
+        // Decide grouping dynamically
+        val totalDays = ChronoUnit.DAYS.between(minDate, maxDate).toInt()
+        val groupingUnit: ChronoUnit
+        val intervalSize: Long
+
+        when {
+            totalDays <= 7 -> {
+                groupingUnit = ChronoUnit.DAYS
+                intervalSize = 1
+            }
+            totalDays <= 30 -> {
+                groupingUnit = ChronoUnit.WEEKS
+                intervalSize = 1
+            }
+            totalDays <= 365 -> {
+                groupingUnit = ChronoUnit.MONTHS
+                intervalSize = 1
+            }
+            else -> {
+                groupingUnit = ChronoUnit.YEARS
+                intervalSize = 1
+            }
+        }
+
+        // Generate periods from minDate to maxDate
+        val allPeriods = mutableListOf<LocalDate>()
+        var cursor = when (groupingUnit) {
+            ChronoUnit.DAYS -> minDate
+            ChronoUnit.WEEKS -> minDate.with(DayOfWeek.MONDAY)
+            ChronoUnit.MONTHS -> minDate.withDayOfMonth(1)
+            else -> minDate.withDayOfYear(1)
+        }
+
+        while (!cursor.isAfter(maxDate)) {
+            allPeriods.add(cursor)
+            cursor = when (groupingUnit) {
+                ChronoUnit.DAYS -> cursor.plusDays(intervalSize)
+                ChronoUnit.WEEKS -> cursor.plusWeeks(intervalSize)
+                ChronoUnit.MONTHS -> cursor.plusMonths(intervalSize)
+                else -> cursor.plusYears(intervalSize)
+            }
+        }
+
+        // Ensure minimum 5 periods for better chart appearance
+        while (allPeriods.size < 5) {
+            cursor = when (groupingUnit) {
+                ChronoUnit.DAYS -> allPeriods.first().minusDays(intervalSize)
+                ChronoUnit.WEEKS -> allPeriods.first().minusWeeks(intervalSize)
+                ChronoUnit.MONTHS -> allPeriods.first().minusMonths(intervalSize)
+                else -> allPeriods.first().minusYears(intervalSize)
+            }
+            allPeriods.add(0, cursor)
+        }
+
+        // Group measurements by period
+        val grouped = measurementsForPeriodChart.groupBy { mwv ->
+            val date = Instant.ofEpochMilli(mwv.measurement.timestamp)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+            when (groupingUnit) {
+                ChronoUnit.DAYS -> date
+                ChronoUnit.WEEKS -> date.with(DayOfWeek.MONDAY)
+                ChronoUnit.MONTHS -> date.withDayOfMonth(1)
+                else -> date.withDayOfYear(1)
+            }
+        }
+
+        // Localized label formatter
+        val locale = Locale.getDefault()
+        val labelFormatter: (LocalDate) -> String = { date ->
+            when (groupingUnit) {
+                ChronoUnit.DAYS -> date.format(DateTimeFormatter.ofPattern("d LLL", locale))
+                ChronoUnit.WEEKS -> "W${date.get(WeekFields.of(locale).weekOfWeekBasedYear())}"
+                ChronoUnit.MONTHS -> date.format(DateTimeFormatter.ofPattern("LLL yy", locale))
+                else -> date.year.toString()
+            }
+        }
+
+        // Map all periods to PeriodDataPoint, even empty ones
+        allPeriods.mapIndexed { index, periodStart ->
+            val periodEnd = if (index + 1 < allPeriods.size)
+                allPeriods[index + 1].atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            else
+                maxDate.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+            val measurementsInPeriod = grouped[periodStart] ?: emptyList()
+
+            PeriodDataPoint(
+                label = labelFormatter(periodStart),
+                count = measurementsInPeriod.size,
+                startTimestamp = periodStart.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                endTimestamp = periodEnd
+            )
+        }
+    }
+}
+
+
+/**
  * Remembers a [CartesianValueFormatter] for the X-axis that converts epoch day float values
  * back to formatted date strings using a provided map.
  *
- * @param xToDateMapKey The [ExtraStore.Key] used to retrieve the date mapping from the chart model.
- * @param dateFormatter The [DateTimeFormatter] to format the [LocalDate].
+ * @param chartSeries The list of all processed series data to be plotted.
  * @return A memoized [CartesianValueFormatter].
  */
 @Composable
 private fun rememberXAxisValueFormatter(
-    xToDateMapKey: ExtraStore.Key<Map<Float, LocalDate>>,
-    dateFormatter: DateTimeFormatter
-): CartesianValueFormatter = remember(xToDateMapKey, dateFormatter) {
-    CartesianValueFormatter { context, value, _ -> // `value` is the x-axis value (epochDay as float)
-        val chartModel = context.model
-        val xToDatesMap = chartModel.extraStore[xToDateMapKey] // Retrieve map from chart model
-        val xKey = value.toFloat()
+    chartSeries: List<ChartSeries>,
+): CartesianValueFormatter = remember(chartSeries) {
+    val xToDatesMap = chartSeries.flatMap { it.points }.associate { it.x to it.date }
 
-        (xToDatesMap[xKey] ?: LocalDate.ofEpochDay(value.toLong()))
-            .format(dateFormatter)
+    CartesianValueFormatter { context, value, _ -> // `value` is the x-axis value (epochDay as float)
+        val x = value.toFloat()
+
+        (xToDatesMap[x] ?: LocalDate.ofEpochDay(value.toLong())).format(DateTimeFormatter.ofPattern("d MMM"))
     }
 }
 
@@ -1037,13 +1202,29 @@ private fun rememberXAxisValueFormatter(
  * @param color The color of the line and points.
  * @param statisticsMode If true, an area fill is added below the line, and points are hidden.
  *                       This is typically used when `targetMeasurementTypeId` is set.
- * @param showPoints If true, points are displayed on the line (unless in statisticsMode).
+ * @param showPoints If true, points are displayed on the line (unless in statisticsMode or for projections).
+ * @param isProjection If true, creates a dashed line specification for projection data.
  * @return A configured [LineCartesianLayer.Line].
  */
-private fun createLineSpec(color: Color, statisticsMode : Boolean, showPoints: Boolean): LineCartesianLayer.Line {
-    val lineStroke = LineCartesianLayer.LineStroke.Continuous(
-        thicknessDp = 2f,
-    )
+private fun createLineSpec(
+    color: Color,
+    statisticsMode: Boolean,
+    showPoints: Boolean,
+    isProjection: Boolean = false
+): LineCartesianLayer.Line {
+    val lineStroke = if (isProjection) {
+        // Create a dashed line for projections
+        LineCartesianLayer.LineStroke.dashed(
+            thickness = 2.dp,
+            dashLength = 4.dp,
+            gapLength = 4.dp
+        )
+    } else {
+        // Create a solid line for actual measurements
+        LineCartesianLayer.LineStroke.Continuous(
+            thicknessDp = 2f,
+        )
+    }
 
     val lineFill = LineCartesianLayer.LineFill.single( // Defines the color of the line itself
         fill = Fill(color.toArgb())
@@ -1052,15 +1233,14 @@ private fun createLineSpec(color: Color, statisticsMode : Boolean, showPoints: B
     return LineCartesianLayer.Line(
         fill = lineFill,
         stroke = lineStroke,
-        // Area fill is shown in statistics mode (e.g., when a single type is focused)
-        areaFill = if (statisticsMode) LineCartesianLayer.AreaFill.single(Fill(color.copy(alpha = 0.2f).toArgb())) else null,
-        // Points on the line are shown unless in statistics mode
-        pointProvider = if (showPoints && !statisticsMode) {
+        // Area fill is shown in statistics mode, but never for projections
+        areaFill = if (statisticsMode && !isProjection) LineCartesianLayer.AreaFill.single(Fill(color.copy(alpha = 0.2f).toArgb())) else null,
+        // Points on the line are shown unless in statistics mode or for projections
+        pointProvider = if (showPoints && !statisticsMode && !isProjection) {
             LineCartesianLayer.PointProvider.single(
                 LineCartesianLayer.point(ShapeComponent(fill(color.copy(alpha = 0.7f)), CorneredShape.Pill), 6.dp)
             )
         } else null,
-        // dataLabel = null,         // No data labels on points
         pointConnector = LineCartesianLayer.PointConnector.cubic()
     )
 }
@@ -1167,6 +1347,58 @@ fun rememberMarker(
         indicatorSize = 36.dp, // Overall size of the indicator area
         guideline = guideline, // Vertical guideline that follows the marker
     )
+}
+
+/**
+ * A private helper that creates and remembers a visibility listener for the chart's marker.
+ * It encapsulates the logic to find the correct timestamp from the marker's position
+ * and trigger the onPointSelected callback.
+ *
+ * @param chartSeries The list of all processed series data, used to find the correct point.
+ * @param onPointSelected The callback to invoke with the determined timestamp.
+ * @return A configured [CartesianMarkerVisibilityListener] instance.
+ */
+@Composable
+private fun rememberMarkerVisibilityListener(
+    chartSeries: List<ChartSeries>,
+    onPointSelected: (timestamp: Long) -> Unit
+): CartesianMarkerVisibilityListener {
+    // This state holds the last X position of the marker before it's hidden.
+    val lastX = remember { mutableStateOf<Float?>(null) }
+
+    return remember(chartSeries, onPointSelected) {
+        object : CartesianMarkerVisibilityListener {
+            override fun onShown(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
+                // When the marker appears, store its X position.
+                lastX.value = targets.lastOrNull()?.x?.toFloat()
+            }
+
+            override fun onUpdated(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
+                // Continuously update the X position as the user scrubs through the chart.
+                lastX.value = targets.lastOrNull()?.x?.toFloat()
+            }
+
+            override fun onHidden(marker: CartesianMarker) {
+                val x = lastX.value ?: return
+
+                // We search through all points of all series to find the one matching the X value.
+                val point = chartSeries
+                    .flatMap { it.points }
+                    .find { it.x == x }
+
+                if (point != null) {
+                    // We found the exact ChartPoint, so we can use its original `date`.
+                    val timestamp = point.date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    onPointSelected(timestamp)
+                } else {
+                    // Fallback, should rarely happen. This is the same as the old code's `?:`.
+                    val date = LocalDate.ofEpochDay(x.toLong())
+                    val timestamp = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    onPointSelected(timestamp)
+                }
+            }
+        }
+    }
 }
 
 /**

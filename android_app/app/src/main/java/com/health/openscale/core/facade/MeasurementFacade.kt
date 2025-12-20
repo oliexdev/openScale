@@ -37,7 +37,6 @@ import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import javax.inject.Inject
@@ -74,6 +73,7 @@ class MeasurementFacade @Inject constructor(
 
     /**
      * Returns an enriched flow for a user by combining raw measurements with the global type catalog.
+     * This flow now includes both historical trend/difference data and future projection data.
      *
      * @param userId Database id of the user.
      * @param measurementTypesFlow Global catalog (typically newest config) used for ordering/enabled state.
@@ -83,8 +83,32 @@ class MeasurementFacade @Inject constructor(
         measurementTypesFlow: Flow<List<MeasurementType>>
     ): Flow<List<EnrichedMeasurement>> {
         val base = query.getMeasurementsForUser(userId)
+
         return combine(base, measurementTypesFlow) { measurements, types ->
-            enricher.enrich(measurements, types)
+            if (measurements.isEmpty()) {
+                return@combine emptyList()
+            }
+
+            val differenceValues = enricher.enrichWithDifferences(measurements, types)
+            val projectedValues = enricher.enrichWithProjection(measurements, types)
+
+            measurements.mapIndexed { index, currentMeasurement ->
+                // Find the specific trends/differences that belong to this measurement.
+                val trendsForCurrent = differenceValues.filter {
+                    it.currentValue.value.measurementId == currentMeasurement.measurement.id
+                }
+
+                // Find the specific projected values that belong to this measurement.
+                val projectedForCurrent = projectedValues.filter {
+                    it.values.first().value.measurementId == currentMeasurement.measurement.id
+                }
+
+                EnrichedMeasurement(
+                    measurementWithValues = currentMeasurement,
+                    valuesWithTrend = trendsForCurrent,
+                    measurementWithValuesProjected = projectedForCurrent
+                )
+            }
         }
     }
 

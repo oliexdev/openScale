@@ -18,13 +18,15 @@
 package com.health.openscale.core.model
 
 /**
- * A measurement enriched for UI consumption: original measurement plus
- * value-level trend/delta information kept in display order.
+ * A measurement enriched for UI consumption. It holds the original data,
+ * value-level trend/delta information, and optionally, future projection points.
  *
  * @property measurementWithValues The raw measurement and its values.
  * @property valuesWithTrend Per-value enrichment including difference and trend.
+ * @property measurementWithValuesProjected A list of "virtual" future MeasurementWithValues points.
  */
 data class EnrichedMeasurement(
     val measurementWithValues: MeasurementWithValues,
-    val valuesWithTrend: List<ValueWithDifference>
+    val measurementWithValuesProjected: List<MeasurementWithValues>,
+    val valuesWithTrend: List<ValueWithDifference>,
 )

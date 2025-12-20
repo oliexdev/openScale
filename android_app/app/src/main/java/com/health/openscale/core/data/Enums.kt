@@ -423,6 +423,22 @@ enum class SmoothingAlgorithm(@StringRes val displayNameResId: Int) {
     }
 }
 
+enum class PolynomialDegree(val degree: Int, @StringRes val displayNameRes: Int) {
+    LINEAR(1, R.string.poly_degree_linear),
+    QUADRATIC(2, R.string.poly_degree_quadratic),
+    CUBIC(3, R.string.poly_degree_cubic);
+
+    fun getDisplayName(context: Context): String {
+        return context.getString(displayNameRes)
+    }
+
+    companion object {
+        fun fromDegree(degree: Int): PolynomialDegree {
+            return entries.find { it.degree == degree } ?: LINEAR
+        }
+    }
+}
+
 enum class BackupInterval {
     DAILY,
     WEEKLY,

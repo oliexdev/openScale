@@ -503,6 +503,13 @@
     <string name="smoothing_algorithm_none">No Smoothing</string>
     <string name="smoothing_algorithm_sma">Moving Average</string>
     <string name="smoothing_algorithm_ses">Exponential Smoothing</string>
+    <string name="setting_show_chart_projection">Show projection</string>
+    <string name="setting_projection_days_in_the_past">Basis for projection (days)</string>
+    <string name="setting_projection_days_to_project">Project for (days)</string>
+    <string name="setting_projection_polynomial_degree">Projection model</string>
+    <string name="poly_degree_linear">Linear</string>
+    <string name="poly_degree_quadratic">Quadratic</string>
+    <string name="poly_degree_cubic">Cubic</string>
 
     <!-- About Screen & Diagnostics -->
     <string name="version_info">Version: %1$s (%2$s)</string>

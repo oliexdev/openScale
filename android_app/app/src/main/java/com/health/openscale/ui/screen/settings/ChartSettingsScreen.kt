@@ -27,9 +27,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
@@ -41,6 +45,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -57,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.health.openscale.R
+import com.health.openscale.core.data.PolynomialDegree
 import com.health.openscale.core.data.SmoothingAlgorithm
 import com.health.openscale.ui.shared.SharedViewModel
 import kotlinx.coroutines.launch
@@ -102,6 +108,18 @@ fun ChartSettingsScreen(
         .showChartGoalLines
         .collectAsStateWithLifecycle(initialValue = false)
 
+    val projectionEnabled by sharedViewModel
+        .chartProjectionEnabled
+        .collectAsStateWithLifecycle(initialValue = false)
+    val projectionDaysInThePast by sharedViewModel
+        .chartProjectionDaysInThePast
+        .collectAsStateWithLifecycle(initialValue = 30)
+    val projectionDaysToProject by sharedViewModel
+        .chartProjectionDaysToProject
+        .collectAsStateWithLifecycle(initialValue = 14)
+    val projectionPolyDegree by sharedViewModel
+        .chartProjectionPolynomialDegree
+        .collectAsStateWithLifecycle(initialValue = 1)
 
     val availableAlgorithms = remember { SmoothingAlgorithm.values().toList() }
     var algorithmDropdownExpanded by remember { mutableStateOf(false) }
@@ -109,12 +127,15 @@ fun ChartSettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // --- Show Data Points Setting ---
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -132,8 +153,11 @@ fun ChartSettingsScreen(
             )
         }
 
+        // --- Show Goal Lines Setting ---
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -149,6 +173,117 @@ fun ChartSettingsScreen(
                     }
                 }
             )
+        }
+
+        // --- Projection Setting ---
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = stringResource(R.string.setting_show_chart_projection),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    Switch(
+                        checked = projectionEnabled,
+                        onCheckedChange = { newValue ->
+                            scope.launch {
+                                sharedViewModel.setChartProjectionEnabled(newValue)
+                            }
+                        }
+                    )
+                }
+
+                AnimatedVisibility(
+                    visible = projectionEnabled,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                    ) {
+                        IntegerStepper(
+                            label = stringResource(R.string.setting_projection_days_in_the_past),
+                            value = projectionDaysInThePast,
+                            onValueChange = { newValue ->
+                                scope.launch {
+                                    sharedViewModel.setChartProjectionDaysInThePast(newValue)
+                                }
+                            },
+                            valueRange = 7..90,
+                            modifier = Modifier.padding(start = 16.dp)
+                        )
+                        IntegerStepper(
+                            label = stringResource(R.string.setting_projection_days_to_project),
+                            value = projectionDaysToProject,
+                            onValueChange = { newValue ->
+                                scope.launch {
+                                    sharedViewModel.setChartProjectionDaysToProject(newValue)
+                                }
+                            },
+                            valueRange = 7..90,
+                            modifier = Modifier.padding(start = 16.dp)
+                        )
+                        // --- Dropdown for Polynomial Degree ---
+                        var polyDegreeDropdownExpanded by remember { mutableStateOf(false) }
+                        val availablePolyDegrees = remember { PolynomialDegree.entries }
+                        val selectedPolyDegree = remember(projectionPolyDegree) {
+                            PolynomialDegree.fromDegree(projectionPolyDegree)
+                        }
+
+                        ExposedDropdownMenuBox(
+                            expanded = polyDegreeDropdownExpanded,
+                            onExpandedChange = { polyDegreeDropdownExpanded = !polyDegreeDropdownExpanded },
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = selectedPolyDegree.getDisplayName(context),
+                                onValueChange = { /* read-only */ },
+                                readOnly = true,
+                                label = { Text(stringResource(R.string.setting_projection_polynomial_degree)) },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = polyDegreeDropdownExpanded) },
+                                modifier = Modifier
+                                    .menuAnchor(type = MenuAnchorType.PrimaryEditable)
+                                    .fillMaxWidth()
+                                    .clickable { polyDegreeDropdownExpanded = true },
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                                    disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                            ExposedDropdownMenu(
+                                expanded = polyDegreeDropdownExpanded,
+                                onDismissRequest = { polyDegreeDropdownExpanded = false },
+                                modifier = Modifier.exposedDropdownSize(matchTextFieldWidth = true)
+                            ) {
+                                availablePolyDegrees.forEach { degreeEnum ->
+                                    DropdownMenuItem(
+                                        text = { Text(degreeEnum.getDisplayName(context)) },
+                                        onClick = {
+                                            scope.launch {
+                                                sharedViewModel.setChartProjectionPolynomialDegree(degreeEnum.degree)
+                                            }
+                                            polyDegreeDropdownExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
         }
 
         // --- Smoothing Algorithm Setting ---

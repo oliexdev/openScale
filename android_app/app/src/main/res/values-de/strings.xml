@@ -500,6 +500,13 @@
     <string name="smoothing_algorithm_none">Keine Glättung</string>
     <string name="smoothing_algorithm_sma">Gleitender Durchschnitt</string>
     <string name="smoothing_algorithm_ses">Exponentielle Glättung</string>
+    <string name="setting_show_chart_projection">Prognose anzeigen</string>
+    <string name="setting_projection_days_in_the_past">Basis für Prognose (Tage)</string>
+    <string name="setting_projection_days_to_project">Prognose für (Tage)</string>
+    <string name="setting_projection_polynomial_degree">Prognosemodell</string>
+    <string name="poly_degree_linear">Linear</string>
+    <string name="poly_degree_quadratic">Quadratisch</string>
+    <string name="poly_degree_cubic">Kubisch</string>
 
     <!-- Über-Bildschirm & Diagnose -->
     <string name="version_info">Version: %1$s (%2$s)</string>

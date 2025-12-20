@@ -95,6 +95,10 @@ object SettingsPreferenceKeys {
     val CHART_SMOOTHING_WINDOW_SIZE = intPreferencesKey("chart_smoothing_window_size")
     val CHART_SMOOTHING_MAX_GAP_DAYS = intPreferencesKey("chart_smoothing_max_gap_days")
     val CHART_SHOW_GOAL_LINES = booleanPreferencesKey("chart_show_goal_lines")
+    val CHART_PROJECTION_ENABLED = booleanPreferencesKey("chart_projection_enabled")
+    val CHART_PROJECTION_DAYS_IN_THE_PAST = intPreferencesKey("chart_projection_days_in_the_past")
+    val CHART_PROJECTION_DAYS_TO_PROJECT = intPreferencesKey("chart_projection_days_to_project")
+    val CHART_PROJECTION_POLYNOMIAL_DEGREE = intPreferencesKey("chart_projection_polynomial_degree")
 
     // --- Settings for Automatic Backups ---
     val AUTO_BACKUP_ENABLED_GLOBALLY = booleanPreferencesKey("auto_backup_enabled_globally")
@@ -206,6 +210,18 @@ interface SettingsFacade {
 
     val showChartGoalLines: Flow<Boolean>
     suspend fun setShowChartGoalLines(show: Boolean)
+
+    val chartProjectionEnabled: Flow<Boolean>
+    suspend fun setChartProjectionEnabled(enabled: Boolean)
+
+    val chartProjectionDaysInThePast: Flow<Int>
+    suspend fun setChartProjectionDaysInThePast(days: Int)
+
+    val chartProjectionDaysToProject: Flow<Int>
+    suspend fun setChartProjectionDaysToProject(days: Int)
+
+    val chartProjectionPolynomialDegree: Flow<Int>
+    suspend fun setChartProjectionPolynomialDegree(degree: Int)
 
     // --- Automatic Backup Settings ---
     val autoBackupEnabledGlobally: Flow<Boolean>
@@ -635,6 +651,54 @@ class SettingsFacadeImpl @Inject constructor(
 
     override suspend fun setShowChartGoalLines(show: Boolean) {
         saveSetting(SettingsPreferenceKeys.CHART_SHOW_GOAL_LINES.name, show)
+    }
+
+    override val chartProjectionEnabled: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.CHART_PROJECTION_ENABLED.name,
+        false
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing chartProjectionEnabled", exception)
+        emit(false)
+    }
+
+    override suspend fun setChartProjectionEnabled(enabled: Boolean) {
+        saveSetting(SettingsPreferenceKeys.CHART_PROJECTION_ENABLED.name, enabled)
+    }
+
+    override val chartProjectionDaysInThePast: Flow<Int> = observeSetting(
+        SettingsPreferenceKeys.CHART_PROJECTION_DAYS_IN_THE_PAST.name,
+        30 // Default value
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing chartProjectionDaysInThePast", exception)
+        emit(30)
+    }
+
+    override suspend fun setChartProjectionDaysInThePast(days: Int) {
+        saveSetting(SettingsPreferenceKeys.CHART_PROJECTION_DAYS_IN_THE_PAST.name, days)
+    }
+
+    override val chartProjectionDaysToProject: Flow<Int> = observeSetting(
+        SettingsPreferenceKeys.CHART_PROJECTION_DAYS_TO_PROJECT.name,
+        14 // Default value
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing chartProjectionDaysToProject", exception)
+        emit(14)
+    }
+
+    override suspend fun setChartProjectionDaysToProject(days: Int) {
+        saveSetting(SettingsPreferenceKeys.CHART_PROJECTION_DAYS_TO_PROJECT.name, days)
+    }
+
+    override val chartProjectionPolynomialDegree: Flow<Int> = observeSetting(
+        SettingsPreferenceKeys.CHART_PROJECTION_POLYNOMIAL_DEGREE.name,
+        1 // Default to linear
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing chartProjectionPolynomialDegree", exception)
+        emit(1)
+    }
+
+    override suspend fun setChartProjectionPolynomialDegree(degree: Int) {
+        saveSetting(SettingsPreferenceKeys.CHART_PROJECTION_POLYNOMIAL_DEGREE.name, degree)
     }
 
     override val autoBackupEnabledGlobally: Flow<Boolean> = observeSetting(
