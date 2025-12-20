@@ -81,8 +81,44 @@ import com.health.openscale.R
 import java.util.Locale
 
 enum class SupportedLanguage(val code: String, val nativeDisplayName: String) {
+    // Keep the list below alphabetically sorted
+    // Native names from https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+    //ARABIC("ar", "Arabic (العربية)"),
+    //BENGALI("bn-rBD", "Bengali (বাংলা)"),
+    //CATALAN("ca", "Catalan (català)"),
+    //CHINESE_SIMPLIFIED("zh-CN", "Chinese (simplified; 中文 (汉语))"),
+    CHINESE_TRADITIONAL("zh-rTW", "Chinese (traditional; 中文 (繁體))"),
+    //CROATIAN("hr", "Croatian (hrvatski jezik)"),
+    //CZECH("cs", "Czech (čeština)"),
+    //DANISH("da", "Danish (dansk)"),
+    //DUTCH("nl", "Dutch (Nederlands)"),
     ENGLISH("en", "English"),
-    GERMAN("de", "Deutsch");
+    //ESPERANTO("eo", "Esperanto"),
+    FINNISH("fi", "Finnish (suomi)"),
+    FRENCH("fr", "French (français)"),
+    //GALICIAN("gl", "Galician (Galego)"),
+    GERMAN("de", "German (Deutsch)"),
+    //GREEK("el", "Greek (ελληνικά)"),
+    //HEBREW("iw", "Hebrew (עברית)"),
+    //HUNGARIAN("hu", "Hungarian (magyar)"),
+    //INDONESIAN("id", "Indonesian (Bahasa Indonesia)"),
+    //ITALIAN("it", "Italian (Italiano)"),
+    JAPANESE("ja", "Japanese (日本語)"),
+    //KOREAN("ko", "Korean (한국어)"),
+    //LITHUANIAN("lt", "Lithuanian (lietuvių kalba)"),
+    //NORWEGIAN_BOKMAL("nb", "Norwegian Bokmål (Norsk)"),
+    POLISH("pl", "Polish (język polski)"),
+    PORTUGUESE_BRAZIL("pt-rBR", "Portuguese (Brazil; Português)"),
+    //ROMANIAN("ro", "Romanian (Română)"),
+    //RUSSIAN("ru", "Russian (русский)"),
+    //SLOVAK("sk", "Slovak (Slovenčina)"),
+    //SLOVENIAN("sl", "Slovenian (Slovenski Jezik)"),
+    //SPANISH("es", "Spanish (Español)"),
+    SWEDISH("sv", "Swedish (Svenska)");
+    //TAMIL("ta", "Tamil (தமிழ்)"),
+    //TURKISH("tr", "Turkish (Türkçe)"),
+    //UKRAINIAN("uk", "Ukrainian (Українська)"),
+    //VIETNAMESE("vi", "Vietnamese (Tiếng Việt)");
 
     fun toLocale(): Locale {
         return Locale.Builder().setLanguage(code).build()
