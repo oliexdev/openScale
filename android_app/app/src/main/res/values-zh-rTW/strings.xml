@@ -39,8 +39,21 @@
     <string name="user_settings_title">使用者</string>
     <string name="manage_users">管理用戶</string>
     <string name="content_desc_switch_user">切換用戶。已選擇：%1$s</string>
-    <string name="content_desc_selected_user_indicator">已選用戶指示器</string>
+    <string name="content_desc_selected_user_indicator">已選使用者指示器</string>
     <string name="action_add_user">增加使用者</string>
     <string name="error_selecting_user">用戶選擇失敗。</string>
     <string name="toast_no_user_selected">未選擇使用者。</string>
+    <string name="toast_select_user_first">請先選擇使用者。</string>
+    <string name="no_user_selected_title">無活躍使用者</string>
+    <string name="no_user_selected_message">請建立新使用者或選擇現有使用者以查看和管理您的測量數據。</string>
+    <string name="user_deleted_successfully">使用者 %1$s 已成功刪除。</string>
+    <string name="user_deleted_error">刪除使用者 %1$s 時發生錯誤。</string>
+    <string name="user_updated_successfully">使用者 %1$s 已成功更新。</string>
+    <string name="user_updated_error">更新使用者 %1$s 時發生錯誤。</string>
+    <string name="user_detail_label_name">名稱</string>
+    <string name="user_detail_label_height">高度</string>
+    <string name="user_detail_label_gender">性別</string>
+    <string name="gender_male">男性</string>
+    <string name="gender_female">女性</string>
+    <string name="amputation_hand">手</string>
 </resources>
