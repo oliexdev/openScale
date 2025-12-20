@@ -84,10 +84,10 @@ enum class SupportedLanguage(val code: String, val nativeDisplayName: String) {
     // Keep the list below alphabetically sorted
     // Native names from https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
     //ARABIC("ar", "Arabic (العربية)"),
-    //BENGALI("bn-rBD", "Bengali (বাংলা)"),
+    //BENGALI("bn-BD", "Bengali (বাংলা)"),
     //CATALAN("ca", "Catalan (català)"),
     //CHINESE_SIMPLIFIED("zh-CN", "Chinese (simplified; 中文 (汉语))"),
-    CHINESE_TRADITIONAL("zh-rTW", "Chinese (traditional; 中文 (繁體))"),
+    CHINESE_TRADITIONAL("zh-TW", "Chinese (traditional; 中文 (繁體))"),
     //CROATIAN("hr", "Croatian (hrvatski jezik)"),
     //CZECH("cs", "Czech (čeština)"),
     //DANISH("da", "Danish (dansk)"),
@@ -108,7 +108,7 @@ enum class SupportedLanguage(val code: String, val nativeDisplayName: String) {
     //LITHUANIAN("lt", "Lithuanian (lietuvių kalba)"),
     //NORWEGIAN_BOKMAL("nb", "Norwegian Bokmål (Norsk)"),
     POLISH("pl", "Polish (język polski)"),
-    PORTUGUESE_BRAZIL("pt-rBR", "Portuguese (Brazil; Português)"),
+    PORTUGUESE_BRAZIL("pt-BR", "Portuguese (Brazil; Português)"),
     //ROMANIAN("ro", "Romanian (Română)"),
     //RUSSIAN("ru", "Russian (русский)"),
     //SLOVAK("sk", "Slovak (Slovenčina)"),
@@ -121,7 +121,18 @@ enum class SupportedLanguage(val code: String, val nativeDisplayName: String) {
     //VIETNAMESE("vi", "Vietnamese (Tiếng Việt)");
 
     fun toLocale(): Locale {
-        return Locale.Builder().setLanguage(code).build()
+        val parts = code.split("-")
+        val language = parts.getOrNull(0) ?: ""
+        val region = parts.getOrNull(1)?.replace("r", "") ?: ""
+
+        if (language.isBlank()) {
+            return Locale.getDefault()
+        }
+
+        return Locale.Builder()
+            .setLanguage(language)
+            .setRegion(region)
+            .build()
     }
 
     companion object {

@@ -217,9 +217,6 @@ class MeasurementEnricher @Inject constructor(
             coefficients[i] = (b[i] - sum) / a[i][i]
         }
 
-        val coefficientsString = coefficients.map { "%.4f".format(it) }.joinToString()
-        LogManager.d("PolynomialRegression", "Calculated coefficients for degree $degree: [$coefficientsString]")
-
         return coefficients.toList()
     }
 
