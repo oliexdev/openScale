@@ -17,9 +17,8 @@
  */
 package com.health.openscale.ui.screen.settings
 
-import androidx.activity.result.launch
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,12 +28,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.AlignHorizontalRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Functions
+import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -55,8 +56,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
@@ -65,7 +66,6 @@ import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.screen.dialog.DeleteConfirmationDialog
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -167,11 +167,11 @@ fun MeasurementTypeSettingsScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(horizontal = 16.dp, vertical = 12.dp), // Adjust padding
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // Icon
                         val iconMeasurementType = remember(type.icon) {type.icon }
-
                         RoundMeasurementIcon(
                             icon = iconMeasurementType.resource,
                             iconTint = Color.Black.copy(alpha = iconTintAlpha),
@@ -181,12 +181,60 @@ fun MeasurementTypeSettingsScreen(
 
                         Spacer(Modifier.size(16.dp))
 
-                        // Display measurement type name
-                        Text(
-                            text = type.getDisplayName(LocalContext.current),
-                            modifier = Modifier.weight(1f),
-                            color = textColor
-                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            // first row name
+                            Text(
+                                text = type.getDisplayName(LocalContext.current),
+                                color = textColor,
+                                style = MaterialTheme.typography.titleMedium, // Name ist jetzt etwas größer
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(Modifier.size(4.dp))
+
+                            // second row meta information
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                if (type.unit.displayName.isNotBlank()) {
+                                    Text(
+                                        text = type.unit.displayName,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = textColor.copy(alpha = 0.8f)
+                                    )
+                                }
+
+                                if (type.isPinned) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.PushPin,
+                                        contentDescription = stringResource(R.string.measurement_type_label_pinned),
+                                        modifier = Modifier.size(14.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+
+                                if (type.isDerived) {
+                                    Icon(
+                                        imageVector = Icons.Default.Functions,
+                                        contentDescription = stringResource(R.string.formula_label_lbm),
+                                        modifier = Modifier.size(14.dp),
+                                        tint = textColor.copy(alpha = 0.8f)
+                                    )
+                                }
+
+                                if (type.isOnRightYAxis) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.AlignHorizontalRight,
+                                        contentDescription = stringResource(R.string.measurement_type_label_on_right_y_axis),
+                                        modifier = Modifier.size(14.dp),
+                                        tint = textColor.copy(alpha = 0.8f)
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(Modifier.size(8.dp))
 
                         // Edit button
                         IconButton(onClick = { onEditType(type.id) }) {
@@ -195,21 +243,24 @@ fun MeasurementTypeSettingsScreen(
                                 contentDescription = editContentDesc
                             )
                         }
-                        // Delete button, only for custom types
+
+                        // Delete button is only shown for custom types
                         if (type.key == MeasurementTypeKey.CUSTOM) {
                             IconButton(onClick = { typeToDelete = type }) {
                                 Icon(
                                     Icons.Default.Delete,
-                                    contentDescription = deleteContentDesc
+                                    contentDescription = deleteContentDesc,
+                                    tint = MaterialTheme.colorScheme.error // Use error color for destructive actions
                                 )
                             }
                         }
 
                         // Drag handle for reordering
                         IconButton(
-                            modifier = Modifier.draggableHandle() // Provided by the reorderable library
-                                .padding(start = 8.dp), // ensure small padding for separation
-                            onClick = {} // onClick is typically handled by the reorderable mechanism
+                            modifier = Modifier
+                                .draggableHandle()
+                                .padding(start = 8.dp),
+                            onClick = {}
                         ) {
                             Icon(
                                 Icons.Default.DragHandle,
@@ -218,6 +269,7 @@ fun MeasurementTypeSettingsScreen(
                         }
                     }
                 }
+
             }
         }
     }
