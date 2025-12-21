@@ -20,9 +20,7 @@ package com.health.openscale.ui.screen.settings
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.TimePickerState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.health.openscale.R
@@ -45,6 +43,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -406,6 +405,78 @@ class SettingsViewModel @Inject constructor(
             showSnackbar(
                 R.string.measurement_type_update_error_conversion_failed,
                 listOf(updatedType.name.orEmpty())
+            )
+        }
+    }
+
+    fun togglePinnedState(typeIds: List<Int>) {
+        viewModelScope.launch {
+            if (typeIds.isEmpty()) return@launch
+            val allTypes = measurementFacade.getAllMeasurementTypes().first()
+            val typesToUpdate = allTypes.filter { it.id in typeIds }
+
+            // Decide the target state based on the majority. If 50% or more are already pinned, unpin all. Otherwise, pin all.
+            val shouldPin = typesToUpdate.count { it.isPinned } < (typesToUpdate.size / 2.0)
+
+            typesToUpdate.forEach { type ->
+                if (type.isPinned != shouldPin) {
+                    updateMeasurementType(type.copy(isPinned = shouldPin), showSnackbar = false)
+                }
+            }
+            // Show a single snackbar after the batch operation.
+            val statusRes = if (shouldPin) R.string.status_pinned else R.string.status_unpinned
+            showSnackbar(
+                resId = R.string.batch_update_status_report,
+                args = listOf(typeIds.size, context.getString(statusRes))
+            )
+        }
+    }
+
+    fun toggleEnabledState(typeIds: List<Int>) {
+        viewModelScope.launch {
+            if (typeIds.isEmpty()) return@launch
+            val allTypes = measurementFacade.getAllMeasurementTypes().first()
+            val typesToUpdate = allTypes.filter { it.id in typeIds }
+
+            // If 50% or more are already enabled, disable all. Otherwise, enable all.
+            val shouldEnable = typesToUpdate.count { it.isEnabled } < (typesToUpdate.size / 2.0)
+
+            typesToUpdate.forEach { type ->
+                if (type.isEnabled != shouldEnable) {
+                    updateMeasurementType(type.copy(isEnabled = shouldEnable), showSnackbar = false)
+                }
+            }
+            val statusRes = if (shouldEnable) R.string.status_enabled else R.string.status_disabled
+            showSnackbar(
+                resId = R.string.batch_update_status_report,
+                args = listOf(typeIds.size, context.getString(statusRes))
+            )
+        }
+    }
+
+    fun toggleAxisState(typeIds: List<Int>) {
+        viewModelScope.launch {
+            if (typeIds.isEmpty()) return@launch
+            val allTypes = measurementFacade.getAllMeasurementTypes().first()
+            val typesToUpdate = allTypes.filter { it.id in typeIds }
+
+            // If 50% or more are already on the right axis, move all to the left. Otherwise, move all to the right.
+            val shouldBeOnRightAxis =
+                typesToUpdate.count { it.isOnRightYAxis } < (typesToUpdate.size / 2.0)
+
+            typesToUpdate.forEach { type ->
+                if (type.isOnRightYAxis != shouldBeOnRightAxis) {
+                    updateMeasurementType(
+                        type.copy(isOnRightYAxis = shouldBeOnRightAxis),
+                        showSnackbar = false
+                    )
+                }
+            }
+            val statusRes =
+                if (shouldBeOnRightAxis) R.string.status_axis_right else R.string.status_axis_left
+            showSnackbar(
+                resId = R.string.batch_update_status_report,
+                args = listOf(typeIds.size, context.getString(statusRes))
             )
         }
     }

@@ -260,6 +260,22 @@
     <string name="lbm_weight_minus_bf_short">Gewicht − Körperfett</string>
     <string name="lbm_weight_minus_bf_long">Berechnet LBM als Gesamtgewicht minus Fettmasse aus der gewählten Körperfettformel. Genauigkeit hängt von der BF-Schätzung ab.</string>
 
+    <string name="batch_update_status_report">%1$d: %2$s</string>
+    <string name="dialog_title_confirm_generic">%1$s bestätigen?</string>
+    <string name="dialog_text_confirm_generic_verb">Möchten Sie wirklich %1$d Element(e) %2$s?</string>
+    <string name="action_pin">anheften</string>
+    <string name="action_unpin">lösen</string>
+    <string name="action_enable">aktivieren</string>
+    <string name="action_disable">deaktivieren</string>
+    <string name="action_move_to_left_axis">auf linke Achse verschieben</string>
+    <string name="action_move_to_right_axis">auf rechte Achse verschieben</string>
+    <string name="status_pinned">Angeheftet</string>
+    <string name="status_unpinned">Losgelöst</string>
+    <string name="status_enabled">Aktiviert</string>
+    <string name="status_disabled">Deaktiviert</string>
+    <string name="status_axis_right">Auf rechte Achse verschoben</string>
+    <string name="status_axis_left">Auf linke Achse verschoben</string>
+
     <!-- Bluetooth -->
     <string name="info_bluetooth_connection_error_scale_offline">Verbindung zur Waage fehlgeschlagen, bitte stellen Sie sicher, dass sie eingeschaltet ist.</string>
     <string name="fallback_device_name_saved_scale">gespeicherte Waage</string>

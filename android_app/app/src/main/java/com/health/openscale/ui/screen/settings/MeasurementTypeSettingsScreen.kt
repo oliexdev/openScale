@@ -17,6 +17,8 @@
  */
 package com.health.openscale.ui.screen.settings
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,25 +33,37 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.AlignHorizontalRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Functions
+import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material.icons.filled.ToggleOff
+import androidx.compose.material.icons.filled.ToggleOn
+import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material.icons.outlined.PushPin
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -90,6 +104,27 @@ fun MeasurementTypeSettingsScreen(
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val measurementTypes by sharedViewModel.measurementTypes.collectAsState()
+
+    var isInSelectionMode by rememberSaveable { mutableStateOf(false) }
+    val selectedTypeIds = remember { mutableStateListOf<Int>() }
+
+    var pendingAction by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var dialogTitle by remember { mutableStateOf("") }
+    var dialogText by remember { mutableStateOf("") }
+
+    val onTogglePinned = {
+        settingsViewModel.togglePinnedState(selectedTypeIds.toList())
+        isInSelectionMode = false
+    }
+    val onToggleEnabled = {
+        settingsViewModel.toggleEnabledState(selectedTypeIds.toList())
+        isInSelectionMode = false
+    }
+    val onToggleAxis = {
+        settingsViewModel.toggleAxisState(selectedTypeIds.toList())
+        isInSelectionMode = false
+    }
+
     // Remember and sort the list based on displayOrder. This list is used by the reorderable component.
     var list by remember(measurementTypes) {
         mutableStateOf(measurementTypes.sortedBy { it.displayOrder })
@@ -120,12 +155,98 @@ fun MeasurementTypeSettingsScreen(
     val editContentDesc = stringResource(R.string.content_desc_edit_type)
     val deleteContentDesc = stringResource(R.string.content_desc_delete_type)
 
-    LaunchedEffect(Unit) {
-        sharedViewModel.setTopBarTitle(screenTitle)
-        sharedViewModel.setTopBarAction(
-            TopBarAction(icon = Icons.Default.Add, onClick = {
-                onEditType(null) // Request to add a new type
-            })
+    LaunchedEffect(Unit,isInSelectionMode, selectedTypeIds.size) {
+        if (isInSelectionMode) {
+            val areAllSelectedPinned = selectedTypeIds.all { id -> list.find { it.id == id }?.isPinned == true }
+            val areAllSelectedEnabled = selectedTypeIds.all { id -> list.find { it.id == id }?.isEnabled == true }
+            val areAllSelectedOnRightAxis = selectedTypeIds.all { id -> list.find { it.id == id }?.isOnRightYAxis == true }
+
+            sharedViewModel.setTopBarActions(
+                listOf(
+                    // Enable/Disable Action
+                    TopBarAction(
+                        icon = if (areAllSelectedEnabled) Icons.Filled.ToggleOn else Icons.Filled.ToggleOff,
+                        onClick = {
+                            pendingAction = onToggleEnabled
+                            val actionVerbRes = if (areAllSelectedEnabled) R.string.action_disable else R.string.action_enable
+                            val actionTitleVerb = context.getString(actionVerbRes).replaceFirstChar { it.titlecase() } // "Enable", "Disable"
+                            dialogTitle = context.getString(R.string.dialog_title_confirm_generic, actionTitleVerb)
+                            dialogText = context.getString(R.string.dialog_text_confirm_generic_verb, selectedTypeIds.size, context.getString(actionVerbRes))
+                        }
+                    ),
+                    // Pin/Unpin Action
+                    TopBarAction(
+                        icon = if (areAllSelectedPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
+                        onClick = {
+                            pendingAction = onTogglePinned
+                            val actionVerbRes = if (areAllSelectedPinned) R.string.action_unpin else R.string.action_pin
+                            val actionTitleVerb = context.getString(actionVerbRes).replaceFirstChar { it.titlecase() } // "Pin", "Unpin"
+                            dialogTitle = context.getString(R.string.dialog_title_confirm_generic, actionTitleVerb)
+                            dialogText = context.getString(R.string.dialog_text_confirm_generic_verb, selectedTypeIds.size, context.getString(actionVerbRes))
+                        }
+                    ),
+                    // Change Axis Action
+                    TopBarAction(
+                        icon = Icons.Filled.SwapHoriz,
+                        onClick = {
+                            pendingAction = onToggleAxis
+                            val actionVerbRes = if (areAllSelectedOnRightAxis) R.string.action_move_to_left_axis else R.string.action_move_to_right_axis
+                            val actionTitleVerb = context.getString(actionVerbRes).replaceFirstChar { it.titlecase() }
+                            dialogTitle = context.getString(R.string.dialog_title_confirm_generic, actionTitleVerb)
+                            dialogText = context.getString(R.string.dialog_text_confirm_generic_verb, selectedTypeIds.size, context.getString(actionVerbRes))
+                        }
+                    ),
+                    // Exit Selection Mode Action
+                    TopBarAction(
+                        icon = Icons.Filled.Close,
+                        onClick = { isInSelectionMode = false }
+                    )
+                )
+            )
+            sharedViewModel.setTopBarTitle("${selectedTypeIds.size} selected")
+        } else {
+            // Standard-TopBar
+            selectedTypeIds.clear()
+            sharedViewModel.setTopBarTitle(screenTitle)
+            sharedViewModel.setTopBarActions(
+                listOf(
+                    TopBarAction(
+                        icon = Icons.Outlined.CheckBox,
+                        onClick = { isInSelectionMode = true }
+                    ),
+                    TopBarAction(
+                        icon = Icons.Default.Add,
+                        onClick = { onEditType(null) }
+                    )
+                )
+            )
+        }
+    }
+
+    BackHandler(enabled = isInSelectionMode) {
+        isInSelectionMode = false
+    }
+
+    if (pendingAction != null) {
+        AlertDialog(
+            onDismissRequest = { pendingAction = null },
+            title = { Text(dialogTitle) },
+            text = { Text(dialogText) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        pendingAction?.invoke()
+                        pendingAction = null
+                    }
+                ) {
+                    Text(stringResource(R.string.confirm_button))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingAction = null }) {
+                    Text(stringResource(R.string.cancel_button))
+                }
+            }
         )
     }
 
@@ -150,7 +271,13 @@ fun MeasurementTypeSettingsScreen(
     ) {
         itemsIndexed(list, key = { _, item -> item.id }) { _, type ->
             ReorderableItem(reorderableState, key = type.id) { isDragging ->
+                val isSelected = type.id in selectedTypeIds
                 // Apply visual effects based on whether the type is enabled
+                val cardColors = if (isSelected) {
+                    CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                } else {
+                    CardDefaults.cardColors()
+                }
                 val itemAlpha = if (type.isEnabled) 1f else 0.6f
                 val textColor = if (type.isEnabled) LocalContentColor.current
                 else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -159,10 +286,29 @@ fun MeasurementTypeSettingsScreen(
 
 
                 Card(
+                    colors = cardColors,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
                         .graphicsLayer(alpha = itemAlpha) // Apply transparency for disabled items
+                        .combinedClickable(
+                            onClick = {
+                                if (isInSelectionMode) {
+                                    if (isSelected) selectedTypeIds.remove(type.id) else selectedTypeIds.add(
+                                        type.id
+                                    )
+                                    if (selectedTypeIds.isEmpty()) isInSelectionMode = false
+                                } else {
+                                    onEditType(type.id)
+                                }
+                            },
+                            onLongClick = {
+                                if (!isInSelectionMode) {
+                                    isInSelectionMode = true
+                                    selectedTypeIds.add(type.id)
+                                }
+                            }
+                        )
                 ) {
                     Row(
                         modifier = Modifier
@@ -170,6 +316,17 @@ fun MeasurementTypeSettingsScreen(
                             .padding(horizontal = 16.dp, vertical = 12.dp), // Adjust padding
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        if (isInSelectionMode) {
+                            Checkbox(
+                                checked = isSelected,
+                                onCheckedChange = {
+                                    if (isSelected) selectedTypeIds.remove(type.id) else selectedTypeIds.add(type.id)
+                                    if (selectedTypeIds.isEmpty()) isInSelectionMode = false
+                                },
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                        }
+
                         // Icon
                         val iconMeasurementType = remember(type.icon) {type.icon }
                         RoundMeasurementIcon(

@@ -263,6 +263,22 @@
     <string name="lbm_weight_minus_bf_short">Weight − Body Fat</string>
     <string name="lbm_weight_minus_bf_long">Computes LBM as total weight minus fat mass derived from the chosen body-fat formula. Accuracy depends on the BF estimate.</string>
 
+    <string name="batch_update_status_report">%1$d: %2$s</string>
+    <string name="dialog_title_confirm_generic">Confirm %1$s?</string>
+    <string name="dialog_text_confirm_generic_verb">Are you sure you want to %2$s %1$d item(s)?</string>
+    <string name="action_pin">pin</string>
+    <string name="action_unpin">unpin</string>
+    <string name="action_enable">enable</string>
+    <string name="action_disable">disable</string>
+    <string name="action_move_to_left_axis">move to left axis</string>
+    <string name="action_move_to_right_axis">move to right axis</string>
+    <string name="status_pinned">Pinned</string>
+    <string name="status_unpinned">Unpinned</string>
+    <string name="status_enabled">Enabled</string>
+    <string name="status_disabled">Disabled</string>
+    <string name="status_axis_right">Moved to right axis</string>
+    <string name="status_axis_left">Moved to left axis</string>
+
     <!-- Bluetooth -->
     <string name="info_bluetooth_connection_error_scale_offline">Could not connect to scale, please ensure it is on.</string>
     <string name="fallback_device_name_saved_scale">saved scale</string>
