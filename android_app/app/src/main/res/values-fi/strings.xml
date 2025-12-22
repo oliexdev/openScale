@@ -269,15 +269,8 @@
     <string name="supported_label">Tuettu</string>
     <string name="not_supported_label">Ei tuettu</string>
     <string name="rssi_format">%1$d dBm</string>
-    <string name="menu_remove_saved_device">Poista laite</string>
-    <string name="menu_enable_debug">Ota virheenkorjaus käyttöön</string>
     <string name="menu_save_as_preferred">Tallenna ensisijaiseksi</string>
-    <string name="menu_save_as_debug">Tallenna virheenkorjauksena</string>
     <string name="snackbar_saved_device_removed">Tallennettu laite poistettu.</string>
-    <string name="snackbar_debug_enable_logs">Virheenkorjaus käytössä. Ota lokitiedosto käyttöön: Asetukset → Yleiset → Ota lokitiedosto käyttöön.</string>
-    <string name="snackbar_debug_for_device_enable_logs">Virheenkorjaus käytössä tällä laitteella. Ota lokitiedosto käyttöön: Asetukset → Yleiset → Ota lokitiedosto käyttöön.</string>
-    <string name="debug_banner_active">Virheenkorjausmoodi on aktiivinen — mittauksia ei tallenneta.</string>
-    <string name="debug_banner_enable_logs_hint">Ota lokitiedosto käyttöön: Asetukset → Yleiset → Ota lokitiedosto käyttöön.</string>
     <string name="capabilities_header">Ominaisuudet</string>
     <string name="tuning_title">Bluetooth-säätöprofiili</string>
     <string name="tuning_snackbar">Bluetooth -säätö: %1$s</string>

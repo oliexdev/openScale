@@ -273,15 +273,8 @@
     <string name="supported_label">Stöds</string>
     <string name="not_supported_label">Stöds inte</string>
     <string name="rssi_format">%1$d dBm</string>
-    <string name="menu_remove_saved_device">Ta bort enhet</string>
-    <string name="menu_enable_debug">Starta debug</string>
     <string name="menu_save_as_preferred">Spara som förvald</string>
-    <string name="menu_save_as_debug">Spara som debug</string>
     <string name="snackbar_saved_device_removed">Sparad enhet har tagits bort.</string>
-    <string name="snackbar_debug_enable_logs">Felsökning aktiverad. Aktivera loggfilen: Inställningar → Allmänt → Aktivera loggfil.</string>
-    <string name="snackbar_debug_for_device_enable_logs">Felsökning aktiverad för den här enheten. Aktivera loggfilen: Inställningar → Allmänt → Aktivera loggfil.</string>
-    <string name="debug_banner_active">Felsökningsläget är aktivt — inga mätningar sparas.</string>
-    <string name="debug_banner_enable_logs_hint">Aktivera loggfilen: Inställningar → Allmänt → Aktivera loggfil.</string>
     <string name="capabilities_header">Förmågor</string>
     <string name="tuning_title">Bluetooth Tuning-profil</string>
     <string name="tuning_snackbar">Bluetooth Tuning: %1$s</string>

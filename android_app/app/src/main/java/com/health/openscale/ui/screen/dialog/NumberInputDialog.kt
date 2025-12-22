@@ -1,5 +1,6 @@
 package com.health.openscale.ui.screen.dialog
 
+import android.R.attr.type
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -239,8 +240,10 @@ fun NumberInputField(
                                 } else { // FLOAT
                                     val currentNum = currentNumStr.toFloatOrNull() ?: 0f
                                     val step = when (unit) {
-                                        UnitType.KG, UnitType.LB, UnitType.PERCENT, UnitType.CM, UnitType.INCH -> 0.1f
-                                        else -> 1.0f
+                                        UnitType.KG, UnitType.LB, UnitType.PERCENT, UnitType.INCH -> 0.1f
+                                        UnitType.CM -> 0.5f
+                                        UnitType.KCAL -> 10f
+                                        else -> 0.1f
                                     }
                                     val newValue = if (isIncrement) currentNum + step else currentNum - step
                                     textValue = String.format(Locale.US, if (step >= 1.0f) "%.0f" else "%.1f", newValue)

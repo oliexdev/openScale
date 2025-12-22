@@ -269,15 +269,8 @@
     <string name="supported_label">サポートされています</string>
     <string name="not_supported_label">サポートされていません</string>
     <string name="rssi_format">%1$d dBm</string>
-    <string name="menu_remove_saved_device">デバイスの削除</string>
-    <string name="menu_enable_debug">デバッグを有効にする</string>
     <string name="menu_save_as_preferred">好みに応じて保存</string>
-    <string name="menu_save_as_debug">デバッグとして保存</string>
     <string name="snackbar_saved_device_removed">保存されたデバイスが削除されました。</string>
-    <string name="snackbar_debug_enable_logs">デバッグが有効です。ログ ファイルを有効にしてください: 設定 → 一般 → ログ ファイルを有効にする。</string>
-    <string name="snackbar_debug_for_device_enable_logs">このデバイスのデバッグが有効になっています。ログ ファイルを有効にしてください: 設定 → 一般 → ログ ファイルを有効にする。</string>
-    <string name="debug_banner_active">デバッグ モードがアクティブです。測定値は保存されません。</string>
-    <string name="debug_banner_enable_logs_hint">ログファイルを有効にしてください: 設定 → 一般 → ログファイルを有効にする。</string>
     <string name="capabilities_header">機能</string>
     <string name="legacy_adapter_event_user_details">ユーザー #%1$d (年齢: %2$d、身長: %3$d)</string>
     <string name="legacy_adapter_event_user_consent_required">ユーザー %1$d (インデックス %2$d) の同意が必要です。</string>

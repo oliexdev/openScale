@@ -271,15 +271,8 @@
     <string name="cap_state_supported_only">Compatível (não implementado): %1$s</string>
     <string name="bluetooth_connector_device_not_supported">%1$s não é compatível.</string>
     <string name="rssi_format">%1$d dBm</string>
-    <string name="menu_remove_saved_device">Remover dispositivo</string>
-    <string name="menu_enable_debug">Ativar depuração</string>
     <string name="menu_save_as_preferred">Salvar como favorita</string>
-    <string name="menu_save_as_debug">Salvar para depuração</string>
     <string name="snackbar_saved_device_removed">Dispositivo salvo removido.</string>
-    <string name="snackbar_debug_enable_logs">Depuração ativada. Por favor, ative o arquivo de log: Configurações → Geral → Ativar arquivo de log.</string>
-    <string name="snackbar_debug_for_device_enable_logs">Depuração ativada para este dispositivo. Por favor, ative o arquivo de log: Configurações → Geral → Ativar arquivo de log.</string>
-    <string name="debug_banner_active">Modo de depuração ativo — as medições não serão salvas.</string>
-    <string name="debug_banner_enable_logs_hint">Por favor, ative o arquivo de log: Configurações → Geral → Ativar arquivo de log.</string>
     <string name="capabilities_header">Recursos</string>
     <string name="tuning_title">Perfil de ajuste do Bluetooth</string>
     <string name="tuning_snackbar">Ajuste do Bluetooth: %1$s</string>

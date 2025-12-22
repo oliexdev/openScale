@@ -389,13 +389,13 @@ fun MeasurementDetailScreen(
                         onIncrement = if ((type.inputType == InputFieldType.FLOAT || type.inputType == InputFieldType.INT) && !type.isDerived) {
                             {
                                 val currentStr = currentValueForIncrementDecrement ?: if (type.inputType == InputFieldType.FLOAT) "0.0" else "0"
-                                valuesState[type.id] = incrementValue(currentStr, type.inputType)
+                                valuesState[type.id] = incrementValue(currentStr, type)
                             }
                         } else null,
                         onDecrement = if ((type.inputType == InputFieldType.FLOAT || type.inputType == InputFieldType.INT) && !type.isDerived) {
                             {
                                 val currentStr = currentValueForIncrementDecrement ?: if (type.inputType == InputFieldType.FLOAT) "0.0" else "0"
-                                valuesState[type.id] = decrementValue(currentStr, type.inputType)
+                                valuesState[type.id] = decrementValue(currentStr, type)
                             }
                         } else null
                     )
@@ -607,18 +607,36 @@ fun MeasurementValueEditRow(
     }
 }
 
-fun incrementValue(value: String, type: InputFieldType): String {
-    return when (type) {
+fun incrementValue(value: String, type: MeasurementType): String {
+    return when (type.inputType) {
         InputFieldType.INT -> (value.toIntOrNull()?.plus(1) ?: 1).toString()
-        InputFieldType.FLOAT -> (value.toFloatOrNull()?.plus(1f) ?: 1f).toString()
+        InputFieldType.FLOAT -> {
+            val step = when (type.unit) {
+                UnitType.KG, UnitType.LB, UnitType.PERCENT, UnitType.INCH -> 0.1f
+                UnitType.CM -> 0.5f
+                UnitType.KCAL -> 10f
+                else -> 0.1f
+            }
+
+            (value.toFloatOrNull()?.plus(step) ?: 0.1f).toString()
+        }
         else -> value
     }
 }
 
-fun decrementValue(value: String, type: InputFieldType): String {
-    return when (type) {
+fun decrementValue(value: String, type: MeasurementType): String {
+    return when (type.inputType) {
         InputFieldType.INT -> (value.toIntOrNull()?.minus(1) ?: 0).toString()
-        InputFieldType.FLOAT -> (value.toFloatOrNull()?.minus(1f) ?: 0f).toString()
+        InputFieldType.FLOAT -> {
+            val step = when (type.unit) {
+                UnitType.KG, UnitType.LB, UnitType.PERCENT, UnitType.INCH -> 0.1f
+                UnitType.CM -> 0.5f
+                UnitType.KCAL -> 10f
+                else -> 0.1f
+            }
+
+            (value.toFloatOrNull()?.minus(step) ?: 0.1f).toString()
+        }
         else -> value
     }
 }
