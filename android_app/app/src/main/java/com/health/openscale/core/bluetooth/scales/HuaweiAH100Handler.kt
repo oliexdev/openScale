@@ -71,7 +71,7 @@ class HuaweiAH100Handler : ScaleDeviceHandler() {
             DeviceCapability.HISTORY_READ
         )
         val implemented = setOf(
-            // DeviceCapability.BODY_COMPOSITION, // TODO only fat
+            DeviceCapability.BODY_COMPOSITION, // Weight, fat%, and impedance
             DeviceCapability.TIME_SYNC,
             DeviceCapability.USER_SYNC,
             // We parse history frames; triggering full history pull is partial here.
@@ -296,20 +296,14 @@ class HuaweiAH100Handler : ScaleDeviceHandler() {
         val p2 = payload(second)
         val merged = concat(p1, p2)
 
-        val key = magicKey ?: return logW("magicKey missing; drop frame")
-        val plain = try {
-            aesCtr(merged, key, initialIv)
-        } catch (e: GeneralSecurityException) {
-            logW("AES decrypt failed: ${e.message}")
-            return
-        }
+        logD("XOR'd data (${merged.size}b): ${hex(merged, 0, min(merged.size, 32))}${if (merged.size>32) " …" else ""}")
 
-        logD("Decrypted (${plain.size}b): ${hex(plain, 0, min(plain.size, 32))}${if (plain.size>32) " …" else ""}")
-
+        // Data is XOR-obfuscated only, NOT AES encrypted
+        // Parse directly from the XOR'd data
         when (type) {
-            NTFY_MEASUREMENT -> parseAndPublishMeasurement(plain)
+            NTFY_MEASUREMENT -> parseAndPublishMeasurement(merged)
             NTFY_HISTORY_RECORD -> {
-                parseAndPublishMeasurement(plain)
+                parseAndPublishMeasurement(merged)
                 // Then request next; scale will stop with HISTORY_UPLOAD_DONE
                 sendGetHistoryNext()
             }
@@ -317,52 +311,52 @@ class HuaweiAH100Handler : ScaleDeviceHandler() {
     }
 
     /**
-     * Decrypted measurement format (derived from legacy):
-     * index:
-     *  0  : userId
-     *  1..2 : weight tenth-kg LE
-     *  3..4 : fat (x10) LE
-     *  5..6 : year LE
-     *  7    : month (1..12)  -> convert to 0-based for Calendar
-     *  8    : day
-     *  9    : hour
-     * 10    : minute
-     * 11    : second
-     * 12    : weekday (unused)
-     * 13..14: resistance LE
+     * Measurement format (XOR-obfuscated, 32 bytes merged from two 16-byte frames):
+     *
+     * Based on reverse engineering - data is XOR obfuscated only, NOT AES encrypted:
+     * - Position 1: Weight (encoded as: weight_kg = (1457 - byte[1]) / 10)
+     * - Position 2-3: Impedance (big-endian, ohms)
+     * - Position 20: Body fat % (whole percent)
+     * - Position 31: User ID
+     * - Timestamp: Position not yet identified (using current time)
      */
     private fun parseAndPublishMeasurement(data: ByteArray) {
-        if (data.size < 15) return
+        if (data.size < 32) {
+            logW("Measurement data too short: ${data.size} bytes")
+            return
+        }
 
-        val userId = data[0].toInt() and 0xFF
-        val weightTenth = u16le(data, 1)
-        val weight = weightTenth / 10.0f
-        val fat = u16le(data, 3) / 10.0f
-        val year = u16le(data, 5)
-        val month1 = (data[7].toInt() and 0xFF).coerceIn(1, 12)
-        val day = data[8].toInt() and 0xFF
-        val hour = data[9].toInt() and 0xFF
-        val minute = data[10].toInt() and 0xFF
-        val second = data[11].toInt() and 0xFF
-        val resistance = u16le(data, 13)
+        // Weight at position 1, encoded formula
+        val weightByte = data[1].toInt() and 0xFF
+        val weight = (1457 - weightByte) / 10.0f
 
-        // Build date
-        val cal = Calendar.getInstance().apply { set(year, month1 - 1, day, hour, minute, second) }
-        val dt = cal.time
+        // Impedance at position 2-3, big-endian, ohms
+        val impedance = u16be(data, 2)
 
-        lastMeasuredWeightTenthKg = weightTenth
+        // Body fat at position 20, whole percent
+        val fat = (data[20].toInt() and 0xFF).toFloat()
+
+        // User ID at position 31
+        val userId = data[31].toInt() and 0xFF
+
+        // Use current time since timestamp position not yet identified
+        val dt = Date()
+
+        lastMeasuredWeightTenthKg = (weight * 10).toInt()
 
         val m = ScaleMeasurement().apply {
             this.userId = userId
             this.dateTime = dt
             this.weight = weight
             this.fat = fat
-            // TODO: if someone contributes formulas, fill water/muscle/bone via resistance.
+            if (impedance > 0 && impedance < 4000) {
+                this.impedance = impedance.toDouble()
+            }
         }
         publish(m)
-        logI("Saved @ ${ts(dt)} kg=$weight fat=$fat% R=$resistance")
+        logI("Measurement: ${weight} kg, fat=${fat}%, impedance=${impedance} Ω, userId=$userId @ ${ts(dt)}")
 
-        // Acknowledge composition if already bound; harmless otherwise
+        // Acknowledge measurement
         sendCmd(CMD_FAT_RESULT_ACK, byteArrayOf(0x00))
     }
 
@@ -429,6 +423,8 @@ class HuaweiAH100Handler : ScaleDeviceHandler() {
     private fun le16(v: Int) = byteArrayOf((v and 0xFF).toByte(), ((v shr 8) and 0xFF).toByte())
     private fun u16le(b: ByteArray, off: Int) =
         ((b[off].toInt() and 0xFF) or ((b[off + 1].toInt() and 0xFF) shl 8))
+    private fun u16be(b: ByteArray, off: Int) =
+        (((b[off].toInt() and 0xFF) shl 8) or (b[off + 1].toInt() and 0xFF))
 
     private fun aesCtr(data: ByteArray, key: ByteArray, iv: ByteArray): ByteArray {
         val cipher = Cipher.getInstance("AES/CTR/NoPadding")
