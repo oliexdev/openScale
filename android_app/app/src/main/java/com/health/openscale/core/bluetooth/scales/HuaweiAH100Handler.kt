@@ -316,9 +316,12 @@ class HuaweiAH100Handler : ScaleDeviceHandler() {
      * Based on reverse engineering - data is XOR obfuscated only, NOT AES encrypted:
      * - Position 1: Weight (encoded as: weight_kg = (1457 - byte[1]) / 10)
      * - Position 2-3: Impedance (big-endian, ohms)
-     * - Position 20: Body fat % (whole percent)
+     * - Position 10: Visceral fat rating (whole number)
+     * - Position 20: Skeletal muscle % (whole percent)
+     * - Position 27: Body water % (whole percent)
      * - Position 31: User ID
      * - Timestamp: Position not yet identified (using current time)
+     * - Body fat %: Position not yet identified
      */
     private fun parseAndPublishMeasurement(data: ByteArray) {
         if (data.size < 32) {
@@ -333,8 +336,14 @@ class HuaweiAH100Handler : ScaleDeviceHandler() {
         // Impedance at position 2-3, big-endian, ohms
         val impedance = u16be(data, 2)
 
-        // Body fat at position 20, whole percent
-        val fat = (data[20].toInt() and 0xFF).toFloat()
+        // Visceral fat at position 10
+        val visceralFat = (data[10].toInt() and 0xFF).toFloat()
+
+        // Skeletal muscle % at position 20
+        val muscle = (data[20].toInt() and 0xFF).toFloat()
+
+        // Body water % at position 27
+        val water = (data[27].toInt() and 0xFF).toFloat()
 
         // User ID at position 31
         val userId = data[31].toInt() and 0xFF
@@ -348,13 +357,15 @@ class HuaweiAH100Handler : ScaleDeviceHandler() {
             this.userId = userId
             this.dateTime = dt
             this.weight = weight
-            this.fat = fat
+            this.muscle = muscle
+            this.water = water
+            this.visceralFat = visceralFat
             if (impedance > 0 && impedance < 4000) {
                 this.impedance = impedance.toDouble()
             }
         }
         publish(m)
-        logI("Measurement: ${weight} kg, fat=${fat}%, impedance=${impedance} Ω, userId=$userId @ ${ts(dt)}")
+        logI("Measurement: ${weight} kg, muscle=${muscle}%, water=${water}%, visceral=${visceralFat}, impedance=${impedance} Ω, userId=$userId @ ${ts(dt)}")
 
         // Acknowledge measurement
         sendCmd(CMD_FAT_RESULT_ACK, byteArrayOf(0x00))
