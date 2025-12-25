@@ -317,11 +317,15 @@ class HuaweiAH100Handler : ScaleDeviceHandler() {
      * - Position 1: Weight (encoded as: weight_kg = (1457 - byte[1]) / 10)
      * - Position 2-3: Impedance (big-endian, ohms)
      * - Position 10: Visceral fat rating (whole number)
-     * - Position 20: Skeletal muscle % (whole percent)
+     * - Position 20: Body fat % (whole percent)
      * - Position 27: Body water % (whole percent)
      * - Position 31: User ID
      * - Timestamp: Position not yet identified (using current time)
-     * - Body fat %: Position not yet identified
+     *
+     * Note: Position 20 shows different values depending on the connected app:
+     * - With openScale: displays as body fat %
+     * - With Huawei Health: displays as skeletal muscle %
+     * The scale likely calculates differently based on user profile data sent by each app.
      */
     private fun parseAndPublishMeasurement(data: ByteArray) {
         if (data.size < 32) {
@@ -339,8 +343,8 @@ class HuaweiAH100Handler : ScaleDeviceHandler() {
         // Visceral fat at position 10
         val visceralFat = (data[10].toInt() and 0xFF).toFloat()
 
-        // Skeletal muscle % at position 20
-        val muscle = (data[20].toInt() and 0xFF).toFloat()
+        // Body fat % at position 20
+        val fat = (data[20].toInt() and 0xFF).toFloat()
 
         // Body water % at position 27
         val water = (data[27].toInt() and 0xFF).toFloat()
@@ -357,7 +361,7 @@ class HuaweiAH100Handler : ScaleDeviceHandler() {
             this.userId = userId
             this.dateTime = dt
             this.weight = weight
-            this.muscle = muscle
+            this.fat = fat
             this.water = water
             this.visceralFat = visceralFat
             if (impedance > 0 && impedance < 4000) {
@@ -365,7 +369,7 @@ class HuaweiAH100Handler : ScaleDeviceHandler() {
             }
         }
         publish(m)
-        logI("Measurement: ${weight} kg, muscle=${muscle}%, water=${water}%, visceral=${visceralFat}, impedance=${impedance} Ω, userId=$userId @ ${ts(dt)}")
+        logI("Measurement: ${weight} kg, fat=${fat}%, water=${water}%, visceral=${visceralFat}, impedance=${impedance} Ω, userId=$userId @ ${ts(dt)}")
 
         // Acknowledge measurement
         sendCmd(CMD_FAT_RESULT_ACK, byteArrayOf(0x00))
