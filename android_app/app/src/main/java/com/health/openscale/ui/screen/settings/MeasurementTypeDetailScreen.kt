@@ -40,6 +40,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
@@ -451,7 +452,7 @@ fun MeasurementTypeDetailScreen(
                 OutlinedSettingRow(
                     label = stringResource(R.string.measurement_type_label_unit),
                     surfaceModifier = Modifier
-                        .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = unitDropdownEnabled)
+                        .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = unitDropdownEnabled)
                         .clickable(enabled = unitDropdownEnabled) { if (unitDropdownEnabled) expandedUnit = true },
                     controlContent = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -468,7 +469,7 @@ fun MeasurementTypeDetailScreen(
                     ExposedDropdownMenu(
                         expanded = expandedUnit,
                         onDismissRequest = { expandedUnit = false },
-                        modifier = Modifier.exposedDropdownSize(matchTextFieldWidth = true)
+                        modifier = Modifier.exposedDropdownSize(matchAnchorWidth = true)
                     ) {
                         allowedUnitsForKey.forEach { unit ->
                             DropdownMenuItem(
@@ -507,7 +508,7 @@ fun MeasurementTypeDetailScreen(
                     onValueChange = {},
                     label = { Text(stringResource(R.string.measurement_type_label_input_type)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedInputType) },
-                    modifier = Modifier.menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true).fillMaxWidth()
+                    modifier = Modifier.menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true).fillMaxWidth()
                 )
                 ExposedDropdownMenu(expanded = expandedInputType, onDismissRequest = { expandedInputType = false }) {
                     allowedInputTypesForKey.forEach { type ->
@@ -637,7 +638,7 @@ private fun <T> FormulaPickerRow(
         OutlinedSettingRow(
             label = label,
             surfaceModifier = Modifier
-                .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true)
+                .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
                 .clickable { expanded = true },
             controlContent = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -659,7 +660,7 @@ private fun <T> FormulaPickerRow(
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.exposedDropdownSize(matchTextFieldWidth = true)
+            modifier = Modifier.exposedDropdownSize(matchAnchorWidth = true)
         ) {
             options.forEach { opt ->
                 DropdownMenuItem(

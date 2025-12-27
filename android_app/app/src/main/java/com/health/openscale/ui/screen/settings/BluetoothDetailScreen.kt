@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -157,7 +158,7 @@ fun BluetoothDetailScreen(
                     )
                 },                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = tuningDropdownExpanded) },
                 modifier = Modifier
-                    .menuAnchor(type = MenuAnchorType.PrimaryEditable)
+                    .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryEditable)
                     .fillMaxWidth()
                     .clickable { tuningDropdownExpanded = true },
                 colors = OutlinedTextFieldDefaults.colors(
@@ -170,7 +171,7 @@ fun BluetoothDetailScreen(
             ExposedDropdownMenu(
                 expanded = tuningDropdownExpanded,
                 onDismissRequest = { tuningDropdownExpanded = false },
-                modifier = Modifier.exposedDropdownSize(matchTextFieldWidth = true)
+                modifier = Modifier.exposedDropdownSize(matchAnchorWidth = true)
             ) {
                 availableTuningProfiles.forEach { profile ->
                     DropdownMenuItem(

@@ -263,8 +263,6 @@ enum class MeasureUnit {
             CM -> return "cm"
             INCH -> return "in"
         }
-
-        return ""
     }
 
     fun toInt(): Int {
@@ -272,8 +270,6 @@ enum class MeasureUnit {
             CM -> return 0
             INCH -> return 1
         }
-
-        return 0
     }
 
     companion object {

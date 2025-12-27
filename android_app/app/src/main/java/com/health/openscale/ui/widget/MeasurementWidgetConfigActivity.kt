@@ -42,12 +42,12 @@ import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.usecase.MeasurementQueryUseCases
 import com.health.openscale.ui.components.RoundMeasurementIcon
@@ -170,7 +170,7 @@ private fun WidgetConfigScreen(
     onCancel: () -> Unit,
     onConfirm: (selectedTypeId: Int?, selectedTheme: WidgetTheme) -> Unit
 ) {
-    val vm: MeasurementWidgetConfigViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+    val vm: MeasurementWidgetConfigViewModel = hiltViewModel()
     val types by vm.types.collectAsState()
 
     var selectedId by remember { mutableStateOf<Int?>(null) }

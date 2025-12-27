@@ -51,7 +51,7 @@
     <string name="no_user_selected_message">Merci de créer un nouveau profil ou d\'en sélectionner un existant pour voir et gérer vos mesures.</string>
     <string name="user_deleted_successfully">Profil %1$s a été supprimé avec succès.</string>
     <string name="user_deleted_error">Erreur pendant la suppression du profil %1$s.</string>
-    <string name="user_updated_successfully">Profil %1$ actualisé avec succès.</string>
+    <string name="user_updated_successfully">Profil %1$s actualisé avec succès.</string>
     <string name="user_updated_error">Erreur en actualisant le profil %1$s.</string>
     <string name="user_detail_label_name">Nom</string>
     <string name="user_detail_label_height">Hauteur</string>

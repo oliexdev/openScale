@@ -137,7 +137,7 @@ class SanitasSbf72Handler : StandardWeightProfileHandler() {
         bleBuilder.addUInt8(activityLevel)
         writeTo(SVC_SBF72_CUSTOM,CHR_SBF72_ACTIVITY_LEVEL,bleBuilder.build())
 
-        val raw = currentAppUser().userName.uppercase().replace(Regex("[^A-Z0-9]"), "").orEmpty()
+        val raw = currentAppUser().userName.uppercase().replace(Regex("[^A-Z0-9]"), "")
         val initials = raw.take(3)
         if (initials.isNotEmpty()) {
             logD(String.format("initials: %s", initials))

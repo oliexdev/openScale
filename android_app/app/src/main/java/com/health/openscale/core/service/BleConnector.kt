@@ -60,8 +60,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * @param scope The [kotlinx.coroutines.CoroutineScope] in which background operations like connection and
  *              event observation will be launched (e.g., `viewModelScope` from BluetoothViewModel).
  * @param scaleFactory A factory for creating [com.health.openscale.core.bluetooth.ScaleCommunicator] instances based on device information.
- * @param databaseRepository Repository for saving received measurements.
- * @param sharedViewModel ViewModel for showing snackbars and potentially other UI interactions.
+ * @param measurementFacade Facade for handling measurement-related operations.
  * @param getCurrentScaleUser Callback function to retrieve the current Bluetooth scale user.
  */
 class BleConnector(

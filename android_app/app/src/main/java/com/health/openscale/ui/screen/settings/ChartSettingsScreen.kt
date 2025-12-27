@@ -45,6 +45,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -252,7 +253,7 @@ fun ChartSettingsScreen(
                                 label = { Text(stringResource(R.string.setting_projection_polynomial_degree)) },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = polyDegreeDropdownExpanded) },
                                 modifier = Modifier
-                                    .menuAnchor(type = MenuAnchorType.PrimaryEditable)
+                                    .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryEditable)
                                     .fillMaxWidth()
                                     .clickable { polyDegreeDropdownExpanded = true },
                                 colors = OutlinedTextFieldDefaults.colors(
@@ -265,7 +266,7 @@ fun ChartSettingsScreen(
                             ExposedDropdownMenu(
                                 expanded = polyDegreeDropdownExpanded,
                                 onDismissRequest = { polyDegreeDropdownExpanded = false },
-                                modifier = Modifier.exposedDropdownSize(matchTextFieldWidth = true)
+                                modifier = Modifier.exposedDropdownSize(matchAnchorWidth = true)
                             ) {
                                 availablePolyDegrees.forEach { degreeEnum ->
                                     DropdownMenuItem(
@@ -299,7 +300,7 @@ fun ChartSettingsScreen(
                 label = { Text(stringResource(R.string.setting_smoothing_algorithm)) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = algorithmDropdownExpanded) },
                 modifier = Modifier
-                    .menuAnchor(type = MenuAnchorType.PrimaryEditable)
+                    .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryEditable)
                     .fillMaxWidth()
                     .clickable { algorithmDropdownExpanded = true },
                 colors = OutlinedTextFieldDefaults.colors(
@@ -312,7 +313,7 @@ fun ChartSettingsScreen(
             ExposedDropdownMenu(
                 expanded = algorithmDropdownExpanded,
                 onDismissRequest = { algorithmDropdownExpanded = false },
-                modifier = Modifier.exposedDropdownSize(matchTextFieldWidth = true)
+                modifier = Modifier.exposedDropdownSize(matchAnchorWidth = true)
             ) {
                 availableAlgorithms.forEach { algorithm ->
                     DropdownMenuItem(

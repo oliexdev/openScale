@@ -291,7 +291,7 @@ class BluetoothScannerManager(
                 // Add new device if it's supported, or has a meaningful name, or provides service/manufacturer data.
                 // This avoids populating the list with devices that have no identifying information and are not supported.
                 if (newDevice.isSupported ||
-                    !newDevice.name.isNullOrEmpty() ||
+                    newDevice.name.isNotEmpty() ||
                     newDevice.serviceUuids.isNotEmpty() ||
                     (newDevice.manufacturerData != null && newDevice.manufacturerData.isNotEmpty())
                 ) {
@@ -304,7 +304,7 @@ class BluetoothScannerManager(
                 // Filter ensures only devices that are supported or have a meaningful name (not generic "Unknown Device") are emitted.
                 // Sorting provides a consistent and user-friendly order.
                 _scannedDevices.value = deviceMap.values
-                    .filter { it.isSupported || (!it.name.isNullOrEmpty() && it.name != "Unbekanntes Gerät" && it.name != "Unknown Device") }
+                    .filter { it.isSupported || (it.name.isNotEmpty() && it.name != "Unbekanntes Gerät" && it.name != "Unknown Device") }
                     .sortedWith(compareByDescending<ScannedDeviceInfo> { it.isSupported }
                         .thenByDescending { it.rssi }
                         .thenBy { it.name?.lowercase() ?: "zzzz" }) // "zzzz" ensures null names sort last.

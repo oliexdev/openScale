@@ -43,6 +43,7 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
@@ -419,7 +420,7 @@ fun UserDetailScreen(
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = genderExpanded)
                 },
                 modifier = Modifier
-                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable)
+                    .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                     .fillMaxWidth()
             )
 
@@ -454,7 +455,7 @@ fun UserDetailScreen(
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = activityLevelExpanded)
                 },
                 modifier = Modifier
-                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable) // Anchors the dropdown menu to this text field
+                    .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable) // Anchors the dropdown menu to this text field
                     .fillMaxWidth()
             )
 

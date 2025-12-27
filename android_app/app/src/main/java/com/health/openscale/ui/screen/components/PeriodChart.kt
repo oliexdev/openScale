@@ -41,6 +41,9 @@ import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
 import com.patrykandpatrick.vico.core.cartesian.layer.ColumnCartesianLayer
+import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarker
+import com.patrykandpatrick.vico.core.cartesian.marker.Interaction
+import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarkerController
 import com.patrykandpatrick.vico.core.cartesian.marker.ColumnCartesianLayerMarkerTarget
 import com.patrykandpatrick.vico.core.cartesian.marker.DefaultCartesianMarker
 import com.patrykandpatrick.vico.core.common.Fill
@@ -116,17 +119,6 @@ fun PeriodChart(
         }
     }
 
-    // Track the currently hovered column index
-    var hoveredIndex by remember { mutableStateOf<Int?>(null) }
-
-    // Reset hovered/selected state if data changes or selection is invalid
-    LaunchedEffect(data) {
-        hoveredIndex = null
-        if (selectedPeriod != null && selectedPeriod !in data) {
-            onPeriodClick(null)
-        }
-    }
-
     // Build the Cartesian chart with a bottom axis and marker
     val chart = rememberCartesianChart(
         columnLayer,
@@ -148,34 +140,50 @@ fun PeriodChart(
             DefaultCartesianMarker.ValueFormatter { _, targets ->
                 val column = (targets.getOrNull(0) as? ColumnCartesianLayerMarkerTarget)
                     ?.columns?.firstOrNull()
-                hoveredIndex = column?.entry?.x?.toInt()
+                val hoveredIndex = column?.entry?.x?.toInt()
                 val hoveredData = hoveredIndex?.let { if (it in data.indices) data[it] else null }
                 hoveredData?.let { "${it.label} (${it.count})" } ?: ""
             }
-        )
+        ),
+        markerController = remember(data, selectedPeriod) {
+            object : CartesianMarkerController {
+                override fun shouldAcceptInteraction(
+                    interaction: Interaction,
+                    targets: List<CartesianMarker.Target>
+                ): Boolean {
+                    return interaction is Interaction.Press || interaction is Interaction.Release
+                }
+
+                override fun shouldShowMarker(
+                    interaction: Interaction,
+                    targets: List<CartesianMarker.Target>
+                ): Boolean {
+                    when (interaction) {
+                        is Interaction.Press -> return true
+
+                        is Interaction.Release -> {
+                            val index = targets.firstOrNull()?.x?.toInt() ?: return false
+                            if (index in data.indices) {
+                                val clickedData = data[index]
+                                if (clickedData == selectedPeriod) {
+                                    onPeriodClick(null)
+                                } else {
+                                    onPeriodClick(clickedData)
+                                }
+                            }
+                            return false
+                        }
+
+                        else -> return false
+                    }
+                }
+            }
+        }
     )
 
     // Chart host that handles pointer interactions (tap to select/deselect)
     CartesianChartHost(
         chart = chart,
-        modelProducer = modelProducer,
-        modifier = modifier.pointerInput(data) {
-            detectTapGestures(
-                onPress = {
-                    awaitRelease()
-                    hoveredIndex?.let { index ->
-                        if (index in data.indices) {
-                            val clickedData = data[index]
-                            // Toggle selection
-                            if (clickedData == selectedPeriod) {
-                                onPeriodClick(null)
-                            } else {
-                                onPeriodClick(clickedData)
-                            }
-                        }
-                    }
-                }
-            )
-        }
+        modelProducer = modelProducer
     )
 }

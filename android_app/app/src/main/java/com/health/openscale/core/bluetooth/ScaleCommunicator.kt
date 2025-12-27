@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.StateFlow
  * Notes for broadcast-only devices (advertisement parsing, no GATT):
  * - The adapter emits [Listening] when scanning starts for the target MAC.
  * - When a final (stabilized) measurement was published and scanning stops, it emits [BroadcastComplete].
- * - For such devices, [Connected] is typically never emitted and [isConnected] stays `false`.
+ * - For such devices, [Connected] is typically never emitted.
  */
 sealed class BluetoothEvent {
     enum class UserInteractionType {
