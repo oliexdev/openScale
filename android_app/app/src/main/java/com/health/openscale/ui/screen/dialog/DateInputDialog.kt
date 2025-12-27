@@ -17,17 +17,16 @@
  */
 package com.health.openscale.ui.screen.dialog
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -35,13 +34,10 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
-import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.ui.components.RoundMeasurementIcon
 
@@ -59,7 +55,7 @@ fun DateInputDialog(
         initialSelectedDateMillis = initialTimestamp
     )
 
-    AlertDialog(
+    DatePickerDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(
@@ -78,9 +74,14 @@ fun DateInputDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.cancel_button))
             }
-        },
-        title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        }
+    ) {
+        Column {
+            Row(
+                modifier = Modifier.padding(top = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Spacer(modifier = Modifier.width(12.dp))
                 RoundMeasurementIcon(
                     icon = measurementIcon.resource,
                     backgroundTint = iconBackgroundColor,
@@ -88,10 +89,10 @@ fun DateInputDialog(
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(title, style = MaterialTheme.typography.titleMedium)
             }
-        },
-        text = {
-            DatePicker(state = datePickerState)
+            DatePicker(
+                state = datePickerState,
+                modifier = Modifier.verticalScroll(rememberScrollState())
+            )
         }
-    )
+    }
 }
-

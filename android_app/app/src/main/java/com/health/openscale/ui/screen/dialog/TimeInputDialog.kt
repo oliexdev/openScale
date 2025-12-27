@@ -17,26 +17,27 @@
  */
 package com.health.openscale.ui.screen.dialog
 
-import androidx.compose.foundation.background
+import android.text.format.DateFormat
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimeInput
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,18 +45,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import java.util.Calendar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimeInputDialog(
     title: String,
@@ -65,29 +64,52 @@ fun TimeInputDialog(
     onDismiss: () -> Unit,
     onConfirm: (Long) -> Unit
 ) {
+    val context = LocalContext.current
     val calendar = remember { Calendar.getInstance().apply { timeInMillis = initialTimestamp } }
+    val initialHour = calendar.get(Calendar.HOUR_OF_DAY)
+    val initialMinute = calendar.get(Calendar.MINUTE)
 
-    var hour by remember { mutableStateOf(calendar.get(Calendar.HOUR_OF_DAY)) }
-    var minute by remember { mutableStateOf(calendar.get(Calendar.MINUTE)) }
+    // Automatically determine if 24-hour format should be used based on device settings
+    val is24HourFormat = DateFormat.is24HourFormat(context)
+
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialHour,
+        initialMinute = initialMinute,
+        is24Hour = is24HourFormat
+    )
+
+    // State to toggle between TimeInput and TimePicker
+    var showTimePicker by remember { mutableStateOf(true) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = {
-                val updatedCal = Calendar.getInstance().apply {
-                    timeInMillis = initialTimestamp
-                    set(Calendar.HOUR_OF_DAY, hour)
-                    set(Calendar.MINUTE, minute)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { showTimePicker = !showTimePicker }) {
+                    Icon(
+                        imageVector = if (showTimePicker) Icons.Default.Edit else Icons.Default.Schedule,
+                        contentDescription = stringResource(R.string.content_desc_change_interval_icon)
+                    )
                 }
-                onConfirm(updatedCal.timeInMillis)
-                onDismiss()
-            }) {
-                Text(stringResource(R.string.dialog_ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel_button))
+                Spacer(modifier = Modifier.weight(1f))
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.cancel_button))
+                }
+                TextButton(onClick = {
+                    val updatedCal = Calendar.getInstance().apply {
+                        timeInMillis = initialTimestamp
+                        set(Calendar.HOUR_OF_DAY, timePickerState.hour)
+                        set(Calendar.MINUTE, timePickerState.minute)
+                    }
+                    onConfirm(updatedCal.timeInMillis)
+                    onDismiss()
+                }) {
+                    Text(stringResource(R.string.dialog_ok))
+                }
             }
         },
         title = {
@@ -101,58 +123,18 @@ fun TimeInputDialog(
             }
         },
         text = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TimeField(
-                    label = stringResource(R.string.dialog_title_hour),
-                    value = hour,
-                    onValueChange = { hour = it.coerceIn(0, 23) },
-                    onIncrement = { hour = (hour + 1) % 24 },
-                    onDecrement = { hour = (hour + 23) % 24 }
-                )
-                TimeField(
-                    label = stringResource(R.string.dialog_title_minute),
-                    value = minute,
-                    onValueChange = { minute = it.coerceIn(0, 59) },
-                    onIncrement = { minute = (minute + 1) % 60 },
-                    onDecrement = { minute = (minute + 59) % 60 }
-                )
+                if (showTimePicker) {
+                    TimePicker(state = timePickerState)
+                } else {
+                    TimeInput(state = timePickerState)
+                }
             }
         }
     )
-}
-
-@Composable
-private fun TimeField(
-    label: String,
-    value: Int,
-    onValueChange: (Int) -> Unit,
-    onIncrement: () -> Unit,
-    onDecrement: () -> Unit
-) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, style = MaterialTheme.typography.labelMedium)
-
-        OutlinedTextField(
-            value = value.toString().padStart(2, '0'),
-            onValueChange = {
-                it.toIntOrNull()?.let { newVal -> onValueChange(newVal) }
-            },
-            modifier = Modifier.width(80.dp),
-            singleLine = true,
-            textStyle = MaterialTheme.typography.titleLarge.copy(textAlign = TextAlign.Center),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-        )
-
-        Row {
-            IconButton(onClick = onIncrement) {
-                Icon(Icons.Default.KeyboardArrowUp, contentDescription = stringResource(R.string.trend_increased_desc))
-            }
-            IconButton(onClick = onDecrement) {
-                Icon(Icons.Default.KeyboardArrowDown, contentDescription = stringResource(R.string.trend_decreased_desc))
-            }
-        }
-    }
 }
