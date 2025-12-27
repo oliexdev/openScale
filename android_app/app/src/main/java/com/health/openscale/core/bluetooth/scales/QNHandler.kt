@@ -34,6 +34,8 @@ import kotlin.experimental.and
  * - We subscribe to both layouts. Writes to a missing characteristic are harmless (adapter logs a warning).
  * - Weight and two resistance values are broadcast in notifications of 0xFFE1/0xFFF1 (opcode 0x10).
  * - We derive body composition with [TrisaBodyAnalyzeLib] from weight + impedance.
+ *
+ * FIXED: Protocol type race condition - now waits for 0x12 frame before sending configuration.
  */
 class QNHandler : ScaleDeviceHandler() {
 
@@ -70,6 +72,12 @@ class QNHandler : ScaleDeviceHandler() {
     /** Last seen protocol type from a vendor packet (byte[2]), echoed back in our replies. */
     private var seenProtocolType: Byte = 0x00.toByte()
 
+    /** Flag to track if we've received the protocol type from 0x12 frame. */
+    private var hasReceivedProtocolType = false
+
+    /** Store the current user to access later when sending configuration. */
+    private var currentUser: ScaleUser? = null
+
     // ---- Capability discovery --------------------------------------------------
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
@@ -103,6 +111,8 @@ class QNHandler : ScaleDeviceHandler() {
         hasPublishedForThisSession = false
         weightScaleFactor = 100.0f
         seenProtocolType = 0x00.toByte()
+        hasReceivedProtocolType = false
+        currentUser = user
 
         // Generic Access: Device Name
         readFrom(uuid16(0x1800), uuid16(0x2A00))
@@ -122,41 +132,10 @@ class QNHandler : ScaleDeviceHandler() {
         if (hasCharacteristic(SVC_T2, CHR_T2_NOTIFY_WEIGHT_TIME)) {
             setNotifyOn(SVC_T2, CHR_T2_NOTIFY_WEIGHT_TIME)
         }
-        // Configure unit on both flavors (the non-matching write will be ignored by the stack).
-        val unitByte = when (user.scaleUnit) {
-            WeightUnit.LB, WeightUnit.ST -> 0x02 // LB (vendor uses LB also for ST in their apps)
-            else -> 0x01 // KG
-        }.toByte()
 
-        logD("QN seenProtocolType=$seenProtocolType unitByte=$unitByte")
-
-        val cfg = byteArrayOf(
-            0x13, 0x09, seenProtocolType, unitByte, 0x10, 0x00, 0x00, 0x00, 0x00
-        )
-        cfg[cfg.lastIndex] = checksum(cfg, 0, cfg.lastIndex) // last byte = checksum
-
-        if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
-            writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, cfg, true)
-        }
-        if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
-            writeTo(SVC_T2, CHR_T2_WRITE_SHARED, cfg, true)
-        }
-        // Push current time (seconds since 2000-01-01).
-        val epochSecs = (System.currentTimeMillis() / 1000L) - SCALE_UNIX_TIMESTAMP_OFFSET
-        val t = epochSecs.toInt()
-        val timeMagic = byteArrayOf(
-            0x02,
-            (t and 0xFF).toByte(),
-            ((t ushr 8) and 0xFF).toByte(),
-            ((t ushr 16) and 0xFF).toByte(),
-            ((t ushr 24) and 0xFF).toByte()
-        )
-        if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_TIME)) {
-            writeTo(SVC_T1, CHR_T1_WRITE_TIME, timeMagic, true)
-        }
-        if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
-            writeTo(SVC_T2, CHR_T2_WRITE_SHARED, timeMagic, true)
-        }
+        // IMPORTANT: Do NOT send configuration yet!
+        // Wait for 0x12 frame to arrive with protocol type first.
+        
         // Tell the user to step on
         userInfo(R.string.bt_info_step_on_scale)
     }
@@ -184,15 +163,16 @@ class QNHandler : ScaleDeviceHandler() {
         if (data.size < 3) return
 
         // Capture the protocol type from the scale's message to echo it back in our replies.
-        if (seenProtocolType == 0x00.toByte()) {
+        if (seenProtocolType == 0x00.toByte() && data.size > 2) {
             seenProtocolType = (data[2].toInt() and 0xFF).toByte()
-            logD("QN: set seenProtocolType=$seenProtocolType (raw: 0x${(seenProtocolType.toInt() and 0xFF).toString(16).uppercase()})")
+            logD("QN: captured seenProtocolType=$seenProtocolType (raw: 0x${(seenProtocolType.toInt() and 0xFF).toString(16).uppercase()})")
         }
 
         when (data[0].toInt() and 0xFF) {
             0x10 -> handleLiveWeightFrame(data, user)  // live / stable weight frame
             0x14 -> {
                 // This opcode can be a reply/ack from older scale types.
+                logD("QN: received 0x14 frame, sending response")
                 val msg = byteArrayOf(
                     0x20, // Command
                     0x08, // Length
@@ -213,6 +193,7 @@ class QNHandler : ScaleDeviceHandler() {
             }
             0x12 -> handleScaleInfoFrame(data)         // scale factor setup
             0x21 -> {
+                logD("QN: received 0x21 frame, sending response")
                 val msg = byteArrayOf(
                     0xa0.toByte(), // Command
                     0x0d.toByte(), // Length (13 bytes total)
@@ -300,11 +281,71 @@ class QNHandler : ScaleDeviceHandler() {
     /**
      * 0x12 frame: contains a flag describing the native weight scaling.
      * If byte[10] == 1 → /100 else → /10.
+     * 
+     * CRITICAL FIX: Now sends configuration commands AFTER receiving this frame.
      */
     private fun handleScaleInfoFrame(data: ByteArray) {
         if (data.size <= 10) return
+        
         weightScaleFactor = if (data[10].toInt() == 1) 100.0f else 10.0f
-        logD( "QN: set weightScaleFactor=$weightScaleFactor from opcode 0x12")
+        logD("QN: set weightScaleFactor=$weightScaleFactor from opcode 0x12")
+        
+        // NOW send the configuration after we have the protocol type
+        if (!hasReceivedProtocolType) {
+            hasReceivedProtocolType = true
+            logD("QN: protocol type received, now sending configuration commands")
+            sendConfigurationCommands()
+        }
+    }
+
+    /**
+     * Send configuration commands to the scale.
+     * MUST be called AFTER receiving the 0x12 frame with protocol type.
+     */
+    private fun sendConfigurationCommands() {
+        val user = currentUser ?: run {
+            logD("QN: ERROR - currentUser is null, cannot send configuration")
+            return
+        }
+        
+        val unitByte = when (user.scaleUnit) {
+            WeightUnit.LB, WeightUnit.ST -> 0x02.toByte() // LB (vendor uses LB also for ST in their apps)
+            else -> 0x01.toByte() // KG
+        }
+
+        logD("QN: sending config with seenProtocolType=$seenProtocolType unitByte=$unitByte")
+
+        // Configure unit on both flavors (the non-matching write will be ignored by the stack).
+        val cfg = byteArrayOf(
+            0x13, 0x09, seenProtocolType, unitByte, 0x10, 0x00, 0x00, 0x00, 0x00
+        )
+        cfg[cfg.lastIndex] = checksum(cfg, 0, cfg.lastIndex) // last byte = checksum
+
+        if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
+            writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, cfg, true)
+        }
+        if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
+            writeTo(SVC_T2, CHR_T2_WRITE_SHARED, cfg, true)
+        }
+        
+        // Push current time (seconds since 2000-01-01).
+        val epochSecs = (System.currentTimeMillis() / 1000L) - SCALE_UNIX_TIMESTAMP_OFFSET
+        val t = epochSecs.toInt()
+        val timeMagic = byteArrayOf(
+            0x02,
+            (t and 0xFF).toByte(),
+            ((t ushr 8) and 0xFF).toByte(),
+            ((t ushr 16) and 0xFF).toByte(),
+            ((t ushr 24) and 0xFF).toByte()
+        )
+        if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_TIME)) {
+            writeTo(SVC_T1, CHR_T1_WRITE_TIME, timeMagic, true)
+        }
+        if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
+            writeTo(SVC_T2, CHR_T2_WRITE_SHARED, timeMagic, true)
+        }
+        
+        logD("QN: configuration commands sent successfully")
     }
 
     // ---- Helpers ---------------------------------------------------------------
