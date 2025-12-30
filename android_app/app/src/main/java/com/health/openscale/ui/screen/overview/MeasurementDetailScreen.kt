@@ -84,6 +84,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 /**
  * A screen for creating a new measurement or editing an existing one.
@@ -491,10 +492,21 @@ fun MeasurementDetailScreen(
             iconBackgroundColor = triggeringType?.let { Color(it.color) } ?: MaterialTheme.colorScheme.primary,
             onDismiss = { showDatePickerForMainTimestamp = false },
             onConfirm = { newDateMillis ->
-                val newCal = Calendar.getInstance().apply { timeInMillis = newDateMillis }
-                val currentCal = Calendar.getInstance().apply { timeInMillis = measurementTimestampState }
-                currentCal.set(newCal.get(Calendar.YEAR), newCal.get(Calendar.MONTH), newCal.get(Calendar.DAY_OF_MONTH))
-                measurementTimestampState = currentCal.timeInMillis
+                // 1. Get the original timestamp and create a calendar in UTC to avoid local timezone issues.
+                val originalCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+                    timeInMillis = measurementTimestampState
+                }
+
+                // 2. Extract ONLY the time components (hour, minute, second, millisecond) from the original timestamp.
+                val timeOfDayMillis = originalCal.get(Calendar.HOUR_OF_DAY) * 3600_000L +
+                        originalCal.get(Calendar.MINUTE) * 60_000L +
+                        originalCal.get(Calendar.SECOND) * 1000L +
+                        originalCal.get(Calendar.MILLISECOND)
+
+                // 3. Add the original time of day to the new date.
+                // This correctly combines the new date (from DatePicker) with the old time.
+                measurementTimestampState = newDateMillis + timeOfDayMillis
+
                 showDatePickerForMainTimestamp = false
             }
         )

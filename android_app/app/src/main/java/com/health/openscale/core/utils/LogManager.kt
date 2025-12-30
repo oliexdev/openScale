@@ -36,6 +36,7 @@ import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 /**
  * Manages logging for the application, providing methods to log messages
@@ -295,11 +296,13 @@ object LogManager {
             ).use { writer ->
                 val sessionStartTime = dateFormat.format(Date())
                 val sessionId = System.currentTimeMillis().toString(16)
+                val currentTimeZone = TimeZone.getDefault()
 
                 // GitHub-friendly Markdown header; copy-pasteable into issues/PRs.
                 writer.append("| Field | Value |\n")
                 writer.append("|---|---|\n")
                 writer.append("| Time | $sessionStartTime |\n")
+                writer.append("| Timezone | ${currentTimeZone.id} (UTC ${currentTimeZone.rawOffset / 3600000}h) |\n")
                 writer.append("| Session ID | $sessionId |\n")
                 writer.append("| App | openScale |\n")
                 writer.append("| Version | ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) |\n")
