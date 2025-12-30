@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.Bluetooth
@@ -140,7 +142,8 @@ fun SettingsScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(all = 8.dp) // Add some overall padding to the column
-    ) {
+            .verticalScroll(rememberScrollState())
+        ) {
         items.forEach { item ->
             Card(
                 modifier = Modifier

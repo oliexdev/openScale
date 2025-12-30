@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -397,7 +398,9 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                         .fillMaxWidth()
                 ) {
                     Image(
-                        painter = if (BuildConfig.BUILD_TYPE == "beta" || BuildConfig.BUILD_TYPE == "oss") painterResource(id = R.drawable.ic_launcher_beta_foreground) else painterResource(id = R.drawable.ic_launcher_foreground) ,
+                        painter = if (BuildConfig.BUILD_TYPE == "beta" || BuildConfig.BUILD_TYPE == "oss") painterResource(
+                            id = R.drawable.ic_launcher_beta_foreground
+                        ) else painterResource(id = R.drawable.ic_launcher_foreground),
                         contentDescription = stringResource(R.string.app_logo_content_description),
                         modifier = Modifier.size(64.dp)
                     )
@@ -410,56 +413,58 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                 Spacer(modifier = Modifier.height(8.dp)) // Spacing after the header
 
                 // Drawer Items: Dynamically created for each main route.
-                mainRoutes.forEach { route ->
-                    // Add a divider before the "Settings" item for visual separation.
-                    if (route == Routes.SETTINGS) {
-                        HorizontalDivider(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
-                    }
-
-                    val titleResId = Routes.getTitleResourceId(route)
-                    val titleText = if (titleResId != Routes.NO_TITLE_RESOURCE_ID) {
-                        stringResource(id = titleResId)
-                    } else {
-                        route // Fallback to the raw route string if no title resource ID is defined.
-                    }
-
-                    NavigationDrawerItem(
-                        icon = {
-                            Icon(
-                                imageVector = getIconForRoute(route),
-                                contentDescription = titleText // Provides accessibility for the icon.
+                LazyColumn() {
+                    items(mainRoutes, key = {it}) { route ->
+                        // Add a divider before the "Settings" item for visual separation.
+                        if (route == Routes.SETTINGS) {
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
                             )
-                        },
-                        label = { Text(titleText) },
-                        selected = currentRoute == route, // Highlights the item if it's the current route.
-                        onClick = {
-                            navController.navigate(route) {
-                                // Pop up to the start destination of the graph to avoid building up a large back stack.
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = true // Save the state of popped destinations.
-                                }
-                                // Avoid multiple copies of the same destination when reselecting the same item.
-                                launchSingleTop = true
-                                // Restore state when reselecting a previously visited item.
-                                restoreState = true
-                            }
-                            scope.launch { drawerState.close() } // Close the drawer after selection.
-                        },
-                        colors = NavigationDrawerItemDefaults.colors(
-                            // Custom colors for selected and unselected drawer items.
-                            selectedIconColor = Blue,
-                            selectedTextColor = Blue,
-                            selectedContainerColor = Color.Transparent, // No background for the selected item itself.
+                        }
 
-                            unselectedIconColor = White,
-                            unselectedTextColor = White,
-                            unselectedContainerColor = Color.Transparent
+                        val titleResId = Routes.getTitleResourceId(route)
+                        val titleText = if (titleResId != Routes.NO_TITLE_RESOURCE_ID) {
+                            stringResource(id = titleResId)
+                        } else {
+                            route // Fallback to the raw route string if no title resource ID is defined.
+                        }
+
+                        NavigationDrawerItem(
+                            icon = {
+                                Icon(
+                                    imageVector = getIconForRoute(route),
+                                    contentDescription = titleText // Provides accessibility for the icon.
+                                )
+                            },
+                            label = { Text(titleText) },
+                            selected = currentRoute == route, // Highlights the item if it's the current route.
+                            onClick = {
+                                navController.navigate(route) {
+                                    // Pop up to the start destination of the graph to avoid building up a large back stack.
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        saveState = true // Save the state of popped destinations.
+                                    }
+                                    // Avoid multiple copies of the same destination when reselecting the same item.
+                                    launchSingleTop = true
+                                    // Restore state when reselecting a previously visited item.
+                                    restoreState = true
+                                }
+                                scope.launch { drawerState.close() } // Close the drawer after selection.
+                            },
+                            colors = NavigationDrawerItemDefaults.colors(
+                                // Custom colors for selected and unselected drawer items.
+                                selectedIconColor = Blue,
+                                selectedTextColor = Blue,
+                                selectedContainerColor = Color.Transparent, // No background for the selected item itself.
+
+                                unselectedIconColor = White,
+                                unselectedTextColor = White,
+                                unselectedContainerColor = Color.Transparent
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
