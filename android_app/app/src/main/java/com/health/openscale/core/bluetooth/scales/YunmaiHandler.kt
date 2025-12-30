@@ -24,7 +24,9 @@ import com.health.openscale.core.bluetooth.libs.YunmaiLib
 import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.ConverterUtils
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 import java.util.UUID
 
 /**
@@ -158,8 +160,11 @@ class YunmaiHandler(
 
         if (weightKg <= 0f || !weightKg.isFinite()) return null
 
-        if (tsMillis <= 0L) {
-            logW("No timestamp received, using current time")
+        val earliestPlausibleTimestamp = 315532800000L // Corresponds to Jan 1, 1980 00:00:00 UTC
+
+        if (tsMillis < earliestPlausibleTimestamp) {
+            val invalidDateStr = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date(tsMillis))
+            logW("Implausible timestamp received from scale ($invalidDateStr), falling back to current system time.")
             tsMillis = System.currentTimeMillis()
         }
 
