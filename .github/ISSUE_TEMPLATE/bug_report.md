@@ -1,29 +1,67 @@
----
-name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
+name: Bug Report
+description: Report a bug to help improve the project
+title: ""
+labels:
+assignees: []
 
----
+body:
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Preflight Check (Required)
+      description: |
+        Important note regarding scale-related issues. Adding or fixing scale support often requires device-specific reverse engineering and access to the hardware.
+        Contributions are very welcome. If you want to add or improve scale support, please read:
+        https://github.com/oliexdev/openScale/wiki/How-to-support-a-new-scale
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+        Requests for new scale support without attempts to investigate or contribute may be closed.
+      options:
+        - label: I tested the latest dev version  
+            https://github.com/oliexdev/openScale/releases/tag/dev-build
+          required: true
+        - label: The issue still occurs in the dev version
+          required: true
+        - label: I searched the existing open and closed issues
+          required: true
+        - label: This issue has not already been reported or fixed
+          required: true
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: What happened?
+      placeholder: Describe the issue clearly and concisely.
+    validations:
+      required: true
 
-Reproduced with [latest dev version](https://github.com/oliexdev/openScale/releases/tag/dev-build): ???
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Step-by-step instructions to reproduce the issue.
+      placeholder: |
+        1. …
+        2. …
+        3. …
+        4. Bug occurs
+    validations:
+      required: true
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+  - type: textarea
+    id: debug_log
+    attributes:
+      label: Debug Log (Required)
+      description: |
+        A debug log is required to investigate this issue.
 
-**Additional context**
-Add any other context about the problem here.
+        How to record the log:
+        1. Go to Settings → General → Enable File logging
+        2. Reproduce the issue
+        3. Click the "Export log file" button
+        4. Paste the exported log below
 
-**Debug log**
-Attach a debug log (see Settings -> About -> Save debug log to file) that is captured while reproducing the issue.
+      placeholder: Paste the debug log here.
+      render: shell
+    validations:
+      required: true
