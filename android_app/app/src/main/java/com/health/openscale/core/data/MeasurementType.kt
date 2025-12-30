@@ -24,7 +24,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    indices = [Index(value = ["key"], unique = true)]
+    indices = [Index(value = ["key"], unique = false)] // unique false because of custom types
 )
 data class MeasurementType(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,

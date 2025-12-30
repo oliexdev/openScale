@@ -31,7 +31,7 @@ interface MeasurementTypeDao {
     @Insert
     suspend fun insert(type: MeasurementType): Long
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert
     suspend fun insertAll(types: List<MeasurementType>)
 
     @Update
