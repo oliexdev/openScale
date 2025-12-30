@@ -153,10 +153,15 @@ class YunmaiHandler(
 
     private fun parseFinal(user: ScaleUser, frame: ByteArray): ScaleMeasurement? {
         // Timestamp (BE u32) at offset 5; weight (BE u16)/100 at offset 13
-        val tsMillis = ConverterUtils.fromUnsignedInt32Be(frame, 5) * 1000L
+        var tsMillis = ConverterUtils.fromUnsignedInt32Be(frame, 5) * 1000L
         val weightKg = ConverterUtils.fromUnsignedInt16Be(frame, 13) / 100.0f
 
         if (weightKg <= 0f || !weightKg.isFinite()) return null
+
+        if (tsMillis <= 0L) {
+            logW("No timestamp received, using current time")
+            tsMillis = System.currentTimeMillis()
+        }
 
         val m = ScaleMeasurement().apply {
             dateTime = Date(tsMillis)
