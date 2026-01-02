@@ -54,6 +54,11 @@ class MeasurementTypeCrudUseCases @Inject constructor(
         repository.updateMeasurementType(type)
     }
 
+    /** Finds and returns a specific MeasurementType by its key. */
+    suspend fun getByKey(key: MeasurementTypeKey): MeasurementType? {
+        return repository.getAllMeasurementTypes().first().find { it.key == key }
+    }
+
     /** Deletes a measurement type. Caller must ensure cascading semantics are OK. */
     suspend fun delete(type: MeasurementType): Result<Unit> = runCatching {
         repository.deleteMeasurementType(type)

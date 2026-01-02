@@ -24,6 +24,8 @@ import androidx.core.content.ContextCompat
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
+import com.health.openscale.core.data.UnitType
+import com.health.openscale.core.utils.ConverterUtils
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -39,7 +41,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class SyncUseCases @Inject constructor(
-    private val application: Application
+    private val application: Application,
+    private val measurementTypeUseCases: MeasurementTypeCrudUseCases
 ) {
 
     /**
@@ -51,7 +54,7 @@ class SyncUseCases @Inject constructor(
      * - "date" = measurement.timestamp (epoch millis)
      * - optionally "weight", "fat", "water", "muscle" if present among [values]
      */
-    fun triggerSyncInsert(
+    suspend fun triggerSyncInsert(
         measurement: Measurement,
         values: List<MeasurementValue>,
         pkgName: String
@@ -75,7 +78,7 @@ class SyncUseCases @Inject constructor(
      * - "date" = measurement.timestamp (epoch millis)
      * - optionally "weight", "fat", "water", "muscle" if present among [values]
      */
-    fun triggerSyncUpdate(
+    suspend fun triggerSyncUpdate(
         measurement: Measurement,
         values: List<MeasurementValue>,
         pkgName: String
@@ -127,29 +130,65 @@ class SyncUseCases @Inject constructor(
 
     // --- helpers ---
 
-    private fun Intent.putBodyCompositionExtras(values: List<MeasurementValue>) {
-        // Map MeasurementValue.typeId -> MeasurementTypeKey
+    private suspend fun Intent.putBodyCompositionExtras(values: List<MeasurementValue>) {
         val keyById = MeasurementTypeKey.values().associateBy { it.id }
+        val valuesByType = values.associateBy { v -> keyById[v.typeId] }
 
-        var weight: Float? = null
-        var fat: Float? = null
-        var water: Float? = null
-        var muscle: Float? = null
+        val weightType = measurementTypeUseCases.getByKey(MeasurementTypeKey.WEIGHT)
+        val fatType = measurementTypeUseCases.getByKey(MeasurementTypeKey.BODY_FAT)
+        val waterType = measurementTypeUseCases.getByKey(MeasurementTypeKey.WATER)
+        val muscleType = measurementTypeUseCases.getByKey(MeasurementTypeKey.MUSCLE)
 
-        values.forEach { v ->
-            when (keyById[v.typeId]) {
-                MeasurementTypeKey.WEIGHT   -> weight = v.floatValue
-                MeasurementTypeKey.BODY_FAT -> fat = v.floatValue
-                MeasurementTypeKey.WATER    -> water = v.floatValue
-                MeasurementTypeKey.MUSCLE   -> muscle = v.floatValue
-                else -> Unit
-            }
+        val weightValue = valuesByType[MeasurementTypeKey.WEIGHT]?.floatValue
+        val weightInKg = if (weightValue != null && weightType != null) {
+            ConverterUtils.convertFloatValueUnit(weightValue, weightType.unit, UnitType.KG)
+        } else {
+            null
         }
 
-        weight?.let { putExtra("weight", it) }
-        fat?.let { putExtra("fat", it) }
-        water?.let { putExtra("water", it) }
-        muscle?.let { putExtra("muscle", it) }
+        weightInKg?.let { putExtra("weight", it) }
+
+        fun convertToPercent(
+            value: Float?,
+            fromUnit: UnitType?,
+            totalWeightInKg: Float?
+        ): Float? {
+            if (value == null || fromUnit == null || totalWeightInKg == null || totalWeightInKg == 0f) {
+                return null
+            }
+
+            if (fromUnit == UnitType.PERCENT) {
+                return value
+            }
+
+            if (fromUnit.isWeightUnit()) {
+                val valueInKg = ConverterUtils.convertFloatValueUnit(value, fromUnit, UnitType.KG)
+                return (valueInKg / totalWeightInKg) * 100f
+            }
+
+            return null
+        }
+
+        val fatPercent = convertToPercent(
+            valuesByType[MeasurementTypeKey.BODY_FAT]?.floatValue,
+            fatType?.unit,
+            weightInKg
+        )
+        fatPercent?.let { putExtra("fat", it) }
+
+        val waterPercent = convertToPercent(
+            valuesByType[MeasurementTypeKey.WATER]?.floatValue,
+            waterType?.unit,
+            weightInKg
+        )
+        waterPercent?.let { putExtra("water", it) }
+
+        val musclePercent = convertToPercent(
+            valuesByType[MeasurementTypeKey.MUSCLE]?.floatValue,
+            muscleType?.unit,
+            weightInKg
+        )
+        musclePercent?.let { putExtra("muscle", it) }
     }
 
     private companion object {

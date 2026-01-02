@@ -24,13 +24,15 @@ import android.content.UriMatcher
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
-import android.util.Log
 import com.health.openscale.BuildConfig
-import com.health.openscale.OpenScaleApp
 import com.health.openscale.core.data.Measurement
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
+import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.facade.SettingsFacade
+import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
+import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -47,6 +49,7 @@ import kotlinx.coroutines.runBlocking
 interface DatabaseProviderEntryPoint {
     fun databaseRepository(): DatabaseRepository
     fun userSettingsFacade(): SettingsFacade
+    fun measurementTypeCrudUseCases(): MeasurementTypeCrudUseCases
 }
 
 /**
@@ -59,6 +62,7 @@ class DatabaseProvider : ContentProvider() {
 
     private lateinit var databaseRepository: DatabaseRepository
     private lateinit var userSettingsFacade: SettingsFacade
+    private lateinit var measurementTypeUseCases: MeasurementTypeCrudUseCases
 
     object UserColumns {
         const val _ID = "_ID"
@@ -83,6 +87,7 @@ class DatabaseProvider : ContentProvider() {
             )
             databaseRepository = entryPoint.databaseRepository()
             userSettingsFacade = entryPoint.userSettingsFacade()
+            measurementTypeUseCases = entryPoint.measurementTypeCrudUseCases()
 
             CoroutineScope(Dispatchers.IO).launch {
                 val isFileLogging = userSettingsFacade.isFileLoggingEnabled.first()
@@ -150,6 +155,8 @@ class DatabaseProvider : ContentProvider() {
                 }
                 runBlocking {
                     try {
+                        val weightType = measurementTypeUseCases.getByKey(MeasurementTypeKey.WEIGHT)
+
                         val measurementsWithValuesList =
                             databaseRepository.getMeasurementsWithValuesForUser(userIdFromUri).first()
 
@@ -165,23 +172,36 @@ class DatabaseProvider : ContentProvider() {
                         val matrixCursor = MatrixCursor(currentProjection)
 
                         val allMeasurementTypes = databaseRepository.getAllMeasurementTypes().first()
-                        val typeIdMap = allMeasurementTypes.associate { it.key to it.id }
 
                         measurementsWithValuesList.forEachIndexed { index, mcv -> // mcv is MeasurementWithValues
                             val measurement = mcv.measurement
-                            val rowData = mutableListOf<Any?>()
-
-                            fun findValue(key: MeasurementTypeKey): Float? {
-                                val typeId = typeIdMap[key] ?: return null
-                                return mcv.values.find { it.type.id == typeId }?.value?.floatValue
+                            val valuesMap = mcv.values.associateBy { it.type.key }
+                            val weightInKg = valuesMap[MeasurementTypeKey.WEIGHT]?.value?.floatValue?.let {
+                                weightType?.unit?.let { unit -> ConverterUtils.convertFloatValueUnit(it, unit, UnitType.KG) }
                             }
 
+                            fun convertToPercent(key: MeasurementTypeKey): Float? {
+                                val value = valuesMap[key]?.value?.floatValue ?: return null
+                                val fromUnit = valuesMap[key]?.type?.unit ?: return null
+                                if (fromUnit == UnitType.PERCENT) return value
+                                if (fromUnit.isWeightUnit() && weightInKg != null && weightInKg > 0) {
+                                    val valueInKg = ConverterUtils.convertFloatValueUnit(value, fromUnit, UnitType.KG)
+                                    return (valueInKg / weightInKg) * 100f
+                                }
+                                return null
+                            }
+
+                            val fatPercent = convertToPercent(MeasurementTypeKey.BODY_FAT)
+                            val waterPercent = convertToPercent(MeasurementTypeKey.WATER)
+                            val musclePercent = convertToPercent(MeasurementTypeKey.MUSCLE)
+
+                            val rowData = mutableListOf<Any?>()
                             if (currentProjection.contains(MeasurementColumns._ID)) rowData.add(measurement.id)
                             if (currentProjection.contains(MeasurementColumns.DATETIME)) rowData.add(measurement.timestamp)
-                            if (currentProjection.contains(MeasurementColumns.WEIGHT)) rowData.add(findValue(MeasurementTypeKey.WEIGHT))
-                            if (currentProjection.contains(MeasurementColumns.BODY_FAT)) rowData.add(findValue(MeasurementTypeKey.BODY_FAT) ?: 0.0f)
-                            if (currentProjection.contains(MeasurementColumns.WATER)) rowData.add(findValue(MeasurementTypeKey.WATER) ?: 0.0f)
-                            if (currentProjection.contains(MeasurementColumns.MUSCLE)) rowData.add(findValue(MeasurementTypeKey.MUSCLE) ?: 0.0f)
+                            if (currentProjection.contains(MeasurementColumns.WEIGHT)) rowData.add(weightInKg)
+                            if (currentProjection.contains(MeasurementColumns.BODY_FAT)) rowData.add(fatPercent ?: 0.0f)
+                            if (currentProjection.contains(MeasurementColumns.WATER)) rowData.add(waterPercent ?: 0.0f)
+                            if (currentProjection.contains(MeasurementColumns.MUSCLE)) rowData.add(musclePercent ?: 0.0f)
 
                             LogManager.d(TAG, "Query Row #${index + 1} for user $userIdFromUri (MeasID: ${measurement.id}): ${
                                 currentProjection.zip(rowData).joinToString { "${it.first}=${it.second}" }
@@ -231,13 +251,18 @@ class DatabaseProvider : ContentProvider() {
                     LogManager.e(TAG, "Cannot insert measurement: '${MeasurementColumns.DATETIME}' is missing. userId=$userIdFromUri")
                     return null
                 }
-                // Weight is considered mandatory for this provider's insert operation
-                val weight = values.getAsFloat(MeasurementColumns.WEIGHT)
-                if (weight == null) {
-                    LogManager.e(TAG, "Cannot insert measurement: '${MeasurementColumns.WEIGHT}' is missing. datetime=$datetime, userId=$userIdFromUri")
+
+                // Assume incoming weight is in the base unit (KG).
+                val weightFromProviderInKg = values.getAsFloat(MeasurementColumns.WEIGHT)
+                if (weightFromProviderInKg == null) {
+                    LogManager.e(TAG, "Cannot insert measurement: '${MeasurementColumns.WEIGHT}' is mandatory and missing. datetime=$datetime, userId=$userIdFromUri")
                     return null
                 }
 
+                // Assume other incoming values are in their base unit (%).
+                val fatFromProviderPercent = values.getAsFloat(MeasurementColumns.BODY_FAT)
+                val waterFromProviderPercent = values.getAsFloat(MeasurementColumns.WATER)
+                val muscleFromProviderPercent = values.getAsFloat(MeasurementColumns.MUSCLE)
 
                 val measurement = Measurement(
                     // id = 0, // Room will generate this if it's an AutoGenerate PrimaryKey
@@ -250,52 +275,41 @@ class DatabaseProvider : ContentProvider() {
 
                 runBlocking {
                     val allMeasurementTypes = databaseRepository.getAllMeasurementTypes().first()
+                    val weightType = allMeasurementTypes.find { it.key == MeasurementTypeKey.WEIGHT }
+                    val fatType = allMeasurementTypes.find { it.key == MeasurementTypeKey.BODY_FAT }
+                    val waterType = allMeasurementTypes.find { it.key == MeasurementTypeKey.WATER }
+                    val muscleType = allMeasurementTypes.find { it.key == MeasurementTypeKey.MUSCLE }
                     val typeIdMap = allMeasurementTypes.associate { it.key to it.id }
                     weightTypeIdFound = typeIdMap[MeasurementTypeKey.WEIGHT]
 
-                    fun addValueIfPresent(cvKey: String, typeKey: MeasurementTypeKey, isMandatory: Boolean = false) {
-                        if (values.containsKey(cvKey)) {
-                            val floatValue = values.getAsFloat(cvKey)
-                            if (floatValue != null) {
-                                typeIdMap[typeKey]?.let { typeId ->
-                                    measurementValuesToInsert.add(
-                                        MeasurementValue(
-                                            measurementId = 0,
-                                            typeId = typeId,
-                                            floatValue = floatValue
-                                        )
-                                    )
-                                } ?: LogManager.w(TAG, "$typeKey MeasurementTypeKey not found. Cannot insert $cvKey value for key $cvKey.")
-                            } else {
-                                if (isMandatory) {
-                                    LogManager.e(TAG, "Mandatory value for $cvKey ($typeKey) is missing and null in ContentValues.")
-                                }
-                            }
-                        } else {
-                            if (isMandatory) {
-                                LogManager.e(TAG, "Mandatory key $cvKey ($typeKey) is not present in ContentValues.")
-                            }
-                        }
-                    }
-
-
-                    // Add weight (already checked for nullability)
-                    if (weightTypeIdFound != null) {
-                        measurementValuesToInsert.add(
-                            MeasurementValue(
-                                measurementId = 0,
-                                typeId = weightTypeIdFound!!,
-                                floatValue = weight
-                            )
-                        )
+                    if (weightType != null) {
+                        val targetWeightValue = ConverterUtils.convertFloatValueUnit(weightFromProviderInKg, UnitType.KG, weightType.unit)
+                        measurementValuesToInsert.add(MeasurementValue(measurementId = 0, typeId = weightType.id, floatValue = targetWeightValue))
                     } else {
-                        // This case should be caught by the mandatory weight check, but as a safeguard:
-                        LogManager.e(TAG, "Weight MeasurementTypeKey not found internally, though weight value was provided.")
+                        LogManager.e(TAG, "Weight MeasurementType not found. Cannot insert.")
+                        return@runBlocking null
                     }
 
-                    addValueIfPresent(MeasurementColumns.BODY_FAT, MeasurementTypeKey.BODY_FAT)
-                    addValueIfPresent(MeasurementColumns.WATER, MeasurementTypeKey.WATER)
-                    addValueIfPresent(MeasurementColumns.MUSCLE, MeasurementTypeKey.MUSCLE)
+                    fun addConvertedValue(valuePercent: Float?, targetType: MeasurementType?) {
+                        if (valuePercent == null || targetType == null) return
+
+                        val targetValue = when {
+                            // If target is %, no conversion needed.
+                            targetType.unit == UnitType.PERCENT -> valuePercent
+                            // If target is a weight unit (kg, lb), convert % to absolute value.
+                            targetType.unit.isWeightUnit() -> {
+                                val absoluteValueInKg = (valuePercent / 100f) * weightFromProviderInKg
+                                ConverterUtils.convertFloatValueUnit(absoluteValueInKg, UnitType.KG, targetType.unit)
+                            }
+                            // Fallback for other unit types.
+                            else -> valuePercent
+                        }
+                        measurementValuesToInsert.add(MeasurementValue(measurementId = 0, typeId = targetType.id, floatValue = targetValue))
+                    }
+
+                    addConvertedValue(fatFromProviderPercent, fatType)
+                    addConvertedValue(waterFromProviderPercent, waterType)
+                    addConvertedValue(muscleFromProviderPercent, muscleType)
                 }
 
                 if (weightTypeIdFound == null) { // Double check if weight type ID was resolved
@@ -360,140 +374,128 @@ class DatabaseProvider : ContentProvider() {
                     return 0 // Return 0 rows affected
                 }
 
-                // DATETIME from ContentValues is used to identify the measurement to update.
-                // It should NOT be used to change the timestamp of an existing measurement,
-                // as that changes its identity. If you need to change a measurement's time,
-                // it's a more complex operation (delete old, insert new, or a dedicated function).
+                // DATETIME is used to identify the measurement to update.
                 val datetimeToUpdate = values.getAsLong(MeasurementColumns.DATETIME)
                 if (datetimeToUpdate == null) {
                     LogManager.e(
                         TAG,
-                        "Cannot update measurement: '${MeasurementColumns.DATETIME}' is missing from ContentValues. " +
-                                "This field is used to identify the measurement to update."
+                        "Cannot update measurement: '${MeasurementColumns.DATETIME}' is missing. " +
+                                "This field identifies the measurement to update."
                     )
                     return 0
                 }
 
-                // Check if _ID in ContentValues mismatches the one in URI
-                if (values.containsKey(MeasurementColumns._ID)) {
-                    val idFromCV = values.getAsInteger(MeasurementColumns._ID)
-                    if (idFromCV != null && idFromCV != targetUserIdFromUri) {
-                        LogManager.w(
-                            TAG,
-                            "_ID in ContentValues ($idFromCV) mismatches _ID in URI ($targetUserIdFromUri) for update. " +
-                                    "Operation will proceed for _ID from URI."
-                        )
-                    }
-                }
+                // Assume incoming values are in base units (kg, %).
+                val weightFromProviderInKg = values.getAsFloat(MeasurementColumns.WEIGHT)
+                val fatFromProviderPercent = values.getAsFloat(MeasurementColumns.BODY_FAT)
+                val waterFromProviderPercent = values.getAsFloat(MeasurementColumns.WATER)
+                val muscleFromProviderPercent = values.getAsFloat(MeasurementColumns.MUSCLE)
 
-                // Perform database operations within runBlocking
                 rowsAffected = runBlocking {
                     try {
                         val allMeasurementTypes = databaseRepository.getAllMeasurementTypes().first()
-                        val typeIdMap = allMeasurementTypes.associate { it.key to it.id }
+                        val typeMap = allMeasurementTypes.associateBy { it.key }
 
-                        // Find the existing measurement with its values
+                        // Find the existing measurement
                         val existingMeasurementWithValues = databaseRepository
                             .getMeasurementsWithValuesForUser(targetUserIdFromUri)
                             .first()
                             .find { it.measurement.timestamp == datetimeToUpdate }
 
                         if (existingMeasurementWithValues == null) {
-                            LogManager.d(
-                                TAG,
-                                "No measurement found to update for user $targetUserIdFromUri at datetime $datetimeToUpdate."
-                            )
-                            return@runBlocking 0 // Return 0 from runBlocking
+                            LogManager.d(TAG, "No measurement found to update for user $targetUserIdFromUri at datetime $datetimeToUpdate.")
+                            return@runBlocking 0
                         }
 
                         val measurementToUpdate = existingMeasurementWithValues.measurement
-                        var anyChangeMadeToValues = false
+                        var anyChangeMade = false
 
-                        // Helper function to process updates for a specific measurement type
-                        suspend fun processValueUpdate(cvKey: String, typeKey: MeasurementTypeKey) {
-                            if (values.containsKey(cvKey)) {
-                                val newValue = values.getAsFloat(cvKey) // Can be null if key exists but value is to be cleared/deleted
-                                val typeId = typeIdMap[typeKey]
+                        // Helper to update a value, converting from base unit to user's configured unit.
+                        suspend fun processValueUpdate(
+                            newValueFromProvider: Float?, // Value in base unit (kg or %)
+                            typeKey: MeasurementTypeKey,
+                            cvKey: String
+                        ) {
+                            if (!values.containsKey(cvKey)) return // This value is not being updated.
 
-                                if (typeId == null) {
-                                    LogManager.w(
-                                        TAG,
-                                        "MeasurementTypeKey '$typeKey' (for CV key '$cvKey') not found in typeIdMap. Cannot update/delete value."
-                                    )
-                                    return // Skip this value
+                            val targetType = typeMap[typeKey]
+                            if (targetType == null) {
+                                LogManager.w(TAG, "MeasurementType for key '$typeKey' not found. Cannot process update for '$cvKey'.")
+                                return
+                            }
+
+                            val existingValue = existingMeasurementWithValues.values.find { it.type.id == targetType.id }
+
+                            if (newValueFromProvider != null) { // A new value is provided (insert or update)
+                                // --- START: Unit Conversion ---
+                                val targetValue = when {
+                                    typeKey == MeasurementTypeKey.WEIGHT -> {
+                                        // Convert incoming KG to user's weight unit.
+                                        ConverterUtils.convertFloatValueUnit(newValueFromProvider, UnitType.KG, targetType.unit)
+                                    }
+                                    targetType.unit.isWeightUnit() -> {
+                                        // For composition, convert incoming % to absolute weight in user's unit.
+                                        // The base weight for calculation must be the new weight being provided.
+                                        val baseWeightInKg = weightFromProviderInKg ?: existingMeasurementWithValues.values
+                                            .find { it.type.key == MeasurementTypeKey.WEIGHT }?.value?.floatValue?.let {
+                                                typeMap[MeasurementTypeKey.WEIGHT]?.unit?.let { unit ->
+                                                    ConverterUtils.convertFloatValueUnit(it, unit, UnitType.KG)
+                                                }
+                                            }
+                                        if (baseWeightInKg == null) {
+                                            LogManager.w(TAG, "Cannot convert '$cvKey' to absolute value: Base weight is unknown.")
+                                            return
+                                        }
+                                        val absoluteInKg = (newValueFromProvider / 100f) * baseWeightInKg
+                                        ConverterUtils.convertFloatValueUnit(absoluteInKg, UnitType.KG, targetType.unit)
+                                    }
+                                    // If target unit is % or other non-weight unit, use the value as is.
+                                    else -> newValueFromProvider
                                 }
 
-                                val existingValueWithType =
-                                    existingMeasurementWithValues.values.find { it.type.id == typeId }
-
-                                if (newValue != null) { // New value is provided (update or insert)
-                                    if (existingValueWithType != null) { // Value exists, try to update
-                                        if (existingValueWithType.value.floatValue != newValue) {
-                                            val updatedDbValue = existingValueWithType.value.copy(floatValue = newValue)
-                                            databaseRepository.updateMeasurementValue(updatedDbValue)
-                                            anyChangeMadeToValues = true
-                                            LogManager.d(TAG, "Updated $typeKey for measurement ${measurementToUpdate.id} to $newValue")
-                                        }
-                                    } else { // Value doesn't exist for this type, insert new
-                                        val newDbValue = MeasurementValue(
-                                            // id = 0, // Room will generate
-                                            measurementId = measurementToUpdate.id,
-                                            typeId = typeId,
-                                            floatValue = newValue
-                                        )
-                                        databaseRepository.insertMeasurementValue(newDbValue)
-                                        anyChangeMadeToValues = true
-                                        LogManager.d(TAG, "Inserted new $typeKey for measurement ${measurementToUpdate.id} with value $newValue")
+                                if (existingValue != null) { // Value exists, so update it.
+                                    if (existingValue.value.floatValue != targetValue) {
+                                        val updatedDbValue = existingValue.value.copy(floatValue = targetValue)
+                                        databaseRepository.updateMeasurementValue(updatedDbValue)
+                                        anyChangeMade = true
+                                        LogManager.d(TAG, "Updated $typeKey for measurement ${measurementToUpdate.id} to $targetValue ${targetType.unit}")
                                     }
-                                } else { // New value is null (ContentValues has the key, but its value is null) - implies delete
-                                    existingValueWithType?.value?.let { valueToDelete ->
-                                        // Special handling for essential values like WEIGHT if deletion is unintended by API design
-                                        if (typeKey == MeasurementTypeKey.WEIGHT) {
-                                            LogManager.w(
-                                                TAG,
-                                                "Attempt to delete WEIGHT value via update (by passing null for '${MeasurementColumns.WEIGHT}'). " +
-                                                        "Weight value for measurement ID ${valueToDelete.measurementId} will be removed. " +
-                                                        "Ensure this is intended as a measurement usually requires a weight."
-                                            )
-                                        }
-                                        databaseRepository.deleteMeasurementValueById(valueToDelete.id) // Assuming delete by ID
-                                        anyChangeMadeToValues = true
-                                        LogManager.d(TAG, "Deleted $typeKey (ID: ${valueToDelete.id}) for measurement ${measurementToUpdate.id}")
-                                    }
+                                } else { // Value doesn't exist, insert new.
+                                    val newDbValue = MeasurementValue(
+                                        measurementId = measurementToUpdate.id,
+                                        typeId = targetType.id,
+                                        floatValue = targetValue
+                                    )
+                                    databaseRepository.insertMeasurementValue(newDbValue)
+                                    anyChangeMade = true
+                                    LogManager.d(TAG, "Inserted new $typeKey for measurement ${measurementToUpdate.id} with value $targetValue ${targetType.unit}")
+                                }
+                            } else { // newValueFromProvider is null, which means delete.
+                                existingValue?.value?.let { valueToDelete ->
+                                    databaseRepository.deleteMeasurementValueById(valueToDelete.id)
+                                    anyChangeMade = true
+                                    LogManager.d(TAG, "Deleted $typeKey (ID: ${valueToDelete.id}) for measurement ${measurementToUpdate.id}")
                                 }
                             }
                         }
 
                         // Process updates for all relevant measurement types
-                        processValueUpdate(MeasurementColumns.WEIGHT, MeasurementTypeKey.WEIGHT)
-                        processValueUpdate(MeasurementColumns.BODY_FAT, MeasurementTypeKey.BODY_FAT)
-                        processValueUpdate(MeasurementColumns.WATER, MeasurementTypeKey.WATER)
-                        processValueUpdate(MeasurementColumns.MUSCLE, MeasurementTypeKey.MUSCLE)
+                        processValueUpdate(weightFromProviderInKg, MeasurementTypeKey.WEIGHT, MeasurementColumns.WEIGHT)
+                        processValueUpdate(fatFromProviderPercent, MeasurementTypeKey.BODY_FAT, MeasurementColumns.BODY_FAT)
+                        processValueUpdate(waterFromProviderPercent, MeasurementTypeKey.WATER, MeasurementColumns.WATER)
+                        processValueUpdate(muscleFromProviderPercent, MeasurementTypeKey.MUSCLE, MeasurementColumns.MUSCLE)
 
-                        if (anyChangeMadeToValues) {
-                            // If any MeasurementValue changed, recalculate derived values
-                            databaseRepository.recalculateDerivedValuesForMeasurement(measurementToUpdate.id)
-                            LogManager.d(
-                                TAG,
-                                "Measurement values changed for user ${measurementToUpdate.userId}, " +
-                                        "original timestamp: ${existingMeasurementWithValues.measurement.timestamp}. Derived values recalculated."
-                            )
-                            return@runBlocking 1 // Return 1 row affected from runBlocking
+                        if (anyChangeMade) {
+                            LogManager.d(TAG, "Measurement values changed for user ${measurementToUpdate.userId}. Derived values will be recalculated by repository calls.")
+                            return@runBlocking 1 // Return 1 row affected
                         } else {
-                            LogManager.d(
-                                TAG,
-                                "No actual changes detected for measurement values for user $targetUserIdFromUri at datetime $datetimeToUpdate."
-                            )
-                            return@runBlocking 0 // Return 0 from runBlocking
+                            LogManager.d(TAG, "No actual changes detected for measurement values for user $targetUserIdFromUri at datetime $datetimeToUpdate.")
+                            return@runBlocking 0 // Return 0 rows affected
                         }
 
                     } catch (e: Exception) {
-                        LogManager.e(
-                            TAG,
-                            "Error updating measurement for user $targetUserIdFromUri: ${e.message}",
-                            e
-                        )
-                        return@runBlocking 0 // Return 0 from runBlocking on error
+                        LogManager.e(TAG, "Error updating measurement for user $targetUserIdFromUri: ${e.message}", e)
+                        return@runBlocking 0
                     }
                 }
             }
@@ -510,6 +512,7 @@ class DatabaseProvider : ContentProvider() {
 
         return rowsAffected
     }
+
 
 
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<String?>?): Int {
