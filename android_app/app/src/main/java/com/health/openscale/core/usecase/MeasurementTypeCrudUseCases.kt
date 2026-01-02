@@ -164,7 +164,7 @@ class MeasurementTypeCrudUseCases @Inject constructor(
                     oldUnit.isWeightUnit() && newUnit == UnitType.PERCENT -> {
                         val currentInKg = ConverterUtils.convertFloatValueUnit(current, oldUnit, UnitType.KG)
                         if (weightInKg != 0f) {
-                            converted = (currentInKg ?: 0f) / weightInKg * 100f
+                            converted = currentInKg / weightInKg * 100f
                         } else {
                             converted = 0f
                         }
@@ -183,13 +183,8 @@ class MeasurementTypeCrudUseCases @Inject constructor(
                 converted = ConverterUtils.convertFloatValueUnit(current, oldUnit, newUnit)
             }
 
-            // Apply update only if value actually changes after rounding
-            val roundedConverted = converted?.let { CalculationUtils.roundTo(it) }
-            val roundedCurrent = CalculationUtils.roundTo(current)
-            if (roundedConverted != null && roundedConverted != roundedCurrent) {
-                repository.updateMeasurementValue(mv.copy(floatValue = roundedConverted))
-                updatedCount++
-            }
+            repository.updateMeasurementValue(mv.copy(floatValue = converted))
+            updatedCount++
         }
 
         UnitConversionReport(attempted = true, updatedCount = updatedCount)

@@ -436,7 +436,7 @@ fun MeasurementDetailScreen(
                             if (currentType.inputType == InputFieldType.FLOAT) {
                                 val floatOrNull = trimmedValue.toFloatOrNull()
                                 if (floatOrNull != null) {
-                                    valuesState[currentType.id] = String.format(Locale.US, "%.2f", floatOrNull)
+                                    valuesState[currentType.id] = floatOrNull.toString()
                                     isValid = true
                                 } else {
                                     Toast.makeText(context, context.getString(R.string.toast_invalid_number_format_short, currentType.getDisplayName(context)), Toast.LENGTH_SHORT).show()
