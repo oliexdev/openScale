@@ -91,6 +91,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
     private var pendingAppUserId: Int? = null
     private var pendingConsentForNewUser: Int? = null
     private var awaitingReferenceAfterRegister = false
+    private var pendingSoftLeanMass: Float = 0.0f
 
     /**
      * Identify devices that expose any of the standard scale services.
@@ -298,6 +299,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
 
             // When we already have weight (or stabilized) → publish
             if (prev.hasWeight()) {
+                transformMeasurement(prev)
                 publishTransformed(prev)
                 pendingMeasurement = null
             } else {
@@ -306,9 +308,40 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
             }
         } else {
             // Different userId → publish old, start new
+            transformMeasurement(prev)
             publishTransformed(prev)
             pendingMeasurement = newM
         }
+    }
+
+    protected open fun transformMeasurement(m: ScaleMeasurement) {
+        if (m.weight <= 0f) {
+            logD("transformMeasurement: skipping (no weight)")
+            return
+        }
+
+        // Water: convert from mass in weight unit to percentage
+        val waterPct = (m.water / m.weight) * 100f
+        logD("transformMeasurement: water ${m.water} kg → $waterPct%")
+        m.water = waterPct
+
+        // Bone/LBM: Calculate from soft lean mass if available
+        if (pendingSoftLeanMass > 0f) {
+            val fatMass = m.weight * (m.fat / 100f)
+            val leanBodyMass = m.weight - fatMass
+            val boneMass = leanBodyMass - pendingSoftLeanMass
+            m.lbm = leanBodyMass
+            m.bone = boneMass
+            logD("transformMeasurement: calculated LBM=$leanBodyMass kg, bone=$boneMass kg from softLean=$pendingSoftLeanMass kg")
+        } else if (pendingSoftLeanMass == 0f) {
+            // Reference measurement or user stepped from scale while measuring - no BIA data
+            m.bone = 0f
+            m.lbm = 0f
+            logD("transformMeasurement: reference measurement (softLean=0) - bone/LBM set to 0")
+        }
+
+        // Reset for next measurement
+        pendingSoftLeanMass = 0f
     }
 
     private fun parseWeightToMeasurement(value: ByteArray): ScaleMeasurement? {
@@ -403,15 +436,16 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         if (bmrPresent) {
             val bmrJ = u16le(value, offset); offset += 2
             val bmrKcal = ((bmrJ / 4.1868f) * 10f).toInt() / 10f
+            m.bmr = bmrKcal
             logD("BMR ≈ $bmrKcal kcal")
         }
 
         if (musclePctPresent) {
             val musclePct = u16le(value, offset) * 0.1f; offset += 2
             m.muscle = musclePct
+            logD("Muscle %=$musclePct%")
         }
 
-        var softLean = 0.0f
         if (muscleMassPresent) {
             val muscleMass = u16le(value, offset) * massMultiplier; offset += 2
             logD("Muscle mass=$muscleMass kg")
@@ -423,17 +457,20 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         }
 
         if (softLeanPresent) {
-            softLean = u16le(value, offset) * massMultiplier; offset += 2
+            val softLean = u16le(value, offset) * massMultiplier; offset += 2
+            pendingSoftLeanMass = softLean
             logD("Soft lean mass=$softLean kg")
         }
 
         if (waterMassPresent) {
             val bodyWaterMass = u16le(value, offset) * massMultiplier; offset += 2
             m.water = bodyWaterMass
+            logD("Body water mass=$bodyWaterMass kg")
         }
 
         if (impedancePresent) {
             val z = u16le(value, offset) * 0.1f; offset += 2
+            m.impedance = z.toDouble()
             logD("Impedance=$z Ω")
         }
 
@@ -450,16 +487,6 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         }
 
         if (multiPacket) logW("Body Composition: multi-packet measurement not supported")
-
-        // Derive LBM & bone if we have soft-lean and weight
-        val w2 = m.weight
-        if (w2 > 0f && softLeanPresent) {
-            val fatMass = w2 * (m.fat / 100f)
-            val leanBodyMass = w2 - fatMass
-            val boneMass = leanBodyMass - softLean
-            m.lbm = leanBodyMass
-            m.bone = boneMass
-        }
 
         return m
     }
