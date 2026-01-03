@@ -62,6 +62,7 @@ class SyncUseCases @Inject constructor(
         val intent = Intent().apply {
             component = ComponentName(pkgName, SYNC_SERVICE_CLASS)
             putExtra("mode", "insert")
+            putExtra("id", measurement.id)
             putExtra("userId", measurement.userId)
             putExtra("date", measurement.timestamp)
             putBodyCompositionExtras(values)
@@ -86,6 +87,7 @@ class SyncUseCases @Inject constructor(
         val intent = Intent().apply {
             component = ComponentName(pkgName, SYNC_SERVICE_CLASS)
             putExtra("mode", "update")
+            putExtra("id", measurement.id)
             putExtra("userId", measurement.userId)
             putExtra("date", measurement.timestamp)
             putBodyCompositionExtras(values)
