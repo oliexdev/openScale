@@ -1,0 +1,4 @@
+* Improved measurement accuracy with better unit conversions, full precision, and more reliable timestamps from Bluetooth scales.
+* Enhanced charts and goals with projections, goal lines, and UI improvements across measurement and settings screens.
+* Refactored Bluetooth and sync handling for greater stability and device compatibility.
+* Updated dependencies, translations, and internal tooling.

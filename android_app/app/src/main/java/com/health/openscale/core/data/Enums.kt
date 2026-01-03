@@ -86,7 +86,7 @@ enum class SupportedLanguage(val code: String, val nativeDisplayName: String) {
     //ARABIC("ar", "Arabic (العربية)"),
     //BENGALI("bn-BD", "Bengali (বাংলা)"),
     //CATALAN("ca", "Catalan (català)"),
-    //CHINESE_SIMPLIFIED("zh-CN", "Chinese (simplified; 中文 (汉语))"),
+    CHINESE_SIMPLIFIED("zh-CN", "Chinese (simplified; 中文 (汉语))"),
     CHINESE_TRADITIONAL("zh-TW", "Chinese (traditional; 中文 (繁體))"),
     //CROATIAN("hr", "Croatian (hrvatski jezik)"),
     //CZECH("cs", "Czech (čeština)"),

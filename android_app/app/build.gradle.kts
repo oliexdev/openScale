@@ -25,8 +25,8 @@ android {
         applicationId = "com.health.openscale"
         minSdk = 31
         targetSdk = 36
-        versionCode = 70
-        versionName = "3.0"
+        versionCode = 71
+        versionName = "3.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders["appName"] = "openScale"
