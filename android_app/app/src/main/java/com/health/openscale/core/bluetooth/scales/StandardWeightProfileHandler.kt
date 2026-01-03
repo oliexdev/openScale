@@ -138,8 +138,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
 
         // 1) Try auto-consent from persisted mapping/consent
         if (!tryAutoConsent(user)) {
-            // 2) No mapping → try to list users via UDS (may be unsupported)
-            requestUdsListAllUsers()
+            onAutoConsentFailed(user)
         }
 
         // Generic hint
@@ -251,6 +250,11 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         val indices = intArrayOf(-1)
         requestUserInteraction(UserInteractionType.CHOOSE_USER, Pair(items, indices))
         logD("UserInteraction requested: CHOOSE_USER with items=${items.joinToString()} indices=${indices.joinToString()}")
+    }
+
+    protected open fun onAutoConsentFailed(user: ScaleUser) {
+        logD("onAutoConsentFailed => requesting via UDS a list of all users")
+        requestUdsListAllUsers()
     }
 
     /** Show a CHOOSE_USER dialog built from simple slot indices (+ "Create new"). */
@@ -650,38 +654,11 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
                     return
                 }
 
-                pendingAppUserId = appUserId
                 logD("CHOOSE_USER selected: scaleIndex=$scaleIndex for appUserId=$appUserId")
-
                 if (scaleIndex == -1) {
-                    // Create/register new user on the scale
-                    val consent = randomConsent().also { pendingConsentForNewUser = it }
-                    registeringNewUser = true
-                    logD("Starting registration of new user with appUserId=$appUserId and generated consent=$consent")
-                    userInfo(R.string.bt_info_register_new_user_started)
-                    sendRegisterNewUser(consent)
+                    registerScaleNewUser(appUserId)
                 } else {
-                    // Existing slot selected: persist mapping; use stored consent if available
-                    logD("Linking existing scale slot $scaleIndex to appUserId=$appUserId")
-                    for (i in 0..255) {
-                        if (i != scaleIndex && loadUserIdForScaleIndex(i) == appUserId) {
-                            saveUserIdForScaleIndex(i, -1)
-                            logD("Cleared previous mapping for appUserId=$appUserId at scaleIndex=$i")
-                        }
-                    }
-
-                    saveUserIdForScaleIndex(scaleIndex, appUserId)
-                    userInfo(R.string.bt_info_linked_app_user_to_slot, appUserId, scaleIndex)
-
-                    val consent = loadConsentForScaleIndex(scaleIndex)
-                    if (consent == -1) {
-                        logD("No consent found for scaleIndex=$scaleIndex, requesting consent")
-                        userInfo(R.string.bt_info_consent_needed, scaleIndex)
-                        requestScaleUserConsent(appUserId, scaleIndex)
-                    } else {
-                        logD("Found existing consent=$consent for scaleIndex=$scaleIndex, sending to scale")
-                        sendConsent(scaleIndex, consent)
-                    }
+                    registerScaleExistingUser(appUserId, scaleIndex)
                 }
             }
 
@@ -726,6 +703,42 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
             }
 
             else -> logW("Unhandled UserInteractionType=$interactionType for appUserId=$appUserId")
+        }
+    }
+
+    protected fun registerScaleNewUser(appUserId: Int) {
+        pendingAppUserId = appUserId
+        registeringNewUser = true
+
+        val consent = randomConsent().also { pendingConsentForNewUser = it }
+        logD("Starting registration of new user with appUserId=$appUserId and generated consent=$consent")
+        userInfo(R.string.bt_info_register_new_user_started)
+        sendRegisterNewUser(consent)
+    }
+
+    protected fun registerScaleExistingUser(appUserId: Int, scaleIndex: Int) {
+        pendingAppUserId = appUserId
+
+        // Existing slot selected: persist mapping; use stored consent if available
+        logD("Linking existing scale slot $scaleIndex to appUserId=$appUserId")
+        for (i in 0..255) {
+            if (i != scaleIndex && loadUserIdForScaleIndex(i) == appUserId) {
+                saveUserIdForScaleIndex(i, -1)
+                logD("Cleared previous mapping for appUserId=$appUserId at scaleIndex=$i")
+            }
+        }
+
+        saveUserIdForScaleIndex(scaleIndex, appUserId)
+        userInfo(R.string.bt_info_linked_app_user_to_slot, appUserId, scaleIndex)
+
+        val consent = loadConsentForScaleIndex(scaleIndex)
+        if (consent == -1) {
+            logD("No consent found for scaleIndex=$scaleIndex, requesting consent")
+            userInfo(R.string.bt_info_consent_needed, scaleIndex)
+            requestScaleUserConsent(appUserId, scaleIndex)
+        } else {
+            logD("Found existing consent=$consent for scaleIndex=$scaleIndex, sending to scale")
+            sendConsent(scaleIndex, consent)
         }
     }
 
