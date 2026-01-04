@@ -176,6 +176,15 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
 
     protected open fun transformBeforePublish(m: ScaleMeasurement): ScaleMeasurement {
         logD("transformBeforePublish called for measurement: $m")
+
+        val w = m.weight.takeIf { it > 0f } ?: 1f
+
+        m.muscle = (m.muscle / w) * 100f
+        m.water = (m.water / w) * 100f
+
+        logD("transformed values before publish: weight=${m.weight}kg, lbm=${m.lbm}kg, bone=${m.bone}kg, " +
+                    "fat=${m.fat}%, muscle=${m.muscle}%, water=${m.water}%")
+
         return m
     }
 

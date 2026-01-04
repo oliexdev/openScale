@@ -26,17 +26,15 @@ import java.util.Date
 data class ScaleMeasurement(
     var userId: Int = 0xFF, // openScale's internal app user ID
     var dateTime: Date? = null,
-    var weight: Float = 0.0f,    // In units specified by `weightUnit`
-    var fat: Float = 0.0f,   // Percentage
-    var water: Float = 0.0f,
-    var muscle: Float = 0.0f, // Absolute mass, in units specified by `weightUnit`
-    var visceralFat: Float = 0.0f, // Rating or percentage
-    var bone: Float = 0.0f,  // Absolute mass, in units specified by `weightUnit`
-    var lbm : Float = 0.0f,
+    var weight: Float = 0.0f,    // must be in kg
+    var fat: Float = 0.0f,   // must be in percentage
+    var water: Float = 0.0f, // must be in percentage
+    var muscle: Float = 0.0f, // must be in percentage
+    var visceralFat: Float = 0.0f, // must be in percentage
+    var bone: Float = 0.0f,  // must be in kg
+    var lbm : Float = 0.0f, // must be in kg
     var bmr: Float = 0.0f,       // Basal Metabolic Rate in kcal
     var impedance: Double = 0.0, // Ohms
-    var height: Float = 0.0f,    // Internally stored in meters
-    var weightUnit: WeightUnit? = null, // Uses the existing enum from core.data
 ) {
 
     // --- Utility methods ---
@@ -54,7 +52,6 @@ data class ScaleMeasurement(
 
     fun mergeWith(other: ScaleMeasurement) = apply {
         if (other.weight > 0f && this.weight <= 0f) this.weight = other.weight
-        if (other.weightUnit != null && this.weightUnit == null) this.weightUnit = other.weightUnit
         if (other.fat > 0f && this.fat <= 0f) this.fat = other.fat
         if (other.water > 0f && this.water <= 0f) this.water = other.water
         if (other.muscle > 0f && this.muscle <= 0f) this.muscle = other.muscle
@@ -63,7 +60,6 @@ data class ScaleMeasurement(
         if (other.lbm > 0f && this.lbm <= 0f) this.lbm = other.lbm
         if (other.bmr > 0f && this.bmr <= 0f) this.bmr = other.bmr
         if (other.impedance > 0.0 && this.impedance <= 0.0) this.impedance = other.impedance
-        if (other.height > 0f && this.height <= 0f) this.height = other.height
 
         if (other.userId != 0xFF &&
             (this.userId == 0xFF || this.userId == -1)) { // -1 was common init value
