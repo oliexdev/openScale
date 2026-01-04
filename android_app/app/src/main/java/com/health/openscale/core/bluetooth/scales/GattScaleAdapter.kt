@@ -43,6 +43,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withTimeout
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 // -------------------------------------------------------------------------------------------------
 // GATT adapter (BLE)
@@ -66,7 +67,14 @@ class GattScaleAdapter(
 
     private val opQueue = Channel<suspend () -> Unit>(Channel.UNLIMITED)
 
-    private val deferredMap = mutableMapOf<UUID, CompletableDeferred<Unit>>()
+    private data class PendingOp(
+        val id: Long,
+        val deferred: CompletableDeferred<Unit>
+    )
+
+    private val deferredMap = ConcurrentHashMap<UUID, PendingOp>()
+    private var nextOpId = 0L
+
     private val ioMutex = Mutex()
 
     private var connectAttempts = 0
@@ -75,6 +83,11 @@ class GattScaleAdapter(
         // Worker coroutine processes queued BLE operations sequentially
         scope.launch {
             for (op in opQueue) {
+                // wait until BLE connection is established
+                while (!_isConnected.value) {
+                    delay(10)
+                }
+
                 try {
                     ioMutex.lock()
                     op()
@@ -185,8 +198,8 @@ class GattScaleAdapter(
         ) {
             LogManager.d(TAG,"\u2190 write response chr=${characteristic.uuid} len=${value.size} status=${status} ${value.toHexPreview(24)}")
 
-            deferredMap[characteristic.uuid]?.let {
-                it.complete(Unit)
+            deferredMap[characteristic.uuid]?.let { op ->
+                op.deferred.complete(Unit)
                 deferredMap.remove(characteristic.uuid)
             }
         }
@@ -198,8 +211,8 @@ class GattScaleAdapter(
         ) {
             LogManager.d(TAG,"\u2190 notify state chr=${characteristic.uuid} status=${status}")
 
-            deferredMap[characteristic.uuid]?.let {
-                it.complete(Unit)
+            deferredMap[characteristic.uuid]?.let { op ->
+                op.deferred.complete(Unit)
                 deferredMap.remove(characteristic.uuid)
             }
         }
@@ -214,8 +227,8 @@ class GattScaleAdapter(
 
             handler.handleNotification(characteristic.uuid, value)
 
-            deferredMap[characteristic.uuid]?.let {
-                it.complete(Unit)
+            deferredMap[characteristic.uuid]?.let { op ->
+                op.deferred.complete(Unit)
                 deferredMap.remove(characteristic.uuid)
             }
         }
@@ -231,14 +244,16 @@ class GattScaleAdapter(
                 val p = currentPeripheral ?: return@trySend
                 LogManager.d(TAG, "→ set notify on chr=$characteristic svc=$service")
 
+                val opId = ++nextOpId
                 val deferred = CompletableDeferred<Unit>()
-                deferredMap[characteristic] = deferred
+                deferredMap[characteristic] = PendingOp(opId, deferred)
 
                 val started = p.startNotify(service, characteristic)
                 if (!started) {
                     LogManager.w(TAG, "Failed to initiate notify for $characteristic")
                     //appCallbacks.onWarn(R.string.bt_warn_notify_failed, characteristic.toString()) // don't show message to the user
                     deferred.complete(Unit)
+                    deferredMap.remove(characteristic)
                 }
 
                 try {
@@ -248,6 +263,12 @@ class GattScaleAdapter(
                     }
                 } catch (e: Exception) {
                     LogManager.w(TAG, "Timeout waiting for notify on $characteristic")
+                } finally {
+                    val current = deferredMap[characteristic]
+                    if (current?.id == opId) {
+                        deferredMap.remove(characteristic)
+                    }
+                    deferred.cancel()
                 }
 
                 ioGap(tuning.notifySetupDelayMs)
@@ -259,8 +280,9 @@ class GattScaleAdapter(
                 val p = currentPeripheral ?: return@trySend
                 val ch = p.getCharacteristic(service, characteristic) ?: return@trySend
 
+                val opId = ++nextOpId
                 val deferred = CompletableDeferred<Unit>()
-                deferredMap[characteristic] = deferred
+                deferredMap[characteristic] = PendingOp(opId, deferred)
 
                 val supportsWriteNoResponse = ch.properties and BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE != 0
                 val supportsWriteResponse = ch.properties and BluetoothGattCharacteristic.PROPERTY_WRITE != 0
@@ -293,6 +315,12 @@ class GattScaleAdapter(
                     }
                 } catch (t: Throwable) {
                     LogManager.w(TAG, "Timeout waiting for write on $characteristic")
+                } finally {
+                    val current = deferredMap[characteristic]
+                    if (current?.id == opId) {
+                        deferredMap.remove(characteristic)
+                    }
+                    deferred.cancel()
                 }
 
                 ioGap(tuning.postWriteDelayMs)
@@ -304,8 +332,9 @@ class GattScaleAdapter(
                 val p = currentPeripheral ?: return@trySend
                 val ch = p.getCharacteristic(service, characteristic) ?: return@trySend
 
+                val opId = ++nextOpId
                 val deferred = CompletableDeferred<Unit>()
-                deferredMap[characteristic] = deferred
+                deferredMap[characteristic] = PendingOp(opId, deferred)
 
                 p.readCharacteristic(service, characteristic)
 
@@ -317,6 +346,12 @@ class GattScaleAdapter(
                     }
                 } catch (t: Throwable) {
                     LogManager.w(TAG, "Timeout waiting for read on $characteristic")
+                } finally {
+                    val current = deferredMap[characteristic]
+                    if (current?.id == opId) {
+                        deferredMap.remove(characteristic)
+                    }
+                    deferred.cancel()
                 }
 
                 ioGap(tuning.postReadDelayMs)
