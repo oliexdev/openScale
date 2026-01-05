@@ -145,7 +145,7 @@ object EvaluationReferenceTables {
             AgeBand(16, 16, 18.9f, 24.3f),
             AgeBand(17, 17, 19.5f, 25f),
             AgeBand(18, 18, 20f, 25.5f),
-            AgeBand(20, 64, 18.5f, 25f),
+            AgeBand(19, 64, 18.5f, 25f),
 	        AgeBand(65, 120, 18.5f, 25f), //should be higher but is not defined
         )
     )
