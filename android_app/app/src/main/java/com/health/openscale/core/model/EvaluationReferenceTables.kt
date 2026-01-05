@@ -168,6 +168,12 @@ object EvaluationReferenceTables {
 	        AgeBand(65, 120, 18.5f, 25f), //should be higher but is not defined
         )
     )
+    //source for kids:
+    //https://www.who.int/tools/growth-reference-data-for-5to19-years/indicators/bmi-for-age
+    //since ageband does not allow for months, i took the lowest and highest value for that year
+
+    //definition for adults:
+    //https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html
 
     // WHtR
     val whtr = AgeBandStrategy(
