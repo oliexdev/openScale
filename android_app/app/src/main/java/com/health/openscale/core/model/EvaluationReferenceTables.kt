@@ -131,24 +131,49 @@ object EvaluationReferenceTables {
     // BMI
     val bmiMale = AgeBandStrategy(
         listOf(
-            AgeBand(16, 24, 20f, 25f),
-            AgeBand(25, 34, 21f, 26f),
-            AgeBand(35, 44, 22f, 27f),
-            AgeBand(45, 54, 23f, 28f),
-            AgeBand(55, 64, 24f, 29f),
-            AgeBand(65, 90, 25f, 30f),
+            AgeBand(5, 5, 14.4f, 16.8f),
+            AgeBand(6, 6, 14.5f, 17.1f),
+            AgeBand(7, 7, 14.6f, 17.5f),
+            AgeBand(8, 8, 14.8f, 17.9f),
+            AgeBand(9, 9, 15.1f, 18.5f),
+            AgeBand(10, 10, 15.4f, 19.2f),
+            AgeBand(11, 11, 15.8f, 20f),
+            AgeBand(12, 12, 16.3f, 20.9f),
+            AgeBand(13, 13, 16.9f, 21.8f),
+            AgeBand(14, 14, 17.6f, 22.7f),
+            AgeBand(15, 15, 18.3f, 23.6f),
+            AgeBand(16, 16, 18.9f, 24.3f),
+            AgeBand(17, 17, 19.5f, 25f),
+            AgeBand(18, 18, 20f, 25.5f),
+            AgeBand(19, 64, 18.5f, 25f),
+	        AgeBand(65, 120, 18.5f, 25f), //should be higher but is not defined
         )
     )
     val bmiFemale = AgeBandStrategy(
         listOf(
-            AgeBand(16, 24, 19f, 24f),
-            AgeBand(25, 34, 20f, 25f),
-            AgeBand(35, 44, 21f, 26f),
-            AgeBand(45, 54, 22f, 27f),
-            AgeBand(55, 64, 23f, 28f),
-            AgeBand(65, 90, 24f, 29f),
+            AgeBand(5, 5, 13.8f, 17.1f),
+            AgeBand(6, 6, 13.8f, 17.3f),
+            AgeBand(7, 7, 13.9f, 17.8f),
+            AgeBand(8, 8, 14.1f, 18.4f),
+            AgeBand(9, 9, 14.4f, 19.1f),
+            AgeBand(10, 10, 14.8f, 19.9f),
+            AgeBand(11, 11, 15.3f, 20.8f),
+            AgeBand(12, 12, 15.9f, 21.8f),
+            AgeBand(13, 13, 16.5f, 22.8f),
+            AgeBand(14, 14, 17.2f, 23.6f),
+            AgeBand(15, 15, 17.7f, 24.2f),
+            AgeBand(16, 16, 18.1f, 24.6f),
+            AgeBand(17, 17, 18.3f, 24.9f),
+            AgeBand(18, 64, 18.5f, 25f),
+	        AgeBand(65, 120, 18.5f, 25f), //should be higher but is not defined
         )
     )
+    //source for kids:
+    //https://www.who.int/tools/growth-reference-data-for-5to19-years/indicators/bmi-for-age
+    //since ageband does not allow for months, i took the lowest and highest value for that year
+
+    //definition for adults:
+    //https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html
 
     // WHtR
     val whtr = AgeBandStrategy(
