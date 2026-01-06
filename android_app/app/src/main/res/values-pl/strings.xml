@@ -181,4 +181,21 @@
     <string name="batch_update_status_report">%1$d: %2$s</string>
     <string name="action_pin">przypnij</string>
     <string name="action_unpin">odepnij</string>
+    <string name="amputation_lower_leg">Podudzie</string>
+    <string name="measurement_type_bmr">BMR</string>
+    <string name="measurement_type_tdee">TDEE</string>
+    <string name="measurement_type_calories">Kalorie</string>
+    <string name="measurement_type_comment">Komentarz</string>
+    <string name="measurement_type_date">Data</string>
+    <string name="measurement_type_time">Czas</string>
+    <string name="measurement_type_user">Użytkownik</string>
+    <string name="measurement_type_label_enabled">Włączony</string>
+    <string name="content_desc_selected_icon_preview">Podgląd wybranej ikony</string>
+    <string name="content_desc_drag_handle_sort">Sortuj</string>
+    <string name="content_desc_edit_type">Edytuj</string>
+    <string name="content_desc_delete_type">Usuń</string>
+    <string name="measurement_type_deleted_successfully">Typ pomiaru „%1$s” usunięty pomyślnie.</string>
+    <string name="measurement_type_deleted_error">Błąd podczas usuwania typu pomiaru \'%1$s\'.</string>
+    <string name="measurement_type_updated_error">Nie udało się zaktualizować typu pomiaru \'%1$s\'.</string>
+    <string name="measurement_type_updated_successfully">Typ pomiaru \'%1$s\' zaktualizowany pomyślnie.</string>
 </resources>
