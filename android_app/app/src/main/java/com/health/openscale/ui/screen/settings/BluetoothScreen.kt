@@ -396,7 +396,7 @@ fun BluetoothScreen(
                                 bluetoothViewModel.saveDeviceAsPreferred(
                                     ScannedDeviceInfo(
                                         name = "Debug",
-                                        address = device.address,
+                                        address = device.name,
                                         rssi = 0,
                                         serviceUuids = emptyList(),
                                         manufacturerData = null,
