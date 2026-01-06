@@ -251,7 +251,7 @@ class GattScaleAdapter(
                 val started = p.startNotify(service, characteristic)
                 if (!started) {
                     LogManager.w(TAG, "Failed to initiate notify for $characteristic")
-                    appCallbacks.onWarn(R.string.bt_warn_notify_failed, characteristic.toString())
+                   // appCallbacks.onWarn(R.string.bt_warn_notify_failed, characteristic.toString())
                     deferred.complete(Unit)
                     deferredMap.remove(characteristic)
                 }

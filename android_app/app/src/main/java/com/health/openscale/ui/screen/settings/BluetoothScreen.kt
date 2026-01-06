@@ -396,12 +396,12 @@ fun BluetoothScreen(
                                 bluetoothViewModel.saveDeviceAsPreferred(
                                     ScannedDeviceInfo(
                                         name = "Debug",
-                                        address = device.name,
+                                        address = device.address,
                                         rssi = 0,
-                                        serviceUuids = emptyList(),
-                                        manufacturerData = null,
+                                        serviceUuids = device.serviceUuids,
+                                        manufacturerData = device.manufacturerData,
                                         isSupported = true,
-                                        determinedHandlerDisplayName = "Debug"
+                                        determinedHandlerDisplayName = device.name
                                     )
                                 )
                                 scope.launch {
