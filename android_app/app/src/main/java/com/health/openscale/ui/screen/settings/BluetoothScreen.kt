@@ -85,6 +85,7 @@ import androidx.core.content.ContextCompat
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.scales.DeviceCapability
 import com.health.openscale.core.bluetooth.scales.DeviceSupport
+import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.shared.SharedViewModel
@@ -388,6 +389,27 @@ fun BluetoothScreen(
                                         )
                                     }
                                 }
+                            },
+                            onSaveDebug = {
+                                bluetoothViewModel.requestStopDeviceScan()
+                                // Save same MAC but with name "Debug" to force Debug handler on connect
+                                bluetoothViewModel.saveDeviceAsPreferred(
+                                    ScannedDeviceInfo(
+                                        name = "Debug",
+                                        address = device.address,
+                                        rssi = 0,
+                                        serviceUuids = emptyList(),
+                                        manufacturerData = null,
+                                        isSupported = true,
+                                        determinedHandlerDisplayName = "Debug"
+                                    )
+                                )
+                                scope.launch {
+                                    sharedViewModel.showSnackbar(
+                                        message = context.getString(R.string.snackbar_developer_for_device_enable_logs),
+                                        duration = SnackbarDuration.Long
+                                    )
+                                }
                             }
                         )
                     }
@@ -534,11 +556,14 @@ fun DeviceCardItem(
     deviceInfo: ScannedDeviceInfo,
     savedAddress: String?,
     onSavePreferred: () -> Unit,
+    onSaveDebug: () -> Unit
 ) {
     val supportColor =
         if (deviceInfo.isSupported) MaterialTheme.colorScheme.primary
         else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
     val isCurrentlySaved = (deviceInfo.address == savedAddress)
+
+    var showMenu by remember { mutableStateOf(false) }
 
     ElevatedCard(
         onClick = onSavePreferred, // tapping the card still does the "save preferred" flow if supported
@@ -595,12 +620,43 @@ fun DeviceCardItem(
                 }
             }
 
-            // Right: RSSI
-            Text(
-                text = stringResource(R.string.rssi_format, deviceInfo.rssi),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            // Right: RSSI + ⋮ menu, anchored at the far right
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.rssi_format, deviceInfo.rssi),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Box {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = stringResource(R.string.more_options_cd)
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        if (deviceInfo.isSupported) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.menu_save_as_preferred)) },
+                                onClick = {
+                                    showMenu = false
+                                    onSavePreferred()
+                                }
+                            )
+                        }
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.menu_save_as_developer)) },
+                            onClick = {
+                                showMenu = false
+                                onSaveDebug()
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 }

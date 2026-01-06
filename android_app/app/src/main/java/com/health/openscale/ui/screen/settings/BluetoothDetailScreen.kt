@@ -240,14 +240,12 @@ fun BluetoothDetailScreen(
                         val currentDevice = savedDevice
                         if (currentDevice != null) {
                             if (isDeveloperActive) {
-                                // Deactivating Debug Mode: Restore original name and handler.
                                 bluetoothViewModel.saveDeviceAsPreferred(
-                                    ScannedDeviceInfo(name = currentDevice.determinedHandlerDisplayName!!, address = currentDevice.address, rssi = 0, serviceUuids = emptyList(), manufacturerData = null, isSupported = true, determinedHandlerDisplayName = currentDevice.determinedHandlerDisplayName!!)
+                                    ScannedDeviceInfo(name = currentDevice.address, address = currentDevice.address, rssi = 0, serviceUuids = emptyList(), manufacturerData = null, isSupported = true, determinedHandlerDisplayName = "Restored")
                                 )
                             } else {
-                                // Activating Debug Mode: Change name and handler, but keep the address.
                                 bluetoothViewModel.saveDeviceAsPreferred(
-                                    ScannedDeviceInfo(name = "Debug", address = currentDevice.address, rssi = 0, serviceUuids = emptyList(), manufacturerData = null, isSupported = true, determinedHandlerDisplayName = currentDevice.name)
+                                    ScannedDeviceInfo(name = "Debug", address = currentDevice.name!!, rssi = 0, serviceUuids = emptyList(), manufacturerData = null, isSupported = true, determinedHandlerDisplayName = "Debug")
                                 )
                             }
                         }
