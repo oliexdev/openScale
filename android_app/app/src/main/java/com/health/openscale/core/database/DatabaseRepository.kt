@@ -227,7 +227,20 @@ class DatabaseRepository @Inject constructor(
     // --- Measurement Type Operations ---
 
     suspend fun insertAllMeasurementTypes(types: List<MeasurementType>) {
-        measurementTypeDao.insertAll(types)
+        val existingTypes = measurementTypeDao.getAll().first()
+        val existingKeys = existingTypes.map { it.key }.toSet()
+
+        val typesToInsert = types.filter { type ->
+            // Allow insertion if the key is CUSTOM or if the key does not already exist in the database.
+            type.key == MeasurementTypeKey.CUSTOM || type.key !in existingKeys
+        }
+
+        if (typesToInsert.isNotEmpty()) {
+            LogManager.i(TAG, "Found ${typesToInsert.size} new measurement types to insert.")
+            measurementTypeDao.insertAll(typesToInsert)
+        } else {
+            LogManager.d(TAG, "No new measurement types to insert. All provided non-custom types already exist.")
+        }
     }
 
     fun getAllMeasurementTypes(): Flow<List<MeasurementType>> = measurementTypeDao.getAll()
