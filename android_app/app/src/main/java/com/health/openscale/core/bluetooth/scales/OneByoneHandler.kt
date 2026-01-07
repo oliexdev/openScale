@@ -42,13 +42,13 @@ import kotlin.math.max
  * We parse CF frames, compute impedance, validate timestamps for history,
  * derive body composition via OneByoneLib, and publish ScaleMeasurement.
  */
-class OneByoneHandler : ScaleDeviceHandler() {
+open class OneByoneHandler : ScaleDeviceHandler() {
 
     // --- UUIDs (16-bit under Bluetooth Base UUID) ------------------------------
 
-    private val SVC_FFF0  = uuid16(0xFFF0)
-    private val CHR_FFF4  = uuid16(0xFFF4) // NOTIFY: mixed weight/body payloads (CF ...)
-    private val CHR_FFF1  = uuid16(0xFFF1) // WRITE: command pipe (FD/ F1/ F2 ...)
+    protected val SVC_FFF0  = uuid16(0xFFF0)
+    protected val CHR_FFF4  = uuid16(0xFFF4) // NOTIFY: mixed weight/body payloads (CF ...)
+    protected val CHR_FFF1  = uuid16(0xFFF1) // WRITE: command pipe (FD/ F1/ F2 ...)
 
     // --- Small runtime state ---------------------------------------------------
 
@@ -61,19 +61,18 @@ class OneByoneHandler : ScaleDeviceHandler() {
     private var lastSavedAt: Long = 0L
 
     // --- Capability declaration -----------------------------------------------
+    protected val caps = buildSet {
+        add(DeviceCapability.BODY_COMPOSITION)
+        add(DeviceCapability.TIME_SYNC)
+        add(DeviceCapability.HISTORY_READ)
+        add(DeviceCapability.UNIT_CONFIG)
+        add(DeviceCapability.LIVE_WEIGHT_STREAM)
+    }
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.lowercase()
         val supports = name.equals("Health Scale".lowercase())
         if (!supports) return null
-
-        val caps = buildSet {
-            add(DeviceCapability.BODY_COMPOSITION)
-            add(DeviceCapability.TIME_SYNC)
-            add(DeviceCapability.HISTORY_READ)
-            add(DeviceCapability.UNIT_CONFIG)
-            add(DeviceCapability.LIVE_WEIGHT_STREAM)
-        }
 
         return DeviceSupport(
             displayName = "1byone (classic)",

@@ -18,7 +18,6 @@
 package com.health.openscale.core.bluetooth
 
 import android.content.Context
-import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
 import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
@@ -28,6 +27,7 @@ import com.health.openscale.core.bluetooth.scales.DebugGattHandler
 import com.health.openscale.core.bluetooth.scales.DeviceSupport
 import com.health.openscale.core.bluetooth.scales.DigooDGSO38HHandler
 import com.health.openscale.core.bluetooth.scales.ESCS20mHandler
+import com.health.openscale.core.bluetooth.scales.EufyC1P1Handler
 import com.health.openscale.core.bluetooth.scales.ExcelvanCF36xHandler
 import com.health.openscale.core.bluetooth.scales.ExingtechY1Handler
 import com.health.openscale.core.bluetooth.scales.GattScaleAdapter
@@ -47,6 +47,7 @@ import com.health.openscale.core.bluetooth.scales.QNHandler
 import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
 import com.health.openscale.core.bluetooth.scales.RenphoHandler
 import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler
+import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
 import com.health.openscale.core.bluetooth.scales.SenssunHandler
 import com.health.openscale.core.bluetooth.scales.SinocareHandler
 import com.health.openscale.core.bluetooth.scales.SoehnleHandler
@@ -58,8 +59,8 @@ import com.health.openscale.core.bluetooth.scales.YunmaiHandler
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
-import com.health.openscale.core.utils.LogManager
 import com.health.openscale.core.service.ScannedDeviceInfo
+import com.health.openscale.core.utils.LogManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
@@ -99,6 +100,7 @@ class ScaleFactory @Inject constructor(
         MiScaleHandler(),
         MGBHandler(),
         MedisanaBs44xHandler(),
+        EufyC1P1Handler(),
         InlifeHandler(),
         IHealthHS3Handler(),
         HuaweiAH100Handler(),
