@@ -191,10 +191,12 @@ fun TableScreen(
             emptyList()
         } else {
             val dateFormatterDate = DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault())
+            val dateFormatterDayOfWeek = SimpleDateFormat("EE", Locale.getDefault())
             val dateFormatterTime = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault())
 
             enrichedMeasurements.map { enrichedItem ->
                 val ts = enrichedItem.measurementWithValues.measurement.timestamp
+                val date = Date(ts)
 
                 val cellValues: Map<Int, TableCellData?> = displayedTypes.associate { colType ->
                     val typeId = colType.id
@@ -286,7 +288,7 @@ fun TableScreen(
                 TableRowDataInternal(
                     measurementId = enrichedItem.measurementWithValues.measurement.id,
                     timestamp = ts,
-                    formattedTimestamp = dateFormatterDate.format(Date(ts)) + "\n" + dateFormatterTime.format(Date(ts)),
+                    formattedTimestamp = dateFormatterDate.format(date) + " (" + dateFormatterDayOfWeek.format(date) + ")\n" + dateFormatterTime.format(date),
                     values = cellValues
                 )
             }
