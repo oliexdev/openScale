@@ -483,30 +483,51 @@ fun MeasurementDetailScreen(
 
     // --- Dialogs for the main measurement timestamp (measurementTimestampState) ---
     if (showDatePickerForMainTimestamp) {
+        val dateOnlyTimestamp = remember(measurementTimestampState) {
+            Calendar.getInstance().apply {
+                timeInMillis = measurementTimestampState
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.timeInMillis
+        }
+
         val triggeringType = allMeasurementTypes.find { it.key == MeasurementTypeKey.DATE }
-        val dateDialogTitle = stringResource(R.string.dialog_title_change_value, triggeringType?.getDisplayName(context) ?: stringResource(R.string.label_date))
+        val dateDialogTitle = stringResource(
+            R.string.dialog_title_change_value,
+            triggeringType?.getDisplayName(context) ?: stringResource(R.string.label_date)
+        )
+
         DateInputDialog(
             title = dateDialogTitle,
-            initialTimestamp = measurementTimestampState,
+            initialTimestamp = dateOnlyTimestamp,
             measurementIcon = triggeringType?.icon ?: MeasurementTypeIcon.IC_DATE,
-            iconBackgroundColor = triggeringType?.let { Color(it.color) } ?: MaterialTheme.colorScheme.primary,
+            iconBackgroundColor = triggeringType?.let { Color(it.color) }
+                ?: MaterialTheme.colorScheme.primary,
             onDismiss = { showDatePickerForMainTimestamp = false },
             onConfirm = { newDateMillis ->
-                // 1. Get the original timestamp and create a calendar in UTC to avoid local timezone issues.
-                val originalCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+
+                val oldCal = Calendar.getInstance().apply {
                     timeInMillis = measurementTimestampState
                 }
 
-                // 2. Extract ONLY the time components (hour, minute, second, millisecond) from the original timestamp.
-                val timeOfDayMillis = originalCal.get(Calendar.HOUR_OF_DAY) * 3600_000L +
-                        originalCal.get(Calendar.MINUTE) * 60_000L +
-                        originalCal.get(Calendar.SECOND) * 1000L +
-                        originalCal.get(Calendar.MILLISECOND)
+                val utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+                    timeInMillis = newDateMillis
+                }
 
-                // 3. Add the original time of day to the new date.
-                // This correctly combines the new date (from DatePicker) with the old time.
-                measurementTimestampState = newDateMillis + timeOfDayMillis
+                val newCal = Calendar.getInstance().apply {
+                    set(Calendar.YEAR, utcCal.get(Calendar.YEAR))
+                    set(Calendar.MONTH, utcCal.get(Calendar.MONTH))
+                    set(Calendar.DAY_OF_MONTH, utcCal.get(Calendar.DAY_OF_MONTH))
 
+                    set(Calendar.HOUR_OF_DAY, oldCal.get(Calendar.HOUR_OF_DAY))
+                    set(Calendar.MINUTE, oldCal.get(Calendar.MINUTE))
+                    set(Calendar.SECOND, oldCal.get(Calendar.SECOND))
+                    set(Calendar.MILLISECOND, oldCal.get(Calendar.MILLISECOND))
+                }
+
+                measurementTimestampState = newCal.timeInMillis
                 showDatePickerForMainTimestamp = false
             }
         )
@@ -514,7 +535,11 @@ fun MeasurementDetailScreen(
 
     if (showTimePickerForMainTimestamp) {
         val triggeringType = allMeasurementTypes.find { it.key == MeasurementTypeKey.TIME }
-        val timeDialogTitle = stringResource(R.string.dialog_title_change_value, triggeringType?.getDisplayName(context) ?: stringResource(R.string.label_time))
+        val timeDialogTitle = stringResource(
+            R.string.dialog_title_change_value,
+            triggeringType?.getDisplayName(context) ?: stringResource(R.string.label_time)
+        )
+
         TimeInputDialog(
             title = timeDialogTitle,
             initialTimestamp = measurementTimestampState,
@@ -522,11 +547,15 @@ fun MeasurementDetailScreen(
             iconBackgroundColor = triggeringType?.let { Color(it.color) } ?: MaterialTheme.colorScheme.primary,
             onDismiss = { showTimePickerForMainTimestamp = false },
             onConfirm = { newTimeMillis ->
+                val oldCal = Calendar.getInstance().apply { timeInMillis = measurementTimestampState }
                 val newCal = Calendar.getInstance().apply { timeInMillis = newTimeMillis }
-                val currentCal = Calendar.getInstance().apply { timeInMillis = measurementTimestampState }
-                currentCal.set(Calendar.HOUR_OF_DAY, newCal.get(Calendar.HOUR_OF_DAY))
-                currentCal.set(Calendar.MINUTE, newCal.get(Calendar.MINUTE))
-                measurementTimestampState = currentCal.timeInMillis
+
+                oldCal.set(Calendar.HOUR_OF_DAY, newCal.get(Calendar.HOUR_OF_DAY))
+                oldCal.set(Calendar.MINUTE, newCal.get(Calendar.MINUTE))
+                oldCal.set(Calendar.SECOND, newCal.get(Calendar.SECOND))
+                oldCal.set(Calendar.MILLISECOND, newCal.get(Calendar.MILLISECOND))
+
+                measurementTimestampState = oldCal.timeInMillis
                 showTimePickerForMainTimestamp = false
             }
         )
