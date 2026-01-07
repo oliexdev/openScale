@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import kotlin.math.abs
 
 /**
  * Yunmai (SE/Mini) – minimal, event-driven implementation.
@@ -36,6 +37,7 @@ import java.util.UUID
 class YunmaiHandler(
     private val isMini: Boolean = true // Mini sends fat sometimes inline; SE usually needs calc
 ) : ScaleDeviceHandler() {
+    private var lastMeasurement : ScaleMeasurement? = null
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name
@@ -107,7 +109,13 @@ class YunmaiHandler(
             return
         }
 
+        if (lastMeasurement != null && isDuplicateMeasurement(measurement, lastMeasurement!!)) {
+            logI("Duplicate measurement skipped: weight=${measurement.weight}kg, fat=${measurement.fat}")
+            return
+        }
+
         publish(measurement) // base will take it from here
+        lastMeasurement = measurement
         logI("Measurement published: weight=${measurement.weight} kg, fat=${measurement.fat}")
     }
 
@@ -209,6 +217,25 @@ class YunmaiHandler(
         var acc = 0
         for (i in start until endExclusive) acc = acc xor (bytes[i].toInt() and 0xFF)
         return acc.toByte()
+    }
+
+    private fun isDuplicateMeasurement(new: ScaleMeasurement, existing: ScaleMeasurement): Boolean {
+        val timeThresholdMs = 2000 // 2 sec tolerance
+        val valueTolerance = 0.01  // 10 g tolerance
+
+        val newTime = new.dateTime?.time ?: 0L
+        val existingTime = existing.dateTime?.time ?: 0L
+        val timeDiff = abs(newTime - existingTime)
+        if (timeDiff > timeThresholdMs) return false
+
+        if (abs(new.weight - existing.weight) > valueTolerance) return false
+        if (abs(new.fat - existing.fat) > valueTolerance) return false
+        if (abs(new.water - existing.water) > valueTolerance) return false
+        if (abs(new.muscle - existing.muscle) > valueTolerance) return false
+        if (abs(new.bone - existing.bone) > valueTolerance) return false
+        if (abs(new.visceralFat - existing.visceralFat) > valueTolerance) return false
+
+        return true
     }
 
     private val MAGIC_START = byteArrayOf(0x0D, 0x05, 0x13, 0x00, 0x16)
