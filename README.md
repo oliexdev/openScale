@@ -46,6 +46,7 @@ openScale has built-in support for a number of Bluetooth (BLE or "smart") scales
 - Custom made Bluetooth scale
 - Beurer BF700, BF710, BF800, BF105, BF720, BF600, BF850 and BF950
 - Digoo DG-S038H
+- Eufy C1 (T9146)
 - Excelvan CF369BLE
 - Exingtech Y1
 - Hesley (Yunchen)
