@@ -49,6 +49,8 @@ class OneByoneHandler : ScaleDeviceHandler() {
     private val SVC_FFF0  = uuid16(0xFFF0)
     private val CHR_FFF4  = uuid16(0xFFF4) // NOTIFY: mixed weight/body payloads (CF ...)
     private val CHR_FFF1  = uuid16(0xFFF1) // WRITE: command pipe (FD/ F1/ F2 ...)
+    private val SVC_180F = uuid16(0x180F) //battery service
+    private val CHR_2A19 = uuid16(0x2A19) //battery characteristic
 
     // --- Small runtime state ---------------------------------------------------
 
@@ -64,8 +66,13 @@ class OneByoneHandler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.lowercase()
-        val supports = name.equals("Health Scale".lowercase())
-        if (!supports) return null
+
+        val model = when {
+            "t9146" in name -> "Eufy C1"
+            "t9147" in name -> "Eufy P1"
+            "Health Scale".lowercase() in name -> "1byone (classic)"
+            else -> return null
+        }
 
         val caps = buildSet {
             add(DeviceCapability.BODY_COMPOSITION)
@@ -76,7 +83,7 @@ class OneByoneHandler : ScaleDeviceHandler() {
         }
 
         return DeviceSupport(
-            displayName = "1byone (classic)",
+            displayName = model,
             capabilities = caps,
             implemented  = caps,
             linkMode = LinkMode.CONNECT_GATT
@@ -97,12 +104,25 @@ class OneByoneHandler : ScaleDeviceHandler() {
         waitAckClock = true
         writeTo(SVC_FFF0, CHR_FFF1, clock)
 
+        // 1) Battery: subscribe + read once
+        setNotifyOn(SVC_180F, CHR_2A19)
+        readFrom(SVC_180F, CHR_2A19)
+
         // NOTE: After we receive the ACK, we will request history (F2 00) in onNotification().
     }
 
     override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
-        if (characteristic != CHR_FFF4) {
+        if (characteristic != CHR_FFF4 && characteristic != CHR_2A19) {
             logD("Unexpected notify from $characteristic ${data.toHexPreview(24)}")
+            return
+        }
+
+        if (characteristic == CHR_2A19) {
+            val level = (data.first().toInt() and 0xFF)
+            logD("Reported battery level: $level%")
+            if (level <= 10) {
+                userWarn(R.string.bluetooth_scale_warning_low_battery, level)
+            }
             return
         }
 
