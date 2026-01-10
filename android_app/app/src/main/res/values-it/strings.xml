@@ -1,4 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d: Crea \'%2$s\' qui</string>
+    <string name="theme_light">Chiaro</string>
+    <string name="theme_dark">Scuro</string>
+    <string name="enable_button">Attiva</string>
+    <string name="cancel_button">Cancella</string>
+    <string name="confirm_button">Conferma</string>
+    <string name="dialog_ok">OK</string>
+    <string name="switch_on">Attivo</string>
+    <string name="switch_off">Non attivo</string>
+    <string name="open_link_content_description">Apri collegamento</string>
+    <string name="content_desc_warning_icon">Icona di avviso</string>
+    <string name="content_desc_restore_icon">Icona di ripristino</string>
+    <string name="content_desc_information">Informazioni</string>
+    <string name="content_desc_open_menu">Apri menu</string>
+    <string name="content_desc_back">Indietro</string>
+    <string name="content_desc_selected">Selezionato</string>
+    <string name="derived_backfill_start">Calcolando i valori derivati …</string>
+    <string name="derived_backfill_done">Valori derivati aggiornati correttamente.</string>
+    <string name="error_generic">Si è verificato un errore.</string>
+    <string name="error_loading_data">Impossibile caricare i dati.</string>
+    <string name="error_try_again">Riprova per favore.</string>
+    <string name="no_data_available">Nessun dato disponibile.</string>
+    <string name="app_logo_content_description">Logo dell\'app</string>
+    <string name="text_none">Nessuno</string>
+    <string name="not_available">N/A</string>
+    <string name="placeholder_empty_value">-</string>
+    <string name="no_measurements_found">Nessuna misurazione trovata.</string>
+    <string name="no_entries_found">Nessuna voce disponibile.</string>
+    <string name="route_title_overview">Panoramica</string>
+    <string name="route_title_graph">Grafici</string>
+    <string name="route_title_table">Tabella</string>
+    <string name="route_title_statistics">Statistiche</string>
+    <string name="route_title_settings">Impostazioni</string>
+    <string name="title_new_measurement">Nuova misurazione</string>
+    <string name="title_edit_measurement">Modifica misurazione</string>
+    <string name="measurement_type_detail_title_edit">Modifica tipo</string>
+    <string name="measurement_type_detail_title_add">Aggiungi Tipo</string>
+    <string name="measurement_type_settings_title">Tipi di misurazione</string>
+    <string name="user_detail_edit_user_title">Modifica Utente</string>
+    <string name="user_detail_add_user_title">Aggiungi utente</string>
+    <string name="user_settings_title">Utenti</string>
+    <string name="manage_users">Gestisci utenti</string>
 </resources>
