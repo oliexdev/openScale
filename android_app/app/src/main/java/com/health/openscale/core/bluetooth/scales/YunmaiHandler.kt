@@ -95,10 +95,6 @@ class YunmaiHandler(
         if (characteristic != CHR_MEAS) return
 
         // Yunmai marks final frame with data[3] == 0x02
-        if (data.size < 19) {
-           // logD("Unexpected short frame: ${data.size} bytes")
-            return
-        }
         if (data[3] != 0x02.toByte()) {
             // live/unstable updates – ignore for now
             return
