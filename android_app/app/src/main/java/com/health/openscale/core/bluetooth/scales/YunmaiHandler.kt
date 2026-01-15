@@ -142,17 +142,16 @@ class YunmaiHandler(
     }
 
     private fun buildSetTimePacket(): ByteArray {
-        // 0D 0D 11 [unix_time_be(4)] 00 00 00 00 00 00 [xor]
+        // 0D 0D 11 [unix_time_be(4)] 00 00 00 00 00 [xor]
         val unixBe = ConverterUtils.toInt32Be(System.currentTimeMillis() / 1000L)
         val payload = byteArrayOf(
             0x0D, 0x0D, 0x11,
             unixBe[0], unixBe[1], unixBe[2], unixBe[3],
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+            0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00 // checksum placeholder
         )
-        // Extend with checksum byte
-        val withCrc = payload + 0x00
-        withCrc[withCrc.lastIndex] = xorChecksum(withCrc, start = 1, endExclusive = withCrc.lastIndex)
-        return withCrc
+        payload[payload.lastIndex] = xorChecksum(payload, start = 1, endExclusive = payload.lastIndex)
+        return payload
     }
 
     // --- Parser ---------------------------------------------------------------
