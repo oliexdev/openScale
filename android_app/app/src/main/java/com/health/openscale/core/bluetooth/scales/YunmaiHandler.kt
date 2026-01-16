@@ -100,6 +100,11 @@ class YunmaiHandler(
             return
         }
 
+        if (data.size < 18) {
+            // logD("Unexpected short frame: ${data.size} bytes")
+            return
+        }
+
         val measurement = parseFinal(user, data) ?: run {
             logW("Could not parse final Yunmai frame")
             return
