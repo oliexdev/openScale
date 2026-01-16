@@ -37,6 +37,30 @@ import kotlin.math.abs
 class YunmaiHandler(
     private val isMini: Boolean = true // Mini sends fat sometimes inline; SE usually needs calc
 ) : ScaleDeviceHandler() {
+
+    // all write packet format must be;
+    // 0D [packet_size] [packet_command] ... [xor]
+    private enum class WritePacketCommand(val value: Int) {
+        SET_USER(0x10),
+        SET_TIME(0x11),
+        GET_PROTOCOL_VERSION(0x13);
+        //GET_TIME(0x17);
+
+        fun toByte(): Byte = value.toByte()
+    }
+
+    // all response packet format must be;
+    // 0D [protocol_version] [packet_size] [packet_type] ... [xor]
+    private enum class ResponseType(val value: Int) {
+        MEASURING(0x01),
+        MEASURED(0x02);
+        //PROTOCOL_VERSION(0x05),
+        //CURRENT_USER(0x06),
+        //DEVICE_TIME(0x17);
+
+        fun toByte(): Byte = value.toByte()
+    }
+
     private var lastMeasurement : ScaleMeasurement? = null
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
@@ -95,7 +119,7 @@ class YunmaiHandler(
         if (characteristic != CHR_MEAS) return
 
         // Yunmai marks final frame with data[3] == 0x02
-        if (data[3] != 0x02.toByte()) {
+        if (data[3] != ResponseType.MEASURED.toByte()) {
             // live/unstable updates – ignore for now
             return
         }
@@ -133,7 +157,7 @@ class YunmaiHandler(
         val activity: Byte = YunmaiLib.toYunmaiActivityLevel(user.activityLevel).toByte()
 
         val payload = byteArrayOf(
-            0x0D, 0x12, 0x10, 0x01, 0x00, 0x00,
+            0x0D, 0x12, WritePacketCommand.SET_USER.toByte(), 0x01, 0x00, 0x00,
             uidBe[0], uidBe[1],
             user.bodyHeight.toInt().toByte(),
             sex,
@@ -150,7 +174,7 @@ class YunmaiHandler(
         // 0D 0D 11 [unix_time_be(4)] 00 00 00 00 00 [xor]
         val unixBe = ConverterUtils.toInt32Be(System.currentTimeMillis() / 1000L)
         val payload = byteArrayOf(
-            0x0D, 0x0D, 0x11,
+            0x0D, 0x0D, WritePacketCommand.SET_TIME.toByte(),
             unixBe[0], unixBe[1], unixBe[2], unixBe[3],
             0x00, 0x00, 0x00, 0x00, 0x00,
             0x00 // checksum placeholder
@@ -184,6 +208,14 @@ class YunmaiHandler(
         if (isMini) {
             // Mini: resistance at 15; sometimes fat included at 17
             val resistance = ConverterUtils.fromUnsignedInt16Be(frame, 15)
+
+            // packet size depends of the device protocol version
+            // - < 0x1e: expects 18 (only checked with 0x13);
+            //     0D [protocol_version] 12 02 00 [unix_time_be(4)] [uid(4)] [weight(2)] [resistance(2)] [xor]
+            // - 0x1e ~ 0x1f: expected 20 (ref: [conoro doc][1]);
+            //     0D [protocol_version] 14 02 00 [unix_time_be(4)] [uid(4)] [weight(2)] [resistance(2)] [fat_percent(2)] [xor]
+            // [1]: https://gist.github.com/conoro/f0c1d96c450a8f5cce70e2846c3686c4
+
             val protocolVer = frame[1].toInt() and 0xFF
 
             val sexInt = if (user.gender.isMale()) 1 else 0
@@ -238,5 +270,5 @@ class YunmaiHandler(
         return true
     }
 
-    private val MAGIC_START = byteArrayOf(0x0D, 0x05, 0x13, 0x00, 0x16)
+    private val MAGIC_START = byteArrayOf(0x0D, 0x05, WritePacketCommand.GET_PROTOCOL_VERSION.toByte(), 0x00, 0x16)
 }
