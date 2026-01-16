@@ -129,6 +129,13 @@ class YunmaiHandler(
             return
         }
 
+        val userId = ConverterUtils.fromUnsignedInt32Be(data, 9)
+        if (userId != getUid16(user).toLong()) {
+            // this case might need resend user data or simply reconnect to device
+            logW("Target user changed")
+            return
+        }
+
         val measurement = parseFinal(user, data) ?: run {
             logW("Could not parse final Yunmai frame")
             return
@@ -148,7 +155,7 @@ class YunmaiHandler(
 
     private fun buildUserPacket(user: ScaleUser): ByteArray {
         // Yunmai expects: 0D 12 10 01 00 00  [uid_hi uid_lo] [height] [sex] [age] 55 5A 00 00 [unit] [activity] [xor]
-        val uid16 = (user.id.takeIf { it > 0 } ?: 1) and 0xFFFF
+        val uid16 = getUid16(user)
         val uidBe = ConverterUtils.toInt16Be(uid16)
 
         val sex: Byte = if (user.gender.isMale()) 0x01 else 0x02
@@ -181,6 +188,13 @@ class YunmaiHandler(
         )
         payload[payload.lastIndex] = xorChecksum(payload, start = 1, endExclusive = payload.lastIndex)
         return payload
+    }
+
+    private fun getUid16(user: ScaleUser): Int {
+        // user id can conflict between multiple cellphones.
+        // An app should generate randome value for this or a app should use random value during process.
+        // if an app support fetching historical data from device, random value must be stored.
+        return (user.id.takeIf { it > 0 } ?: 1) and 0xFFFF;
     }
 
     // --- Parser ---------------------------------------------------------------
