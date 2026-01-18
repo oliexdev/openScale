@@ -638,4 +638,26 @@
     <string name="bt_sbf72_choice_slot_other_user">P%1$d: Används av %2$s (Ta över?)</string>
     <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Upptagen (Ej länkad)</string>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d: Skapa ’%2$s’ här</string>
+    <string name="batch_update_status_report">%1$d: %2$s</string>
+    <string name="dialog_title_confirm_generic">Bekräfta %1$s?</string>
+    <string name="dialog_text_confirm_generic_verb">Är du säker på att du vill %2$s %1$d artikel(ar)?</string>
+    <string name="action_pin">fäst</string>
+    <string name="action_unpin">lossa</string>
+    <string name="action_enable">aktivera</string>
+    <string name="action_disable">avaktivera</string>
+    <string name="action_move_to_left_axis">flytta till vänster axel</string>
+    <string name="action_move_to_right_axis">flytta till höger axel</string>
+    <string name="status_pinned">Fäst</string>
+    <string name="status_unpinned">Lossad</string>
+    <string name="status_enabled">Aktiverad</string>
+    <string name="status_disabled">Avaktiverad</string>
+    <string name="status_axis_right">Flyttad till höger axel</string>
+    <string name="status_axis_left">Flyttad till vänster axel</string>
+    <string name="setting_show_chart_projection">Visa prognos</string>
+    <string name="setting_projection_days_in_the_past">Beräkningsgrund (dagar)</string>
+    <string name="setting_projection_days_to_project">Prognos för (dagar)</string>
+    <string name="setting_projection_polynomial_degree">Prognosmodell</string>
+    <string name="poly_degree_linear">Linjär</string>
+    <string name="poly_degree_quadratic">Kvadratisk</string>
+    <string name="poly_degree_cubic">Kubisk</string>
 </resources>
