@@ -330,6 +330,14 @@ fun MeasurementChart(
             }
     }.collectAsStateWithLifecycle(initialValue = emptyList())
 
+    val goalValuesForScaling = remember(goalsToActuallyPlot, showGoalLinesSetting) {
+        if (showGoalLinesSetting) {
+            goalsToActuallyPlot.map { it.goalValue.toFloat() }
+        } else {
+            emptyList()
+        }
+    }
+
     Column(modifier = modifier) {
         AnimatedVisibility(visible = effectiveShowTypeFilterRow) {
             MeasurementTypeFilterRow(
@@ -541,6 +549,7 @@ fun MeasurementChart(
                     chartSeries = chartSeries,
                     showDataPointsSetting = showDataPointsSetting,
                     targetMeasurementTypeId = targetMeasurementTypeId,
+                    goalValuesForScaling = goalValuesForScaling
                 )
 
                 val goalDecorations = if (showGoalLinesSetting) {
@@ -789,6 +798,7 @@ private fun rememberChartModelProducer(
  * @param chartSeries The complete list of processed series data to be plotted.
  * @param showDataPointsSetting Whether to display dots on the data points of the main series.
  * @param targetMeasurementTypeId A flag to indicate if the chart is in a focused "statistics" mode.
+ * @param goalValuesForScaling A list of goal values to be used for scaling the Y-axis.
  * @return A list of [LineCartesianLayer]s to be rendered by the chart.
  */
 @Composable
@@ -796,6 +806,7 @@ private fun rememberChartLayers(
     chartSeries: List<ChartSeries>,
     showDataPointsSetting: Boolean,
     targetMeasurementTypeId: Int?,
+    goalValuesForScaling: List<Float> = emptyList()
 ): List<LineCartesianLayer> {
     // 1. Separate series and their colors into four distinct groups.
     val mainSeriesStart = remember(chartSeries) { chartSeries.filter { !it.isProjected && !it.type.isOnRightYAxis } }
@@ -809,16 +820,22 @@ private fun rememberChartLayers(
     val projectedColorsEnd = remember(projectedSeriesEnd) { projectedSeriesEnd.map { Color(it.type.color) } }
 
     // 2. Create a shared range provider.
-    val rangeProvider = remember {
+    val rangeProvider = remember(goalValuesForScaling) {
         object : CartesianLayerRangeProvider {
             override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
-                val r = maxY - minY
-                return if (r == 0.0) minY - 1.0 else floor(minY - 0.1 * r)
+                val allMinima = goalValuesForScaling.map { it.toDouble() } + minY
+                val effectiveMin = allMinima.minOrNull() ?: minY
+
+                val delta = maxY - minY
+                return if (delta == 0.0) effectiveMin - 1.0 else floor(effectiveMin - 0.1 * delta)
             }
 
             override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
-                val r = maxY - minY
-                return if (r == 0.0) maxY + 1.0 else ceil(maxY + 0.1 * r)
+                val allMaxima = goalValuesForScaling.map { it.toDouble() } + maxY
+                val effectiveMax = allMaxima.maxOrNull() ?: maxY
+
+                val delta = maxY - minY
+                return if (delta == 0.0) effectiveMax + 1.0 else ceil(effectiveMax + 0.1 * delta)
             }
         }
     }
