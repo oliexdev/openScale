@@ -245,6 +245,11 @@ class MiScaleHandler : ScaleDeviceHandler() {
             return
         }
 
+        if (characteristic == CHAR_WEIGHT_MEAS) {
+            handleWeightMeasNotify(data, user)
+            return
+        }
+
         // Some firmwares may leak data elsewhere; log a small preview.
         logD("Notify $characteristic len=${data.size} ${data.toHexPreview(24)}")
     }
@@ -293,6 +298,17 @@ class MiScaleHandler : ScaleDeviceHandler() {
 
         // Otherwise treat as history chunk(s) → 10-byte aligned records.
         appendHistoryChunk(d)
+    }
+
+     private fun handleWeightMeasNotify(d: ByteArray, user: ScaleUser) {
+        // 10‑byte frame (same layout as history10)
+        if (variant == Variant.V1 && d.size == 10) {
+            parseHistory10(d, user)
+            return
+        }
+
+        // Other lengths: debug only
+        logD("WeightMeas notify len=${d.size} ${d.toHexPreview(24)}")
     }
 
     /** v2 live frame (13 bytes). With/without impedance. Publishes stabilized frames only. */
