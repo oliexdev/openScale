@@ -660,4 +660,5 @@
     <string name="bt_sbf72_choice_slot_other_user">P%1$d: Usada por %2$s (¿Tomar esta posición?)</string>
     <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Ocupada (no vinculada)</string>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d: Crear ‘%2$s’ aquí</string>
+    <string name="clear_button">Borrar</string>
 </resources>
