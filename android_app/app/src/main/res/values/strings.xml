@@ -11,6 +11,7 @@
     <!-- Generic UI Elements & Actions -->
     <string name="enable_button">Enable</string>
     <string name="cancel_button">Cancel</string>
+    <string name="clear_button">Clear</string>
     <string name="confirm_button">Confirm</string>
     <string name="dialog_ok">OK</string>
     <string name="switch_on">On</string>

@@ -10,6 +10,7 @@
     <!-- Generische UI-Elemente & Aktionen -->
     <string name="enable_button">Aktivieren</string>
     <string name="cancel_button">Abbrechen</string>
+    <string name="clear_button">Löschen</string>
     <string name="confirm_button">Bestätigen</string>
     <string name="dialog_ok">OK</string>
     <string name="switch_on">An</string>

@@ -1,5 +1,7 @@
 package com.health.openscale.ui.screen.dialog
 
+import android.R.attr.inputType
+import android.R.attr.onClick
 import android.R.attr.type
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -293,6 +295,14 @@ fun NumberInputDialog(
             }
         },
         dismissButton = {
+            TextButton(
+                onClick = {
+                    currentValueForDialog = ""
+                }
+            ) {
+                Text(stringResource(R.string.clear_button))
+            }
+
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.cancel_button))
             }
@@ -309,7 +319,7 @@ fun NumberInputDialog(
         },
         text = {
             NumberInputField(
-                initialValue = initialValue,
+                initialValue = currentValueForDialog,
                 inputType = inputType,
                 unit = unit,
                 onValueChange = { newValueFromField ->
