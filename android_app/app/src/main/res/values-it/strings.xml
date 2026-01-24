@@ -78,4 +78,12 @@
     <string name="dialog_title_select_reference_user_for">Seleziona la persona di riferimento per %1$s</string>
     <string name="error_no_reference_users_available">Non sono disponibili persone di riferimento idonee. Si prega di creare un utente che non utilizzi la pesatura assistita.</string>
     <string name="error_assisted_weighing_reference_user_missing">Per la pesatura assistita è necessario selezionare una persona di riferimento.</string>
+    <string name="clear_button">Pulisci</string>
+    <string name="user_detail_label_birth_date">Data di nascita</string>
+    <string name="user_detail_error_invalid_data">Per favore inserire una data valida</string>
+    <string name="height_value_cm">%.1f cm</string>
+    <string name="user_settings_item_details_conditional">Età: %1$d, sesso: %2$s</string>
+    <string name="user_settings_content_description_edit">Modifica utente</string>
+    <string name="user_settings_content_description_delete">Elimina utente</string>
+    <string name="user_settings_content_description_add_user">Aggiungi nuovo utente</string>
 </resources>
