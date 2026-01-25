@@ -608,7 +608,7 @@
     <string name="bt_warn_consent_wrong_retry">Код согласия не был принят. Пожалуйста, проверьте и повторите попытку.</string>
     <string name="bt_error_ucp_not_authorized">Код согласия не принят. Пожалуйста, проверьте и повторите попытку.</string>
     <string name="bt_error_delivery_user_feedback">Не удалось отправить отзыв: %1$s</string>
-    <string name="bt_info_reconnecting_try">Переподключение... (попробуйте %1$d/%2$d)</string>
+    <string name="bt_info_reconnecting_try">Переподключение... (Попытка %1$d/%2$d)</string>
     <string name="bt_info_waiting_for_measurement">Ожидание результатов измерений с помощью уведомлений.</string>
     <string name="bt_warn_no_peripheral_for_setnotify">Нет периферийного устройства для setNotifyOn(%1$s)</string>
     <string name="bt_warn_characteristic_not_found">Характеристика %1$s не найдена</string>
