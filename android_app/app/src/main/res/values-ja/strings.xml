@@ -660,4 +660,5 @@
     <string name="poly_degree_quadratic">二次関数</string>
     <string name="poly_degree_cubic">キュービック</string>
     <string name="tuning_profile_label">プロファイルをチューニングする</string>
+    <string name="clear_button">クリア</string>
 </resources>
