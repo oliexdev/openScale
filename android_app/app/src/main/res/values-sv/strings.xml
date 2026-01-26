@@ -660,4 +660,5 @@
     <string name="poly_degree_linear">Linjär</string>
     <string name="poly_degree_quadratic">Kvadratisk</string>
     <string name="poly_degree_cubic">Kubisk</string>
+    <string name="clear_button">Rensa</string>
 </resources>
