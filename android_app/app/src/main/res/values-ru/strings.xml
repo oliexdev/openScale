@@ -138,7 +138,7 @@
     <string name="measurement_type_hips">Бёдра</string>
     <string name="measurement_type_visceral_fat">Висцеральный жир</string>
     <string name="measurement_type_chest">Грудная клетка</string>
-    <string name="measurement_type_thigh">Нижняя часть бедра</string>
+    <string name="measurement_type_thigh">Нижняя часть бёдер</string>
     <string name="measurement_type_biceps">Бицепс</string>
     <string name="measurement_type_neck">Шея</string>
     <string name="measurement_type_bmr">Базовый метаболизм</string>
@@ -267,10 +267,10 @@
     <string name="menu_save_as_preferred">Сохранить как предпочитаемое устройство</string>
     <string name="menu_save_as_developer">Сохранить устройство для режима разработки</string>
     <string name="snackbar_saved_device_removed">Сохранённое устройство удалено.</string>
-    <string name="snackbar_developer_enable_logs">Включен режим разработчика. Пожалуйста, включите файл журнала: Настройки → Общие → Включить файл журнала.</string>
-    <string name="snackbar_developer_for_device_enable_logs">Для этого устройства включен режим разработчика. Пожалуйста, включите файл журнала: Настройки → Общие → Включить файл журнала.</string>
+    <string name="snackbar_developer_enable_logs">Включен режим разработчика. Пожалуйста, включите файл журнала: Настройки → Общие → Активировать параметр \"Журналирование\".</string>
+    <string name="snackbar_developer_for_device_enable_logs">Для этого устройства включен режим разработчика. Пожалуйста, включите файл журнала: Настройки → Общие → Активировать параметр \"Журналирование\".</string>
     <string name="developer_banner_active">Активен режим разработчика — измерения не сохраняются.</string>
-    <string name="developer_banner_enable_logs_hint">Пожалуйста включите файл журнала: Настройки → Общие → Включить файл журнала.</string>
+    <string name="developer_banner_enable_logs_hint">Пожалуйста включите файл журнала: Настройки → Общие → Активировать параметр \"Журналирование\".</string>
     <string name="capabilities_header">Возможности</string>
     <string name="cap_body_composition">Состав тела</string>
     <string name="cap_time_sync">Синхронизация времени</string>
@@ -402,7 +402,7 @@
     <string name="statistics_content_desc_no_change">Без изменений</string>
     <string name="user_detail_label_assisted_weighting">Вспомогательное взвешивание</string>
     <string name="settings_item_general">Общие</string>
-    <string name="settings_item_user">Пользователь</string>
+    <string name="settings_item_user">Пользователи</string>
     <string name="settings_item_measurement_types">Типы измерений</string>
     <string name="settings_item_bluetooth">Bluetooth</string>
     <string name="settings_item_chart">Графики</string>
@@ -526,10 +526,10 @@
     <string name="dialog_title_restore_database_confirmation">Восстановить базу данных?</string>
     <string name="delete_db_confirmation_title">Подтверждение удаления базы данных</string>
     <string name="dialog_message_delete_user_data_confirmation">Вы уверены, что хотите безвозвратно удалить ВСЕ данные измерений для пользователя \"%1$s\"? Это действие необратимо.</string>
-    <string name="button_yes_delete_all">ДА, ДЕЛАЙ КАК ГОВОРЯТ</string>
+    <string name="button_yes_delete_all">ДА, УДАЛИТЬ ВСЁ</string>
     <string name="dialog_message_delete_entire_database_confirmation">Это приведет к необратимому удалению всех данных для этого приложения, включая всех пользователей, настройки и данные измерений. Это действие НЕВОЗМОЖНО отменить. Вы абсолютно уверены?\n\nПосле этого действия потребуется перезапустить приложение.</string>
     <string name="dialog_message_restore_database_confirmation">Вы уверены, что хотите перезаписать текущую базу данных с помощью резервной копии? Все текущие несохраненные данные будут потеряны. Возможно, после восстановления потребуется перезапустить приложение.</string>
-    <string name="button_yes_restore">ДА, ДЕЛАЙ КАК ГОВОРЮ</string>
+    <string name="button_yes_restore">ДА, ВОССТАНОВИТЬ</string>
     <string name="delete_db_confirmation_message">Вы уверены, что хотите удалить всю базу данных? Это приведет к удалению ВСЕХ пользователей и ВСЕХ данных, это действие необратимо.</string>
     <string name="export_successful">Данные успешно экспортированы.</string>
     <string name="export_error_no_specific_fields">Экспорт невозможен: для экспорта не определены конкретные таблицы данных.</string>
