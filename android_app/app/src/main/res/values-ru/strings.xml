@@ -28,7 +28,7 @@
     <string name="no_data_available">Нет данных.</string>
     <string name="no_measurements_found">Измерения не найдены.</string>
     <string name="no_entries_found">Нет доступных записей.</string>
-    <string name="route_title_overview">Предпросмотр</string>
+    <string name="route_title_overview">Обзор</string>
     <string name="route_title_graph">График</string>
     <string name="route_title_table">Таблица</string>
     <string name="route_title_statistics">Статистика</string>
