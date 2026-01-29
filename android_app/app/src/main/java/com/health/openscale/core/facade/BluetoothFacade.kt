@@ -42,6 +42,7 @@ import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.service.BluetoothScannerManager
 import com.health.openscale.core.service.BleConnector
 import com.health.openscale.ui.shared.SnackbarEvent
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 /**
  * Facade responsible for orchestrating Bluetooth operations.
@@ -115,6 +116,22 @@ class BluetoothFacade @Inject constructor(
         scope.launch {
             settingsFacade.saveBluetoothTuneProfile(profile.name)
         }
+    }
+
+    // --- S400 Configuration ---
+    // S400 bind key is stored per-device, so we need to observe the saved device address
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val s400BindKey: StateFlow<String> = savedDevice
+        .flatMapLatest { device ->
+            device?.address?.let { addr ->
+                settingsFacade.observeS400BindKey(addr)
+            } ?: flowOf("")
+        }
+        .stateIn(scope, SharingStarted.WhileSubscribed(5000), "")
+
+    suspend fun setS400BindKey(bindKey: String) {
+        val address = savedDevice.value?.address ?: return
+        settingsFacade.saveS400BindKey(address, bindKey)
     }
 
     // --- Current user context ---
