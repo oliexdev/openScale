@@ -193,6 +193,10 @@ interface SettingsFacade {
     val smartAssignmentIgnoreOutsideTolerance: Flow<Boolean>
     suspend fun setSmartAssignmentIgnoreOutsideTolerance(ignore: Boolean)
 
+    // S400 Scale Configuration
+    fun observeS400BindKey(deviceAddress: String): Flow<String>
+    suspend fun saveS400BindKey(deviceAddress: String, bindKey: String)
+
     val showChartDataPoints: Flow<Boolean>
     suspend fun setShowChartDataPoints(show: Boolean)
 
@@ -560,6 +564,20 @@ class SettingsFacadeImpl @Inject constructor(
 
     override suspend fun setSmartAssignmentIgnoreOutsideTolerance(ignore: Boolean) {
         saveSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_IGNORE_OUTSIDE_TOLERANCE.name, ignore)
+    }
+
+    // S400 Scale Configuration
+    // Key format matches FacadeDriverSettings: "ble/{handlerName}/{deviceAddress}/{settingKey}"
+    private fun s400BindKeyPath(deviceAddress: String) = "ble/MiScaleS400Handler/$deviceAddress/s400_bind_key"
+
+    override fun observeS400BindKey(deviceAddress: String): Flow<String> = observeSetting(
+        s400BindKeyPath(deviceAddress),
+        ""
+    )
+
+    override suspend fun saveS400BindKey(deviceAddress: String, bindKey: String) {
+        LogManager.d(TAG, "Saving S400 bind key for $deviceAddress (length: ${bindKey.length})")
+        saveSetting(s400BindKeyPath(deviceAddress), bindKey)
     }
 
     override val showChartDataPoints: Flow<Boolean> = observeSetting(

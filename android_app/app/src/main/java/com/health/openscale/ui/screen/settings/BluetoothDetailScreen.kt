@@ -35,6 +35,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
@@ -107,6 +108,12 @@ fun BluetoothDetailScreen(
     val availableTuningProfiles = remember { TuningProfile.entries.toList() }
     var showToleranceDialog by remember { mutableStateOf(false) }
 
+    // --- S400 Configuration State ---
+    val isS400Device = savedSupport?.displayName?.contains("S400", ignoreCase = true) == true
+    val s400BindKey by bluetoothViewModel.s400BindKey.collectAsStateWithLifecycle("")
+    var s400BindKeyInput by remember(s400BindKey) { mutableStateOf(s400BindKey) }
+    var showS400BindKeyError by remember { mutableStateOf(false) }
+
     if (showToleranceDialog) {
         NumberInputDialog(
             title = stringResource(R.string.tolerance_label),
@@ -139,6 +146,66 @@ fun BluetoothDetailScreen(
             .padding(all = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        // --- S400 CONFIGURATION SECTION (only shown for S400 devices) ---
+        if (isS400Device) {
+            SettingsSectionTitle(title = stringResource(R.string.s400_configuration_title))
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = stringResource(R.string.s400_bind_key_description),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = s400BindKeyInput,
+                        onValueChange = { newValue ->
+                            // Only allow hex characters
+                            val filtered = newValue.filter { it.isDigit() || it.lowercaseChar() in 'a'..'f' }
+                                .take(32)
+                                .lowercase()
+                            s400BindKeyInput = filtered
+                            showS400BindKeyError = filtered.isNotEmpty() && filtered.length != 32
+                        },
+                        label = { Text(stringResource(R.string.s400_bind_key_label)) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Key,
+                                contentDescription = null
+                            )
+                        },
+                        placeholder = { Text(stringResource(R.string.s400_bind_key_placeholder)) },
+                        isError = showS400BindKeyError,
+                        supportingText = if (showS400BindKeyError) {
+                            { Text(stringResource(R.string.s400_bind_key_error)) }
+                        } else {
+                            { Text("${s400BindKeyInput.length}/32") }
+                        },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        androidx.compose.material3.TextButton(
+                            onClick = {
+                                if (s400BindKeyInput.length == 32) {
+                                    scope.launch {
+                                        bluetoothViewModel.setS400BindKey(s400BindKeyInput)
+                                    }
+                                }
+                            },
+                            enabled = s400BindKeyInput.length == 32 && s400BindKeyInput != s400BindKey
+                        ) {
+                            Text(stringResource(R.string.save))
+                        }
+                    }
+                }
+            }
+        }
+
         // --- DEVICE TUNING SECTION ---
         SettingsSectionTitle(title = stringResource(R.string.bluetooth_tuning_title))
         ExposedDropdownMenuBox(
