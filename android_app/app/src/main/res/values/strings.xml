@@ -14,6 +14,7 @@
     <string name="clear_button">Clear</string>
     <string name="confirm_button">Confirm</string>
     <string name="dialog_ok">OK</string>
+    <string name="save">Save</string>
     <string name="switch_on">On</string>
     <string name="switch_off">Off</string>
     <string name="open_link_content_description">Open link</string>
@@ -357,6 +358,14 @@
     <string name="tolerance_desc">Max. weight deviation to automatically assign to a user.</string>
     <string name="developer_section_title">Developer</string>
     <string name="danger_zone_title">Danger Zone</string>
+
+    <!-- S400 Scale Configuration -->
+    <string name="s400_configuration_title">S400 Configuration</string>
+    <string name="s400_bind_key_label">BLE Bind Key</string>
+    <string name="s400_bind_key_placeholder">32-character hex key</string>
+    <string name="s400_bind_key_description">The Xiaomi S400 scale requires a BLE bind key for decryption. Extract this key from Xiaomi Cloud using the Xiaomi Cloud Tokens Extractor tool.</string>
+    <string name="s400_bind_key_error">Bind key must be exactly 32 hex characters</string>
+    <string name="bt_s400_missing_bind_key">S400: Bind key not configured. Go to Bluetooth settings to enter your BLE key.</string>
 
     <!-- Bluetooth Connector -->
     <string name="bluetooth_connector_connected_to">Connected to %1$s</string>

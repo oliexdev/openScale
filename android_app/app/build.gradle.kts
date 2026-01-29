@@ -210,6 +210,9 @@ dependencies {
     // Blessed Kotlin
     implementation(libs.blessed.kotlin)
 
+    // BouncyCastle for AES-CCM decryption (Xiaomi S400 scale)
+    implementation(libs.bouncycastle)
+
     // Test dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -25,6 +25,7 @@ glance = "1.1.1"
 kotlinCsv = "1.10.0"
 blessedKotlin = "3.0.11"
 truth = "1.4.5"
+bouncycastle = "1.79"
 
 
 [libraries]
@@ -67,6 +68,7 @@ androidx-glance-material3 = { group = "androidx.glance", name = "glance-material
 kotlin-csv-jvm = { group = "com.github.doyaaaaaken", name = "kotlin-csv-jvm", version.ref = "kotlinCsv" }
 blessed-kotlin = { group = "com.github.weliem", name = "blessed-kotlin", version.ref = "blessedKotlin" }
 truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
+bouncycastle = { group = "org.bouncycastle", name = "bcprov-jdk18on", version.ref = "bouncycastle" }
 
 
 [plugins]
