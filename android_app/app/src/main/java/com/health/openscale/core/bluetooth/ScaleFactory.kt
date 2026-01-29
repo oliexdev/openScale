@@ -40,6 +40,7 @@ import com.health.openscale.core.bluetooth.scales.LinkMode
 import com.health.openscale.core.bluetooth.scales.MGBHandler
 import com.health.openscale.core.bluetooth.scales.MedisanaBs44xHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleHandler
+import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
@@ -96,6 +97,7 @@ class ScaleFactory @Inject constructor(
         OneByoneHandler(),
         OneByoneNewHandler(),
         OkOkHandler(),
+        MiScaleS400Handler(),
         MiScaleHandler(),
         MGBHandler(),
         MedisanaBs44xHandler(),
