@@ -176,6 +176,7 @@
     <string name="measurement_type_date">Date</string>
     <string name="measurement_type_time">Time</string>
     <string name="measurement_type_user">User</string>
+    <string name="measurement_type_heart_rate">Heart Rate</string>
     <string name="measurement_type_custom_default_name">Custom Type</string>
 
     <!-- Measurement Type Settings -->

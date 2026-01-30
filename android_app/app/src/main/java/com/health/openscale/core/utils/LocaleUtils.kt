@@ -149,6 +149,7 @@ object LocaleUtils {
             UnitType.CM  -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} cm"
             UnitType.INCH-> "$signPrefix${formatNumber(absVal, maxFraction = 2, locale)} in"
             UnitType.KCAL-> "$signPrefix${formatNumber(absVal, maxFraction = 0, locale)} kcal"
+            UnitType.BPM -> "$signPrefix${formatNumber(absVal, maxFraction = 0, locale)} bpm"
             UnitType.NONE-> signPrefix + formatNumber(absVal, maxFraction = 1, locale)
         }
     }

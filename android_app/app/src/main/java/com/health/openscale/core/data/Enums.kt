@@ -404,6 +404,7 @@ enum class MeasurementTypeKey(
     TIME(25, R.string.measurement_type_time, listOf(UnitType.NONE), listOf(InputFieldType.TIME)),
     COMMENT(26, R.string.measurement_type_comment, listOf(UnitType.NONE), listOf(InputFieldType.TEXT)),
     USER(27, R.string.measurement_type_user, listOf(UnitType.NONE), listOf(InputFieldType.USER)),
+    HEART_RATE(28, R.string.measurement_type_heart_rate, listOf(UnitType.BPM), listOf(InputFieldType.INT)),
     CUSTOM(99, R.string.measurement_type_custom_default_name, UnitType.entries.toList(), listOf(InputFieldType.FLOAT, InputFieldType.INT, InputFieldType.TEXT, InputFieldType.DATE, InputFieldType.TIME));
 }
 
@@ -416,6 +417,7 @@ enum class UnitType(val displayName: String) {
     CM("cm"),
     INCH("in"),
     KCAL("kcal"),
+    BPM("bpm"),
     NONE("");
 
     fun isWeightUnit(): Boolean {
