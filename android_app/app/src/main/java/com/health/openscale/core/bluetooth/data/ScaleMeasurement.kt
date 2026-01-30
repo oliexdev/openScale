@@ -35,6 +35,7 @@ data class ScaleMeasurement(
     var lbm : Float = 0.0f, // must be in kg
     var bmr: Float = 0.0f,       // Basal Metabolic Rate in kcal
     var impedance: Double = 0.0, // Ohms
+    var heartRate: Int? = null,  // Heart rate in BPM
 ) {
 
     // --- Utility methods ---
@@ -60,6 +61,10 @@ data class ScaleMeasurement(
         if (other.lbm > 0f && this.lbm <= 0f) this.lbm = other.lbm
         if (other.bmr > 0f && this.bmr <= 0f) this.bmr = other.bmr
         if (other.impedance > 0.0 && this.impedance <= 0.0) this.impedance = other.impedance
+
+        if (other.heartRate != null && other.heartRate!! > 0 && (this.heartRate == null || this.heartRate!! <= 0)) {
+            this.heartRate = other.heartRate
+        }
 
         if (other.userId != 0xFF &&
             (this.userId == 0xFF || this.userId == -1)) { // -1 was common init value

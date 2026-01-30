@@ -89,6 +89,9 @@ class BluetoothViewModel @Inject constructor(
     val smartAssignmentTolerancePercent = settingsFacade.smartAssignmentTolerancePercent
     val smartAssignmentIgnoreOutsideTolerance = settingsFacade.smartAssignmentIgnoreOutsideTolerance
 
+    // S400 configuration
+    val s400BindKey = bt.s400BindKey
+
     fun setSmartAssignmentEnabled(enabled: Boolean) = viewModelScope.launch {
         settingsFacade.setSmartAssignmentEnabled(enabled)
     }
@@ -99,6 +102,10 @@ class BluetoothViewModel @Inject constructor(
 
     fun setSmartAssignmentIgnoreOutsideTolerance(ignore: Boolean) = viewModelScope.launch {
         settingsFacade.setSmartAssignmentIgnoreOutsideTolerance(ignore)
+    }
+
+    fun setS400BindKey(bindKey: String) = viewModelScope.launch {
+        bt.setS400BindKey(bindKey)
     }
 
     // --- Snackbar events for UI ---

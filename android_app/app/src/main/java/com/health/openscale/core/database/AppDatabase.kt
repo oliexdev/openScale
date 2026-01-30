@@ -46,7 +46,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext ctx: Context): AppDatabase =
         Room.databaseBuilder(ctx, AppDatabase::class.java, AppDatabase.Companion.DATABASE_NAME)
-            .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13)
+            .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14)
             .build()
 
     @Provides
@@ -73,7 +73,7 @@ object DatabaseModule {
         MeasurementValue::class,
         MeasurementType::class,
     ],
-    version = 13,
+    version = 14,
     exportSchema = true
 )
 @TypeConverters(DatabaseConverters::class)
@@ -331,5 +331,37 @@ val MIGRATION_12_13 = object : Migration(12, 13) {
         db.execSQL("DROP INDEX IF EXISTS `index_MeasurementType_key`")
 
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_MeasurementType_key` ON `MeasurementType`(`key`)")
+    }
+}
+
+val MIGRATION_13_14 = object : Migration(13, 14) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Add HEART_RATE measurement type for existing users
+        // Get the next display order
+        val cursor = db.query("SELECT MAX(displayOrder) FROM MeasurementType")
+        val nextOrder = if (cursor.moveToFirst()) cursor.getInt(0) + 1 else 28
+        cursor.close()
+
+        db.execSQL(
+            """
+            INSERT OR IGNORE INTO MeasurementType
+                (`key`, `name`, `color`, `icon`, `unit`, `inputType`, `displayOrder`,
+                 `isDerived`, `isEnabled`, `isPinned`, `isOnRightYAxis`)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """.trimIndent(),
+            arrayOf<Any?>(
+                "HEART_RATE",
+                null,
+                0xFFE91E63.toInt(),  // Pink color
+                "IC_M_HEART_RATE",
+                "BPM",
+                "INT",
+                nextOrder,
+                0,  // isDerived = false
+                0,  // isEnabled = false (opt-in)
+                0,  // isPinned = false
+                1   // isOnRightYAxis = true
+            )
+        )
     }
 }

@@ -73,7 +73,8 @@ fun getDefaultMeasurementTypes(): List<MeasurementType> {
         MeasurementType(key = MeasurementTypeKey.COMMENT, inputType = InputFieldType.TEXT, unit = UnitType.NONE, color = 0xFFE0E0E0.toInt(), icon = MeasurementTypeIcon.IC_COMMENT, isPinned = true, isEnabled = true),
         MeasurementType(key = MeasurementTypeKey.DATE, inputType = InputFieldType.DATE, unit = UnitType.NONE, color = 0xFF9E9E9E.toInt(), icon = MeasurementTypeIcon.IC_DATE, isEnabled = true),
         MeasurementType(key = MeasurementTypeKey.TIME, inputType = InputFieldType.TIME, unit = UnitType.NONE, color = 0xFF757575.toInt(), icon = MeasurementTypeIcon.IC_TIME, isEnabled = true),
-        MeasurementType(key = MeasurementTypeKey.USER, inputType = InputFieldType.USER, unit = UnitType.NONE, color = 0xFF90A4AE.toInt(), icon = MeasurementTypeIcon.IC_USER, isEnabled = true)
+        MeasurementType(key = MeasurementTypeKey.USER, inputType = InputFieldType.USER, unit = UnitType.NONE, color = 0xFF90A4AE.toInt(), icon = MeasurementTypeIcon.IC_USER, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.HEART_RATE, inputType = InputFieldType.INT, unit = UnitType.BPM, color = 0xFFE91E63.toInt(), icon = MeasurementTypeIcon.IC_M_HEART_RATE, isEnabled = false, isOnRightYAxis = true)
     )
 }
 
