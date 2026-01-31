@@ -29,6 +29,12 @@ import java.util.UUID
 /**
  * Handler for ES-CS20M scales (Yunmai lineage).
  *
+ * Supported measurements:
+ *  - Weight (from 0x14 frames)
+ *  - Body composition via impedance/resistance (from 0x14 embedded or 0x15 frames):
+ *    fat%, muscle%, water%, bone mass, lean body mass, visceral fat
+ *    (computed using YunmaiLib with user profile data)
+ *
  * Device uses a vendor service (0x1A10) and two characteristics:
  *  - 0x2A11: bidirectional control (also used to send "start measurement" & "delete history" magic)
  *  - 0x2A10: notifications with result frames
@@ -45,16 +51,14 @@ class ESCS20mHandler : ScaleDeviceHandler() {
     companion object {
         private const val TAG = "ESCS20mHandler"
 
-        // Message IDs
+        // Message IDs (byte[2] in frames)
         private const val MSG_START_STOP_RESP: Int = 0x11
         private const val MSG_WEIGHT_RESP:     Int = 0x14
         private const val MSG_EXTENDED_RESP:   Int = 0x15
 
-        // Measurement types appearing at byte[10] in MSG_START_STOP_RESP
-        private const val TYPE_START_WEIGHT_ONLY: Int = 0x18
-        private const val TYPE_STOP_WEIGHT_ONLY:  Int = 0x17
-        private const val TYPE_START_ALL:         Int = 0x19
-        private const val TYPE_STOP_ALL:          Int = 0x18
+        // START/STOP indicator position in MSG_START_STOP_RESP frames
+        // byte[5] = 0x01 -> START, byte[5] = 0x00 -> STOP
+        private const val START_STOP_FLAG_INDEX: Int = 5
     }
 
     // Vendor service / characteristics (16-bit base UUIDs)
@@ -104,8 +108,7 @@ class ESCS20mHandler : ScaleDeviceHandler() {
         rawFrames.clear()
         resetAccumulator()
 
-        // Subscribe first
-        setNotifyOn(SVC_MAIN, CHR_CUR_TIME)
+        // Subscribe to results characteristic only (CHR_CUR_TIME/0x2A11 is WRITE-only, no NOTIFY support)
         setNotifyOn(SVC_MAIN, CHR_RESULTS)
 
         // Kick off a session
@@ -118,6 +121,10 @@ class ESCS20mHandler : ScaleDeviceHandler() {
     /**
      * Buffer all frames; only when we see a START/STOP response do we act.
      * We then parse and publish when STOP is detected.
+     *
+     * Protocol (from captured traffic):
+     *   START frame: 55 AA 11 00 0A 01 01 01 00 00 3D 00 00 00 00 5A  (byte[5] = 0x01)
+     *   STOP frame:  55 AA 11 00 0A 00 01 01 00 00 3D 00 00 00 00 59  (byte[5] = 0x00)
      */
     override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
         if (characteristic != CHR_RESULTS && characteristic != CHR_CUR_TIME) {
@@ -135,18 +142,20 @@ class ESCS20mHandler : ScaleDeviceHandler() {
         // We only take action on 0x11 frames (start/stop) to keep legacy sequencing
         if (msgId != MSG_START_STOP_RESP) return
 
-        // Guard: need at least 11 bytes for measurement type at [10]
-        if (data.size < 11) return
-        val measurementType = data[10].toInt() and 0xFF
+        // Guard: need at least 6 bytes for start/stop flag at [5]
+        if (data.size < 6) return
+        val startStopFlag = data[START_STOP_FLAG_INDEX].toInt() and 0xFF
 
-        when (measurementType) {
-            TYPE_START_WEIGHT_ONLY, TYPE_START_ALL -> {
-                // Nothing to do; legacy resumed its SM here. We already stream.
-                LogManager.d(TAG, "Measurement started (type=$measurementType)")
+        // START/STOP is indicated by byte[5]: 0x01 = START, 0x00 = STOP
+        val isStart = startStopFlag != 0
+        val isStop = startStopFlag == 0
+
+        when {
+            isStart -> {
+                LogManager.d(TAG, "Measurement started (flag=$startStopFlag)")
             }
-
-            TYPE_STOP_WEIGHT_ONLY, TYPE_STOP_ALL -> {
-                LogManager.d(TAG, "Measurement stopped (type=$measurementType) → parse & publish")
+            isStop -> {
+                LogManager.d(TAG, "Measurement stopped (flag=$startStopFlag) → parse & publish")
                 parseAllFramesAndPublish(user)
             }
         }
@@ -175,7 +184,8 @@ class ESCS20mHandler : ScaleDeviceHandler() {
         // Sort frames by msgId (legacy sorted by msg[2]); keeps behaviour consistent
         val frames = rawFrames.sortedBy { (it.getOrNull(2)?.toInt() ?: 0) and 0xFF }
 
-        LogManager.d(TAG, "Parsing ${frames.size} frames…")
+        val weightFrameCount = frames.count { it.size >= 3 && (it[2].toInt() and 0xFF) == MSG_WEIGHT_RESP }
+        LogManager.d(TAG, "Parsing ${frames.size} frames ($weightFrameCount weight frames)…")
 
         // Run through all frames; weight and resistance may arrive in any order
         frames.forEach { parseFrame(it, yunmai, user) }
@@ -184,9 +194,10 @@ class ESCS20mHandler : ScaleDeviceHandler() {
         if (acc.weight > 0f) {
             acc.userId = user.id
             if (acc.dateTime == null) acc.dateTime = Date()
+            LogManager.i(TAG, "Publishing measurement: weight=${acc.weight} kg, fat=${acc.fat}%")
             publish(snapshot(acc))
         } else {
-            LogManager.w(TAG, "No stable weight decoded; skip publishing.")
+            LogManager.w(TAG, "No valid weight decoded from $weightFrameCount frames; skip publishing.")
         }
 
         // Prepare for a fresh session
@@ -216,17 +227,31 @@ class ESCS20mHandler : ScaleDeviceHandler() {
 
     /**
      * Weight frame (0x14).
-     * - Stable flag at [5] != 0
-     * - Weight at [8..9] (big-endian, 0.01 kg units)
-     * - Optional embedded resistance at [10..11] if separate 0x15 not present
+     *
+     * Protocol example:
+     *   55 AA 14 00 07 00 00 00 30 34 00 00 XX
+     *   - bytes[8..9] = weight in big-endian, 0.01 kg units (e.g. 0x3034 = 12340 -> 123.4 kg)
+     *   - bytes[10..11] = optional embedded resistance
+     *   - last byte = checksum
+     *
+     * Note: This scale does NOT have a per-frame "stable" flag. Instead, stability is
+     * indicated by the STOP message (0x11 with byte[5]=0x00). We keep the last valid
+     * weight value, which will be the stable reading when STOP arrives.
      */
     private fun parseWeightFrame(msg: ByteArray, calc: YunmaiLib, user: ScaleUser) {
         if (msg.size < 12) return
 
-        val stable = (msg[5].toInt() and 0xFF) != 0
-        if (!stable) return
+        val weightRaw = u16be(msg, 8)
+        val weightKg = weightRaw / 100.0f
 
-        acc.weight = u16be(msg, 8) / 100.0f
+        // Only accept reasonable weight values (0.5 kg to 300 kg)
+        // This filters out garbage during initial connection
+        if (weightKg < 0.5f || weightKg > 300f) {
+            LogManager.d(TAG, "Ignoring unreasonable weight: $weightKg kg (raw=$weightRaw)")
+            return
+        }
+
+        acc.weight = weightKg
 
         // Embedded extended data?
         val hasEmbedded = (msg[10].toInt() and 0xFF) != 0 || (msg[11].toInt() and 0xFF) != 0
