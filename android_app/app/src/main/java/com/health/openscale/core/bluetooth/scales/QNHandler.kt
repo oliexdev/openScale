@@ -171,84 +171,147 @@ class QNHandler : ScaleDeviceHandler() {
         when (data[0].toInt() and 0xFF) {
             0x10 -> handleLiveWeightFrame(data, user)  // live / stable weight frame
             0x14 -> {
-                // This opcode can be a reply/ack from older scale types.
-                logD("QN: received 0x14 frame, sending response")
+                // Scale acknowledgment after unit config - respond with 0x20 time sync
+                logD("QN: received 0x14 frame, sending 0x20 time sync")
+
+                // Timestamp: seconds since 2000-01-01 (QN epoch), little-endian
+                val epochSecs = (System.currentTimeMillis() / 1000L) - SCALE_UNIX_TIMESTAMP_OFFSET
+                val t = epochSecs.toInt()
+
                 val msg = byteArrayOf(
-                    0x20, // Command
+                    0x20, // Opcode
                     0x08, // Length
-                    seenProtocolType, // Echo back the protocol type we just saw
-                    0x25, // Payload byte 1
-                    0x74, // Payload byte 2
-                    0x18, // Payload byte 3
-                    0x30, // Payload byte 4
+                    seenProtocolType,
+                    (t and 0xFF).toByte(),
+                    ((t ushr 8) and 0xFF).toByte(),
+                    ((t ushr 16) and 0xFF).toByte(),
+                    ((t ushr 24) and 0xFF).toByte(),
                     0x00  // Checksum placeholder
                 )
                 msg[msg.lastIndex] = checksum(msg, 0, msg.lastIndex - 1)
 
                 if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
                     writeTo(SVC_T2, CHR_T2_WRITE_SHARED, msg, true)
-                } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) { // Fallback to Type 1
+                } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
                     writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, msg, true)
                 }
             }
             0x12 -> handleScaleInfoFrame(data)         // scale factor setup
             0x21 -> {
-                logD("QN: received 0x21 frame, sending response")
-                val msg = byteArrayOf(
-                    0xa0.toByte(), // Command
-                    0x0d.toByte(), // Length (13 bytes total)
-                    seenProtocolType, // Protocol Type
-                    0xfe.toByte(), // Payload
-                    0xff.toByte(),
-                    0xee.toByte(),
-                    0x01.toByte(),
-                    0x1c.toByte(),
-                    0x06.toByte(),
-                    0x86.toByte(),
-                    0x03.toByte(),
-                    0x02.toByte(),
-                    0x00.toByte()  // Checksum placeholder
-                )
-                msg[msg.lastIndex] = checksum(msg, 0, msg.lastIndex - 1)
+                // ES-30M requires TWO 0xA0 response frames (from BLE capture analysis)
+                logD("QN: received 0x21 frame, sending TWO 0xA0 responses")
 
-                // Write to the appropriate characteristic
+                // Response 1: a00d04fe0000000000000000XX
+                val msg1 = byteArrayOf(
+                    0xa0.toByte(), // Opcode
+                    0x0d,          // Length (13 bytes)
+                    0x04,          // Sub-opcode type (not protocol type!)
+                    0xfe.toByte(), // Payload
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                    0x00           // Checksum placeholder
+                )
+                msg1[msg1.lastIndex] = checksum(msg1, 0, msg1.lastIndex - 1)
+
+                // Response 2: a00d02010008002106b804029d
+                val msg2 = byteArrayOf(
+                    0xa0.toByte(), // Opcode
+                    0x0d,          // Length (13 bytes)
+                    0x02,          // Sub-opcode type (not protocol type!)
+                    0x01, 0x00, 0x08, 0x00,
+                    0x21, 0x06, 0xb8.toByte(), 0x04, 0x02,
+                    0x00           // Checksum placeholder
+                )
+                msg2[msg2.lastIndex] = checksum(msg2, 0, msg2.lastIndex - 1)
+
+                // Write both responses
                 if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
-                    writeTo(SVC_T2, CHR_T2_WRITE_SHARED, msg, true)
-                } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) { // Fallback to Type 1
-                    writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, msg, true)
+                    writeTo(SVC_T2, CHR_T2_WRITE_SHARED, msg1, true)
+                    writeTo(SVC_T2, CHR_T2_WRITE_SHARED, msg2, true)
+                } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
+                    writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, msg1, true)
+                    writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, msg2, true)
+                }
+
+                // After 0xA0 responses, send 0x22 query for stored data
+                val queryMsg = byteArrayOf(
+                    0x22, // Opcode
+                    0x06, // Length
+                    seenProtocolType,
+                    0x00, 0x03,
+                    0x00  // Checksum placeholder
+                )
+                queryMsg[queryMsg.lastIndex] = checksum(queryMsg, 0, queryMsg.lastIndex - 1)
+
+                if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
+                    writeTo(SVC_T2, CHR_T2_WRITE_SHARED, queryMsg, true)
+                } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
+                    writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, queryMsg, true)
                 }
             }
-            //0x23 -> { /* historical record frame (timestamp+impedance) – not implemented */ }
+            0x23 -> {
+                // Historical record frame - user data from scale memory
+                logD("QN: received user data frame (0x23)")
+            }
+            0xA1 -> {
+                // Acknowledgment from scale
+                logD("QN: received 0xA1 acknowledgment")
+            }
+            0xA3 -> {
+                // Acknowledgment from scale
+                logD("QN: received 0xA3 acknowledgment")
+            }
             else -> logD("QN: unhandled opcode=0x${(data[0].toInt() and 0xFF).toString(16)} ${data.toHexPreview(24)}")
         }
     }
 
     /**
-     * 0x10 frame: live weight updates. When stable flag (byte[5] == 1) is seen,
-     * we parse weight and optional resistances (bytes [6..9]) and publish one result.
+     * 0x10 frame: live weight updates.
+     * Two formats exist:
+     * - Original: byte[3,4]=weight, byte[5]=stable, bytes[6-9]=resistances
+     * - ES-30M: byte[3]=unit, byte[4]=stable, bytes[5,6]=weight, bytes[7-10]=resistances
      */
     private fun handleLiveWeightFrame(data: ByteArray, user: ScaleUser) {
         logD( "QN: raw notify: ${data.toHexPreview(24)}")
 
-        // Need at least up to indices 9 to read resistances safely.
-        if (data.size < 10) return
+        // Detect format by checking if byte[4] looks like a stable flag (0x00, 0x01, 0x02)
+        // vs weight data (typically > 0x10)
+        val byte4Value = data[4].toInt() and 0xFF
+        val isES30MFormat = byte4Value <= 0x02 && weightScaleFactor == 10.0f
 
-        val stable = data[5].toInt() == 1
+        val stable: Boolean
+        val raw: Float
+        val r1: Float
+        val r2: Float
+
+        if (isES30MFormat) {
+            // ES-30M format: byte[4]=stable, bytes[5,6]=weight
+            if (data.size < 11) return
+            val stableFlag = byte4Value
+            stable = stableFlag == 0x02 || stableFlag == 0x01
+            raw = u16be(data[5], data[6])
+            r1 = u16be(data[7], data[8])
+            r2 = u16be(data[9], data[10])
+            logD("QN: using ES-30M format (byte[4]=$stableFlag)")
+        } else {
+            // Original format: byte[5]=stable, bytes[3,4]=weight
+            if (data.size < 10) return
+            stable = data[5].toInt() == 1
+            raw = u16be(data[3], data[4])
+            r1 = u16be(data[6], data[7])
+            r2 = u16be(data[8], data[9])
+            logD("QN: using original format")
+        }
+
         if (!stable || hasPublishedForThisSession) return
 
-        // Weight is (bytes 3,4) / weightScaleFactor
-        val raw = u16be(data[3], data[4])
         var weightKg = raw / weightScaleFactor
 
-        // Heuristic fallback: some “type 2” devices report with /10 even before 0x12 arrives.
+        // Heuristic fallback: some "type 2" devices report with /10 even before 0x12 arrives.
         // If weight looks unreasonably small or large, try the /10 fallback once.
         if (weightKg <= 5f || weightKg >= 250f) {
             weightKg = weightKg / 10.0f
         }
-
-        // Optional resistances (often two values). We primarily use the first one.
-        val r1 = u16be(data[6], data[7])
-        val r2 = u16be(data[8], data[9])
 
         logD( "QN: weight=$weightKg kg, r1=$r1, r2=$r2 (weight scale factor is = $weightScaleFactor)")
 
