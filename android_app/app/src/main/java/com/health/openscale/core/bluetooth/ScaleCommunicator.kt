@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.bluetooth
 
+import androidx.compose.runtime.Composable
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import kotlinx.coroutines.flow.SharedFlow
@@ -91,6 +92,14 @@ interface ScaleCommunicator {
 
     /** Request a measurement (if supported; some devices only push asynchronously). */
     fun requestMeasurement()
+
+    /**
+     * Renders the device-specific configuration UI.
+     * This allows the device handler to inject custom settings fields
+     * (like bind keys or user slots) into the settings screen.
+     */
+    @Composable
+    fun DeviceConfigurationUi()
 
     /** Stream of [BluetoothEvent] emitted by the communicator. */
     fun getEventsFlow(): SharedFlow<BluetoothEvent>

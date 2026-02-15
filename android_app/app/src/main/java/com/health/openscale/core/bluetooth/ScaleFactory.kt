@@ -212,17 +212,6 @@ class ScaleFactory @Inject constructor(
     }
 
     /**
-     * Returns the first [ScaleDeviceHandler] that supports the given device, or null.
-     *
-     * This is safe for read-only inspection (e.g., querying [ScaleDeviceHandler.configFields]
-     * or [ScaleDeviceHandler.handlerNamespace]). The returned instance is a shared singleton;
-     * callers must not call [ScaleDeviceHandler.attach] on it.
-     */
-    fun getHandlerFor(deviceInfo: ScannedDeviceInfo): ScaleDeviceHandler? {
-        return modernKotlinHandlers.firstOrNull { it.supportFor(deviceInfo) != null }
-    }
-
-    /**
      * Checks if any known handler can theoretically support the given device.
      * This can be used by the UI to indicate if a device is potentially recognizable.
      *

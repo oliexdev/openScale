@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.BatteryStd
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
@@ -84,35 +85,6 @@ enum class LinkMode { CONNECT_GATT, BROADCAST_ONLY, CLASSIC_SPP }
  */
 enum class BroadcastAction { IGNORED, CONSUMED_KEEP_SCANNING, CONSUMED_STOP }
 
-/** How user input should be filtered for a [ScaleConfigField]. */
-enum class InputFilter { NONE, HEX }
-
-/**
- * Describes a user-configurable setting that a handler needs.
- *
- * The Bluetooth detail screen renders these generically so that each handler
- * can declare its own settings without any handler-specific UI code.
- *
- * @property key         Settings key passed to [ScaleDeviceHandler.DriverSettings] (e.g., "s400_bind_key").
- * @property labelRes    String resource for the input field label.
- * @property descriptionRes Optional string resource shown as helper text above the input.
- * @property placeholderRes Optional string resource shown as placeholder inside the input.
- * @property errorRes    Optional string resource shown when validation fails.
- * @property icon        Optional leading icon for the input field.
- * @property maxLength   Maximum input length; also used for validation (input is valid when length == maxLength).
- * @property inputFilter How to filter keystrokes (e.g., [InputFilter.HEX] for hex-only input).
- */
-data class ScaleConfigField(
-    val key: String,
-    @StringRes val labelRes: Int,
-    @StringRes val descriptionRes: Int? = null,
-    @StringRes val placeholderRes: Int? = null,
-    @StringRes val errorRes: Int? = null,
-    val icon: ImageVector? = null,
-    val maxLength: Int? = null,
-    val inputFilter: InputFilter = InputFilter.NONE,
-)
-
 /**
  * # ScaleDeviceHandler
  *
@@ -144,20 +116,13 @@ abstract class ScaleDeviceHandler {
     abstract fun supportFor(device: ScannedDeviceInfo): DeviceSupport?
 
     /**
-     * Stable identifier used as the namespace in persisted driver settings keys.
-     * Matches the value used by [FacadeDriverSettings]: `"ble/{handlerNamespace}/{address}/{key}"`.
+     * Optional UI component for device-specific settings.
+     * Override this in concrete handlers to show custom input fields.
      */
-    val handlerNamespace: String get() = this::class.simpleName ?: "Handler"
-
-    /**
-     * Override to declare configuration fields shown in the Bluetooth detail screen.
-     *
-     * Each returned [ScaleConfigField] becomes an input field that the user can edit.
-     * The values are persisted via [DriverSettings] using the field's [ScaleConfigField.key].
-     *
-     * Default: empty list (no handler-specific configuration).
-     */
-    open fun configFields(): List<ScaleConfigField> = emptyList()
+    @Composable
+    open fun DeviceConfigurationUi() {
+        // Default implementation is empty
+    }
 
     // --- Lifecycle entry points called by the adapter -------------------------
 

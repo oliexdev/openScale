@@ -15,6 +15,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+package com.health.openscale.core.bluetooth.scales
+
+import android.bluetooth.le.ScanResult
+import android.os.ParcelUuid
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Key
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.health.openscale.R
+import com.health.openscale.core.bluetooth.data.ScaleMeasurement
+import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.bluetooth.libs.MiScaleLib
+import com.health.openscale.core.bluetooth.libs.S400Decryptor
+import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.service.ScannedDeviceInfo
+import java.util.Date
+import java.util.Locale
+import kotlin.text.isNotEmpty
+import kotlin.text.lowercase
+
 /**
  * Xiaomi Body Composition Scale S400 handler.
  *
@@ -29,25 +64,6 @@
  * Unlike older Mi Scales, the S400 requires:
  * - A BLE bind key extracted from Xiaomi Cloud
  * - The scale's MAC address (used in nonce construction)
- */
-package com.health.openscale.core.bluetooth.scales
-
-import android.bluetooth.le.ScanResult
-import android.os.ParcelUuid
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Key
-import com.health.openscale.R
-import com.health.openscale.core.bluetooth.data.ScaleMeasurement
-import com.health.openscale.core.bluetooth.data.ScaleUser
-import com.health.openscale.core.bluetooth.libs.MiScaleLib
-import com.health.openscale.core.bluetooth.libs.S400Decryptor
-import com.health.openscale.core.data.GenderType
-import com.health.openscale.core.service.ScannedDeviceInfo
-import java.util.Date
-import java.util.Locale
-
-/**
- * Handler for Xiaomi Body Composition Scale S400.
  *
  * This scale uses broadcast-only mode (no GATT connection) and sends
  * AES-CCM encrypted service data in BLE advertisements.
@@ -75,18 +91,83 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
     // Track if we've warned about missing configuration
     private var warnedMissingConfig = false
 
-    override fun configFields(): List<ScaleConfigField> = listOf(
-        ScaleConfigField(
-            key = SETTINGS_KEY_BIND_KEY,
-            labelRes = R.string.s400_bind_key_label,
-            descriptionRes = R.string.s400_bind_key_description,
-            placeholderRes = R.string.s400_bind_key_placeholder,
-            errorRes = R.string.s400_bind_key_error,
-            icon = Icons.Default.Key,
-            maxLength = 32,
-            inputFilter = InputFilter.HEX,
-        )
-    )
+
+    @Composable
+    override fun DeviceConfigurationUi() {
+        // Retrieve the current bind key from settings
+        val currentValue = settingsGetString(SETTINGS_KEY_BIND_KEY) ?: ""
+
+        // Internal state for the text field to handle unsaved changes
+        var inputValue by remember(currentValue) { mutableStateOf(currentValue) }
+
+        // Validation logic (S400 bind key must be exactly 32 hex chars)
+        val isValid = inputValue.length == 32
+        val hasChanged = inputValue != currentValue
+        val showError = inputValue.isNotEmpty() && !isValid
+
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Description text explaining the bind key requirement
+            Text(
+                text = stringResource(R.string.s400_bind_key_description),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            OutlinedTextField(
+                value = inputValue,
+                onValueChange = { newValue ->
+                    // Filter: only allow digits and a-f, force lowercase, limit to 32 chars
+                    val filtered = newValue
+                        .filter { it.isDigit() || it.lowercaseChar() in 'a'..'f' }
+                        .lowercase()
+                    if (filtered.length <= 32) {
+                        inputValue = filtered
+                    }
+                },
+                // Using s400_bind_key_label as it fits the naming pattern
+                label = { Text(stringResource(R.string.s400_bind_key_label)) },
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = { Icon(Icons.Default.Key, contentDescription = null) },
+                singleLine = true,
+                isError = showError,
+                supportingText = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        if (showError) {
+                            // Error message if input is not 32 characters
+                            Text(stringResource(R.string.s400_bind_key_error))
+                        } else {
+                            // Placeholder to keep the counter aligned to the right
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                        // Character counter
+                        Text("${inputValue.length}/32")
+                    }
+                }
+            )
+
+            // Action row with Save button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                androidx.compose.material3.TextButton(
+                    onClick = {
+                        if (isValid) {
+                            // Persist the value using the handler's helper
+                            settingsPutString(SETTINGS_KEY_BIND_KEY, inputValue)
+                        }
+                    },
+                    enabled = isValid && hasChanged
+                ) {
+                    // Using the generic save string
+                    Text(stringResource(R.string.save))
+                }
+            }
+        }
+    }
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.uppercase(Locale.ROOT)

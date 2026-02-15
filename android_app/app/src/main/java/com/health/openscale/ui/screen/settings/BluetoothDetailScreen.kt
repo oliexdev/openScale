@@ -46,12 +46,10 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -70,8 +68,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.health.openscale.R
-import com.health.openscale.core.bluetooth.scales.InputFilter
-import com.health.openscale.core.bluetooth.scales.ScaleConfigField
 import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementTypeIcon
@@ -110,10 +106,6 @@ fun BluetoothDetailScreen(
     val availableTuningProfiles = remember { TuningProfile.entries.toList() }
     var showToleranceDialog by remember { mutableStateOf(false) }
 
-    // --- Handler Configuration State ---
-    val configFields by bluetoothViewModel.configFields.collectAsStateWithLifecycle()
-    val configValues by bluetoothViewModel.configValues.collectAsStateWithLifecycle()
-
     if (showToleranceDialog) {
         NumberInputDialog(
             title = stringResource(R.string.tolerance_label),
@@ -146,21 +138,10 @@ fun BluetoothDetailScreen(
             .padding(all = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // --- HANDLER CONFIGURATION SECTION (shown when handler declares config fields) ---
-        if (configFields.isNotEmpty()) {
-            SettingsSectionTitle(title = stringResource(R.string.scale_configuration_title))
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    configFields.forEach { field ->
-                        ScaleConfigFieldInput(
-                            field = field,
-                            currentValue = configValues[field.key] ?: "",
-                            onSave = { value ->
-                                scope.launch { bluetoothViewModel.setConfigValue(field.key, value) }
-                            }
-                        )
-                    }
-                }
+        SettingsSectionTitle(title = stringResource(R.string.scale_configuration_title))
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                bluetoothViewModel.DeviceConfigurationUi()
             }
         }
 
@@ -397,81 +378,6 @@ private fun SettingsRow(
                 }
             }
             content()
-        }
-    }
-}
-
-/**
- * Generic composable that renders a single [ScaleConfigField] as an input field
- * with appropriate filtering, validation, and a save button.
- */
-@Composable
-private fun ScaleConfigFieldInput(
-    field: ScaleConfigField,
-    currentValue: String,
-    onSave: (String) -> Unit
-) {
-    var inputValue by remember(currentValue) { mutableStateOf(currentValue) }
-    var showError by remember { mutableStateOf(false) }
-
-    val maxLen = field.maxLength
-
-    // Description text
-    field.descriptionRes?.let { resId ->
-        Text(
-            text = stringResource(resId),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-    }
-
-    OutlinedTextField(
-        value = inputValue,
-        onValueChange = { newValue ->
-            val filtered = when (field.inputFilter) {
-                InputFilter.HEX -> newValue
-                    .filter { it.isDigit() || it.lowercaseChar() in 'a'..'f' }
-                    .lowercase()
-                InputFilter.NONE -> newValue
-            }
-            val capped = if (maxLen != null) filtered.take(maxLen) else filtered
-            inputValue = capped
-            showError = capped.isNotEmpty() && maxLen != null && capped.length != maxLen
-        },
-        label = { Text(stringResource(field.labelRes)) },
-        leadingIcon = field.icon?.let { icon ->
-            { Icon(imageVector = icon, contentDescription = null) }
-        },
-        placeholder = field.placeholderRes?.let { resId ->
-            { Text(stringResource(resId)) }
-        },
-        isError = showError,
-        supportingText = when {
-            showError && field.errorRes != null -> {
-                { Text(stringResource(field.errorRes)) }
-            }
-            maxLen != null -> {
-                { Text("${inputValue.length}/$maxLen") }
-            }
-            else -> null
-        },
-        singleLine = true,
-        modifier = Modifier.fillMaxWidth()
-    )
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.End
-    ) {
-        val isValid = maxLen == null || inputValue.length == maxLen
-        TextButton(
-            onClick = { if (isValid) onSave(inputValue) },
-            enabled = isValid && inputValue != currentValue
-        ) {
-            Text(stringResource(R.string.save))
         }
     }
 }

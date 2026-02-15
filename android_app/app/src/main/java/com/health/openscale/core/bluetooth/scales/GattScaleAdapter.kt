@@ -21,6 +21,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.os.SystemClock
+import androidx.compose.runtime.Composable
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.data.ScaleUser
@@ -98,6 +99,12 @@ class GattScaleAdapter(
                 }
             }
         }
+    }
+
+    @Composable
+    override fun DeviceConfigurationUi() {
+        // Delegate to the actual protocol handler
+        handler.DeviceConfigurationUi()
     }
 
     private suspend fun ioGap(ms: Long) {

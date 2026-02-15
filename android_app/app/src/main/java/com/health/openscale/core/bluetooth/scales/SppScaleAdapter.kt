@@ -24,6 +24,7 @@ import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.os.SystemClock
+import androidx.compose.runtime.Composable
 import androidx.core.content.getSystemService
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
@@ -73,6 +74,12 @@ class SppScaleAdapter(
     private var sppOut: OutputStream? = null
 
     private val writeMutex = Mutex()
+
+    @Composable
+    override fun DeviceConfigurationUi() {
+        // Delegate to the actual protocol handler
+        handler.DeviceConfigurationUi()
+    }
 
     @SuppressLint("MissingPermission")
     override fun doConnect(address: String, selectedUser: ScaleUser) {

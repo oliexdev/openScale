@@ -20,13 +20,14 @@ package com.health.openscale.core.facade
 import android.app.Application
 import android.bluetooth.BluetoothManager
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.ScaleFactory
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.scales.DeviceSupport
-import com.health.openscale.core.bluetooth.scales.ScaleConfigField
 import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.data.ConnectionStatus
 import com.health.openscale.core.data.User
@@ -43,7 +44,6 @@ import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.service.BluetoothScannerManager
 import com.health.openscale.core.service.BleConnector
 import com.health.openscale.ui.shared.SnackbarEvent
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 /**
  * Facade responsible for orchestrating Bluetooth operations.
@@ -119,33 +119,17 @@ class BluetoothFacade @Inject constructor(
         }
     }
 
-    // --- Handler configuration ---
-    // Exposes the saved device's handler config fields and provides generic read/write
-    // using the same key format as FacadeDriverSettings: "ble/{handlerNamespace}/{address}/{key}"
+    @Composable
+    fun DeviceConfigurationUi() {
+        val device by savedDevice.collectAsState()
 
-    /** Config fields declared by the handler for the currently saved device. */
-    val savedDeviceConfigFields: StateFlow<List<ScaleConfigField>> =
-        savedDevice.map { device ->
-            if (device == null) return@map emptyList()
-            scaleFactory.getHandlerFor(device)?.configFields() ?: emptyList()
-        }.stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyList())
+        device?.let { dev ->
+            // Create or remember the communicator for the current saved device
+            val communicator = remember(dev) { scaleFactory.createCommunicator(dev) }
 
-    /** Observe a single driver setting value for the currently saved device. */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    fun observeDriverSetting(key: String): Flow<String> {
-        return savedDevice.flatMapLatest { device ->
-            if (device == null) return@flatMapLatest flowOf("")
-            val ns = scaleFactory.getHandlerFor(device)?.handlerNamespace
-                ?: return@flatMapLatest flowOf("")
-            settingsFacade.observeSetting("ble/$ns/${device.address}/$key", "")
+            // Render the device-specific UI directly from the communicator
+            communicator?.DeviceConfigurationUi()
         }
-    }
-
-    /** Save a driver setting value for the currently saved device. */
-    suspend fun saveDriverSetting(key: String, value: String) {
-        val device = savedDevice.value ?: return
-        val ns = scaleFactory.getHandlerFor(device)?.handlerNamespace ?: return
-        settingsFacade.saveSetting("ble/$ns/${device.address}/$key", value)
     }
 
     // --- Current user context ---

@@ -17,48 +17,21 @@
  */
 package com.health.openscale.ui.screen.settings
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
-import com.health.openscale.core.bluetooth.scales.ScaleConfigField
 import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.facade.BluetoothFacade
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.ui.shared.SnackbarEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -97,30 +70,6 @@ class BluetoothViewModel @Inject constructor(
     val smartAssignmentTolerancePercent = settingsFacade.smartAssignmentTolerancePercent
     val smartAssignmentIgnoreOutsideTolerance = settingsFacade.smartAssignmentIgnoreOutsideTolerance
 
-    // --- Handler-declared configuration fields ---
-    val configFields: StateFlow<List<ScaleConfigField>> = bt.savedDeviceConfigFields
-
-    /** Current values for each handler config field, keyed by [ScaleConfigField.key]. */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val configValues: StateFlow<Map<String, String>> = configFields
-        .flatMapLatest { fields ->
-            if (fields.isEmpty()) return@flatMapLatest flowOf(emptyMap<String, String>())
-            val flows = fields.map { field ->
-                bt.observeDriverSetting(field.key).stateIn(
-                    viewModelScope, SharingStarted.WhileSubscribed(5000), ""
-                )
-            }
-            combine(flows) { values ->
-                fields.mapIndexed { i, field -> field.key to values[i] }.toMap()
-            }
-        }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
-
-    /** Save a handler config field value. */
-    fun setConfigValue(key: String, value: String) = viewModelScope.launch {
-        bt.saveDriverSetting(key, value)
-    }
-
     fun setSmartAssignmentEnabled(enabled: Boolean) = viewModelScope.launch {
         settingsFacade.setSmartAssignmentEnabled(enabled)
     }
@@ -146,6 +95,9 @@ class BluetoothViewModel @Inject constructor(
     }
 
     // --- Delegated actions ---
+    @Composable
+    fun DeviceConfigurationUi() = bt.DeviceConfigurationUi()
+
     fun requestStartDeviceScan() {
         if (!bt.isBluetoothEnabled()) {
             emitSnack(R.string.bluetooth_must_be_enabled_for_scan, SnackbarDuration.Long)
