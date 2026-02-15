@@ -191,6 +191,7 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
                 DeviceCapability.LIVE_WEIGHT_STREAM,
                 DeviceCapability.BODY_COMPOSITION
             ),
+            tuningProfile = TuningProfile.Conservative,
             linkMode = LinkMode.BROADCAST_ONLY
         )
     }
