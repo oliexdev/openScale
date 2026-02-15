@@ -19,6 +19,8 @@ package com.health.openscale.core.bluetooth.scales
 
 import android.bluetooth.le.ScanResult
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoGraph
 import androidx.compose.material.icons.filled.FitnessCenter
@@ -27,8 +29,13 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.outlined.BatteryStd
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
@@ -121,7 +128,17 @@ abstract class ScaleDeviceHandler {
      */
     @Composable
     open fun DeviceConfigurationUi() {
-        // Default implementation is empty
+        // Default message when no specific configuration is required
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = stringResource(R.string.no_special_configuration_available),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 
     // --- Lifecycle entry points called by the adapter -------------------------

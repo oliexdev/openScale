@@ -361,6 +361,7 @@
 
     <!-- Scale Configuration (generic, shown when a handler declares config fields) -->
     <string name="scale_configuration_title">Scale Configuration</string>
+    <string name="no_special_configuration_available">No additional special configuration available for this device.</string>
 
     <!-- S400 Scale Configuration -->
     <string name="s400_bind_key_label">BLE Bind Key</string>
