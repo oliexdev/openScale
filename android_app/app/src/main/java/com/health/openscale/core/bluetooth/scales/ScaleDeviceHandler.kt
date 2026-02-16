@@ -272,11 +272,11 @@ abstract class ScaleDeviceHandler {
     protected fun resolveString(@StringRes resId: Int, vararg args: Any): String =
         callbacks?.resolveString(resId, *args) ?: "res:$resId"
 
-    protected fun settingsGetInt(key: String, default: Int = -1): Int = settings.getInt(key, default)
-    protected fun settingsPutInt(key: String, value: Int) { settings.putInt(key, value) }
+    protected fun settingsGetInt(key: String, default: Int = -1): Int = settings?.getInt(key, default) ?: default
+    protected fun settingsPutInt(key: String, value: Int) { settings?.putInt(key, value) }
 
-    protected fun settingsGetString(key: String, default: String? = null): String? = settings.getString(key, default)
-    protected fun settingsPutString(key: String, value: String) { settings.putString(key, value) }
+    protected fun settingsGetString(key: String, default: String? = null): String? = settings?.getString(key, default) ?: default
+    protected fun settingsPutString(key: String, value: String) { settings?.putString(key, value) }
 
     protected fun currentAppUser(): ScaleUser = data.currentUser()
     protected fun usersForDevice(): List<ScaleUser> = data.usersForDevice()
@@ -317,7 +317,7 @@ abstract class ScaleDeviceHandler {
 
     private var transport: Transport? = null
     private var callbacks: Callbacks? = null
-    private lateinit var settings: DriverSettings
+    private var settings: DriverSettings? = null
     private lateinit var data: DataProvider
     /**
      * BLE transport the adapter provides. No threading/queueing implied here—
