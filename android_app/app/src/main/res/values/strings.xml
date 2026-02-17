@@ -14,7 +14,7 @@
     <string name="clear_button">Clear</string>
     <string name="confirm_button">Confirm</string>
     <string name="dialog_ok">OK</string>
-    <string name="save">Save</string>
+    <string name="saved">Saved</string>
     <string name="switch_on">On</string>
     <string name="switch_off">Off</string>
     <string name="open_link_content_description">Open link</string>

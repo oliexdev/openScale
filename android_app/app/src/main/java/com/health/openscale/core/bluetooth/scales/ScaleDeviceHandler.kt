@@ -143,6 +143,10 @@ abstract class ScaleDeviceHandler {
 
     // --- Lifecycle entry points called by the adapter -------------------------
 
+    internal fun attachSettings(settings: DriverSettings) {
+        this.settings = settings
+    }
+
     internal fun attach(transport: Transport, callbacks: Callbacks, settings: DriverSettings, data: DataProvider) {
         this.transport = transport
         this.callbacks = callbacks
@@ -272,11 +276,11 @@ abstract class ScaleDeviceHandler {
     protected fun resolveString(@StringRes resId: Int, vararg args: Any): String =
         callbacks?.resolveString(resId, *args) ?: "res:$resId"
 
-    protected fun settingsGetInt(key: String, default: Int = -1): Int = settings?.getInt(key, default) ?: default
-    protected fun settingsPutInt(key: String, value: Int) { settings?.putInt(key, value) }
+    protected fun settingsGetInt(key: String, default: Int = -1): Int = settings.getInt(key, default)
+    protected fun settingsPutInt(key: String, value: Int) { settings.putInt(key, value) }
 
-    protected fun settingsGetString(key: String, default: String? = null): String? = settings?.getString(key, default) ?: default
-    protected fun settingsPutString(key: String, value: String) { settings?.putString(key, value) }
+    protected fun settingsGetString(key: String, default: String? = null): String? = settings.getString(key, default)
+    protected fun settingsPutString(key: String, value: String) { settings.putString(key, value) }
 
     protected fun currentAppUser(): ScaleUser = data.currentUser()
     protected fun usersForDevice(): List<ScaleUser> = data.usersForDevice()
@@ -317,7 +321,7 @@ abstract class ScaleDeviceHandler {
 
     private var transport: Transport? = null
     private var callbacks: Callbacks? = null
-    private var settings: DriverSettings? = null
+    private lateinit var settings: DriverSettings
     private lateinit var data: DataProvider
     /**
      * BLE transport the adapter provides. No threading/queueing implied here—

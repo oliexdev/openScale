@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,8 +73,8 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
 
     companion object {
         // Settings keys for S400 configuration
-        const val SETTINGS_KEY_BIND_KEY = "s400_bind_key"
-        const val SETTINGS_KEY_MAC_ADDRESS = "s400_mac_address"
+        private const val SETTINGS_KEY_BIND_KEY = "s400_bind_key"
+        private const val SETTINGS_KEY_MAC_ADDRESS = "s400_mac_address"
 
         // Known S400 device name patterns
         // The S400 may advertise with various names depending on firmware/region
@@ -94,19 +95,30 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
 
     @Composable
     override fun DeviceConfigurationUi() {
-        // Retrieve the current bind key from settings
-        val currentValue = settingsGetString(SETTINGS_KEY_BIND_KEY) ?: ""
+        // 1. Read the initial value from settings
+        val persistedValue = settingsGetString(SETTINGS_KEY_BIND_KEY) ?: ""
 
-        // Internal state for the text field to handle unsaved changes
-        var inputValue by remember(currentValue) { mutableStateOf(currentValue) }
+        // 2. Track the local input and a "isSaved" flag for immediate feedback
+        var inputValue by remember(persistedValue) { mutableStateOf(persistedValue) }
+        var lastSavedValue by remember { mutableStateOf(persistedValue) }
 
-        // Validation logic (S400 bind key must be exactly 32 hex chars)
+        // Validation logic
         val isValid = inputValue.length == 32
-        val hasChanged = inputValue != currentValue
         val showError = inputValue.isNotEmpty() && !isValid
+        // Logic: It's saved if it's valid and matches the last value we successfully wrote
+        val isSuccessfullySaved = isValid && inputValue == lastSavedValue && inputValue.isNotEmpty()
+
+        // Auto-save effect
+        LaunchedEffect(inputValue) {
+            if (isValid && inputValue != lastSavedValue) {
+                logD("Auto-saving valid bind key: $inputValue")
+                settingsPutString(SETTINGS_KEY_BIND_KEY, inputValue)
+                // Update the local "last saved" state immediately to trigger UI feedback
+                lastSavedValue = inputValue
+            }
+        }
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            // Description text explaining the bind key requirement
             Text(
                 text = stringResource(R.string.s400_bind_key_description),
                 style = MaterialTheme.typography.bodySmall,
@@ -116,7 +128,6 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
             OutlinedTextField(
                 value = inputValue,
                 onValueChange = { newValue ->
-                    // Filter: only allow digits and a-f, force lowercase, limit to 32 chars
                     val filtered = newValue
                         .filter { it.isDigit() || it.lowercaseChar() in 'a'..'f' }
                         .lowercase()
@@ -124,7 +135,6 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
                         inputValue = filtered
                     }
                 },
-                // Using s400_bind_key_label as it fits the naming pattern
                 label = { Text(stringResource(R.string.s400_bind_key_label)) },
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = { Icon(Icons.Default.Key, contentDescription = null) },
@@ -136,36 +146,19 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         if (showError) {
-                            // Error message if input is not 32 characters
                             Text(stringResource(R.string.s400_bind_key_error))
+                        } else if (isSuccessfullySaved) {
+                            Text(
+                                text = stringResource(R.string.saved),
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         } else {
-                            // Placeholder to keep the counter aligned to the right
                             Spacer(modifier = Modifier.weight(1f))
                         }
-                        // Character counter
                         Text("${inputValue.length}/32")
                     }
                 }
             )
-
-            // Action row with Save button
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                androidx.compose.material3.TextButton(
-                    onClick = {
-                        if (isValid) {
-                            // Persist the value using the handler's helper
-                            settingsPutString(SETTINGS_KEY_BIND_KEY, inputValue)
-                        }
-                    },
-                    enabled = isValid && hasChanged
-                ) {
-                    // Using the generic save string
-                    Text(stringResource(R.string.save))
-                }
-            }
         }
     }
 

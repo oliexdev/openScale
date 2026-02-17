@@ -189,7 +189,6 @@ class GattScaleAdapter(
             val driverSettings = FacadeDriverSettings(
                 facade = settingsFacade,
                 scope = scope,
-                deviceAddress = peripheral.address,
                 handlerNamespace = handler::class.simpleName ?: "Handler"
             )
 

@@ -162,7 +162,6 @@ class SppScaleAdapter(
                     val driverSettings = FacadeDriverSettings(
                         facade = settingsFacade,
                         scope = scope,
-                        deviceAddress = addr,
                         handlerNamespace = handler::class.simpleName ?: "Handler"
                     )
                     handler.attach(sppTransport, appCallbacks, driverSettings, dataProvider)

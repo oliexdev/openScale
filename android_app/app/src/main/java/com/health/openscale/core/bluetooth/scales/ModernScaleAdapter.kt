@@ -193,11 +193,10 @@ fun TuningProfile.forSpp(): BtSppTuning = when (this) {
 class FacadeDriverSettings(
     private val facade: SettingsFacade,
     private val scope: CoroutineScope,
-    deviceAddress: String,
     handlerNamespace: String
 ) : ScaleDeviceHandler.DriverSettings {
 
-    private val prefix = "ble/$handlerNamespace/$deviceAddress/"
+    private val prefix = "ble/$handlerNamespace/"
     private val mem = ConcurrentHashMap<String, String>()
 
     override fun getInt(key: String, default: Int): Int {
@@ -280,6 +279,13 @@ abstract class ModernScaleAdapter(
     @Volatile protected var lastSnapshot: Map<Int, ScaleMeasurement> = emptyMap()
 
     init {
+        val driverSettings = FacadeDriverSettings(
+            facade = settingsFacade,
+            scope = scope,
+            handlerNamespace = handler.javaClass.simpleName
+        )
+        handler.attachSettings(driverSettings)
+
         // Keep a *live* non-blocking snapshot of the current user.
         scope.launch {
             userFacade.observeSelectedUser().collect { u ->

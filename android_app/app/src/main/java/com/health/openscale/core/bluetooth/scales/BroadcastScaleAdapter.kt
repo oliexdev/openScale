@@ -144,7 +144,6 @@ class BroadcastScaleAdapter(
         val driverSettings = FacadeDriverSettings(
             facade = settingsFacade,
             scope = scope,
-            deviceAddress = address,
             handlerNamespace = handler::class.simpleName ?: "Handler"
         )
         handler.attach(noopTransport, appCallbacks, driverSettings, dataProvider)
