@@ -661,4 +661,13 @@
     <string name="bt_sbf72_choice_slot_current_user">P%1$d: %2$s (Corrente)</string>
     <string name="bt_sbf72_choice_slot_other_user">P%1$d: Utilizzato da %2$s (Prendere il controllo?)</string>
     <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Occupato (Non collegato)</string>
+    <string name="saved">Salvato</string>
+    <string name="measurement_type_heart_rate">Frequenza cardiaca</string>
+    <string name="scale_configuration_title">Configurazione della bilancia</string>
+    <string name="no_special_configuration_available">Non sono disponibili configurazioni speciali aggiuntive per questo dispositivo.</string>
+    <string name="s400_bind_key_label">Tasto di associazione BLE</string>
+    <string name="s400_bind_key_placeholder">Chiave esadecimale a 32-caratteri</string>
+    <string name="s400_bind_key_description">La bilancia Xiaomi S400 richiede una chiave di associazione BLE per la decrittazione. Estrai questa chiave da Xiaomi Cloud utilizzando lo strumento Xiaomi Cloud Tokens Extractor.</string>
+    <string name="s400_bind_key_error">La chiave di associazione deve essere composta esattamente da 32 caratteri esadecimali</string>
+    <string name="bt_s400_missing_bind_key">S400: chiave di associazione non configurata. Accedere alle impostazioni Bluetooth per inserire la chiave BLE.</string>
 </resources>
