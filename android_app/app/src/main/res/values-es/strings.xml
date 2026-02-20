@@ -670,4 +670,7 @@
     <string name="s400_bind_key_description">La báscula Xiaomi S400 requiere una clave de vinculación BLE para el descifrado. Extrae esta clave desde Xiaomi Cloud utilizando la herramienta Xiaomi Cloud Tokens Extractor.</string>
     <string name="s400_bind_key_error">La clave de vinculación debe tener exactamente 32 caracteres hexadecimales</string>
     <string name="bt_s400_missing_bind_key">S400: La clave de vinculación no está configurada. Ve a la configuración de Bluetooth para introducir tu clave BLE.</string>
+    <string name="formula_bf_us_navy">Marina de EE. UU.</string>
+    <string name="bf_us_navy_short">Método de la Marina de EE. UU.</string>
+    <string name="bf_us_navy_long">Calcula el porcentaje de grasa corporal a partir de las circunferencias de la cintura, el cuello y, en el caso de las mujeres, las caderas, según el estándar de la Marina de EE. UU.</string>
 </resources>
