@@ -22,49 +22,37 @@ import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.LogManager
 import java.util.Date
+import java.util.TimeZone
 import java.util.Timer
 import java.util.TimerTask
 import java.util.UUID
+import kotlin.math.roundToInt
 
 /**
- * Handler for the Realme Smart Scale (Lifesense lineage).
+ * Handler for the Realme Smart Scale (Lifesense A6 lineage).
  * Protocol architecture:
  * - Requires a 6-step active handshake written to 0xA624 immediately upon connection.
- * - Handshake automatically triggers an unacknowledged dump of the offline history buffer.
+ * - Handshake commands are dynamically generated and XOR-obfuscated using the scale's MAC address.
  * - Requires a continuous 0x0001D9 keep-alive ping written to 0xA622 every 1 second.
  * - Live and history measurement streams to 0xA621.
- * - Final locked measurement packet identifiable by prefix [0x10, 0x11].
+ * - Payload is fully XOR encrypted using a repeating MAC[i % 6] cipher.
  */
 class RealmeScaleHandler : ScaleDeviceHandler() {
 
     companion object {
         private const val TAG = "RealmeScaleHandler"
 
-        // Service & Characteristics
         private val SVC_A602 = UUID.fromString("0000a602-0000-1000-8000-00805f9b34fb")
-        private val CHR_A621 = UUID.fromString("0000a621-0000-1000-8000-00805f9b34fb") // Notify (Measurements)
-        private val CHR_A622 = UUID.fromString("0000a622-0000-1000-8000-00805f9b34fb") // Write (Keep-Alive)
-        private val CHR_A624 = UUID.fromString("0000a624-0000-1000-8000-00805f9b34fb") // Write (Handshake)
-        private val CHR_A625 = UUID.fromString("0000a625-0000-1000-8000-00805f9b34fb") // Notify (Echos/Keep-Alive)
+        private val CHR_A621 = UUID.fromString("0000a621-0000-1000-8000-00805f9b34fb") 
+        private val CHR_A622 = UUID.fromString("0000a622-0000-1000-8000-00805f9b34fb") 
+        private val CHR_A624 = UUID.fromString("0000a624-0000-1000-8000-00805f9b34fb") 
+        private val CHR_A625 = UUID.fromString("0000a625-0000-1000-8000-00805f9b34fb") 
 
         private val KEEP_ALIVE_CMD = byteArrayOf(0x00, 0x01, 0xD9.toByte())
-
-        private val HANDSHAKE_CMDS = listOf(
-            byteArrayOf(0x10, 0x0b, 0xd8.toByte(), 0x03, 0xca.toByte(), 0x14, 0x0e, 0xc4.toByte(), 0xd8.toByte(), 0x0b, 0xcb.toByte(), 0x14, 0x0c),
-            byteArrayOf(0x10, 0x08, 0xd8.toByte(), 0x01, 0xd3.toByte(), 0x7d, 0x97.toByte(), 0x14, 0x61, 0x37),
-            byteArrayOf(0x10, 0x04, 0x90.toByte(), 0x0a, 0xcb.toByte(), 0x15),
-            byteArrayOf(0x10, 0x0b, 0xc8.toByte(), 0x0a, 0xca.toByte(), 0x14, 0x1a, 0xc4.toByte(), 0x77, 0x0b, 0xcb.toByte(), 0x0d, 0x6a),
-            byteArrayOf(0x10, 0x03, 0xc8.toByte(), 0x0f, 0xcb.toByte()),
-            byteArrayOf(0x10, 0x03, 0xc8.toByte(), 0x0c, 0xca.toByte())
-        )
     }
 
     private var keepAliveTimer: Timer? = null
-
-    // Time Anchoring Variables
-    private val historyBuffer = mutableListOf<Pair<Long, ScaleMeasurement>>()
-    private var isBuffering = true
-    private var timeOffset: Long = 0
+    private var scaleMacBytes = ByteArray(6)
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.lowercase()
@@ -72,9 +60,12 @@ class RealmeScaleHandler : ScaleDeviceHandler() {
 
         if (!name.contains("realme") && !hasSvc) return null
 
+        scaleMacBytes = macStringToBytes(device.address)
+
         val caps = setOf(
             DeviceCapability.BODY_COMPOSITION,
-            DeviceCapability.LIVE_WEIGHT_STREAM
+            DeviceCapability.LIVE_WEIGHT_STREAM,
+            DeviceCapability.HISTORY_READ
         )
 
         return DeviceSupport(
@@ -86,19 +77,14 @@ class RealmeScaleHandler : ScaleDeviceHandler() {
     }
 
     override fun onConnected(user: ScaleUser) {
-        historyBuffer.clear()
-        timeOffset = 0
-        isBuffering = true
-
         setNotifyOn(SVC_A602, CHR_A621)
         setNotifyOn(SVC_A602, CHR_A625)
 
-        LogManager.d(TAG, "Sending handshake sequence...")
-        HANDSHAKE_CMDS.forEach { cmd ->
+        LogManager.d(TAG, "Generating and sending dynamic MAC-obfuscated handshake...")
+        buildHandshake(user).forEach { cmd ->
             writeTo(SVC_A602, CHR_A624, cmd)
         }
 
-        // Start the Keep-Alive loop
         keepAliveTimer = Timer()
         keepAliveTimer?.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
@@ -109,13 +95,6 @@ class RealmeScaleHandler : ScaleDeviceHandler() {
                 }
             }
         }, 500, 1000)
-
-        // Close the buffer 2.5 seconds after connection to process the archive dump
-        Timer().schedule(object : TimerTask() {
-            override fun run() {
-                flushHistoryBuffer()
-            }
-        }, 2500)
 
         LogManager.i(TAG, "Realme scale connected and active.")
     }
@@ -134,58 +113,35 @@ class RealmeScaleHandler : ScaleDeviceHandler() {
         LogManager.d(TAG, "Disconnected. Stopped keep-alive timer.")
     }
 
-    private fun flushHistoryBuffer() {
-        synchronized(historyBuffer) {
-            if (historyBuffer.isNotEmpty()) {
-                // Find the newest timestamp in the buffer
-                val maxScaleTime = historyBuffer.maxOf { it.first }
-                val currentUnixTime = System.currentTimeMillis() / 1000L
-
-                // Calculate the delta to shift the scale's broken 2024 clock to the present
-                timeOffset = currentUnixTime - maxScaleTime
-                LogManager.i(TAG, "History buffer closed. Calculated clock offset: +$timeOffset seconds.")
-
-                historyBuffer.forEach { (scaleTime, measurement) ->
-                    measurement.dateTime = Date((scaleTime + timeOffset) * 1000L)
-                    LogManager.i(TAG, "Offline Measurement: Weight=${measurement.weight} kg, Date=${measurement.dateTime}")
-                    publish(measurement)
-                }
-                historyBuffer.clear()
-            } else {
-                LogManager.i(TAG, "History buffer closed. No offline records found.")
-            }
-            isBuffering = false
-        }
-    }
-
     private fun parseMeasurement(data: ByteArray, user: ScaleUser) {
-        // Reverse engineered XOR decoding
-        val weightRaw = u16be(data, 10)
-        val weightKg = (weightRaw xor 0xCB14) / 100.0f
+        // Strip header/length and completely decrypt the payload
+        val payload = deobfuscate(data)
+        
+        // Read directly from the clean payload bytes
+        val weightRaw = u16be(payload, 8)
+        val weightKg = weightRaw / 100.0f
 
-        val impRaw = u16be(data, 16)
-        val impedance = impRaw xor 0xCB14
-
-        val scaleTime = u32be(data, 12)
+        val impedance = u16be(payload, 14)
+        val scaleTime = u32be(payload, 10)
 
         // Sanity check
         if (weightKg <= 0.5f || weightKg > 300f) return
 
         val measurement = ScaleMeasurement().apply {
             this.userId = user.id
+            this.dateTime = if (scaleTime > 0) Date(scaleTime * 1000L) else Date()
             this.weight = weightKg
         }
 
         // --- LOCAL BIA CALCULATION ENGINE ---
-        // If impedance > 0, the user was barefoot. Run the local math.
         if (impedance > 0) {
             measurement.impedance = impedance.toDouble()
-
+            
             val sex = if (user.gender.isMale()) 1 else 0
             val calc = com.health.openscale.core.bluetooth.libs.YunmaiLib(sex, user.bodyHeight, user.activityLevel)
-
+            
             val fatPct = calc.getFat(user.age, weightKg, impedance)
-
+            
             if (fatPct > 0f) {
                 measurement.fat = fatPct
                 measurement.muscle = calc.getMuscle(fatPct) / weightKg * 100.0f
@@ -196,15 +152,69 @@ class RealmeScaleHandler : ScaleDeviceHandler() {
             }
         }
 
-        synchronized(historyBuffer) {
-            if (isBuffering) {
-                historyBuffer.add(Pair(scaleTime, measurement))
-            } else {
-                measurement.dateTime = Date((scaleTime + timeOffset) * 1000L)
-                LogManager.i(TAG, "Live Measurement: Weight=${measurement.weight} kg, Fat=${measurement.fat}%, Date=${measurement.dateTime}")
-                publish(measurement)
+        LogManager.i(TAG, "Measurement: Weight=$weightKg kg, Fat=${measurement.fat}%, Date=${measurement.dateTime}")
+        publish(measurement)
+    }
+
+    // --- PROTOCOL DYNAMIC GENERATORS ---
+
+    private fun deobfuscate(data: ByteArray): ByteArray {
+        val payload = ByteArray(data.size - 2)
+        for (i in payload.indices) {
+            payload[i] = (data[i + 2].toInt() xor (scaleMacBytes[i % 6].toInt() and 0xFF)).toByte()
+        }
+        return payload
+    }
+
+    private fun buildHandshake(user: ScaleUser): List<ByteArray> {
+        val ts = (System.currentTimeMillis() / 1000L).toInt()
+        val tz = (TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 60000).toByte()
+        
+        val sexByte = if (user.gender.isMale()) 0x00.toByte() else 0x80.toByte()
+        val hCm = user.bodyHeight.roundToInt()
+        val wRaw = (user.initialWeight * 100.0f).roundToInt()
+
+        // Un-obfuscated raw payloads
+        val p1 = byteArrayOf(0x00, 0x08, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02) // Register
+        val p2 = byteArrayOf(0x00, 0x0A, 0x18, (ts shr 24).toByte(), (ts shr 16).toByte(), (ts shr 8).toByte(), ts.toByte(), tz) // Set Time
+        val p3 = byteArrayOf(0x48, 0x01, 0x00, 0x01) // Start Measure
+        val p4 = byteArrayOf(
+            0x10, 0x01, 0x01, sexByte, user.age.toByte(),
+            (hCm shr 8).toByte(), hCm.toByte(), 0x00, 0x00,
+            (wRaw shr 8).toByte(), wRaw.toByte()
+        ) // User Info
+        val p5 = byteArrayOf(0x10, 0x04, 0x00) // Formula
+        val p6 = byteArrayOf(0x10, 0x07, 0x01) // Unit (KG)
+
+        return listOf(
+            wrapAndObfuscate(p1),
+            wrapAndObfuscate(p2),
+            wrapAndObfuscate(p3),
+            wrapAndObfuscate(p4),
+            wrapAndObfuscate(p5),
+            wrapAndObfuscate(p6)
+        )
+    }
+
+    private fun wrapAndObfuscate(payload: ByteArray): ByteArray {
+        val out = ByteArray(payload.size + 2)
+        out[0] = 0x10 // Header
+        out[1] = payload.size.toByte() // Length
+        for (i in payload.indices) {
+            out[i + 2] = (payload[i].toInt() xor (scaleMacBytes[i % 6].toInt() and 0xFF)).toByte()
+        }
+        return out
+    }
+
+    private fun macStringToBytes(mac: String): ByteArray {
+        val clean = mac.replace(":", "").replace("-", "")
+        val out = ByteArray(6)
+        if (clean.length == 12) {
+            for (i in 0 until 6) {
+                out[i] = clean.substring(i * 2, i * 2 + 2).toInt(16).toByte()
             }
         }
+        return out
     }
 
     private fun u16be(b: ByteArray, off: Int): Int {
