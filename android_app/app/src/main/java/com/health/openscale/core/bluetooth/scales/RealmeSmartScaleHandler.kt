@@ -35,7 +35,7 @@ import kotlin.math.roundToInt
  * - Handshake commands are dynamically generated and XOR-obfuscated using the scale's MAC address.
  * - Requires a continuous 0x0001D9 keep-alive ping written to 0xA622 every 1 second.
  * - Live and history measurement streams to 0xA621.
- * - Payload is fully XOR encrypted using a repeating MAC[i % 6] cipher.
+ * - Packets are fully XOR encrypted using a repeating MAC[i % 6] cipher.
  */
 class RealmeScaleHandler : ScaleDeviceHandler() {
 
@@ -43,10 +43,10 @@ class RealmeScaleHandler : ScaleDeviceHandler() {
         private const val TAG = "RealmeScaleHandler"
 
         private val SVC_A602 = UUID.fromString("0000a602-0000-1000-8000-00805f9b34fb")
-        private val CHR_A621 = UUID.fromString("0000a621-0000-1000-8000-00805f9b34fb") 
-        private val CHR_A622 = UUID.fromString("0000a622-0000-1000-8000-00805f9b34fb") 
-        private val CHR_A624 = UUID.fromString("0000a624-0000-1000-8000-00805f9b34fb") 
-        private val CHR_A625 = UUID.fromString("0000a625-0000-1000-8000-00805f9b34fb") 
+        private val CHR_A621 = UUID.fromString("0000a621-0000-1000-8000-00805f9b34fb")
+        private val CHR_A622 = UUID.fromString("0000a622-0000-1000-8000-00805f9b34fb")
+        private val CHR_A624 = UUID.fromString("0000a624-0000-1000-8000-00805f9b34fb")
+        private val CHR_A625 = UUID.fromString("0000a625-0000-1000-8000-00805f9b34fb")
 
         private val KEEP_ALIVE_CMD = byteArrayOf(0x00, 0x01, 0xD9.toByte())
     }
@@ -60,6 +60,7 @@ class RealmeScaleHandler : ScaleDeviceHandler() {
 
         if (!name.contains("realme") && !hasSvc) return null
 
+        // Cache the MAC address for the XOR cipher
         scaleMacBytes = macStringToBytes(device.address)
 
         val caps = setOf(
@@ -116,13 +117,13 @@ class RealmeScaleHandler : ScaleDeviceHandler() {
     private fun parseMeasurement(data: ByteArray, user: ScaleUser) {
         // Strip header/length and completely decrypt the payload
         val payload = deobfuscate(data)
-        
+
         // Read directly from the clean payload bytes
         val weightRaw = u16be(payload, 8)
         val weightKg = weightRaw / 100.0f
 
-        val impedance = u16be(payload, 14)
         val scaleTime = u32be(payload, 10)
+        val impedance = u16be(payload, 14)
 
         // Sanity check
         if (weightKg <= 0.5f || weightKg > 300f) return
@@ -136,12 +137,12 @@ class RealmeScaleHandler : ScaleDeviceHandler() {
         // --- LOCAL BIA CALCULATION ENGINE ---
         if (impedance > 0) {
             measurement.impedance = impedance.toDouble()
-            
+
             val sex = if (user.gender.isMale()) 1 else 0
             val calc = com.health.openscale.core.bluetooth.libs.YunmaiLib(sex, user.bodyHeight, user.activityLevel)
-            
+
             val fatPct = calc.getFat(user.age, weightKg, impedance)
-            
+
             if (fatPct > 0f) {
                 measurement.fat = fatPct
                 measurement.muscle = calc.getMuscle(fatPct) / weightKg * 100.0f
@@ -169,10 +170,16 @@ class RealmeScaleHandler : ScaleDeviceHandler() {
     private fun buildHandshake(user: ScaleUser): List<ByteArray> {
         val ts = (System.currentTimeMillis() / 1000L).toInt()
         val tz = (TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 60000).toByte()
-        
+
         val sexByte = if (user.gender.isMale()) 0x00.toByte() else 0x80.toByte()
         val hCm = user.bodyHeight.roundToInt()
-        val wRaw = (user.initialWeight * 100.0f).roundToInt()
+
+        // Handle new users with no initial weight
+        val weightToSend = if (user.initialWeight <= 0.0f) {
+            0xFFFF
+        } else {
+            (user.initialWeight * 100.0f).roundToInt()
+        }
 
         // Un-obfuscated raw payloads
         val p1 = byteArrayOf(0x00, 0x08, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02) // Register
@@ -181,19 +188,12 @@ class RealmeScaleHandler : ScaleDeviceHandler() {
         val p4 = byteArrayOf(
             0x10, 0x01, 0x01, sexByte, user.age.toByte(),
             (hCm shr 8).toByte(), hCm.toByte(), 0x00, 0x00,
-            (wRaw shr 8).toByte(), wRaw.toByte()
+            (weightToSend shr 8).toByte(), weightToSend.toByte()
         ) // User Info
         val p5 = byteArrayOf(0x10, 0x04, 0x00) // Formula
         val p6 = byteArrayOf(0x10, 0x07, 0x01) // Unit (KG)
 
-        return listOf(
-            wrapAndObfuscate(p1),
-            wrapAndObfuscate(p2),
-            wrapAndObfuscate(p3),
-            wrapAndObfuscate(p4),
-            wrapAndObfuscate(p5),
-            wrapAndObfuscate(p6)
-        )
+        return listOf(p1, p2, p3, p4, p5, p6).map { wrapAndObfuscate(it) }
     }
 
     private fun wrapAndObfuscate(payload: ByteArray): ByteArray {
@@ -225,8 +225,8 @@ class RealmeScaleHandler : ScaleDeviceHandler() {
     private fun u32be(b: ByteArray, off: Int): Long {
         if (off + 3 >= b.size) return 0
         return ((b[off].toLong() and 0xFF) shl 24) or
-               ((b[off + 1].toLong() and 0xFF) shl 16) or
-               ((b[off + 2].toLong() and 0xFF) shl 8) or
-               (b[off + 3].toLong() and 0xFF)
+                ((b[off + 1].toLong() and 0xFF) shl 16) or
+                ((b[off + 2].toLong() and 0xFF) shl 8) or
+                (b[off + 3].toLong() and 0xFF)
     }
 }
