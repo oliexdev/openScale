@@ -180,6 +180,7 @@ interface SettingsFacade {
     fun observeSavedDevice(): Flow<ScannedDeviceInfo?>
     suspend fun saveSavedDevice(device: ScannedDeviceInfo)
     suspend fun clearSavedBluetoothScale()
+    suspend fun clearBleDriverSettings()
 
     val savedBluetoothTuneProfile: Flow<String?>
     suspend fun saveBluetoothTuneProfile(name: String?)
@@ -507,6 +508,17 @@ class SettingsFacadeImpl @Inject constructor(
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS)
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT)
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA)
+        }
+    }
+
+    override suspend fun clearBleDriverSettings() {
+        LogManager.i(TAG, "Clearing all BLE driver settings (consent codes, user mappings).")
+        dataStore.edit { prefs ->
+            val bleKeys = prefs.asMap().keys.filter { it.name.startsWith("ble/") }
+            for (key in bleKeys) {
+                prefs.remove(key)
+            }
+            LogManager.d(TAG, "Removed ${bleKeys.size} BLE driver setting(s).")
         }
     }
 

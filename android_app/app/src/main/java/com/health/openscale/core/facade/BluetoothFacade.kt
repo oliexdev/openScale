@@ -206,6 +206,7 @@ class BluetoothFacade @Inject constructor(
     fun removeSavedDevice() {
         scope.launch {
             settingsFacade.clearSavedBluetoothScale()
+            settingsFacade.clearBleDriverSettings()
             settingsFacade.saveBluetoothTuneProfile(null)
         }
     }

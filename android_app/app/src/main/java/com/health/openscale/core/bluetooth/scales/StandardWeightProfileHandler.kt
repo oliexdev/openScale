@@ -557,6 +557,11 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
                         val idx = findKnownScaleIndexForAppUser(appId)
                         idx?.let { userInfo(R.string.bt_info_consent_needed, it) }
                         logW("UDS CONSENT failed: User not authorized for appUserId=$appId")
+                        idx?.let {
+                            saveConsentForScaleIndex(it, -1)
+                            logD("Cleared bad consent for scaleIndex=$it, re-prompting user")
+                            requestScaleUserConsent(appId, it)
+                        }
                     }
                     else -> {
                         logW("UDS CONSENT unhandled result=$result for appUserId=${pendingAppUserId ?: currentAppUser().id}")

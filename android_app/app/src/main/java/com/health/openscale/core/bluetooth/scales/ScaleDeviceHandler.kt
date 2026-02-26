@@ -279,6 +279,8 @@ abstract class ScaleDeviceHandler {
     protected fun settingsGetInt(key: String, default: Int = -1): Int = settings.getInt(key, default)
     protected fun settingsPutInt(key: String, value: Int) { settings.putInt(key, value) }
 
+    protected fun settingsRemove(key: String) { settings.remove(key) }
+
     protected fun settingsGetString(key: String, default: String? = null): String? = settings.getString(key, default)
     protected fun settingsPutString(key: String, value: String) { settings.putString(key, value) }
 
