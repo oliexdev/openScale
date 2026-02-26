@@ -207,7 +207,7 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
                 logD("User-list received")
                 val scaleIndex = findKnownScaleIndexForAppUser(user.id) ?: -1
                 if (loadConsentForScaleIndex(scaleIndex) == -1) {
-                    presentChooseFromIndices(scaleUserList.map { it.id })
+                    presentChooseFromUsers(scaleUserList)
                 }
 
                 return

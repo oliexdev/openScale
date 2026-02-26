@@ -22,8 +22,10 @@ import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 import java.util.UUID
 import kotlin.math.min
 import kotlin.random.Random
@@ -266,6 +268,20 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         logD("Presenting user choice dialog with existing scale slots: $indicesList and 'Create new'")
         val labels = indicesList.map { "P%02d".format(it) }.toMutableList<CharSequence>()
         val ids = indicesList.toMutableList()
+        labels += resolveString(R.string.bluetooth_scale_info_create_user_instruction)
+        ids += -1
+        requestUserInteraction(UserInteractionType.CHOOSE_USER, Pair(labels.toTypedArray(), ids.toIntArray()))
+        logD("UserInteraction requested: CHOOSE_USER with labels=${labels.joinToString()} ids=${ids.joinToString()}")
+    }
+
+    /** Show a CHOOSE_USER dialog built from ScaleUser objects (+ "Create new"). */
+    protected fun presentChooseFromUsers(users: List<ScaleUser>) {
+        logD("Presenting user choice dialog with ${users.size} scale users and 'Create new'")
+        val dateFmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val labels = users.map { u ->
+            "P%02d - %s %s".format(u.id, u.userName, dateFmt.format(u.birthday))
+        }.toMutableList<CharSequence>()
+        val ids = users.map { it.id }.toMutableList()
         labels += resolveString(R.string.bluetooth_scale_info_create_user_instruction)
         ids += -1
         requestUserInteraction(UserInteractionType.CHOOSE_USER, Pair(labels.toTypedArray(), ids.toIntArray()))
