@@ -661,4 +661,16 @@
     <string name="bt_error_delivery_user_feedback">Erro ao enviar feedback do usuário: %1$s</string>
     <string name="bt_info_suggest_create_new_user">Para funcionalidade total, crie um novo usuário na balança.</string>
     <string name="bt_info_linked_app_user_to_slot">Usuário %1$d do app vinculado ao slot %2$d da balança.</string>
+    <string name="bf_us_navy_long">Calcula o percentual de gordura corporal com base nas circunferências da cintura, pescoço e (para mulheres) do quadril, de acordo com o padrão da Marinha dos EUA.</string>
+    <string name="saved">Salvo</string>
+    <string name="measurement_type_heart_rate">Frequência Cardíaca</string>
+    <string name="formula_bf_us_navy">Marinha dos EUA</string>
+    <string name="bf_us_navy_short">Método da Marinha dos EUA</string>
+    <string name="scale_configuration_title">Configuração da Balança</string>
+    <string name="no_special_configuration_available">Não há configurações especiais adicionais disponíveis para este dispositivo.</string>
+    <string name="s400_bind_key_label">Chave de Vinculação BLE</string>
+    <string name="s400_bind_key_placeholder">Chave hexadecimal de 32 caracteres</string>
+    <string name="s400_bind_key_description">A balança Xiaomi S400 requer uma chave de vinculação BLE para a descriptografia. Extraia esta chave da Xiaomi Cloud utilizando a ferramenta Xiaomi Cloud Tokens Extractor.</string>
+    <string name="s400_bind_key_error">A chave de vinculação deve ter exatamente 32 caracteres hexadecimais</string>
+    <string name="bt_s400_missing_bind_key">S400: Chave de vinculação não configurada. Vá para as configurações de Bluetooth para inserir sua chave BLE.</string>
 </resources>
