@@ -93,6 +93,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
     private var pendingAppUserId: Int? = null
     private var pendingConsentForNewUser: Int? = null
     private var awaitingReferenceAfterRegister = false
+    private var newUserRegistrationPending = false
 
     /**
      * Identify devices that expose any of the standard scale services.
@@ -529,9 +530,6 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
                         logD("Saved pending consent $it for new scaleIndex=$newScaleIndex")
                     }
 
-                    logD("Writing user data to scale for new user...")
-                    writeUserDataToScale()
-
                     val consent = loadConsentForScaleIndex(newScaleIndex).takeIf { it != -1 }
                         ?: pendingConsentForNewUser ?: randomConsent().also {
                             saveConsentForScaleIndex(newScaleIndex, it)
@@ -540,6 +538,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
                     sendConsent(newScaleIndex, consent)
 
                     awaitingReferenceAfterRegister = true
+                    newUserRegistrationPending = true
                     registeringNewUser = false
                     pendingAppUserId = null
                     pendingConsentForNewUser = null
@@ -551,6 +550,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
                         userWarn(R.string.bt_warn_register_failed_with_code, result)
                     }
                     registeringNewUser = false
+                    newUserRegistrationPending = false
                 }
             }
 
@@ -559,14 +559,18 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
                     UDS_CP_RESP_VALUE_SUCCESS -> {
                         logD("UDS CONSENT success for appUserId=${pendingAppUserId ?: currentAppUser().id}")
                         pendingAppUserId = null
-                        if (awaitingReferenceAfterRegister) {
-                            userInfo(R.string.bluetooth_scale_info_step_on_for_reference)
-                            awaitingReferenceAfterRegister = false
-                            logD("Prompted user to step on scale for reference measurement")
+                        if (newUserRegistrationPending) {
+                            if (awaitingReferenceAfterRegister) {
+                                userInfo(R.string.bluetooth_scale_info_step_on_for_reference)
+                                awaitingReferenceAfterRegister = false
+                                logD("Prompted user to step on scale for reference measurement")
+                            }
+                            writeUserDataToScale()
+                            logD("writeUserDataToScale() called after consent for new user")
+                            newUserRegistrationPending = false
                         }
-                        writeUserDataToScale()
                         onRequestMeasurement()
-                        logD("onRequestMeasurement() triggered after successful consent")
+                        logD("onRequestMeasurement() triggered after consent")
                     }
                     UDS_CP_RESP_USER_NOT_AUTHORIZED -> {
                         userError(R.string.bt_error_ucp_not_authorized)

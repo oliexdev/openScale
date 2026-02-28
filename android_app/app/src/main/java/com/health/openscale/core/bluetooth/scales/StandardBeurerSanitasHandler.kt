@@ -148,6 +148,13 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
                 }
             }
         }
+    }
+
+    override fun writeUserDataToScale() {
+        super.writeUserDataToScale() // standard UDS writes (DOB, gender, height, change increment)
+
+        val user = currentAppUser()
+        val p = profile ?: return
 
         p.chrActivity?.let {
             logD("Writing activity level for userId=${user.id} to chrActivity=${it}")
@@ -197,8 +204,15 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
 
         when (userListStatus) {
             2 -> {
-                // Status=2 -> no user on scale
-                logD("no user on scale")
+                // Status=2 -> no user on scale; clear any stale mapping and offer registration
+                logD("No users on scale, presenting create-only choice")
+                val appId = user.id
+                findKnownScaleIndexForAppUser(appId)?.let { idx ->
+                    saveUserIdForScaleIndex(idx, -1)
+                    saveConsentForScaleIndex(idx, -1)
+                    logD("Cleared stale mapping for appUserId=$appId at scaleIndex=$idx")
+                }
+                presentCreateOnlyChoice()
                 return
             }
 
