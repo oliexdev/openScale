@@ -661,4 +661,16 @@
     <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Ocupada (no vinculada)</string>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d: Crear ‘%2$s’ aquí</string>
     <string name="clear_button">Borrar</string>
+    <string name="saved">Guardado</string>
+    <string name="measurement_type_heart_rate">Frecuencia cardíaca</string>
+    <string name="scale_configuration_title">Configuración de la báscula</string>
+    <string name="no_special_configuration_available">No hay ninguna configuración especial adicional disponible para este dispositivo.</string>
+    <string name="s400_bind_key_label">Clave de vinculación BLE</string>
+    <string name="s400_bind_key_placeholder">Clave hexadecimal de 32 caracteres</string>
+    <string name="s400_bind_key_description">La báscula Xiaomi S400 requiere una clave de vinculación BLE para el descifrado. Extrae esta clave desde Xiaomi Cloud utilizando la herramienta Xiaomi Cloud Tokens Extractor.</string>
+    <string name="s400_bind_key_error">La clave de vinculación debe tener exactamente 32 caracteres hexadecimales</string>
+    <string name="bt_s400_missing_bind_key">S400: La clave de vinculación no está configurada. Ve a la configuración de Bluetooth para introducir tu clave BLE.</string>
+    <string name="formula_bf_us_navy">Marina de EE. UU.</string>
+    <string name="bf_us_navy_short">Método de la Marina de EE. UU.</string>
+    <string name="bf_us_navy_long">Calcula el porcentaje de grasa corporal a partir de las circunferencias de la cintura, el cuello y, en el caso de las mujeres, las caderas, según el estándar de la Marina de EE. UU.</string>
 </resources>

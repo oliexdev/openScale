@@ -661,4 +661,16 @@
     <string name="poly_degree_cubic">キュービック</string>
     <string name="tuning_profile_label">プロファイルをチューニングする</string>
     <string name="clear_button">クリア</string>
+    <string name="bf_us_navy_long">アメリカ海軍の基準に基づき、ウエスト、首回り、ヒップ周囲径(女性のみ)に基づいて体脂肪率を計算します。</string>
+    <string name="saved">保存しました</string>
+    <string name="measurement_type_heart_rate">心拍</string>
+    <string name="formula_bf_us_navy">アメリカ海軍</string>
+    <string name="bf_us_navy_short">アメリカ海軍方式</string>
+    <string name="scale_configuration_title">スケール構成</string>
+    <string name="no_special_configuration_available">このデバイスには追加の特別な構成は使用できません。</string>
+    <string name="s400_bind_key_label">BLEバインドキー</string>
+    <string name="s400_bind_key_placeholder">32文字の16進キー</string>
+    <string name="s400_bind_key_description">Xiaomi S400スケールの復号にはBLEバインドキーが必要です。Xiaomi Cloud Tokens Extractorツールを使用して、このキーをXiaomi Cloudから抽出してください。</string>
+    <string name="s400_bind_key_error">バインドキーは32桁の16進文字でなければなりません</string>
+    <string name="bt_s400_missing_bind_key">s400: バインドキーが設定されていません。Bluetooth設定に移動してBLEキーを入力してください。</string>
 </resources>
