@@ -57,3 +57,6 @@
 # The standard rules from AndroidManifest usually handle this, but being explicit is safer.
 -keep class * extends androidx.work.CoroutineWorker
 -keep class * extends android.content.BroadcastReceiver
+
+# BouncyCastle
+-dontwarn org.bouncycastle.**
