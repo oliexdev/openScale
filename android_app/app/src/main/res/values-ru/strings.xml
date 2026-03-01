@@ -661,4 +661,16 @@
     <string name="legacy_adapter_event_invalid_consent_data">Ошибка: Получены неверные данные для согласия.</string>
     <string name="legacy_adapter_event_missing_consent_data">Ошибка: Отсутствуют данные, необходимые для получения согласия.</string>
     <string name="setting_show_chart_points">Показывать точки на данных</string>
+    <string name="saved">Сохранено</string>
+    <string name="measurement_type_heart_rate">ЧСС</string>
+    <string name="formula_bf_us_navy">Формула U.S. Navy</string>
+    <string name="bf_us_navy_short">Метод ВМФ США</string>
+    <string name="bf_us_navy_long">Рассчитывает процентное содержание жира в организме на основе окружности талии, шеи и (для женщин) бедер в соответствии со стандартом ВМС США.</string>
+    <string name="scale_configuration_title">Конфигурация весов (общая, отображается, когда обработчик объявляет конфигурационные поля)</string>
+    <string name="no_special_configuration_available">Для данного устройства не предусмотрено никакой дополнительной специальной конфигурации.</string>
+    <string name="s400_bind_key_label">Ключ привязки BLE</string>
+    <string name="s400_bind_key_placeholder">32-х символьный шестнадцатеричный ключ</string>
+    <string name="s400_bind_key_description">Для расшифровки весов Xiaomi S400 требуется ключ привязки BLE. Извлеките этот ключ из Xiaomi Cloud с помощью инструмента Xiaomi Cloud Tokens Extractor.</string>
+    <string name="s400_bind_key_error">Ключ привязки должен содержать ровно 32 шестнадцатеричных символа</string>
+    <string name="bt_s400_missing_bind_key">S400: Ключ привязки не настроен. Перейдите в настройки Bluetooth, чтобы ввести свой ключ BLE.</string>
 </resources>
