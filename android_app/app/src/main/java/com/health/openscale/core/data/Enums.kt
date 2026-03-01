@@ -112,7 +112,7 @@ enum class SupportedLanguage(val code: String, val nativeDisplayName: String) {
     //ROMANIAN("ro", "Romanian (Română)"),
     RUSSIAN("ru", "Russian (русский)"),
     //SLOVAK("sk", "Slovak (Slovenčina)"),
-    //SLOVENIAN("sl", "Slovenian (Slovenski Jezik)"),
+    SLOVENIAN("sl", "Slovenian (Slovenski Jezik)"),
     SPANISH("es", "Spanish (Español)"),
     SWEDISH("sv", "Swedish (Svenska)"),
     //TAMIL("ta", "Tamil (தமிழ்)"),

@@ -1,0 +1,4 @@
+* New Body Fat Method: Added the U.S. Navy formula, which calculates body fat percentage using your waist, neck, and hip measurements.
+* Easier Data Management: You can now delete measurements directly from the edit screen, featuring a new confirmation dialog and improved button layout.
+* Expanded Device Support: Added compatibility for the Realme Smart Scale (RMH2011) and Xiaomi Body Composition Scale S400, along with connectivity fixes for Renpho and Mi Scale models.
+* Performance & UI Polish: Smoother chart animations, faster table loading, and a new "Clear" button in input dialogs for quicker manual entries.
