@@ -1,35 +1,23 @@
 openScale uses open source components. You can find the source code of their open source projects along with license information below.
 I acknowledge and I am grateful to these developers for their contributions to open source.
 
-Project: MPAndroidChart
-Copyright 2018 Philipp Jahoda
+Project: Vico
+Copyright 2022 Patryk Michalik
 Apache License, Version 2.0
 License: https://www.apache.org/licenses/LICENSE-2.0
 Website: https://github.com/PhilJay/MPAndroidChart
 
-Project: SimpleCSV
-Copyright 2017 Gray Watson
-ISC License
-License: https://opensource.org/licenses/ISC
-Website: https://github.com/j256/simplecsv
+Project: Kotlin-CSV
+Copyright 2017 doyaaaaaken / jsoizo
+Apache License, Version 2.0
+License: https://www.apache.org/licenses/LICENSE-2.0
+Website: https://github.com/jsoizo/kotlin-csv
 
 Project: Blessed-Android
 Copyright (c) 2019 Martijn van Welie
 MIT License
 License: https://opensource.org/licenses/MIT
 Website: https://github.com/weliem/blessed-android
-
-Project: CustomActivityOnCrash
-Copyright 2014-2017 Eduard Ereza Martínez
-Apache License, Version 2.0
-License: https://www.apache.org/licenses/LICENSE-2.0
-Website: https://github.com/Ereza/CustomActivityOnCrash
-
-Project: Timber
-Copyright 2013 Jake Wharton
-Apache License, Version 2.0
-License: https://www.apache.org/licenses/LICENSE-2.0
-Website: https://github.com/JakeWharton/timber
 
 Project: Low-Power
 Copyright 2016 Lim Phang Moh
