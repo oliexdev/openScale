@@ -17,50 +17,43 @@
  */
 package com.health.openscale.ui.screen.components
 
-import android.text.Layout
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.theme.White
+import com.patrykandpatrick.vico.compose.cartesian.axis.Axis
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisGuidelineComponent
-import com.patrykandpatrick.vico.compose.cartesian.layer.dashed
-import com.patrykandpatrick.vico.compose.cartesian.layer.point
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianLayerRangeProvider
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianValueFormatter
+import com.patrykandpatrick.vico.compose.cartesian.data.lineSeries
+import com.patrykandpatrick.vico.compose.cartesian.decoration.HorizontalLine
+import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarker
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarkerVisibilityListener
+import com.patrykandpatrick.vico.compose.cartesian.marker.DefaultCartesianMarker
 import com.patrykandpatrick.vico.compose.cartesian.marker.rememberDefaultCartesianMarker
-import com.patrykandpatrick.vico.compose.common.component.fixed
+import com.patrykandpatrick.vico.compose.common.Fill
+import com.patrykandpatrick.vico.compose.common.Insets
+import com.patrykandpatrick.vico.compose.common.LayeredComponent
+import com.patrykandpatrick.vico.compose.common.component.ShapeComponent
+import com.patrykandpatrick.vico.compose.common.component.TextComponent
 import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
 import com.patrykandpatrick.vico.compose.common.component.rememberShapeComponent
 import com.patrykandpatrick.vico.compose.common.component.rememberTextComponent
-import com.patrykandpatrick.vico.compose.common.component.shapeComponent
-import com.patrykandpatrick.vico.compose.common.fill
-import com.patrykandpatrick.vico.compose.common.insets
-import com.patrykandpatrick.vico.compose.common.shape.markerCorneredShape
-import com.patrykandpatrick.vico.compose.common.shape.rounded
-import com.patrykandpatrick.vico.core.cartesian.axis.Axis
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
-import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
-import com.patrykandpatrick.vico.core.cartesian.decoration.HorizontalLine
-import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
-import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarker
-import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarkerVisibilityListener
-import com.patrykandpatrick.vico.core.cartesian.marker.DefaultCartesianMarker
-import com.patrykandpatrick.vico.core.common.Fill
-import com.patrykandpatrick.vico.core.common.LayeredComponent
-import com.patrykandpatrick.vico.core.common.component.ShapeComponent
-import com.patrykandpatrick.vico.core.common.component.TextComponent
-import com.patrykandpatrick.vico.core.common.data.ExtraStore
-import com.patrykandpatrick.vico.core.common.shape.CorneredShape
+import com.patrykandpatrick.vico.compose.common.data.ExtraStore
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -247,22 +240,22 @@ internal fun createLineSpec(
     isPointConnected: Boolean = true,
 ): LineCartesianLayer.Line {
     val lineStroke = when {
-        !isPointConnected -> LineCartesianLayer.LineStroke.dashed(dashLength = 0.dp)
-        isProjection      -> LineCartesianLayer.LineStroke.dashed(thickness = 2.dp, dashLength = 4.dp, gapLength = 4.dp)
-        else              -> LineCartesianLayer.LineStroke.Continuous(thicknessDp = 2f)
+        !isPointConnected -> LineCartesianLayer.LineStroke.Dashed(dashLength = 0.dp)
+        isProjection      -> LineCartesianLayer.LineStroke.Dashed(thickness = 2.dp, dashLength = 4.dp, gapLength = 4.dp)
+        else              -> LineCartesianLayer.LineStroke.Continuous(thickness = 2.dp)
     }
 
     val lineFill = LineCartesianLayer.LineFill.single(
-        fill = if (isPointConnected) Fill(color.toArgb()) else Fill(color.copy(alpha = 0.5f).toArgb())
+        fill = if (isPointConnected) Fill(color) else Fill(color.copy(alpha = 0.5f))
     )
 
     return LineCartesianLayer.Line(
         fill = lineFill,
         stroke = lineStroke,
-        areaFill = if (statisticsMode && !isProjection) LineCartesianLayer.AreaFill.single(Fill(color.copy(alpha = 0.2f).toArgb())) else null,
+        areaFill = if (statisticsMode && !isProjection) LineCartesianLayer.AreaFill.single(Fill(color.copy(alpha = 0.2f))) else null,
         pointProvider = if (showPoints && !statisticsMode && !isProjection) {
             LineCartesianLayer.PointProvider.single(
-                LineCartesianLayer.point(ShapeComponent(fill(color.copy(alpha = 0.7f)), CorneredShape.Pill), 6.dp)
+                LineCartesianLayer.Point(ShapeComponent(Fill(color.copy(alpha = 0.7f)),shape = RoundedCornerShape(50)), size = 6.dp)
             )
         } else null,
         pointConnector = LineCartesianLayer.PointConnector.cubic()
@@ -278,13 +271,13 @@ internal fun createLineSpec(
 @Composable
 internal fun rememberGoalLine(goal: UserGoals, type: MeasurementType?): HorizontalLine {
     val goalColor = type?.let { Color(it.color) } ?: MaterialTheme.colorScheme.onSurface
-    val goalFill = fill(goalColor.copy(alpha = 0.7f))
+    val goalFill = Fill(goalColor.copy(alpha = 0.7f))
     val line = rememberLineComponent(fill = goalFill, thickness = 2.dp)
     val labelComponent = rememberTextComponent(
-        color = White,
-        margins = insets(start = 6.dp),
-        padding = insets(start = 8.dp, end = 8.dp, bottom = 2.dp, top = 2.dp),
-        background = shapeComponent(goalFill, CorneredShape.rounded(topLeft = 4.dp, topRight = 4.dp, bottomLeft = 4.dp, bottomRight = 4.dp)),
+        style = TextStyle(color = White),
+        margins = Insets(start = 6.dp),
+        padding = Insets(start = 8.dp, end = 8.dp, bottom = 2.dp, top = 2.dp),
+        background = ShapeComponent(goalFill, shape = RoundedCornerShape(50)),
     )
 
     return remember(goal, line) {
@@ -292,7 +285,12 @@ internal fun rememberGoalLine(goal: UserGoals, type: MeasurementType?): Horizont
             y = { goal.goalValue.toDouble() },
             line = line,
             labelComponent = labelComponent,
-            label = { LocaleUtils.formatValueForDisplay(goal.goalValue.toString(), type?.unit ?: UnitType.NONE) },
+            label = {
+                LocaleUtils.formatValueForDisplay(
+                    goal.goalValue.toString(),
+                    type?.unit ?: UnitType.NONE
+                )
+            },
             verticalAxisPosition = if (type?.isOnRightYAxis == true) Axis.Position.Vertical.End else Axis.Position.Vertical.Start
         )
     }
@@ -309,21 +307,19 @@ fun rememberMarker(
     valueFormatter: DefaultCartesianMarker.ValueFormatter = DefaultCartesianMarker.ValueFormatter.default(),
     showIndicator: Boolean = true,
 ): CartesianMarker {
-    val labelBackgroundShape = markerCorneredShape(CorneredShape.Corner.Rounded)
     val labelBackground = rememberShapeComponent(
-        fill = fill(MaterialTheme.colorScheme.background),
-        shape = labelBackgroundShape,
+        fill = Fill(MaterialTheme.colorScheme.background),
+        shape = RoundedCornerShape(50),
         strokeThickness = 1.dp,
-        strokeFill = fill(MaterialTheme.colorScheme.outline),
+        strokeFill = Fill(MaterialTheme.colorScheme.outline),
     )
     val label = rememberTextComponent(
-        color = MaterialTheme.colorScheme.onSurface,
-        textAlignment = Layout.Alignment.ALIGN_CENTER,
-        padding = insets(horizontal = 8.dp, vertical = 4.dp),
+        style = TextStyle(color = MaterialTheme.colorScheme.onSurface, textAlign = TextAlign.Center),
+        padding = Insets(horizontal = 8.dp, vertical = 4.dp),
         background = labelBackground,
         minWidth = TextComponent.MinWidth.fixed(40.dp),
     )
-    val indicatorFrontComponent = rememberShapeComponent(fill(MaterialTheme.colorScheme.surface), CorneredShape.Pill)
+    val indicatorFrontComponent = rememberShapeComponent(Fill(MaterialTheme.colorScheme.surface), shape = RoundedCornerShape(50))
     val guideline = rememberAxisGuidelineComponent()
 
     return rememberDefaultCartesianMarker(
@@ -332,13 +328,13 @@ fun rememberMarker(
         indicator = if (showIndicator) {
             { color ->
                 LayeredComponent(
-                    back = ShapeComponent(fill(color.copy(alpha = 0.15f)), CorneredShape.Pill),
+                    back = ShapeComponent(Fill(color.copy(alpha = 0.15f)), shape = RoundedCornerShape(50)),
                     front = LayeredComponent(
-                        back = ShapeComponent(fill = fill(color), shape = CorneredShape.Pill),
+                        back = ShapeComponent(fill = Fill(color), shape = RoundedCornerShape(50)),
                         front = indicatorFrontComponent,
-                        padding = insets(5.dp),
+                        padding = Insets(5.dp),
                     ),
-                    padding = insets(10.dp),
+                    padding = Insets(10.dp),
                 )
             }
         } else null,

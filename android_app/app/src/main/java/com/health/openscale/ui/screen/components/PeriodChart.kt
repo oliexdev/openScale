@@ -17,38 +17,31 @@
  */
 package com.health.openscale.ui.screen.components
 
-import android.text.TextUtils
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLabelComponent
-import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianValueFormatter
+import com.patrykandpatrick.vico.compose.cartesian.data.columnSeries
+import com.patrykandpatrick.vico.compose.cartesian.layer.ColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
-import com.patrykandpatrick.vico.compose.cartesian.layer.stacked
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarker
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarkerController
+import com.patrykandpatrick.vico.compose.cartesian.marker.ColumnCartesianLayerMarkerTarget
+import com.patrykandpatrick.vico.compose.cartesian.marker.DefaultCartesianMarker
+import com.patrykandpatrick.vico.compose.cartesian.marker.Interaction
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
-import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
-import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
-import com.patrykandpatrick.vico.core.cartesian.layer.ColumnCartesianLayer
-import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarker
-import com.patrykandpatrick.vico.core.cartesian.marker.Interaction
-import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarkerController
-import com.patrykandpatrick.vico.core.cartesian.marker.ColumnCartesianLayerMarkerTarget
-import com.patrykandpatrick.vico.core.cartesian.marker.DefaultCartesianMarker
-import com.patrykandpatrick.vico.core.common.Fill
-import com.patrykandpatrick.vico.core.common.component.LineComponent
-import com.patrykandpatrick.vico.core.common.data.ExtraStore
+import com.patrykandpatrick.vico.compose.common.Fill
+import com.patrykandpatrick.vico.compose.common.component.LineComponent
+import com.patrykandpatrick.vico.compose.common.data.ExtraStore
+import kotlin.collections.firstOrNull
+
 
 private val BottomAxisLabelKey = ExtraStore.Key<List<String>>()
 
@@ -86,8 +79,8 @@ fun PeriodChart(
     onPeriodClick: (PeriodDataPoint?) -> Unit
 ) {
     // Fill colors for unselected and selected bars
-    val unselectedColor = Fill(MaterialTheme.colorScheme.primaryContainer.toArgb())
-    val selectedColor = Fill(MaterialTheme.colorScheme.primary.toArgb())
+    val unselectedColor = Fill(MaterialTheme.colorScheme.primaryContainer)
+    val selectedColor = Fill(MaterialTheme.colorScheme.primary)
 
     // Chart model producer that holds and updates the dataset
     val modelProducer = remember { CartesianChartModelProducer() }
@@ -96,11 +89,11 @@ fun PeriodChart(
     val columnLayer = rememberColumnCartesianLayer(
         ColumnCartesianLayer.ColumnProvider.series(
             listOf(
-                LineComponent(fill = unselectedColor, thicknessDp = 12f),
-                LineComponent(fill = selectedColor, thicknessDp = 12f)
+                LineComponent(fill = unselectedColor, thickness = 12.dp),
+                LineComponent(fill = selectedColor, thickness = 12.dp)
             )
         ),
-        mergeMode = { ColumnCartesianLayer.MergeMode.stacked() },
+        mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
     )
 
     // Update the chart model when data or selected period changes
@@ -132,8 +125,6 @@ fun PeriodChart(
             guideline = null,
             label = rememberAxisLabelComponent(
                 lineCount = 2,       // allow wrapping if needed
-                textSize = 9.sp,
-                truncateAt = TextUtils.TruncateAt.MARQUEE
             )
         ),
         marker = rememberMarker(
