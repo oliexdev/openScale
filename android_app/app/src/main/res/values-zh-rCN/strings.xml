@@ -175,7 +175,7 @@
     <string name="status_unpinned">未固定</string>
     <string name="bluetooth_action_connecting_disconnecting_desc">蓝牙处理</string>
     <string name="bluetooth_action_no_scale_saved_desc">设置蓝牙秤</string>
-    <string name="bluetooth_action_disconnect_desc">从%1$s断开连接191,Retry connection to %1$s,重试连接到%1$s</string>
+    <string name="bluetooth_action_disconnect_desc">从%1$s断开连接</string>
     <string name="bluetooth_action_connect_to_desc">连接到%1$s</string>
     <string name="bluetooth_action_check_settings_desc">检查蓝牙设置</string>
     <string name="snackbar_bluetooth_connecting_to">正在连接到%1$s…</string>
@@ -487,4 +487,28 @@
     <string name="action_save_measurement">保存测量</string>
     <string name="action_add_measurement">添加测量</string>
     <string name="action_add_measurement_desc">添加新测量</string>
+    <string name="text_none">无</string>
+    <string name="action_add_user">增加用户</string>
+    <string name="dialog_title_select_color">选择颜色</string>
+    <string name="dialog_title_select_icon">选择图标</string>
+    <string name="dialog_title_input_value">输入值</string>
+    <string name="dialog_title_input_text">输入文本</string>
+    <string name="dialog_title_hour">小时</string>
+    <string name="dialog_title_minute">分钟</string>
+    <string name="action_edit_measurement_desc">编辑%1$s的测量数据</string>
+    <string name="action_delete_measurement_desc">删除%1$s的测量数据</string>
+    <string name="toast_duplicate_timestamp">此时间戳的数据与您上次的测量数据相同。请选择一个不同的时间戳。</string>
+    <string name="no_measurements_title">还没有测量数据</string>
+    <string name="no_measurements_message">添加您的首次测量数据以开始追踪您的进展。</string>
+    <string name="no_active_values_for_measurement">此条目没有有效的测量值。</string>
+    <string name="toast_invalid_number_format">无效数字%1$s：“%2$s”</string>
+    <string name="toast_invalid_integer_format">无效整数%1$s：“%2$s”</string>
+    <string name="toast_invalid_number_format_short">无效数字%1$s</string>
+    <string name="toast_invalid_integer_format_short">无效整数%1$s</string>
+    <string name="toast_enter_valid_data">请输入有效的数据。</string>
+    <string name="dialog_title_edit_value">编辑%1$s</string>
+    <string name="dialog_title_change_value">修改%1$s</string>
+    <string name="content_desc_increase_value">增加%1$s</string>
+    <string name="content_desc_decrease_value">减少%1$s</string>
+    <string name="content_desc_edit_value">编辑%1$s</string>
 </resources>
