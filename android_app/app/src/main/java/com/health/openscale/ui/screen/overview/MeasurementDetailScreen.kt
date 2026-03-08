@@ -213,7 +213,7 @@ fun MeasurementDetailScreen(
     }
 
     // Configure the top bar save action.
-    LaunchedEffect(currentUserIdState, measurementTimestampState, valuesState.toMap(), measurementId) {
+    LaunchedEffect(currentUserIdState, measurementTimestampState, measurementId) {
         val actions = mutableListOf<TopBarAction>()
 
         if (measurementId > 0) {
@@ -257,17 +257,18 @@ fun MeasurementDetailScreen(
                     var allConversionsOk = true
 
                     allMeasurementTypes
-                        .filterNot { it.inputType == InputFieldType.DATE || it.inputType == InputFieldType.TIME } // Date/Time handled by main timestamp
-                        .filterNot { it.isDerived } // Derived values are calculated, not input
+                        .filterNot { it.inputType == InputFieldType.DATE || it.inputType == InputFieldType.TIME }
+                        .filterNot { it.isDerived }
                         .forEach { type ->
                             val inputString = valuesState[type.id]?.trim()
 
                             if (inputString.isNullOrBlank()) return@forEach // Skip empty values
 
-                            val existingValueId = if (measurementId != -1 && measurementId != 0) {
-                                loadedData?.values?.find { v -> v.type.id == type.id }?.value?.id
-                                    ?: 0
-                            } else 0
+                            val existingValueId =
+                                if (measurementId != -1 && measurementId != 0) {
+                                    loadedData?.values?.find { v -> v.type.id == type.id }?.value?.id
+                                        ?: 0
+                                } else 0
 
                             var floatVal: Float? = null
                             var intVal: Int? = null
@@ -337,9 +338,9 @@ fun MeasurementDetailScreen(
                         isPendingNavigation = true // Trigger loading indicator and navigate back.
                         navController.popBackStack()
                     }
-                })
+                }
+            )
         )
-
         sharedViewModel.setTopBarActions(actions)
     }
 
