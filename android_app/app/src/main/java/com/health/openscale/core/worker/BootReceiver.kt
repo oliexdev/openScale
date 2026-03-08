@@ -20,6 +20,7 @@ package com.health.openscale.core.worker
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.health.openscale.core.usecase.AutoBackupUseCases
 import com.health.openscale.core.usecase.ReminderUseCase
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
@@ -38,9 +39,11 @@ class BootReceiver : BroadcastReceiver() {
             val appContext = context.applicationContext
             val entryPoint = EntryPointAccessors.fromApplication(appContext, BootReceiverEntryPoint::class.java)
             val reminderUseCase = entryPoint.reminderUseCase()
+            val autoBackupUseCases = entryPoint.autoBackupUseCases()
 
             CoroutineScope(Dispatchers.Default).launch {
                 reminderUseCase.rescheduleNext()
+                autoBackupUseCases.refreshSchedule()
             }
         }
     }
@@ -50,4 +53,5 @@ class BootReceiver : BroadcastReceiver() {
 @InstallIn(SingletonComponent::class)
 interface BootReceiverEntryPoint {
     fun reminderUseCase(): ReminderUseCase
+    fun autoBackupUseCases(): AutoBackupUseCases
 }
