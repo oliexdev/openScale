@@ -50,6 +50,8 @@ object Routes {
     const val CHART_SETTINGS = "settings/chart"
     const val DATA_MANAGEMENT_SETTINGS = "settings/dataManagement"
     const val ABOUT_SETTINGS = "settings/about"
+    const val TABLE_DRILLDOWN = "table_drilldown?start={start}&end={end}"
+    const val OVERVIEW_DRILLDOWN = "overview_drilldown?start={start}&end={end}"
 
     // Special constant for no title
     const val NO_TITLE_RESOURCE_ID = 0
@@ -60,6 +62,19 @@ object Routes {
 
     fun measurementDetail(measurementId: Int?, userId: Int?): String =
         "$MEASUREMENT_DETAIL?measurementId=${measurementId ?: -1}&userId=$userId"
+
+    fun overviewDrillDown(startMillis: Long, endMillis: Long) =
+        "overview_drilldown?start=$startMillis&end=$endMillis"
+
+    /**
+     * Returns the navigation route for the table drill-down screen,
+     * showing raw measurements for a specific aggregated time period.
+     *
+     * @param startMillis Start of the period (inclusive), in epoch milliseconds.
+     * @param endMillis End of the period (exclusive), in epoch milliseconds.
+     */
+    fun tableDrillDown(startMillis: Long, endMillis: Long) =
+        "table_drilldown?start=$startMillis&end=$endMillis"
 
     /**
      * Gets the string resource ID for the title of a given route.

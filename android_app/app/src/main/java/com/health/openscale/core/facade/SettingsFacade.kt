@@ -121,6 +121,7 @@ object SettingsPreferenceKeys {
     // Context strings for screen-specific settings (can be used as prefixes for dynamic keys)
     const val OVERVIEW_SCREEN_CONTEXT = "overview_screen"
     const val GRAPH_SCREEN_CONTEXT = "graph_screen"
+    const val TABLE_SCREEN_CONTEXT = "table_screen"
     const val STATISTICS_SCREEN_CONTEXT = "statistics_screen"
 }
 

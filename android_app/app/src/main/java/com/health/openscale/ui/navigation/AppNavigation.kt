@@ -624,6 +624,21 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                             bluetoothViewModel = bluetoothViewModel
                         )
                     }
+                    composable(
+                        route = Routes.OVERVIEW_DRILLDOWN,
+                        arguments = listOf(
+                            navArgument("start") { type = NavType.LongType },
+                            navArgument("end")   { type = NavType.LongType }
+                        )
+                    ) { backStackEntry ->
+                        OverviewScreen(
+                            navController = navController,
+                            sharedViewModel = sharedViewModel,
+                            bluetoothViewModel = bluetoothViewModel,
+                            drillDownStartMillis = backStackEntry.arguments?.getLong("start"),
+                            drillDownEndMillis   = backStackEntry.arguments?.getLong("end"),
+                        )
+                    }
                     composable(Routes.GRAPH) {
                         GraphScreen(
                             navController = navController,
@@ -636,6 +651,21 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                             navController = navController,
                             sharedViewModel = sharedViewModel,
                             bluetoothViewModel = bluetoothViewModel
+                        )
+                    }
+                    composable(
+                        route = Routes.TABLE_DRILLDOWN,
+                        arguments = listOf(
+                            navArgument("start") { type = NavType.LongType },
+                            navArgument("end")   { type = NavType.LongType }
+                        )
+                    ) { backStackEntry ->
+                        TableScreen(
+                            navController = navController,
+                            sharedViewModel = sharedViewModel,
+                            bluetoothViewModel = bluetoothViewModel,
+                            drillDownStartMillis = backStackEntry.arguments?.getLong("start"),
+                            drillDownEndMillis   = backStackEntry.arguments?.getLong("end"),
                         )
                     }
                     composable(Routes.STATISTICS) {

@@ -99,7 +99,7 @@ enum class SupportedLanguage(val code: String, val nativeDisplayName: String) {
     //GALICIAN("gl", "Galician (Galego)"),
     GERMAN("de", "German (Deutsch)"),
     GREEK("el", "Greek (ελληνικά)"),
-    //HEBREW("iw", "Hebrew (עברית)"),
+    HEBREW("iw", "Hebrew (עברית)"),
     //HUNGARIAN("hu", "Hungarian (magyar)"),
     //INDONESIAN("id", "Indonesian (Bahasa Indonesia)"),
     ITALIAN("it", "Italian (Italiano)"),
@@ -454,6 +454,18 @@ enum class TimeRangeFilter(@StringRes val displayNameResId: Int) {
     CUSTOM(R.string.time_range_custom);
 
     fun getDisplayName(context: android.content.Context): String {
+        return context.getString(displayNameResId)
+    }
+}
+
+enum class AggregationLevel(@StringRes val displayNameResId: Int) {
+    NONE(R.string.aggregation_level_none),
+    DAY(R.string.aggregation_level_day),
+    WEEK(R.string.aggregation_level_week),
+    MONTH(R.string.aggregation_level_month),
+    YEAR(R.string.aggregation_level_year);
+
+    fun getDisplayName(context: Context): String {
         return context.getString(displayNameResId)
     }
 }

@@ -24,6 +24,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.health.openscale.R
+import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
@@ -34,12 +35,14 @@ import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.facade.DataManagementFacade
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
+import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.core.facade.UserFacade
 import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.usecase.MeasurementEvaluationResult
 import com.health.openscale.core.utils.LogManager
+import com.health.openscale.ui.screen.components.AGGREGATION_LEVEL_SUFFIX
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -109,10 +112,6 @@ class SharedViewModel @Inject constructor(
 
     // --- Bluetooth Assisted Weighing State ---
     private val _pendingAssistedWeighingUser = MutableStateFlow<User?>(null)
-    /**
-     * State to trigger the global Assisted Weighing dialog.
-     * When not null, the UI should show the confirmation dialog for this user.
-     */
     val pendingAssistedWeighingUser = _pendingAssistedWeighingUser.asStateFlow()
 
     fun setPendingAssistedWeighingUser(user: User?) {
@@ -190,37 +189,27 @@ class SharedViewModel @Inject constructor(
     }
 
     fun dismissUserGoalDialogWithContext() {
-        if (_userGoalDialogContext.value.showDialog) { // Only update if it was shown
-            _userGoalDialogContext.value = UserGoalDialogContext(showDialog = false) // Reset to default hidden state
+        if (_userGoalDialogContext.value.showDialog) {
+            _userGoalDialogContext.value = UserGoalDialogContext(showDialog = false)
         }
     }
 
     fun getAllGoalsForUser(userId: Int): Flow<List<UserGoals>> {
-        if (userId == 0) {
-            return flowOf(emptyList())
-        }
+        if (userId == 0) return flowOf(emptyList())
         return userFacade.getAllGoalsForUser(userId)
-            .catch { exception ->
-                emit(emptyList())
-            }
+            .catch { emit(emptyList()) }
     }
 
     fun insertUserGoal(goal: UserGoals) {
-        viewModelScope.launch {
-            userFacade.insertUserGoal(goal)
-        }
+        viewModelScope.launch { userFacade.insertUserGoal(goal) }
     }
 
     fun updateUserGoal(goal: UserGoals) {
-        viewModelScope.launch {
-            userFacade.updateUserGoal(goal)
-        }
+        viewModelScope.launch { userFacade.updateUserGoal(goal) }
     }
 
     fun deleteUserGoal(userId: Int, measurementTypeId: Int) {
-        viewModelScope.launch {
-            userFacade.deleteUserGoal(userId, measurementTypeId)
-        }
+        viewModelScope.launch { userFacade.deleteUserGoal(userId, measurementTypeId) }
     }
 
     val userEvaluationContext: StateFlow<UserEvaluationContext?> =
@@ -238,6 +227,29 @@ class SharedViewModel @Inject constructor(
         }
     }
 
+    // --- Aggregation level flows (per screen context) ---
+
+    /**
+     * Returns a Flow emitting the current [AggregationLevel] for the given screen context.
+     * The value is persisted in DataStore under "${screenContextName}_aggregation_level".
+     */
+    fun observeAggregationLevel(screenContextName: String): Flow<AggregationLevel> {
+        val key = "${screenContextName}${AGGREGATION_LEVEL_SUFFIX}"
+        return observeSetting(key, AggregationLevel.NONE.name)
+            .map { name ->
+                AggregationLevel.entries.find { it.name == name } ?: AggregationLevel.NONE
+            }
+    }
+
+    /**
+     * Persists an [AggregationLevel] for the given screen context.
+     */
+    suspend fun saveAggregationLevel(screenContextName: String, level: AggregationLevel) {
+        val key = "${screenContextName}${AGGREGATION_LEVEL_SUFFIX}"
+        saveSetting(key, level.name)
+    }
+
+    // --- Overview UI state ---
     val overviewUiState: StateFlow<UiState<List<EnrichedMeasurement>>> =
         _isInitialUserLoadComplete
             .flatMapLatest { initialAttemptDone ->
@@ -248,6 +260,7 @@ class SharedViewModel @Inject constructor(
                         if (uidFromFacade == null) {
                             flowOf(UiState.Success(emptyList()))
                         } else {
+                            // Overview does not aggregate (shows all raw measurements)
                             measurementFacade.enrichedFlowForUser(uidFromFacade, measurementTypes)
                                 .map<List<EnrichedMeasurement>, UiState<List<EnrichedMeasurement>>> {
                                     UiState.Success(it)
@@ -263,6 +276,7 @@ class SharedViewModel @Inject constructor(
                 initialValue = UiState.Loading
             )
 
+    // --- Graph UI state (with aggregation) ---
     val graphUiState: StateFlow<UiState<List<EnrichedMeasurement>>> =
         _isInitialUserLoadComplete
             .flatMapLatest { initialAttemptDone ->
@@ -276,13 +290,16 @@ class SharedViewModel @Inject constructor(
                             measurementFacade.pipeline(
                                 userId = uidFromFacade,
                                 measurementTypesFlow = measurementTypes,
-                                startTimeMillisFlow = flowOf(null), // No time range filter
-                                endTimeMillisFlow = flowOf(null), // No time range filter
+                                startTimeMillisFlow = flowOf(null),
+                                endTimeMillisFlow = flowOf(null),
                                 typesToSmoothFlow = typesToSmoothAndDisplay,
                                 algorithmFlow = selectedSmoothingAlgorithm,
                                 alphaFlow = smoothingAlpha,
                                 windowFlow = smoothingWindowSize,
-                                maxGapDaysFlow = smoothingMaxGapDays
+                                maxGapDaysFlow = smoothingMaxGapDays,
+                                aggregationLevelFlow = observeAggregationLevel(
+                                    SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT
+                                )
                             )
                                 .map<List<EnrichedMeasurement>, UiState<List<EnrichedMeasurement>>> {
                                     UiState.Success(it)
@@ -348,7 +365,7 @@ class SharedViewModel @Inject constructor(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     fun setCurrentMeasurementId(measurementId: Int?) { _currentMeasurementId.value = measurementId }
 
-    // --- Chart smoothing config (via MeasurementFacade) ---
+    // --- Chart smoothing config (via SettingsFacade) ---
     val selectedSmoothingAlgorithm: StateFlow<SmoothingAlgorithm> =
         chartSmoothingAlgorithm
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SmoothingAlgorithm.NONE)
@@ -369,7 +386,7 @@ class SharedViewModel @Inject constructor(
     private val _typesToSmoothAndDisplay = MutableStateFlow<Set<Int>>(emptySet())
     val typesToSmoothAndDisplay: StateFlow<Set<Int>> = _typesToSmoothAndDisplay.asStateFlow()
 
-    // --- Base enriched flow for current user ---
+    // --- Base enriched flow for current user (Table screen, no aggregation at this level) ---
     val enrichedMeasurementsFlow: StateFlow<List<EnrichedMeasurement>> =
         selectedUserId
             .flatMapLatest { uid ->
@@ -384,15 +401,15 @@ class SharedViewModel @Inject constructor(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     // --- CRUD delegates (via MeasurementFacade) ---
-    fun getMeasurementById(id: Int) : Flow<MeasurementWithValues?> {
+    fun getMeasurementById(id: Int): Flow<MeasurementWithValues?> {
         return measurementFacade.getMeasurementWithValuesById(id)
     }
 
-    suspend fun saveMeasurement(measurement: Measurement, values: List<MeasurementValue>, silent : Boolean = false) : Boolean {
+    suspend fun saveMeasurement(measurement: Measurement, values: List<MeasurementValue>, silent: Boolean = false): Boolean {
         return withContext(Dispatchers.IO) {
             val result = measurementFacade.saveMeasurement(measurement, values)
             if (result.isSuccess) {
-                 if (!silent) showSnackbar(
+                if (!silent) showSnackbar(
                     messageResId = if (measurement.id == 0) R.string.success_measurement_saved
                     else R.string.success_measurement_updated
                 )
@@ -404,7 +421,7 @@ class SharedViewModel @Inject constructor(
         }
     }
 
-    suspend fun deleteMeasurement(measurement: Measurement, silent : Boolean = false) : Boolean {
+    suspend fun deleteMeasurement(measurement: Measurement, silent: Boolean = false): Boolean {
         return withContext(Dispatchers.IO) {
             val result = measurementFacade.deleteMeasurement(measurement)
             if (result.isSuccess) {
@@ -415,9 +432,7 @@ class SharedViewModel @Inject constructor(
                 if (_currentMeasurementId.value == measurement.id) _currentMeasurementId.value = null
                 true
             } else {
-                if (!silent) {
-                    showSnackbar(messageResId = R.string.error_deleting_measurement)
-                }
+                if (!silent) showSnackbar(messageResId = R.string.error_deleting_measurement)
                 false
             }
         }
@@ -438,11 +453,64 @@ class SharedViewModel @Inject constructor(
         }
     }
 
-    // --- Optional: ad-hoc pipeline with provided UI state ---
+    fun filteredRawMeasurements(
+        startTimeMillis: Long?,
+        endTimeMillis: Long?
+    ): Flow<List<EnrichedMeasurement>> {
+        return selectedUserId.flatMapLatest { userId ->
+            if (userId == null) flowOf(emptyList())
+            else measurementFacade.pipeline(
+                userId = userId,
+                measurementTypesFlow = measurementTypes,
+                startTimeMillisFlow = flowOf(startTimeMillis),
+                endTimeMillisFlow = flowOf(endTimeMillis),
+                typesToSmoothFlow = flowOf(emptySet()),
+                algorithmFlow = flowOf(SmoothingAlgorithm.NONE),
+                alphaFlow = flowOf(0.5f),
+                windowFlow = flowOf(5),
+                maxGapDaysFlow = flowOf(7),
+                aggregationLevelFlow = flowOf(AggregationLevel.NONE)
+            )
+        }
+    }
+
+    // --- Optional: ad-hoc pipeline with provided UI state (Table screen aggregation) ---
+
+    /**
+     * Returns an aggregated enriched flow for the Table screen or Statistics screen.
+     * Combines time filtering with aggregation.
+     *
+     * @param startTimeMillis Start of time range (inclusive), or null for no bound.
+     * @param endTimeMillis End of time range (inclusive), or null for no bound.
+     * @param screenContextName Screen context used to load the persisted aggregation level.
+     */
+    fun aggregatedEnrichedMeasurements(
+        startTimeMillis: Long?,
+        endTimeMillis: Long?,
+        screenContextName: String
+    ): Flow<List<EnrichedMeasurement>> {
+        return selectedUserId.flatMapLatest { userId ->
+            if (userId == null) flowOf(emptyList())
+            else measurementFacade.pipeline(
+                userId = userId,
+                measurementTypesFlow = measurementTypes,
+                startTimeMillisFlow = flowOf(startTimeMillis),
+                endTimeMillisFlow = flowOf(endTimeMillis),
+                typesToSmoothFlow = flowOf(emptySet()),
+                algorithmFlow = flowOf(SmoothingAlgorithm.NONE),
+                alphaFlow = flowOf(0.5f),
+                windowFlow = flowOf(5),
+                maxGapDaysFlow = flowOf(7),
+                aggregationLevelFlow = observeAggregationLevel(screenContextName)
+            )
+        }
+    }
+
     fun smoothedEnrichedMeasurements(
         startTimeMillis: Long?,
         endTimeMillis: Long?,
-        typeIds: Set<Int>
+        typeIds: Set<Int>,
+        screenContextName: String = SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT
     ): Flow<List<EnrichedMeasurement>> {
         return selectedUserId.flatMapLatest { userId ->
             if (userId == null) flowOf(emptyList())
@@ -455,7 +523,8 @@ class SharedViewModel @Inject constructor(
                 algorithmFlow = selectedSmoothingAlgorithm,
                 alphaFlow = smoothingAlpha,
                 windowFlow = smoothingWindowSize,
-                maxGapDaysFlow = chartSmoothingMaxGapDays
+                maxGapDaysFlow = chartSmoothingMaxGapDays,
+                aggregationLevelFlow = observeAggregationLevel(screenContextName)
             )
         }
     }
@@ -474,30 +543,22 @@ class SharedViewModel @Inject constructor(
         )
     }
 
-    fun getPlausiblePercentRange(
-        typeKey: MeasurementTypeKey
-    ): ClosedFloatingPointRange<Float>? {
+    fun getPlausiblePercentRange(typeKey: MeasurementTypeKey): ClosedFloatingPointRange<Float>? {
         return measurementFacade.plausiblePercentRangeFor(typeKey)
     }
 
     /**
-     * Ensures that all derived measurement values (e.g., BMI, LBM, WHR) are present
-     * for all users in the database.
-     *
-     * This method runs only once per app session (guarded by [didRunDerivedBackfill]).
-     * It iterates over all users, checks if at least one valid BMI value exists, and if not,
-     * triggers a recalculation of all derived values for every measurement of that user.
-     *
-     * Typical use case:
-     * - After database migration when derived values were not persisted in older versions.
-     * - After restoring a backup where derived values may be missing.
+     * Ensures that all derived measurement values are present for all users in the database.
+     * Runs only once per app session.
      */
     fun maybeBackfillDerivedValues() {
         if (!didRunDerivedBackfill.compareAndSet(false, true)) return
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val types = withTimeoutOrNull(10_000) { measurementFacade.getAllMeasurementTypes().first { it.isNotEmpty() } } // wait at least 10s until types are loaded
+                val types = withTimeoutOrNull(10_000) {
+                    measurementFacade.getAllMeasurementTypes().first { it.isNotEmpty() }
+                }
 
                 if (types.isNullOrEmpty()) {
                     LogManager.w(TAG, "Backfill skip: no measurement types loaded after 10s")
@@ -509,15 +570,10 @@ class SharedViewModel @Inject constructor(
                     return@launch
                 }
 
-                val users = withTimeoutOrNull(10_000) { allUsers.first { it.isNotEmpty() } } // wait at least 10s until types are loaded
+                val users = withTimeoutOrNull(10_000) { allUsers.first { it.isNotEmpty() } }
 
                 if (users.isNullOrEmpty()) {
                     LogManager.w(TAG, "Backfill skip: no users loaded after 10s")
-                    return@launch
-                }
-
-                if (users.isEmpty()) {
-                    LogManager.d(TAG, "Backfill skip: no users.")
                     return@launch
                 }
 
@@ -526,8 +582,8 @@ class SharedViewModel @Inject constructor(
                 var usersAffected = 0
 
                 users.forEach { user ->
-                    val allForUser: List<MeasurementWithValues> = measurementFacade.getMeasurementsForUser(user.id).first()
-
+                    val allForUser: List<MeasurementWithValues> =
+                        measurementFacade.getMeasurementsForUser(user.id).first()
 
                     if (allForUser.isEmpty()) {
                         LogManager.d(TAG, "Backfill skip: no measurements for userId=${user.id}.")
