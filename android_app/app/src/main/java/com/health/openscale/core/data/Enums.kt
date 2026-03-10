@@ -78,6 +78,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.health.openscale.R
+import java.time.DayOfWeek
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.time.temporal.WeekFields
 import java.util.Locale
 
 enum class SupportedLanguage(val code: String, val nativeDisplayName: String) {
@@ -468,6 +474,83 @@ enum class AggregationLevel(@StringRes val displayNameResId: Int) {
     fun getDisplayName(context: Context): String {
         return context.getString(displayNameResId)
     }
+
+
+    /**
+     * Returns the inclusive start and exclusive end of the period containing [timestamp]
+     * as epoch milliseconds.
+     *
+     * For [NONE] and [DAY] the period is a single calendar day.
+     */
+    fun periodBounds(
+        timestamp: Long,
+        zone: ZoneId = ZoneId.systemDefault(),
+    ): Pair<Long, Long> {
+        val date = Instant.ofEpochMilli(timestamp).atZone(zone).toLocalDate()
+        val (start, end) = when (this) {
+            NONE,
+            DAY   -> date to date.plusDays(1)
+            WEEK  -> { val mon = date.with(DayOfWeek.MONDAY); mon to mon.plusWeeks(1) }
+            MONTH -> { val f = date.withDayOfMonth(1); f to f.plusMonths(1) }
+            YEAR  -> { val f = date.withDayOfYear(1); f to f.plusYears(1) }
+        }
+        return start.atStartOfDay(zone).toInstant().toEpochMilli() to
+                end.atStartOfDay(zone).toInstant().toEpochMilli()
+    }
+
+    /**
+     * Returns a stable, locale-independent key for the period containing [timestamp].
+     * Suitable as a LazyColumn item key or Map key.
+     *
+     * Examples: "2025-04-07" (DAY/NONE), "2025-W15" (WEEK), "2025-4" (MONTH), "2025" (YEAR).
+     */
+    fun periodKey(
+        timestamp: Long,
+        zone: ZoneId = ZoneId.systemDefault(),
+    ): String {
+        val date = Instant.ofEpochMilli(timestamp).atZone(zone).toLocalDate()
+        return when (this) {
+            NONE,
+            DAY   -> date.toString()
+            WEEK  -> {
+                val wf = WeekFields.of(Locale.getDefault())
+                "${date.get(wf.weekBasedYear())}-W${date.get(wf.weekOfWeekBasedYear())}"
+            }
+            MONTH -> "${date.year}-${date.monthValue}"
+            YEAR  -> "${date.year}"
+        }
+    }
+
+    /**
+     * Returns a human-readable, locale-sensitive label for the period containing [timestamp].
+     *
+     * Intentionally separate from [periodKey] — labels are locale-dependent and must
+     * not be used as stable identifiers.
+     *
+     * @param calendarWeekAbbrev Localised abbreviation for "calendar week" (e.g. "CW" / "KW").
+     *                           Only used for [WEEK].
+     */
+    fun periodLabel(
+        timestamp: Long,
+        calendarWeekAbbrev: String,
+        locale: Locale = Locale.getDefault(),
+        zone: ZoneId = ZoneId.systemDefault(),
+    ): String {
+        val date = Instant.ofEpochMilli(timestamp).atZone(zone).toLocalDate()
+        return when (this) {
+            NONE,
+            DAY   -> date.format(
+                DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
+            )
+            WEEK  -> {
+                val wf = WeekFields.of(locale)
+                "${date.get(wf.weekBasedYear())} – $calendarWeekAbbrev ${date.get(wf.weekOfWeekBasedYear())}"
+            }
+            MONTH -> date.format(DateTimeFormatter.ofPattern("MMMM yyyy", locale))
+            YEAR  -> date.year.toString()
+        }
+    }
+
 }
 
 enum class SmoothingAlgorithm(@StringRes val displayNameResId: Int) {
