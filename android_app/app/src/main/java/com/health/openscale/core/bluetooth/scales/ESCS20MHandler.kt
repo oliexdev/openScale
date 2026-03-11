@@ -160,7 +160,7 @@ class ESCS20mHandler : ScaleDeviceHandler() {
 
         when (data[0].toInt() and 0xFF) {
             FRAG_FIRST -> {
-                lefuFrag = data.drop(FRAG_HDR).toByteArray()
+                lefuFrag = data.copyOfRange(FRAG_HDR, data.size)
             }
             FRAG_CONT -> {
                 val frag = lefuFrag
@@ -168,7 +168,7 @@ class ESCS20mHandler : ScaleDeviceHandler() {
                     LogManager.w(TAG, "Continuation fragment without a preceding first fragment; discarded")
                     return
                 }
-                val complete = frag + data.drop(FRAG_HDR)
+                val complete = frag + data.copyOfRange(FRAG_HDR, data.size)
                 lefuFrag = null
                 handleLefuFrame(complete, user)
             }
@@ -185,16 +185,20 @@ class ESCS20mHandler : ScaleDeviceHandler() {
         if (data.size < 3) return
 
         val msgId = data[2].toInt() and 0xFF
-        val hex   = data.joinToString(" ") { "%02X".format(it.toInt() and 0xFF) }
+
+        // Weight frames arrive at ~5 Hz; avoid building a hex-dump string on every frame.
+        if (msgId == MSG_WEIGHT) { onWeightFrame(data); return }
+
+        val hex = data.joinToString(" ") { "%02X".format(it.toInt() and 0xFF) }
         LogManager.d(TAG, "Lefu 0x%02X len=%d [%s]".format(msgId, data.size, hex))
 
         when (msgId) {
-            MSG_PROFILE_ACK -> onProfileAck(user)
-            MSG_HIST_ACK    -> onHistAck(user)
-            MSG_WEIGHT      -> onWeightFrame(data)
-            MSG_BIA_INTERIM -> onBiaInterim(data, user)
-            MSG_BIA_FINAL   -> onBiaFinal(data, user)
-            MSG_START_STOP  -> onStartStop(data, user)
+            MSG_PROFILE_ACK  -> onProfileAck(user)
+            MSG_HIST_ACK     -> onHistAck(user)
+            MSG_BIA_INTERIM  -> onBiaInterim(data, user)
+            MSG_BIA_FINAL    -> onBiaFinal(data, user)
+            MSG_START_STOP   -> onStartStop(data, user)
+            MSG_OP_CALLBACK  -> onOpCallback(data)
         }
     }
 
@@ -224,11 +228,22 @@ class ESCS20mHandler : ScaleDeviceHandler() {
         }
     }
 
+    /** 0x10 – Operation callback (result of 0x90/0x99 commands). Logs failures for diagnostics. */
+    private fun onOpCallback(data: ByteArray) {
+        if (data.size < 6) return
+        val ok = (data[5].toInt() and 0xFF) == 0x01
+        if (ok) LogManager.d(TAG, "0x10 op callback: success")
+        else    LogManager.w(TAG, "0x10 op callback: FAILURE")
+    }
+
     /** 0x14 – Weight frame. Track the most recent weight for post-BIA 0x96 payload. */
     private fun onWeightFrame(data: ByteArray) {
         if (data.size < 12) return
         val raw = u16be(data, 8)
-        if (raw > 0) lastWeightRaw = raw
+        if (raw > 0) {
+            lastWeightRaw = raw
+            LogManager.d(TAG, "Lefu 0x14 weight=${raw / 100f}kg")
+        }
     }
 
     /**
@@ -280,7 +295,14 @@ class ESCS20mHandler : ScaleDeviceHandler() {
         if (data.size < 6) return
         val flag = data[START_STOP_IDX].toInt() and 0xFF
         if (flag != 0) {
-            LogManager.d(TAG, "0x11 START (flag=$flag)")
+            if (hasPublished) {
+                // Second step-on within same connection: restart the setup sequence.
+                resetState()
+                writeTo(SVC_MAIN, CHR_CUR_TIME, buildCmd97())
+                LogManager.i(TAG, "Re-started session; wrote 0x97 user-profile")
+            } else {
+                LogManager.d(TAG, "0x11 START (flag=$flag)")
+            }
         } else if (hasPublished) {
             LogManager.d(TAG, "0x11 STOP (already published; ignoring step-off frames)")
         } else {
@@ -350,6 +372,7 @@ class ESCS20mHandler : ScaleDeviceHandler() {
         val heightMm = (user.bodyHeight * 10f).toInt()  // cm → mm, big-endian uint16
         val sexByte  = if (user.gender.isMale()) 0x11 else 0x21
         val modeByte = if (YunmaiLib.toYunmaiActivityLevel(user.activityLevel) == 1) 0x6A else 0xAA
+        val w        = weightRaw.coerceIn(0, 0xFFFF)    // guard against u16 overflow in payload
         val payload  = byteArrayOf(
             sexByte.toByte(),
             (year ushr 8).toByte(), year.toByte(),
@@ -357,7 +380,7 @@ class ESCS20mHandler : ScaleDeviceHandler() {
             day.toByte(),
             (heightMm ushr 8).toByte(), heightMm.toByte(),
             0x00, 0x00,
-            (weightRaw ushr 8).toByte(), weightRaw.toByte(),
+            (w ushr 8).toByte(), w.toByte(),
             modeByte.toByte(),
             0x01,  // constant (confirmed; NOT sex)
             0x05   // constant (confirmed)
