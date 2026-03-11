@@ -150,19 +150,15 @@ class MeasurementFacade @Inject constructor(
         val enriched = enrichedFlowForUser(userId, measurementTypesFlow)
 
         @OptIn(ExperimentalCoroutinesApi::class)
-        val timeFiltered: Flow<List<EnrichedMeasurement>> =
-            combine(enriched, startTimeMillisFlow, endTimeMillisFlow) { list, startMs, endMs ->
-                filter.getTimeFiltered(flowOf(list), startMs, endMs)
-            }.flatMapLatest { it }
+        val timeFiltered = combine(enriched, startTimeMillisFlow, endTimeMillisFlow) { list, startMs, endMs ->
+            filter.getTimeFiltered(flowOf(list), startMs, endMs)
+        }.flatMapLatest { it }
 
-        // 1. Aggregate first — smoothing then operates on fewer, more meaningful points
-        val aggregated: Flow<List<AggregatedMeasurement>> =
-            combine(timeFiltered, aggregationLevelFlow) { list, level ->
-                aggregation.aggregate(list, level)
-            }
+        val aggregated = combine(timeFiltered, aggregationLevelFlow) { list, level ->
+            aggregation.aggregate(list, level)
+        }
 
-        // 2. Smooth after aggregation
-        return smooth.applySmoothing(
+        val smoothed = smooth.applySmoothing(
             baseAggregatedFlow = aggregated,
             typesToSmoothFlow  = typesToSmoothFlow,
             algorithmFlow      = algorithmFlow,
@@ -170,6 +166,23 @@ class MeasurementFacade @Inject constructor(
             windowFlow         = windowFlow,
             maxGapDaysFlow     = maxGapDaysFlow,
         )
+
+        return combine(smoothed, measurementTypesFlow, aggregationLevelFlow) { list, types, level ->
+            if (list.isEmpty() || level == AggregationLevel.NONE) return@combine list
+
+            val newest = list.first()
+            val aggregatedAsMwv = list.map { it.enriched.measurementWithValues }
+            val projection = enricher.enrichWithProjection(aggregatedAsMwv, types)
+
+            if (projection.isEmpty()) return@combine list
+
+            val withProjection = newest.copy(
+                enriched = newest.enriched.copy(
+                    measurementWithValuesProjected = projection
+                )
+            )
+            listOf(withProjection) + list.drop(1)
+        }
     }
 
     // -------------------------------------------------------------------------
