@@ -114,22 +114,6 @@ class MeasurementFacade @Inject constructor(
     }
 
     // -------------------------------------------------------------------------
-    // Time-filtered enriched flow (no aggregation, used internally)
-    // -------------------------------------------------------------------------
-
-    fun timeFilteredEnrichedFlow(
-        userId: Int,
-        measurementTypesFlow: Flow<List<MeasurementType>>,
-        startTimeMillis: Long?,
-        endTimeMillis: Long?,
-    ): Flow<List<EnrichedMeasurement>> =
-        filter.getTimeFiltered(
-            enrichedFlowForUser(userId, measurementTypesFlow),
-            startTimeMillis,
-            endTimeMillis,
-        )
-
-    // -------------------------------------------------------------------------
     // Full pipeline: query → enrich → filter → smooth → aggregate
     // -------------------------------------------------------------------------
 
@@ -187,15 +171,6 @@ class MeasurementFacade @Inject constructor(
             maxGapDaysFlow     = maxGapDaysFlow,
         )
     }
-
-    // -------------------------------------------------------------------------
-    // Convenience wrapper (used by callers that already have a list)
-    // -------------------------------------------------------------------------
-
-    fun aggregateList(
-        measurements: List<EnrichedMeasurement>,
-        level: AggregationLevel,
-    ): List<AggregatedMeasurement> = aggregation.aggregate(measurements, level)
 
     // -------------------------------------------------------------------------
     // BLE
@@ -278,9 +253,4 @@ class MeasurementFacade @Inject constructor(
         selectedTimestamp: Long,
         items: List<MeasurementWithValues>,
     ) = query.findClosestMeasurement(selectedTimestamp, items)
-
-    fun filterByTypes(
-        measurements: List<EnrichedMeasurement>,
-        selectedTypeIds: Set<Int>,
-    ): List<EnrichedMeasurement> = filter.filterByTypes(measurements, selectedTypeIds)
 }

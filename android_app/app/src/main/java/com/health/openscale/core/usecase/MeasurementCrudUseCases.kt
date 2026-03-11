@@ -74,14 +74,15 @@ class MeasurementCrudUseCases @Inject constructor(
         if (measurement.id == 0) {
             // Insert path
             val newId = databaseRepository.insertMeasurement(measurement).toInt()
+            val measurementWithId = measurement.copy(id = newId)
 
             finalValues.forEach { v ->
                 databaseRepository.insertMeasurementValue(v.copy(measurementId = newId))
             }
 
-            sync.triggerSyncInsert(measurement, finalValues,"com.health.openscale.sync")
-            sync.triggerSyncInsert(measurement, finalValues,"com.health.openscale.sync.oss")
-            sync.triggerSyncInsert(measurement, finalValues,"com.health.openscale.sync.debug")
+            sync.triggerSyncInsert(measurementWithId, finalValues,"com.health.openscale.sync")
+            sync.triggerSyncInsert(measurementWithId, finalValues,"com.health.openscale.sync.oss")
+            sync.triggerSyncInsert(measurementWithId, finalValues,"com.health.openscale.sync.debug")
 
             MeasurementWidget.refreshAll(appContext)
 
