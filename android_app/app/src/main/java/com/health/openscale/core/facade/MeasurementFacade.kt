@@ -17,21 +17,25 @@
  */
 package com.health.openscale.core.facade
 
+import android.R.attr.level
+import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.SmoothingAlgorithm
 import com.health.openscale.core.data.User
+import com.health.openscale.core.model.AggregatedMeasurement
 import com.health.openscale.core.model.EnrichedMeasurement
+import com.health.openscale.core.model.MeasurementWithValues
+import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.service.MeasurementEnricher
+import com.health.openscale.core.usecase.MeasurementAggregationUseCase
 import com.health.openscale.core.usecase.MeasurementCrudUseCases
+import com.health.openscale.core.usecase.MeasurementEvaluationUseCases
 import com.health.openscale.core.usecase.MeasurementFilterUseCases
 import com.health.openscale.core.usecase.MeasurementQueryUseCases
 import com.health.openscale.core.usecase.MeasurementSmoothingUseCases
-import com.health.openscale.core.model.MeasurementWithValues
-import com.health.openscale.core.model.UserEvaluationContext
-import com.health.openscale.core.usecase.MeasurementEvaluationUseCases
 import com.health.openscale.core.usecase.MeasurementTransformationUseCase
 import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,10 +48,16 @@ import javax.inject.Singleton
 
 /**
  * High-level entry point that orchestrates the typical measurement flow:
- * query → enrich → filter → smooth.
+ * query → enrich → filter → smooth → aggregate.
  *
- * Keeps ViewModels thin by providing ready-to-consume flows and simple delegates
- * for CRUD, selection helpers, and sync triggers.
+ * [pipeline] is the primary entry point for screens. It returns
+ * [Flow<List<AggregatedMeasurement>>] — each entry carries period metadata
+ * ([AggregatedMeasurement.periodStartMillis], [AggregatedMeasurement.periodEndMillis],
+ * [AggregatedMeasurement.periodKey], [AggregatedMeasurement.aggregatedFromCount])
+ * so screens never need to recompute these values themselves.
+ *
+ * When [AggregationLevel.NONE] is used every raw measurement is wrapped individually
+ * with [AggregatedMeasurement.aggregatedFromCount] == 1.
  */
 @Singleton
 class MeasurementFacade @Inject constructor(
@@ -59,99 +69,87 @@ class MeasurementFacade @Inject constructor(
     private val typeCrud: MeasurementTypeCrudUseCases,
     private val enricher: MeasurementEnricher,
     private val evaluationUseCases: MeasurementEvaluationUseCases,
+    private val aggregation: MeasurementAggregationUseCase,
 ) {
 
     private var pendingReferenceUser: User? = null
 
-    fun getMeasurementsForUser(userId: Int): Flow<List<MeasurementWithValues>> {
-        return query.getMeasurementsForUser(userId)
-    }
+    fun getMeasurementsForUser(userId: Int): Flow<List<MeasurementWithValues>> =
+        query.getMeasurementsForUser(userId)
 
-    suspend fun recalculateDerivedValuesForMeasurement(measurementId: Int) {
+    suspend fun recalculateDerivedValuesForMeasurement(measurementId: Int) =
         crud.recalculateDerivedValuesForMeasurement(measurementId)
-    }
+
+    // -------------------------------------------------------------------------
+    // Enriched flow (no aggregation)
+    // -------------------------------------------------------------------------
 
     /**
-     * Returns an enriched flow for a user by combining raw measurements with the global type catalog.
-     * This flow now includes both historical trend/difference data and future projection data.
-     *
-     * @param userId Database id of the user.
-     * @param measurementTypesFlow Global catalog (typically newest config) used for ordering/enabled state.
+     * Returns an enriched flow for a user combining raw measurements with the global
+     * type catalogue. Includes historical trend/difference data and future projections.
      */
     fun enrichedFlowForUser(
         userId: Int,
-        measurementTypesFlow: Flow<List<MeasurementType>>
+        measurementTypesFlow: Flow<List<MeasurementType>>,
     ): Flow<List<EnrichedMeasurement>> {
         val base = query.getMeasurementsForUser(userId)
-
         return combine(base, measurementTypesFlow) { measurements, types ->
-            if (measurements.isEmpty()) {
-                return@combine emptyList()
-            }
+            if (measurements.isEmpty()) return@combine emptyList()
 
             val differenceValues = enricher.enrichWithDifferences(measurements, types)
-            val projectedValues = enricher.enrichWithProjection(measurements, types)
+            val projectedValues  = enricher.enrichWithProjection(measurements, types)
 
-            measurements.mapIndexed { index, currentMeasurement ->
+            measurements.mapIndexed { index, current ->
                 val trendsForCurrent = differenceValues.filter {
-                    it.currentValue.value.measurementId == currentMeasurement.measurement.id
+                    it.currentValue.value.measurementId == current.measurement.id
                 }
-
-                // Projections belong to the newest measurement only (index == 0),
-                // as they are calculated from the last known real data point.
                 val projectedForCurrent = if (index == 0) projectedValues else emptyList()
-
                 EnrichedMeasurement(
-                    measurementWithValues = currentMeasurement,
-                    valuesWithTrend = trendsForCurrent,
-                    measurementWithValuesProjected = projectedForCurrent
+                    measurementWithValues          = current,
+                    valuesWithTrend                = trendsForCurrent,
+                    measurementWithValuesProjected = projectedForCurrent,
                 )
             }
         }
     }
 
-    /**
-    * Returns a time-filtered enriched flow based on start and end timestamps.
-    *
-    * @param userId Database id of the user.
-    * @param measurementTypesFlow Global type catalog.
-    * @param startTimeMillis The start of the time range (inclusive), or null for no start bound.
-    * @param endTimeMillis The end of the time range (inclusive), or null for no end bound.
-    */
+    // -------------------------------------------------------------------------
+    // Time-filtered enriched flow (no aggregation, used internally)
+    // -------------------------------------------------------------------------
+
     fun timeFilteredEnrichedFlow(
         userId: Int,
         measurementTypesFlow: Flow<List<MeasurementType>>,
         startTimeMillis: Long?,
-        endTimeMillis: Long?
-    ): Flow<List<EnrichedMeasurement>> {
-        val enriched = enrichedFlowForUser(userId, measurementTypesFlow)
-        return filter.getTimeFiltered(enriched, startTimeMillis, endTimeMillis)
-    }
+        endTimeMillis: Long?,
+    ): Flow<List<EnrichedMeasurement>> =
+        filter.getTimeFiltered(
+            enrichedFlowForUser(userId, measurementTypesFlow),
+            startTimeMillis,
+            endTimeMillis,
+        )
+
+    // -------------------------------------------------------------------------
+    // Full pipeline: query → enrich → filter → smooth → aggregate
+    // -------------------------------------------------------------------------
 
     /**
-     * Filters a list of enriched measurements to those that contain at least one of the given types.
-     */
-    fun filterByTypes(
-        measurements: List<EnrichedMeasurement>,
-        selectedTypeIds: Set<Int>
-    ): List<EnrichedMeasurement> = filter.filterByTypes(measurements, selectedTypeIds)
-
-
-    /**
-     * Full pipeline: query + enrich + time filter + (optional) smoothing for selected types.
+     * Full pipeline returning [AggregatedMeasurement] entries ready for UI consumption.
      *
-     * This orchestrates the entire data flow for the charts, including robust smoothing that
-     * handles irregular time intervals by splitting the data into blocks.
+     * Aggregation is the final step, applied after smoothing.
+     * When [aggregationLevelFlow] emits [AggregationLevel.NONE] every measurement is
+     * wrapped individually ([AggregatedMeasurement.aggregatedFromCount] == 1).
      *
-     * @param userId Database id of the user.
-     * @param measurementTypesFlow Global type catalog.
-     * @param startTimeMillisFlow Flow emitting the start timestamp for filtering, or null for no start bound.
-     * @param endTimeMillisFlow Flow emitting the end timestamp for filtering, or null for no end bound.
-     * @param typesToSmoothFlow Set of type ids to smooth.
-     * @param algorithmFlow Selected smoothing algorithm.
-     * @param alphaFlow Alpha for exponential smoothing (0..1).
-     * @param windowFlow Window for SMA (≥1).
-     * @param maxGapDaysFlow The maximum number of days between measurements before smoothing is reset.
+     * @param userId                Database id of the user.
+     * @param measurementTypesFlow  Global type catalogue.
+     * @param startTimeMillisFlow   Start of the time range (inclusive), null = no bound.
+     * @param endTimeMillisFlow     End of the time range (exclusive), null = no bound.
+     * @param typesToSmoothFlow     Type ids to apply smoothing to.
+     * @param algorithmFlow         Selected smoothing algorithm.
+     * @param alphaFlow             Alpha for exponential smoothing (0..1).
+     * @param windowFlow            Window size for SMA (≥ 1).
+     * @param maxGapDaysFlow        Max days between measurements before smoothing resets.
+     * @param aggregationLevelFlow  Desired aggregation granularity (default: NONE).
      */
     fun pipeline(
         userId: Int,
@@ -162,100 +160,80 @@ class MeasurementFacade @Inject constructor(
         algorithmFlow: Flow<SmoothingAlgorithm>,
         alphaFlow: Flow<Float>,
         windowFlow: Flow<Int>,
-        maxGapDaysFlow: Flow<Int>
-    ): Flow<List<EnrichedMeasurement>> {
+        maxGapDaysFlow: Flow<Int>,
+        aggregationLevelFlow: Flow<AggregationLevel> = flowOf(AggregationLevel.NONE),
+    ): Flow<List<AggregatedMeasurement>> {
         val enriched = enrichedFlowForUser(userId, measurementTypesFlow)
 
         @OptIn(ExperimentalCoroutinesApi::class)
         val timeFiltered: Flow<List<EnrichedMeasurement>> =
-            combine(
-                enriched,
-                startTimeMillisFlow,
-                endTimeMillisFlow
-            ) { list, startTime, endTime ->
-                filter.getTimeFiltered(flowOf(list), startTime, endTime)
+            combine(enriched, startTimeMillisFlow, endTimeMillisFlow) { list, startMs, endMs ->
+                filter.getTimeFiltered(flowOf(list), startMs, endMs)
             }.flatMapLatest { it }
 
+        // 1. Aggregate first — smoothing then operates on fewer, more meaningful points
+        val aggregated: Flow<List<AggregatedMeasurement>> =
+            combine(timeFiltered, aggregationLevelFlow) { list, level ->
+                aggregation.aggregate(list, level)
+            }
+
+        // 2. Smooth after aggregation
         return smooth.applySmoothing(
-            baseEnrichedFlow = timeFiltered,
-            typesToSmoothFlow = typesToSmoothFlow,
-            measurementTypesFlow = measurementTypesFlow,
-            algorithmFlow = algorithmFlow,
-            alphaFlow = alphaFlow,
-            windowFlow = windowFlow,
-            maxGapDaysFlow = maxGapDaysFlow
+            baseAggregatedFlow = aggregated,
+            typesToSmoothFlow  = typesToSmoothFlow,
+            algorithmFlow      = algorithmFlow,
+            alphaFlow          = alphaFlow,
+            windowFlow         = windowFlow,
+            maxGapDaysFlow     = maxGapDaysFlow,
         )
     }
 
-    /**
-     * Saves (insert/update) a measurement with its values.
-     *
-     * @return Result of the operation with the final measurement id on success.
-     */
-    suspend fun saveMeasurement(
-        measurement: Measurement,
-        values: List<MeasurementValue>
-    ) = crud.saveMeasurement(measurement, values)
+    // -------------------------------------------------------------------------
+    // Convenience wrapper (used by callers that already have a list)
+    // -------------------------------------------------------------------------
 
-    /**
-     * Saves a measurement from a BLE device, with special handling for assisted weighing.
-     *
-     * If a `pendingReferenceUser` (e.g., a person or known reference weight) is set,
-     * calculates the target's weight (e.g., a pet or infant) by subtracting the
-     * `pendingReferenceUser`'s last known weight from the total weight received.
-     * It then saves only this calculated difference as the target's weight.
-     * The `typeId` for the saved weight is `MeasurementTypeKey.WEIGHT.id` and the
-     * value is stored directly in `floatValue` of a new [MeasurementValue].
-     *
-     * If no `pendingReferenceUser` is set, saves the [measurement] and [values] as is.
-     *
-     * @param measurement The [Measurement] object (for the target entity in assisted mode).
-     * @param values The list of [MeasurementValue] objects from the BLE device
-     *               (representing total weight in assisted mode).
-     */
+    fun aggregateList(
+        measurements: List<EnrichedMeasurement>,
+        level: AggregationLevel,
+    ): List<AggregatedMeasurement> = aggregation.aggregate(measurements, level)
+
+    // -------------------------------------------------------------------------
+    // BLE
+    // -------------------------------------------------------------------------
+
     suspend fun saveMeasurementFromBleDevice(
         measurement: Measurement,
-        values: List<MeasurementValue>
+        values: List<MeasurementValue>,
     ) {
-        val currentReferenceUser = pendingReferenceUser
-
-        if (currentReferenceUser != null) {
-            val finalValues = transformation.applyAssistedWeighing(measurement, values, currentReferenceUser)
-
+        val ref = pendingReferenceUser
+        if (ref != null) {
+            val finalValues = transformation.applyAssistedWeighing(measurement, values, ref)
             crud.saveMeasurement(measurement, finalValues)
         } else {
             val finalMeasurement = transformation.applySmartUserAssignment(measurement, values)
-
-            if (finalMeasurement != null) {
-                crud.saveMeasurement(finalMeasurement, values)
-            }
+            if (finalMeasurement != null) crud.saveMeasurement(finalMeasurement, values)
         }
     }
 
-    /**
-     * Deletes a measurement.
-     */
-    suspend fun deleteMeasurement(
-        measurement: Measurement
-    ) = crud.deleteMeasurement(measurement)
+    fun setPendingReferenceUserForBle(referenceUser: User?) {
+        pendingReferenceUser = referenceUser
+    }
 
-    /**
-     * Finds the closest item to a timestamp (prefers same-day matches).
-     */
-    fun findClosestMeasurement(
-        selectedTimestamp: Long,
-        items: List<MeasurementWithValues>
-    ) = query.findClosestMeasurement(selectedTimestamp, items)
+    // -------------------------------------------------------------------------
+    // CRUD delegates
+    // -------------------------------------------------------------------------
 
-    fun evaluate(
-        type: MeasurementType,
-        value: Float,
-        userEvaluationContext: UserEvaluationContext,
-        measuredAtMillis: Long
-    ) = evaluationUseCases.evaluate(type, value, userEvaluationContext, measuredAtMillis)
+    suspend fun saveMeasurement(
+        measurement: Measurement,
+        values: List<MeasurementValue>,
+    ) = crud.saveMeasurement(measurement, values)
 
-    fun plausiblePercentRangeFor(typeKey: MeasurementTypeKey) =
-        evaluationUseCases.plausiblePercentRangeFor(typeKey)
+    suspend fun deleteMeasurement(measurement: Measurement) =
+        crud.deleteMeasurement(measurement)
+
+    // -------------------------------------------------------------------------
+    // Measurement types
+    // -------------------------------------------------------------------------
 
     fun getAllMeasurementTypes(): Flow<List<MeasurementType>> =
         query.getAllMeasurementTypes()
@@ -263,58 +241,46 @@ class MeasurementFacade @Inject constructor(
     fun getMeasurementWithValuesById(id: Int): Flow<MeasurementWithValues?> =
         query.getMeasurementWithValuesById(id)
 
-    /**
-     * Sets or clears the pending reference user for the next BLE measurement
-     * that might require assisted weighing.
-     * Call with a User object to set, or null to clear.
-     *
-     * @param referenceUser The user selected as the reference, or null to clear the context.
-     */
-    fun setPendingReferenceUserForBle(referenceUser: User?) {
-        pendingReferenceUser = referenceUser
-    }
-
-    /**
-     * Create a new measurement type.
-     * Delegates to [MeasurementTypeCrudUseCases.add].
-     *
-     * @return [Result] with the newly inserted type id.
-     */
     suspend fun addMeasurementType(type: MeasurementType): Result<Long> =
         typeCrud.add(type)
 
-    /**
-     * Update a measurement type without touching existing values.
-     * Delegates to [MeasurementTypeCrudUseCases.update].
-     */
     suspend fun updateMeasurementType(type: MeasurementType): Result<Unit> =
         typeCrud.update(type)
 
-    /**
-     * Delete a measurement type. Caller must ensure cascading semantics are OK.
-     * Delegates to [MeasurementTypeCrudUseCases.delete].
-     */
     suspend fun deleteMeasurementType(type: MeasurementType): Result<Unit> =
         typeCrud.delete(type)
 
-    /**
-     * Update a type and convert existing values if the unit changed.
-     * Delegates to [MeasurementTypeCrudUseCases.updateTypeAndConvertValues].
-     *
-     * @param original The persisted type before edits (required for unit-change detection).
-     * @param updated  The edited type to persist.
-     * @return [Result] with a [UnitConversionReport] for concise UI messaging.
-     */
     suspend fun updateTypeWithUnitConversion(
         original: MeasurementType,
-        updated: MeasurementType
+        updated: MeasurementType,
     ): Result<MeasurementTypeCrudUseCases.UnitConversionReport> =
         typeCrud.updateTypeAndConvertValues(original, updated)
-}
 
-/**
- * Flattens a Flow<Flow<T>> by always collecting only the latest inner flow.
- */
-@OptIn(ExperimentalCoroutinesApi::class)
-private fun <T> Flow<Flow<T>>.flattenLatest(): Flow<T> =
-    this.flatMapLatest { inner -> inner }
+    // -------------------------------------------------------------------------
+    // Evaluation / plausibility
+    // -------------------------------------------------------------------------
+
+    fun evaluate(
+        type: MeasurementType,
+        value: Float,
+        userEvaluationContext: UserEvaluationContext,
+        measuredAtMillis: Long,
+    ) = evaluationUseCases.evaluate(type, value, userEvaluationContext, measuredAtMillis)
+
+    fun plausiblePercentRangeFor(typeKey: MeasurementTypeKey) =
+        evaluationUseCases.plausiblePercentRangeFor(typeKey)
+
+    // -------------------------------------------------------------------------
+    // Selection helper
+    // -------------------------------------------------------------------------
+
+    fun findClosestMeasurement(
+        selectedTimestamp: Long,
+        items: List<MeasurementWithValues>,
+    ) = query.findClosestMeasurement(selectedTimestamp, items)
+
+    fun filterByTypes(
+        measurements: List<EnrichedMeasurement>,
+        selectedTypeIds: Set<Int>,
+    ): List<EnrichedMeasurement> = filter.filterByTypes(measurements, selectedTypeIds)
+}

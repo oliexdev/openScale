@@ -27,12 +27,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.health.openscale.R
+import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.TimeRangeFilter
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.ui.shared.SharedViewModel
 import java.util.Date
 
 internal const val TIME_RANGE_SUFFIX = "_time_range"
+internal const val AGGREGATION_LEVEL_SUFFIX = "_aggregation_level"
 internal const val CUSTOM_START_DATE_MILLIS_SUFFIX = "_custom_start_date_millis"
 internal const val CUSTOM_END_DATE_MILLIS_SUFFIX = "_custom_end_date_millis"
 internal const val SELECTED_TYPES_SUFFIX = "_selected_types"
@@ -93,6 +95,24 @@ internal fun rememberResolvedTimeRangeState(
                 }
                 Triple(activeTimeRange, start, end)
             }
+        )
+    }
+}
+
+@Composable
+internal fun rememberResolvedAggregationLevel(
+    screenContextName: String,
+    sharedViewModel: SharedViewModel,
+    defaultLevel: AggregationLevel = AggregationLevel.NONE
+): State<AggregationLevel> {
+    val key = remember(screenContextName) { "${screenContextName}${AGGREGATION_LEVEL_SUFFIX}" }
+    val persisted by sharedViewModel
+        .observeSetting(key, defaultLevel.name)
+        .collectAsState(initial = defaultLevel.name)
+
+    return remember(persisted) {
+        mutableStateOf(
+            AggregationLevel.entries.find { it.name == persisted } ?: defaultLevel
         )
     }
 }

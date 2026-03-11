@@ -41,6 +41,8 @@
     <string name="route_title_table">Tabelle</string>
     <string name="route_title_statistics">Statistiken</string>
     <string name="route_title_settings">Einstellungen</string>
+    <string name="route_title_table_drilldown">Details</string>
+    <string name="calendar_week_abbrev">KW</string>
     <string name="title_new_measurement">Neue Messung</string>
     <string name="title_edit_measurement">Messung bearbeiten</string>
     <string name="about_screen_title">Über</string>
@@ -422,6 +424,14 @@
     <string name="time_range_last_365_days">Letzte 365 Tage</string>
     <string name="time_range_custom">Benutzerdefinierte Tage</string>
     <string name="time_range_custom_from_to">Von %1$s bis %2$s</string>
+    <string name="filter_section_time_range">Zeitraum</string>
+    <string name="filter_section_aggregation">Aggregation</string>
+    <string name="content_description_aggregation_selected">%1$s ausgewählt</string>
+    <string name="aggregation_level_none">Keine Aggregation</string>
+    <string name="aggregation_level_day">Tag</string>
+    <string name="aggregation_level_week">Woche</string>
+    <string name="aggregation_level_month">Monat</string>
+    <string name="aggregation_level_year">Jahr</string>
     <string name="line_chart_no_plottable_types">Keine darstellbaren Diagrammtypen verfügbar.</string>
     <string name="line_chart_no_data_to_display">Keine Daten zum Anzeigen.</string>
     <string name="line_chart_no_data_for_type_in_range">Keine Daten für %1$s im ausgewählten Bereich.</string>

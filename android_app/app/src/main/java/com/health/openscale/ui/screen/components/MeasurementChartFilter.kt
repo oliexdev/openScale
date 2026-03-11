@@ -31,6 +31,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDateRangePickerState
@@ -47,6 +48,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
+import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.TimeRangeFilter
 import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.core.model.MeasurementWithValues
@@ -64,7 +66,8 @@ import java.util.Locale
 
 /**
  * Provides a [TopBarAction] for filtering the line chart.
- * Includes time range selection and toggling the measurement type filter row.
+ * Includes time range selection, aggregation level selection,
+ * and toggling the measurement type filter row.
  *
  * @param sharedViewModel The [SharedViewModel] to access settings.
  * @param screenContextName The context name to scope the filter settings. If null, no action is provided.
@@ -79,15 +82,30 @@ fun provideFilterTopBarAction(
     if (screenContextName == null) return null
 
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
+    // --- Time range state ---
     val targetTimeRangeKeyName = "${screenContextName}${TIME_RANGE_SUFFIX}"
     val currentPersistedTimeRangeName by sharedViewModel
         .observeSetting(targetTimeRangeKeyName, TimeRangeFilter.ALL_DAYS.name)
         .collectAsState(initial = TimeRangeFilter.ALL_DAYS.name)
     val activeTimeRange = remember(currentPersistedTimeRangeName) {
-        TimeRangeFilter.entries.find { it.name == currentPersistedTimeRangeName } ?: TimeRangeFilter.ALL_DAYS
+        TimeRangeFilter.entries.find { it.name == currentPersistedTimeRangeName }
+            ?: TimeRangeFilter.ALL_DAYS
     }
 
+    // --- Aggregation level state ---
+    // Only shown for Graph, Table, and Statistics screens
+    val showAggregation = screenContextName in listOf(
+        SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
+        SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT,
+        SettingsPreferenceKeys.TABLE_SCREEN_CONTEXT
+    )
+    val activeAggregationLevel by sharedViewModel
+        .observeAggregationLevel(screenContextName)
+        .collectAsState(initial = AggregationLevel.NONE)
+
+    // --- Type filter row state ---
     val targetShowFilterRowKeyName = "${screenContextName}${SHOW_TYPE_FILTER_ROW_SUFFIX}"
     val currentShowFilterRowSetting by sharedViewModel
         .observeSetting(targetShowFilterRowKeyName, true)
@@ -108,9 +126,18 @@ fun provideFilterTopBarAction(
                         val endMillis = dateRangePickerState.selectedEndDateMillis
                         if (startMillis != null && endMillis != null) {
                             scope.launch {
-                                sharedViewModel.saveSetting("${screenContextName}${CUSTOM_START_DATE_MILLIS_SUFFIX}", startMillis)
-                                sharedViewModel.saveSetting("${screenContextName}${CUSTOM_END_DATE_MILLIS_SUFFIX}", endMillis)
-                                sharedViewModel.saveSetting(targetTimeRangeKeyName, TimeRangeFilter.CUSTOM.name)
+                                sharedViewModel.saveSetting(
+                                    "${screenContextName}${CUSTOM_START_DATE_MILLIS_SUFFIX}",
+                                    startMillis
+                                )
+                                sharedViewModel.saveSetting(
+                                    "${screenContextName}${CUSTOM_END_DATE_MILLIS_SUFFIX}",
+                                    endMillis
+                                )
+                                sharedViewModel.saveSetting(
+                                    targetTimeRangeKeyName,
+                                    TimeRangeFilter.CUSTOM.name
+                                )
                             }
                         }
                     },
@@ -131,16 +158,24 @@ fun provideFilterTopBarAction(
         onClick = { showMenuState = !showMenuState }
     ) {
         DropdownMenu(expanded = showMenuState, onDismissRequest = { showMenuState = false }) {
+
+            // --- Section 1: Time range ---
+            Text(
+                text = stringResource(R.string.filter_section_time_range),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
             TimeRangeFilter.entries.forEach { timeRange ->
                 DropdownMenuItem(
-                    text = { Text(timeRange.getDisplayName(LocalContext.current)) },
+                    text = { Text(timeRange.getDisplayName(context)) },
                     leadingIcon = {
                         if (activeTimeRange == timeRange) {
                             Icon(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = stringResource(
                                     R.string.content_description_time_range_selected,
-                                    timeRange.getDisplayName(LocalContext.current)
+                                    timeRange.getDisplayName(context)
                                 )
                             )
                         } else {
@@ -152,25 +187,74 @@ fun provideFilterTopBarAction(
                         if (timeRange == TimeRangeFilter.CUSTOM) {
                             showDateRangePicker = true
                         } else {
-                            scope.launch { sharedViewModel.saveSetting(targetTimeRangeKeyName, timeRange.name) }
+                            scope.launch {
+                                sharedViewModel.saveSetting(targetTimeRangeKeyName, timeRange.name)
+                            }
                         }
                     }
                 )
             }
 
+            // --- Section 2: Aggregation (only for Graph, Table, Statistics) ---
+            if (showAggregation) {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                Text(
+                    text = stringResource(R.string.filter_section_aggregation),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                )
+                AggregationLevel.entries.forEach { level ->
+                    DropdownMenuItem(
+                        text = { Text(level.getDisplayName(context)) },
+                        leadingIcon = {
+                            if (activeAggregationLevel == level) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = stringResource(
+                                        R.string.content_description_aggregation_selected,
+                                        level.getDisplayName(context)
+                                    )
+                                )
+                            } else {
+                                Spacer(Modifier.size(24.dp))
+                            }
+                        },
+                        onClick = {
+                            showMenuState = false
+                            scope.launch {
+                                sharedViewModel.saveAggregationLevel(screenContextName, level)
+                            }
+                        }
+                    )
+                }
+            }
+
+            // --- Section 3: Type filter row toggle (not for Statistics) ---
             if (screenContextName != SettingsPreferenceKeys.STATISTICS_SCREEN_CONTEXT) {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.menu_item_measurement_filter)) },
                     leadingIcon = {
                         if (currentShowFilterRowSetting) {
-                            Icon(Icons.Default.Check, contentDescription = stringResource(R.string.content_description_measurement_filter_visible))
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = stringResource(R.string.content_description_measurement_filter_visible)
+                            )
                         } else {
-                            Icon(Icons.Filled.CheckBoxOutlineBlank, contentDescription = stringResource(R.string.content_description_measurement_filter_hidden))
+                            Icon(
+                                Icons.Filled.CheckBoxOutlineBlank,
+                                contentDescription = stringResource(R.string.content_description_measurement_filter_hidden)
+                            )
                         }
                     },
                     onClick = {
-                        scope.launch { sharedViewModel.saveSetting(targetShowFilterRowKeyName, !currentShowFilterRowSetting) }
+                        scope.launch {
+                            sharedViewModel.saveSetting(
+                                targetShowFilterRowKeyName,
+                                !currentShowFilterRowSetting
+                            )
+                        }
                         showMenuState = false
                     }
                 )
@@ -243,7 +327,8 @@ internal fun rememberPeriodChartData(
         }
 
         val grouped = measurementsForPeriodChart.groupBy { mwv ->
-            val date = Instant.ofEpochMilli(mwv.measurement.timestamp).atZone(ZoneId.systemDefault()).toLocalDate()
+            val date = Instant.ofEpochMilli(mwv.measurement.timestamp)
+                .atZone(ZoneId.systemDefault()).toLocalDate()
             when (groupingUnit) {
                 ChronoUnit.DAYS   -> date
                 ChronoUnit.WEEKS  -> date.with(DayOfWeek.MONDAY)

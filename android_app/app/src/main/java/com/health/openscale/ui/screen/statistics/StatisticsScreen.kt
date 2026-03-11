@@ -53,6 +53,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
@@ -61,29 +62,18 @@ import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.components.RoundMeasurementIcon
-import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.components.MeasurementChart
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
 import com.health.openscale.ui.screen.components.rememberAddMeasurementActionButton
 import com.health.openscale.ui.screen.components.rememberBluetoothActionButton
-import com.health.openscale.ui.screen.components.rememberResolvedTimeRangeState
 import com.health.openscale.ui.screen.settings.BluetoothViewModel
+import com.health.openscale.ui.shared.SharedViewModel
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import kotlin.collections.mapNotNull
 
 /**
  * Data class to hold calculated statistics for a specific measurement type.
- *
- * @property minValue The minimum value recorded for the measurement type in the selected time range.
- * @property maxValue The maximum value recorded.
- * @property averageValue The average value.
- * @property firstValue The first recorded value in the time range.
- * @property firstValueDate The date of the first recorded value.
- * @property lastValue The last recorded value in the time range.
- * @property lastValueDate The date of the last recorded value.
- * @property difference The difference between the last and first value.
  */
 data class MeasurementStatistics(
     val minValue: Float?,
@@ -93,59 +83,45 @@ data class MeasurementStatistics(
     val firstValueDate: LocalDate?,
     val lastValue: Float?,
     val lastValueDate: LocalDate?,
-    val difference: Float?
+    val difference: Float?,
 )
 
-/**
- * Composable screen that displays statistics for various enabled measurement types.
- *
- * This screen fetches time-filtered measurement data from the [SharedViewModel],
- * calculates statistics for each relevant measurement type, and displays them
- * in individual [StatisticCard] composables. It also provides a filter action
- * in the top bar to change the time range for the statistics.
- *
- * @param sharedViewModel The ViewModel shared across screens, providing measurement data,
- *                        measurement types, and handling top bar configuration.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatisticsScreen(
     navController: NavController,
     sharedViewModel: SharedViewModel,
-    bluetoothViewModel: BluetoothViewModel
+    bluetoothViewModel: BluetoothViewModel,
 ) {
-
-    val timeRangeState by rememberResolvedTimeRangeState(
-        screenContextName = SettingsPreferenceKeys.STATISTICS_SCREEN_CONTEXT,
-        sharedViewModel = sharedViewModel
-    )
-
-    val (uiSelectedTimeRange, startTimeMillis, endTimeMillis) = timeRangeState
-
-    val statsUiState by remember(startTimeMillis, endTimeMillis) {
-        sharedViewModel.statisticsUiState(startTimeMillis, endTimeMillis)
-    }.collectAsState(initial = SharedViewModel.UiState.Loading)
-
     val allTypes by sharedViewModel.measurementTypes.collectAsState()
 
-    val bluetoothAction = rememberBluetoothActionButton(bluetoothViewModel, sharedViewModel, navController)
+    // screenFlow is cached — no second pipeline is built even though MeasurementChart
+    // calls the same flow internally for each StatisticCard.
+    val statsUiState by sharedViewModel
+        .screenFlow(SettingsPreferenceKeys.STATISTICS_SCREEN_CONTEXT)
+        .collectAsStateWithLifecycle(initialValue = SharedViewModel.UiState.Loading)
+
+    val bluetoothAction      = rememberBluetoothActionButton(bluetoothViewModel, sharedViewModel, navController)
     val addMeasurementAction = rememberAddMeasurementActionButton(sharedViewModel, navController)
-
-    val filterAction = provideFilterTopBarAction(
-        sharedViewModel = sharedViewModel,
-        screenContextName = SettingsPreferenceKeys.STATISTICS_SCREEN_CONTEXT
+    val filterAction         = provideFilterTopBarAction(
+        sharedViewModel   = sharedViewModel,
+        screenContextName = SettingsPreferenceKeys.STATISTICS_SCREEN_CONTEXT,
     )
-    val title = stringResource(R.string.route_title_statistics)
-    val noRelevantTypesMsg = stringResource(R.string.statistics_no_relevant_types)
-    val noDataMsg = stringResource(R.string.no_data_available)
+    val title               = stringResource(R.string.route_title_statistics)
+    val noRelevantTypesMsg  = stringResource(R.string.statistics_no_relevant_types)
+    val noDataMsg           = stringResource(R.string.no_data_available)
 
-    LaunchedEffect(filterAction, title) {
+    // Use Unit as key — filterAction is recreated on every recomposition
+    LaunchedEffect(Unit) {
         sharedViewModel.setTopBarTitle(title)
         sharedViewModel.setTopBarActions(listOfNotNull(bluetoothAction, addMeasurementAction, filterAction))
     }
 
     val relevantTypes = remember(allTypes) {
-        allTypes.filter { it.isEnabled && (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) }
+        allTypes.filter {
+            it.isEnabled &&
+                    (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT)
+        }
     }
 
     Column(Modifier.fillMaxSize()) {
@@ -157,13 +133,20 @@ fun StatisticsScreen(
             }
             is SharedViewModel.UiState.Error -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(state.message ?: stringResource(R.string.error_loading_data), textAlign = TextAlign.Center)
+                    Text(
+                        text      = state.message ?: stringResource(R.string.error_loading_data),
+                        textAlign = TextAlign.Center,
+                    )
                 }
             }
             is SharedViewModel.UiState.Success -> {
-                val data = state.data
+                // Unpack AggregatedMeasurement → EnrichedMeasurement for stats calculation.
+                // Statistics always operate on the raw enriched values, never on averages.
+                val enrichedData: List<EnrichedMeasurement> = remember(state.data) {
+                    state.data.map { it.enriched }
+                }
 
-                if (data.isEmpty()) {
+                if (enrichedData.isEmpty()) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(noDataMsg, textAlign = TextAlign.Center)
                     }
@@ -180,11 +163,11 @@ fun StatisticsScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 8.dp, vertical = 8.dp)
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
                 ) {
                     items(relevantTypes, key = { it.id }) { type ->
-                        val measurementsForType = remember(data, type) {
-                            data.filter { em ->
+                        val measurementsForType = remember(enrichedData, type) {
+                            enrichedData.filter { em ->
                                 em.measurementWithValues.values.any { it.type.id == type.id }
                             }
                         }
@@ -193,10 +176,10 @@ fun StatisticsScreen(
                                 calculateStatisticsForType(measurementsForType, type)
                             }
                             StatisticCard(
-                                sharedViewModel = sharedViewModel,
-                                measurementType = type,
-                                statistics = stats,
-                                screenContextForChart = SettingsPreferenceKeys.STATISTICS_SCREEN_CONTEXT
+                                sharedViewModel       = sharedViewModel,
+                                measurementType       = type,
+                                statistics            = stats,
+                                screenContextForChart = SettingsPreferenceKeys.STATISTICS_SCREEN_CONTEXT,
                             )
                         }
                     }
@@ -207,104 +190,53 @@ fun StatisticsScreen(
 }
 
 /**
- * Calculates statistics for a given list of enriched measurements and a target measurement type.
- *
- * It extracts numeric values for the target type, sorts them by time, and then
- * computes min, max, average, first value, last value, and the difference between
- * the first and last values.
- *
- * @param enrichedMeasurements The list of [EnrichedMeasurement] objects to process.
- * @param targetType The [MeasurementType] for which to calculate statistics.
- * @return [MeasurementStatistics] containing the calculated values.
+ * Calculates statistics for a given list of enriched measurements and a target type.
+ * This function is unchanged — it already works on [EnrichedMeasurement].
  */
 fun calculateStatisticsForType(
     enrichedMeasurements: List<EnrichedMeasurement>,
-    targetType: MeasurementType
+    targetType: MeasurementType,
 ): MeasurementStatistics {
-    // Map enriched measurements to pairs of (value, timestamp) for the target type.
-    val relevantValuesWithTime: List<Pair<Float, Long>> = enrichedMeasurements.mapNotNull { enrichedMeasurement ->
-        val measurementTimestamp = enrichedMeasurement.measurementWithValues.measurement.timestamp
-
-        // Find the MeasurementValue object for the targetType.
-        val measurementValueObject = enrichedMeasurement.measurementWithValues.values.find { it.type.id == targetType.id }
-
-        if (measurementValueObject == null) {
-            return@mapNotNull null
-        }
-
-        // Extract the numerical value from the MeasurementValue object.
+    val relevantValuesWithTime: List<Pair<Float, Long>> = enrichedMeasurements.mapNotNull { em ->
+        val ts  = em.measurementWithValues.measurement.timestamp
+        val mvo = em.measurementWithValues.values.find { it.type.id == targetType.id }
+            ?: return@mapNotNull null
         val floatValue: Float? = when (targetType.inputType) {
-            InputFieldType.FLOAT -> measurementValueObject.value.floatValue
-            InputFieldType.INT -> measurementValueObject.value.intValue?.toFloat()
-            else -> null // Other types are not considered for these statistics.
+            InputFieldType.FLOAT -> mvo.value.floatValue
+            InputFieldType.INT   -> mvo.value.intValue?.toFloat()
+            else                 -> null
         }
-
-        if (floatValue != null) {
-            Pair(floatValue, measurementTimestamp)
-        } else {
-            null
-        }
-    }.sortedBy { it.second } // Sort by timestamp.
+        floatValue?.let { it to ts }
+    }.sortedBy { it.second }
 
     if (relevantValuesWithTime.isEmpty()) {
         return MeasurementStatistics(null, null, null, null, null, null, null, null)
     }
 
     val floatValuesOnly = relevantValuesWithTime.map { it.first }
-
-    val minValue = floatValuesOnly.minOrNull()
-    val maxValue = floatValuesOnly.maxOrNull()
-    val averageValue = if (floatValuesOnly.isNotEmpty()) floatValuesOnly.average().toFloat() else null
-
-    val firstEntry = relevantValuesWithTime.firstOrNull()
-    val lastEntry = relevantValuesWithTime.lastOrNull()
-
-    val firstValue = firstEntry?.first
-    val firstValueDate = firstEntry?.second?.let {
-        Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
-    }
-
-    val lastValue = lastEntry?.first
-    val lastValueDate = lastEntry?.second?.let {
-        Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
-    }
-
-    val difference = if (firstValue != null && lastValue != null) {
-        lastValue - firstValue
-    } else {
-        null
-    }
+    val firstEntry      = relevantValuesWithTime.first()
+    val lastEntry       = relevantValuesWithTime.last()
 
     return MeasurementStatistics(
-        minValue = minValue,
-        maxValue = maxValue,
-        averageValue = averageValue,
-        firstValue = firstValue,
-        firstValueDate = firstValueDate,
-        lastValue = lastValue,
-        lastValueDate = lastValueDate,
-        difference = difference
+        minValue       = floatValuesOnly.minOrNull(),
+        maxValue       = floatValuesOnly.maxOrNull(),
+        averageValue   = floatValuesOnly.average().toFloat(),
+        firstValue     = firstEntry.first,
+        firstValueDate = Instant.ofEpochMilli(firstEntry.second)
+            .atZone(ZoneId.systemDefault()).toLocalDate(),
+        lastValue      = lastEntry.first,
+        lastValueDate  = Instant.ofEpochMilli(lastEntry.second)
+            .atZone(ZoneId.systemDefault()).toLocalDate(),
+        difference     = lastEntry.first - firstEntry.first,
     )
 }
 
-/**
- * Composable that displays a card with statistics for a single measurement type.
- *
- * The card includes the measurement type's name and icon, min/max/average values,
- * a line chart showing the trend, and the first value, last value, and the
- * difference between them.
- *
- * @param sharedViewModel The [SharedViewModel] instance.
- * @param measurementType The [MeasurementType] for which statistics are displayed.
- * @param statistics The calculated [MeasurementStatistics] for this type.
- * @param screenContextForChart A context name string used for the embedded [MeasurementChart].
- */
 @Composable
 fun StatisticCard(
     sharedViewModel: SharedViewModel,
     measurementType: MeasurementType,
     statistics: MeasurementStatistics,
-    screenContextForChart: String
+    screenContextForChart: String,
 ) {
     val unit = remember(measurementType.unit) { measurementType.unit }
 
@@ -314,45 +246,40 @@ fun StatisticCard(
     fun fmtDiff(value: Float?, default: String = "-"): String =
         value?.let { LocaleUtils.formatValueForDisplay(it.toString(), unit, includeSign = true) } ?: default
 
-    val contentDescIncrease = stringResource(id = R.string.statistics_content_desc_increase)
-    val contentDescDecrease = stringResource(id = R.string.statistics_content_desc_decrease)
-    val contentDescNoChange = stringResource(id = R.string.statistics_content_desc_no_change)
-
-    val statMinLabel = stringResource(id = R.string.statistics_label_min)
-    val statMaxLabel = stringResource(id = R.string.statistics_label_max)
-    val statAvgLabel = stringResource(id = R.string.statistics_label_average)
-
+    val contentDescIncrease = stringResource(R.string.statistics_content_desc_increase)
+    val contentDescDecrease = stringResource(R.string.statistics_content_desc_decrease)
+    val contentDescNoChange = stringResource(R.string.statistics_content_desc_no_change)
+    val statMinLabel        = stringResource(R.string.statistics_label_min)
+    val statMaxLabel        = stringResource(R.string.statistics_label_max)
+    val statAvgLabel        = stringResource(R.string.statistics_label_average)
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(vertical = 4.dp),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            // --- TOP ROW: Icon, Name, Min/Max/Avg ---
+            // Icon + Name  /  Min·Max·Avg
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top
+                modifier          = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top,
             ) {
-                // Icon and Name
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
+                    modifier          = Modifier.weight(1f),
                 ) {
                     val iconMeasurementType = remember(measurementType.icon) { measurementType.icon }
-
                     RoundMeasurementIcon(
-                        icon = iconMeasurementType.resource,
+                        icon           = iconMeasurementType.resource,
                         backgroundTint = Color(measurementType.color),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = measurementType.getDisplayName(LocalContext.current),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        text       = measurementType.getDisplayName(LocalContext.current),
+                        style      = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
                     )
                 }
-                // Min/Max/Avg Values
                 Column(horizontalAlignment = Alignment.End) {
                     Text("$statMinLabel: ${fmt(statistics.minValue)}", style = MaterialTheme.typography.bodySmall)
                     Text("$statMaxLabel: ${fmt(statistics.maxValue)}", style = MaterialTheme.typography.bodySmall)
@@ -362,73 +289,62 @@ fun StatisticCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // --- MIDDLE: LineChart ---
+            // Embedded chart — hits the screenFlow cache, no extra pipeline
             MeasurementChart(
-                sharedViewModel = sharedViewModel,
-                screenContextName = screenContextForChart,
-                showFilterControls = false, // Filter controls are global for the screen
+                sharedViewModel         = sharedViewModel,
+                screenContextName       = screenContextForChart,
+                showFilterControls      = false,
                 targetMeasurementTypeId = measurementType.id,
-                showYAxis = false, // Keep it compact
-                showFilterTitle = false,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp) // Fixed height for the chart
+                showYAxis               = false,
+                showFilterTitle         = false,
+                modifier                = Modifier.fillMaxWidth().height(100.dp),
             )
 
-            Spacer(modifier = Modifier.height(16.dp)) // Space after the chart
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // --- BOTTOM ROW: First Value (left), DIFFERENCE (center, optional), Last Value (right) ---
+            // First value / Difference / Last value
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                modifier          = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                // First Value (left aligned)
                 Text(
-                    text = fmt(statistics.firstValue),
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.weight(1f)
+                    text     = fmt(statistics.firstValue),
+                    style    = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.weight(1f),
                 )
 
-                // Difference (center aligned, shown if available)
                 if (statistics.difference != null) {
                     val diffValue = statistics.difference
-                    val diffPrefix = if (diffValue > 0) "+" else "" // Add "+" for positive differences
-
-                    // Determine icon and content description based on the difference value
                     val (diffIcon, description) = when {
-                        diffValue > 0 -> Icons.Filled.ArrowUpward to contentDescIncrease
+                        diffValue > 0 -> Icons.Filled.ArrowUpward  to contentDescIncrease
                         diffValue < 0 -> Icons.Filled.ArrowDownward to contentDescDecrease
-                        else -> Icons.Filled.Remove to contentDescNoChange
+                        else          -> Icons.Filled.Remove        to contentDescNoChange
                     }
-
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                        verticalAlignment     = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.weight(1f)
+                        modifier              = Modifier.weight(1f),
                     ) {
                         Icon(
-                            imageVector = diffIcon,
+                            imageVector        = diffIcon,
                             contentDescription = description,
-                            modifier = Modifier.size(18.dp)
+                            modifier           = Modifier.size(18.dp),
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            // Display difference with sign and unit
-                            text = fmtDiff(diffValue),
+                            text  = fmtDiff(diffValue),
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
                 } else {
-                    // If no difference, occupy the space to maintain layout.
                     Spacer(Modifier.weight(1f))
                 }
 
-                // Last Value (right aligned)
                 Text(
-                    text = fmt(statistics.lastValue),
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.End
+                    text      = fmt(statistics.lastValue),
+                    style     = MaterialTheme.typography.bodySmall,
+                    modifier  = Modifier.weight(1f),
+                    textAlign = TextAlign.End,
                 )
             }
         }
