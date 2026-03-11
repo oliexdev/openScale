@@ -204,16 +204,18 @@ class SharedViewModel @Inject constructor(
      * Currently selected user id.
      * [distinctUntilChanged] prevents unnecessary pipeline restarts when Room emits
      * the same value after an unrelated table update.
+     * Eagerly shared: screenFlow depends on this; a WhileSubscribed gap would cause
+     * a null emission that makes screenFlow return an empty list.
      */
     val selectedUserId: StateFlow<Int?> =
         userFacade.observeSelectedUserId()
             .distinctUntilChanged()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+            .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     val selectedUser: StateFlow<User?> =
         userFacade.observeSelectedUser()
             .distinctUntilChanged()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+            .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     // -------------------------------------------------------------------------
     // User Goals
@@ -327,7 +329,9 @@ class SharedViewModel @Inject constructor(
         screenContextName: String,
         useSmoothing: Boolean = false,
     ): StateFlow<UiState<List<AggregatedMeasurement>>> =
-        screenFlowCache.getOrPut(screenContextName) {
+    // Cache key includes useSmoothing — a smoothed and non-smoothed flow for the
+        // same screen context are distinct pipelines and must not share the same entry.
+        screenFlowCache.getOrPut("$screenContextName#$useSmoothing") {
             buildScreenFlow(screenContextName, useSmoothing)
         }
 
@@ -391,7 +395,13 @@ class SharedViewModel @Inject constructor(
             }
             .stateIn(
                 scope        = viewModelScope,
-                started      = SharingStarted.WhileSubscribed(5_000),
+                // Eagerly: keeps the upstream pipeline alive for the ViewModel's lifetime,
+                // regardless of whether a screen is currently subscribed.
+                // WhileSubscribed(5_000) was the source of two bugs:
+                //   • The time-filter appeared to reset when navigating away and back, because
+                //     the upstream was torn down and restarted with initialValue = Loading.
+                //   • selectedUserId emitting null after the 5 s gap caused an empty-list flash.
+                started      = SharingStarted.Eagerly,
                 initialValue = UiState.Loading,
             )
     }
@@ -426,16 +436,23 @@ class SharedViewModel @Inject constructor(
     // Drill-down flow — raw, non-aggregated, fixed time window
     // -------------------------------------------------------------------------
 
-
+    /**
+     * Cache of drill-down StateFlows keyed by "$startMillis-$endMillis".
+     *
+     * Without caching, every call from a Composable returns a new cold Flow that starts
+     * with UiState.Loading — causing a visible flicker on the very first frame even when
+     * the data is already available in Room. Caching as a StateFlow with Eagerly sharing
+     * means the first emission arrives before the collector is even attached.
+     */
     private val drillDownFlowCache =
         mutableMapOf<String, StateFlow<UiState<List<AggregatedMeasurement>>>>()
 
     /**
-     * Returns a raw (non-aggregated) flow for a fixed time window.
+     * Returns a raw (non-aggregated) [StateFlow] for a fixed time window.
      * Used by drill-down screens that show the individual measurements within a period.
      *
-     * Unlike [screenFlow], this flow is **not cached** — it is short-lived and tied to
-     * a specific navigation destination.
+     * The flow is cached per (startMillis, endMillis) pair so repeated calls from
+     * recompositions or from [resolveSelectedMeasurementIds] are free after the first access.
      *
      * Each [AggregatedMeasurement] in the result has [AggregatedMeasurement.aggregatedFromCount] == 1.
      */
@@ -474,7 +491,7 @@ class SharedViewModel @Inject constructor(
         }
             .stateIn(
                 scope        = viewModelScope,
-                started      = SharingStarted.WhileSubscribed(5_000),
+                started      = SharingStarted.Eagerly,
                 initialValue = UiState.Loading,
             )
 
@@ -482,9 +499,11 @@ class SharedViewModel @Inject constructor(
     // Measurement types
     // -------------------------------------------------------------------------
 
+    // Eagerly shared: the pipeline passes this into MeasurementFacade.pipeline() where it is
+    // combined with the enriched flow. A WhileSubscribed gap would stall the pipeline.
     val measurementTypes: StateFlow<List<MeasurementType>> =
         measurementFacade.getAllMeasurementTypes()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+            .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     // -------------------------------------------------------------------------
     // Current measurement (detail screen)
@@ -631,7 +650,6 @@ class SharedViewModel @Inject constructor(
             }
         }
     }
-
 
     // -------------------------------------------------------------------------
     // Init — restore last selected user, then optionally backfill derived values

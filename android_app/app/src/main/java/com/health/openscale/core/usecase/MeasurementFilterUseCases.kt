@@ -54,14 +54,13 @@ class MeasurementFilterUseCases @Inject constructor() {
     ): Flow<List<EnrichedMeasurement>> {
         return enrichedFlow
             .map { all ->
-                // If there's no valid time range, return everything.
-                if (startTimeMillis == null || endTimeMillis == null) {
+                if (startTimeMillis == null && endTimeMillis == null) {
                     all
                 } else {
-                    // Otherwise, filter the data. [6, 8]
                     all.filter { em ->
                         val ts = em.measurementWithValues.measurement.timestamp
-                        ts in startTimeMillis..endTimeMillis
+                        (startTimeMillis == null || ts >= startTimeMillis) &&
+                                (endTimeMillis == null   || ts <= endTimeMillis)
                     }
                 }
             }

@@ -103,6 +103,7 @@ import com.health.openscale.R
 import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.EvaluationState
 import com.health.openscale.core.data.InputFieldType
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.Trend
 import com.health.openscale.core.data.UnitType
@@ -131,14 +132,10 @@ import com.health.openscale.ui.shared.TopBarAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.DateFormat
-import java.time.DayOfWeek
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.temporal.WeekFields
 import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
+
 
 // ---------------------------------------------------------------------------
 // OverviewScreen
@@ -218,31 +215,40 @@ fun OverviewScreen(
     var currentSelectedMeasurementId  by rememberSaveable { mutableStateOf<Int?>(null) }
     var currentSelectedAggregatedTs   by rememberSaveable { mutableStateOf<Long?>(null) }
 
+    // O(1) lookup maps — rebuilt only when aggregatedItems changes, not on every recomposition.
+    val aggregatedItemById: Map<Int, AggregatedMeasurement> = remember(aggregatedItems) {
+        aggregatedItems.associateBy { it.enriched.measurementWithValues.measurement.id }
+    }
+    val aggregatedItemByTs: Map<Long, AggregatedMeasurement> = remember(aggregatedItems) {
+        aggregatedItems.associateBy { it.enriched.measurementWithValues.measurement.timestamp }
+    }
+    // MeasurementType lookup map — avoids O(t) linear scan per goal chip.
+    val typeById: Map<Int, MeasurementType> = remember(allMeasurementTypes) {
+        allMeasurementTypes.associateBy { it.id }
+    }
+
     // Goal reference: the MeasurementWithValues the goal chips compare against.
     // In aggregated mode: the selected period's averaged entry.
     // In raw mode: the selected (or topmost) raw entry.
     val goalReferenceMeasurement: MeasurementWithValues? = remember(
         currentSelectedMeasurementId,
         currentSelectedAggregatedTs,
-        aggregatedItems,
+        aggregatedItemById,
+        aggregatedItemByTs,
         isAggregated,
     ) {
+        val fallback = aggregatedItems.firstOrNull()?.enriched?.measurementWithValues
         if (isAggregated) {
             val ts = currentSelectedAggregatedTs
             if (ts != null)
-                aggregatedItems.firstOrNull { it.enriched.measurementWithValues.measurement.timestamp == ts }
-                    ?.enriched?.measurementWithValues
-                    ?: aggregatedItems.firstOrNull()?.enriched?.measurementWithValues
+                aggregatedItemByTs[ts]?.enriched?.measurementWithValues ?: fallback
             else
-                aggregatedItems.firstOrNull()?.enriched?.measurementWithValues
+                fallback
         } else {
             if (currentSelectedMeasurementId != null)
-                aggregatedItems.find {
-                    it.enriched.measurementWithValues.measurement.id == currentSelectedMeasurementId
-                }?.enriched?.measurementWithValues
-                    ?: aggregatedItems.firstOrNull()?.enriched?.measurementWithValues
+                aggregatedItemById[currentSelectedMeasurementId]?.enriched?.measurementWithValues ?: fallback
             else
-                aggregatedItems.firstOrNull()?.enriched?.measurementWithValues
+                fallback
         }
     }
 
@@ -348,7 +354,8 @@ fun OverviewScreen(
                                         showYAxis         = false,
                                         onPointSelected   = { selectedTs ->
                                             if (isAggregated) {
-                                                // Find the aggregated period that contains selectedTs
+                                                // AggregatedMeasurement carries pre-computed period bounds —
+                                                // no need to call periodBoundsFor().
                                                 val idx = aggregatedItems.indexOfFirst { item ->
                                                     selectedTs in item.periodStartMillis until item.periodEndMillis
                                                 }
@@ -471,8 +478,7 @@ fun OverviewScreen(
                                                         key = { goal -> "${goal.userId}_${goal.measurementTypeId}" },
                                                     ) { goal ->
                                                         if (goal.userId == currentSelectedUser!!.id) {
-                                                            val measurementType = allMeasurementTypes
-                                                                .find { it.id == goal.measurementTypeId }
+                                                            val measurementType = typeById[goal.measurementTypeId]
                                                             if (measurementType != null) {
                                                                 UserGoalChip(
                                                                     userGoal             = goal,
@@ -553,9 +559,10 @@ fun OverviewScreen(
                                     val ts           = enrichedItem.measurementWithValues.measurement.timestamp
 
                                     if (isAggregated) {
-                                        // aggregatedFromCount comes directly from AggregatedMeasurement
-                                        // — no separate rawMeasurementsForCounting flow needed.
-                                        val (periodStart, periodEnd) = activeAggregationLevel.periodBounds(ts, ZoneId.systemDefault())
+                                        // aggregatedFromCount and period bounds come directly from
+                                        // AggregatedMeasurement — no recomputation needed.
+                                        val periodStart = aggItem.periodStartMillis
+                                        val periodEnd   = aggItem.periodEndMillis
                                         MeasurementCard(
                                             sharedViewModel            = sharedViewModel,
                                             measurementWithValues      = enrichedItem.measurementWithValues,
@@ -576,7 +583,10 @@ fun OverviewScreen(
                                             onDelete                   = null,
                                             isAggregated               = true,
                                             rawCount                   = aggItem.aggregatedFromCount,
-                                            aggregatedPeriodLabel      = activeAggregationLevel.periodLabel(ts, context.getString(R.string.calendar_week_abbrev), Locale.getDefault(), ZoneId.systemDefault()),
+                                            aggregatedPeriodLabel      = activeAggregationLevel.periodLabel(
+                                                timestamp            = ts,
+                                                calendarWeekAbbrev  = context.getString(R.string.calendar_week_abbrev),
+                                            ),
                                         )
                                     } else {
                                         MeasurementCard(

@@ -9,11 +9,11 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 package com.health.openscale.ui.screen.table
 
@@ -101,11 +101,13 @@ import com.health.openscale.ui.screen.settings.BluetoothViewModel
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
 import com.health.openscale.core.utils.LocaleUtils
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.time.DayOfWeek
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -157,8 +159,6 @@ fun TableScreen(
     val effectiveAggregationLevel = if (isDrillDown) AggregationLevel.NONE else activeAggregationLevel
 
     // ── Data ──────────────────────────────────────────────────────────────────
-    // Normal mode  → screenFlow (cached, reacts to time-range + aggregation settings)
-    // Drill-down   → drillDownFlow (fixed window, AggregationLevel.NONE, aggregatedFromCount == 1)
     val tableUiState by if (isDrillDown) {
         sharedViewModel.drillDownFlow(drillDownStartMillis!!, drillDownEndMillis!!)
             .collectAsStateWithLifecycle(initialValue = SharedViewModel.UiState.Loading)
@@ -198,64 +198,74 @@ fun TableScreen(
     }
 
     // ── Selection ─────────────────────────────────────────────────────────────
-    // Keys:  raw row      → measurementId.toString()
-    //        aggregated   → periodStartMillis.toString()
     var isInSelectionMode by rememberSaveable { mutableStateOf(false) }
-    val selectedKeys      = remember { mutableStateListOf<String>() }
+    var selectedKeys by remember { mutableStateOf<Set<String>>(emptySet()) }
 
-    // Snapshot used by resolveSelectedMeasurementIds() — updated inside tableData remember block
+    fun toggleKey(key: String) {
+        selectedKeys = if (key in selectedKeys) selectedKeys - key else selectedKeys + key
+    }
+    fun clearKeys() { selectedKeys = emptySet() }
+    fun addAllKeys(keys: Collection<String>) { selectedKeys = keys.toSet() }
+
     var tableDataSnapshot by remember { mutableStateOf<List<TableRowDataInternal>>(emptyList()) }
+
+    val aggItemByPeriodStart: Map<Long, AggregatedMeasurement> = remember(aggregatedItems) {
+        aggregatedItems.associateBy { it.periodStartMillis }
+    }
+    val snapshotByPeriodStart: Map<Long, TableRowDataInternal> = remember(tableDataSnapshot) {
+        tableDataSnapshot.mapNotNull { row ->
+            val ps = row.periodStartMillis ?: return@mapNotNull null
+            ps to row
+        }.toMap()
+    }
 
     /**
      * Translates UI selection keys to real flat measurement IDs.
      *
      * Raw mode:        key == measurementId  → parse directly.
-     * Aggregated mode: key == periodStartMillis → expand via AggregatedMeasurement.periodStartMillis
-     *                  and then resolve raw IDs through drillDownFlow... but since we already have
-     *                  [AggregatedMeasurement.aggregatedFromCount] we know *how many* there are.
-     *                  For the actual delete/export we need real IDs, so we look them up from
-     *                  [tableDataSnapshot] which stores periodStartMillis/periodEndMillis and then
-     *                  re-query via getMeasurementsForUser (already in ViewModel).
+     * Aggregated mode: key == periodStartMillis → expand via drillDownFlow.
      *
-     * Note: for aggregated selection the real IDs are fetched lazily inside the action lambdas
-     * via [sharedViewModel.getMeasurementById]. This avoids keeping a second raw flow alive.
+     * FIX: Use `.filter { it is Success }.first()` instead of `.firstOrNull { it is Success }`
+     * because drillDownFlow is a StateFlow starting with Loading — firstOrNull would
+     * immediately grab the Loading state and return null.
      */
     suspend fun resolveSelectedMeasurementIds(): List<Int> {
         if (effectiveAggregationLevel == AggregationLevel.NONE) {
+            // Raw mode (also covers drill-down): keys are direct measurement IDs
             return selectedKeys.mapNotNull { it.toIntOrNull() }
         }
-        // Aggregated: expand each period key to its raw measurement IDs.
-        // We use the AggregatedMeasurement.periodStartMillis / periodEndMillis stored in the row.
-        return selectedKeys.flatMap { key ->
-            val periodStart = key.toLongOrNull() ?: return@flatMap emptyList()
-            val row = tableDataSnapshot.find { it.periodStartMillis == periodStart }
-                ?: return@flatMap emptyList()
-            val periodEnd = row.periodEndMillis ?: return@flatMap emptyList()
-            // Re-collect a one-shot drillDown to get the raw IDs for this period
-            sharedViewModel.drillDownFlow(periodStart, periodEnd)
-                .firstOrNull { it is SharedViewModel.UiState.Success }
-                ?.let { (it as SharedViewModel.UiState.Success).data }
-                ?.map { it.enriched.measurementWithValues.measurement.id }
-                ?: emptyList()
-        }.distinct()
+        // Aggregated mode: expand each selected period to its raw measurement IDs in parallel
+        val snap = snapshotByPeriodStart
+        return kotlinx.coroutines.coroutineScope {
+            selectedKeys.map { key ->
+                async {
+                    val periodStart = key.toLongOrNull() ?: return@async emptyList<Int>()
+                    val row = snap[periodStart] ?: return@async emptyList<Int>()
+                    val periodEnd = row.periodEndMillis ?: return@async emptyList<Int>()
+                    // FIX: filter+first instead of firstOrNull — StateFlow starts with Loading,
+                    // so firstOrNull always grabs Loading (not Success) and returns null.
+                    sharedViewModel.drillDownFlow(periodStart, periodEnd)
+                        .filter { it is SharedViewModel.UiState.Success }
+                        .first()
+                        .let { (it as SharedViewModel.UiState.Success).data }
+                        .map { it.enriched.measurementWithValues.measurement.id }
+                }
+            }.awaitAll().flatten().distinct()
+        }
     }
 
     fun rowKey(row: TableRowDataInternal): String =
         if (row.isAggregated) row.periodStartMillis!!.toString()
         else row.measurementId.toString()
 
-    val resolvedSelectionCount = remember(selectedKeys.toList(), tableDataSnapshot) {
+    val resolvedSelectionCount = remember(selectedKeys, tableDataSnapshot) {
         if (effectiveAggregationLevel == AggregationLevel.NONE)
             selectedKeys.size
         else
-        // Approximate count using aggregatedFromCount stored in snapshot —
-        // exact value resolved lazily at action time
-            tableDataSnapshot
-                .filter { row -> row.isAggregated && rowKey(row) in selectedKeys }
-                .sumOf { row ->
-                    aggregatedItems.find { it.periodStartMillis == row.periodStartMillis }
-                        ?.aggregatedFromCount ?: 1
-                }
+            selectedKeys.sumOf { key ->
+                val periodStart = key.toLongOrNull() ?: return@sumOf 0
+                aggItemByPeriodStart[periodStart]?.aggregatedFromCount ?: 1
+            }
     }
 
     // ── Actions ───────────────────────────────────────────────────────────────
@@ -278,7 +288,7 @@ fun TableScreen(
                             filterByMeasurementIds = resolvedIds,
                         )
                         isInSelectionMode = false
-                        selectedKeys.clear()
+                        clearKeys()
                     }
                 }
             }
@@ -291,7 +301,7 @@ fun TableScreen(
             if (ids.isEmpty()) return@launch
             var allSucceeded = true
             for (id in ids) {
-                val mwv = sharedViewModel.getMeasurementById(id).firstOrNull()
+                val mwv = sharedViewModel.getMeasurementById(id).first()
                 if (mwv != null) {
                     val ok = sharedViewModel.deleteMeasurement(mwv.measurement, true)
                     if (!ok) { allSucceeded = false; break }
@@ -304,6 +314,8 @@ fun TableScreen(
                 )
             else
                 sharedViewModel.showSnackbar(messageResId = R.string.snackbar_error_deleting_items)
+            isInSelectionMode = false
+            clearKeys()
         }
     }
 
@@ -316,25 +328,36 @@ fun TableScreen(
         scope.launch {
             val ids = resolveSelectedMeasurementIds()
             if (ids.isEmpty()) return@launch
-            var allSucceeded = true
-            for (id in ids) {
-                val mwv = sharedViewModel.getMeasurementById(id).firstOrNull()
-                if (mwv != null) {
-                    val ok = sharedViewModel.saveMeasurement(
-                        mwv.measurement.copy(userId = newUserId),
-                        mwv.values.map { it.value },
-                        true,
-                    )
-                    if (!ok) { allSucceeded = false; break }
-                }
+
+            // Snapshot ALL measurements before any modifications.
+            // After saveMeasurement(userId = newUserId), Room immediately re-emits the
+            // flow for the current user — the measurement disappears from it because it
+            // now belongs to a different user. Subsequent getMeasurementById().first()
+            // calls inside the loop would return null, breaking the operation.
+            val snapshots = ids.mapNotNull { id ->
+                sharedViewModel.getMeasurementById(id).first()
             }
+            if (snapshots.isEmpty()) return@launch
+
+            var allSucceeded = true
+            for (mwv in snapshots) {
+                val ok = sharedViewModel.saveMeasurement(
+                    measurement = mwv.measurement.copy(userId = newUserId),
+                    values      = mwv.values.map { it.value },
+                    silent      = true,
+                )
+                if (!ok) { allSucceeded = false; break }
+            }
+
             if (allSucceeded)
                 sharedViewModel.showSnackbar(
                     messageResId = R.string.snackbar_items_user_changed_successfully,
-                    formatArgs   = listOf(ids.size),
+                    formatArgs   = listOf(snapshots.size),
                 )
             else
                 sharedViewModel.showSnackbar(messageResId = R.string.snackbar_error_user_changed_items)
+            isInSelectionMode = false
+            clearKeys()
         }
     }
 
@@ -354,8 +377,8 @@ fun TableScreen(
                 onConfirm           = { selectedNewUserId ->
                     if (selectedNewUserId != null) changeUserOfSelectedItems(selectedNewUserId)
                     showChangeUserDialog = false
-                    isInSelectionMode   = false
-                    selectedKeys.clear()
+                    // isInSelectionMode and clearKeys() are handled inside
+                    // changeUserOfSelectedItems after the coroutine completes
                 },
             )
         } else {
@@ -367,21 +390,17 @@ fun TableScreen(
     }
 
     if (showDeleteConfirmDialog) {
-        val resolvedCount = remember(selectedKeys.toList(), tableDataSnapshot) {
+        val resolvedCount = remember(selectedKeys, tableDataSnapshot) {
             if (effectiveAggregationLevel == AggregationLevel.NONE) selectedKeys.size
-            else tableDataSnapshot
-                .filter { row -> row.isAggregated && rowKey(row) in selectedKeys }
-                .sumOf { row ->
-                    aggregatedItems.find { it.periodStartMillis == row.periodStartMillis }
-                        ?.aggregatedFromCount ?: 1
-                }
+            else selectedKeys.sumOf { key ->
+                val periodStart = key.toLongOrNull() ?: return@sumOf 0
+                aggItemByPeriodStart[periodStart]?.aggregatedFromCount ?: 1
+            }
         }
         DeleteConfirmationDialog(
             onDismissRequest = { showDeleteConfirmDialog = false },
             onConfirm        = {
                 deleteSelectedItems()
-                isInSelectionMode = false
-                selectedKeys.clear()
                 showDeleteConfirmDialog = false
             },
             title = stringResource(R.string.dialog_title_delete_selected_items),
@@ -440,10 +459,8 @@ fun TableScreen(
                 val date         = Date(ts)
                 val isAggregated = effectiveAggregationLevel != AggregationLevel.NONE
 
-                // AggregatedMeasurement already carries period bounds — no recomputation needed
-                val periodStart  = aggItem.periodStartMillis
-                val periodEnd    = aggItem.periodEndMillis
-                // aggregatedFromCount comes directly from AggregatedMeasurement
+                val periodStart    = aggItem.periodStartMillis
+                val periodEnd      = aggItem.periodEndMillis
                 val periodRawCount = aggItem.aggregatedFromCount
 
                 val formattedTs = if (isAggregated) {
@@ -568,7 +585,6 @@ fun TableScreen(
         val midMillis = drillDownStartMillis + (drillDownEndMillis - drillDownStartMillis) / 2L
         val date      = Instant.ofEpochMilli(midMillis).atZone(ZoneId.systemDefault()).toLocalDate()
         val locale    = Locale.getDefault()
-        // Count comes from aggregatedItems.size — drillDownFlow returns aggregatedFromCount == 1 each
         val count     = aggregatedItems.size
         val label = when {
             spanDays <= 1  -> dateFormatterDate.format(Date(drillDownStartMillis))
@@ -586,12 +602,12 @@ fun TableScreen(
 
     val addMeasurementAction = rememberAddMeasurementActionButton(sharedViewModel, navController)
     val bluetoothAction      = rememberBluetoothActionButton(bluetoothViewModel, sharedViewModel, navController)
+    // FIX: also provide filter action in drill-down (was null before)
     val filterAction         = if (!isDrillDown) provideFilterTopBarAction(
         sharedViewModel   = sharedViewModel,
         screenContextName = SettingsPreferenceKeys.TABLE_SCREEN_CONTEXT,
     ) else null
 
-    // LaunchedEffect key: stable values only — avoid recomposition-driven re-fires
     LaunchedEffect(tableScreenTitle, isInSelectionMode, selectedKeys.size, aggregatedItems.size) {
         sharedViewModel.setContextualSelectionMode(isInSelectionMode)
         if (isInSelectionMode) {
@@ -623,7 +639,7 @@ fun TableScreen(
                 TopBarAction(
                     icon                    = Icons.Filled.Close,
                     contentDescriptionResId = R.string.desc_cancel_selection_mode,
-                    onClick                 = { isInSelectionMode = false; selectedKeys.clear() },
+                    onClick                 = { isInSelectionMode = false; clearKeys() },
                 ),
             ))
         } else {
@@ -633,7 +649,8 @@ fun TableScreen(
                 actions.add(bluetoothAction)
                 actions.add(addMeasurementAction)
             }
-            if (!isDrillDown && aggregatedItems.isNotEmpty()) {
+            // FIX: show selection mode button also in drill-down if there are items
+            if (aggregatedItems.isNotEmpty()) {
                 actions.add(TopBarAction(
                     icon                    = Icons.Outlined.CheckBox,
                     contentDescriptionResId = R.string.desc_enter_selection_mode,
@@ -645,10 +662,11 @@ fun TableScreen(
         }
     }
 
+    // FIX: BackHandler also active in drill-down when in selection mode
     if (isInSelectionMode) {
         BackHandler(enabled = true) {
             isInSelectionMode = false
-            selectedKeys.clear()
+            clearKeys()
         }
     }
 
@@ -750,10 +768,10 @@ fun TableScreen(
                         ) {
                             TriStateCheckbox(state = checkboxState, onClick = {
                                 when (checkboxState) {
-                                    ToggleableState.On -> selectedKeys.clear()
+                                    ToggleableState.On -> clearKeys()
                                     else -> {
-                                        selectedKeys.clear()
-                                        selectedKeys.addAll(tableData.map { rowKey(it) })
+                                        clearKeys()
+                                        addAllKeys(tableData.map { rowKey(it) })
                                     }
                                 }
                             })
@@ -806,8 +824,7 @@ fun TableScreen(
                                 )
                                 .clickable {
                                     if (isInSelectionMode) {
-                                        if (isSelected) selectedKeys.remove(key)
-                                        else selectedKeys.add(key)
+                                        toggleKey(key)
                                     } else if (rowData.isAggregated) {
                                         navController.navigate(
                                             Routes.tableDrillDown(
@@ -834,10 +851,7 @@ fun TableScreen(
                                 ) {
                                     Checkbox(
                                         checked         = isSelected,
-                                        onCheckedChange = { checked ->
-                                            if (checked) selectedKeys.add(key)
-                                            else selectedKeys.remove(key)
-                                        },
+                                        onCheckedChange = { toggleKey(key) },
                                     )
                                 }
                             }
@@ -879,7 +893,7 @@ fun TableScreen(
 }
 
 // ---------------------------------------------------------------------------
-// Table cell composables (unchanged)
+// Table cell composables
 // ---------------------------------------------------------------------------
 
 @Composable
