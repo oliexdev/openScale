@@ -179,13 +179,12 @@ class MeasurementFacade @Inject constructor(
 
         // 2. Smooth after aggregation
         return smooth.applySmoothing(
-            baseAggregatedFlow   = aggregated,
-            typesToSmoothFlow    = typesToSmoothFlow,
-            measurementTypesFlow = measurementTypesFlow,
-            algorithmFlow        = algorithmFlow,
-            alphaFlow            = alphaFlow,
-            windowFlow           = windowFlow,
-            maxGapDaysFlow       = maxGapDaysFlow,
+            baseAggregatedFlow = aggregated,
+            typesToSmoothFlow  = typesToSmoothFlow,
+            algorithmFlow      = algorithmFlow,
+            alphaFlow          = alphaFlow,
+            windowFlow         = windowFlow,
+            maxGapDaysFlow     = maxGapDaysFlow,
         )
     }
 

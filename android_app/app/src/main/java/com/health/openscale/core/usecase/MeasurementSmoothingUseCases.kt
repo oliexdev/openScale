@@ -18,7 +18,6 @@
 package com.health.openscale.core.usecase
 
 import com.health.openscale.core.data.InputFieldType
-import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.SmoothingAlgorithm
 import com.health.openscale.core.model.AggregatedMeasurement
 import com.health.openscale.core.utils.CalculationUtils
@@ -73,7 +72,6 @@ class MeasurementSmoothingUseCases @Inject constructor() {
     fun applySmoothing(
         baseAggregatedFlow: Flow<List<AggregatedMeasurement>>,
         typesToSmoothFlow: Flow<Set<Int>>,
-        measurementTypesFlow: Flow<List<MeasurementType>>,
         algorithmFlow: Flow<SmoothingAlgorithm>,
         alphaFlow: Flow<Float>,
         windowFlow: Flow<Int>,
@@ -98,26 +96,17 @@ class MeasurementSmoothingUseCases @Inject constructor() {
             )
         }
 
+        // typesToSmoothFlow already contains only enabled numeric type ids
+        // (derived from measurementTypes in SharedViewModel) — no re-filtering needed.
         return combine(
             baseAggregatedFlow,
             typesToSmoothFlow,
-            measurementTypesFlow,
             cfgFlow,
-        ) { measurements, typeIds, allTypes, cfg ->
+        ) { measurements, candidates, cfg ->
 
-            if (measurements.isEmpty() || typeIds.isEmpty() || cfg.algorithm == SmoothingAlgorithm.NONE) {
+            if (measurements.isEmpty() || candidates.isEmpty() || cfg.algorithm == SmoothingAlgorithm.NONE) {
                 return@combine measurements
             }
-
-            // Identify numeric, enabled types that should be smoothed
-            val candidates: Set<Int> = typeIds.filter { id ->
-                allTypes.firstOrNull { it.id == id }?.let {
-                    it.isEnabled &&
-                            (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT)
-                } ?: false
-            }.toSet()
-
-            if (candidates.isEmpty()) return@combine measurements
 
             // Build raw series per type (oldest → newest) from aggregated values
             val rawSeriesByType = mutableMapOf<Int, MutableList<Pair<Long, Float>>>()
@@ -167,12 +156,15 @@ class MeasurementSmoothingUseCases @Inject constructor() {
                 finalSmoothedMap
             }
 
+            // Flat set of all smoothed timestamps — O(1) lookup instead of O(t) per measurement
+            val smoothedTimestamps: Set<Long> = smoothedMapByType.values
+                .flatMapTo(HashSet()) { it.keys }
+
             // Reconstruct AggregatedMeasurement list with smoothed values injected
             measurements.map { agg ->
                 val ts = agg.enriched.measurementWithValues.measurement.timestamp
-                val hasSmoothed = smoothedMapByType.values.any { it.containsKey(ts) }
 
-                if (!hasSmoothed) {
+                if (ts !in smoothedTimestamps) {
                     agg
                 } else {
                     val newValuesWithTrend = agg.enriched.valuesWithTrend.map { v ->

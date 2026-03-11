@@ -190,14 +190,14 @@ class MeasurementAggregationUseCase @Inject constructor() {
             measurementWithValuesProjected = emptyList(),
         )
 
-        val (periodStart, periodEnd) = level.periodBounds(midTimestamp, zone)
+        val (periodStart, periodEnd) = level.periodBounds(minTs, zone)
 
         return AggregatedMeasurement(
             enriched            = enriched,
             aggregatedFromCount = group.size,
             periodStartMillis   = periodStart,
             periodEndMillis     = periodEnd,
-            periodKey           = level.periodKey(midTimestamp, zone),
+            periodKey           = level.periodKey(minTs, zone),
         )
     }
 
