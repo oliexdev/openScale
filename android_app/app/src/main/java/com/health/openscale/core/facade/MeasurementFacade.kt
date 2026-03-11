@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.facade
 
+import android.R.attr.level
 import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
@@ -161,7 +162,7 @@ class MeasurementFacade @Inject constructor(
         windowFlow: Flow<Int>,
         maxGapDaysFlow: Flow<Int>,
         aggregationLevelFlow: Flow<AggregationLevel> = flowOf(AggregationLevel.NONE),
-    ): Flow<List<AggregatedMeasurement>> {                          // ← was List<EnrichedMeasurement>
+    ): Flow<List<AggregatedMeasurement>> {
         val enriched = enrichedFlowForUser(userId, measurementTypesFlow)
 
         @OptIn(ExperimentalCoroutinesApi::class)
@@ -170,20 +171,22 @@ class MeasurementFacade @Inject constructor(
                 filter.getTimeFiltered(flowOf(list), startMs, endMs)
             }.flatMapLatest { it }
 
-        val smoothed = smooth.applySmoothing(
-            baseEnrichedFlow    = timeFiltered,
-            typesToSmoothFlow   = typesToSmoothFlow,
-            measurementTypesFlow = measurementTypesFlow,
-            algorithmFlow       = algorithmFlow,
-            alphaFlow           = alphaFlow,
-            windowFlow          = windowFlow,
-            maxGapDaysFlow      = maxGapDaysFlow,
-        )
+        // 1. Aggregate first — smoothing then operates on fewer, more meaningful points
+        val aggregated: Flow<List<AggregatedMeasurement>> =
+            combine(timeFiltered, aggregationLevelFlow) { list, level ->
+                aggregation.aggregate(list, level)
+            }
 
-        // Aggregation is the final step — returns List<AggregatedMeasurement>
-        return combine(smoothed, aggregationLevelFlow) { list, level ->
-            aggregation.aggregate(list, level)                      // ← now List<AggregatedMeasurement>
-        }
+        // 2. Smooth after aggregation
+        return smooth.applySmoothing(
+            baseAggregatedFlow   = aggregated,
+            typesToSmoothFlow    = typesToSmoothFlow,
+            measurementTypesFlow = measurementTypesFlow,
+            algorithmFlow        = algorithmFlow,
+            alphaFlow            = alphaFlow,
+            windowFlow           = windowFlow,
+            maxGapDaysFlow       = maxGapDaysFlow,
+        )
     }
 
     // -------------------------------------------------------------------------

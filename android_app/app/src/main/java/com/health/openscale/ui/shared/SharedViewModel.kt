@@ -25,6 +25,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.health.openscale.R
 import com.health.openscale.core.data.AggregationLevel
+import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
@@ -543,12 +544,23 @@ class SharedViewModel @Inject constructor(
         chartSmoothingMaxGapDays
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 7)
 
-    // -------------------------------------------------------------------------
-    // Types to smooth (local UI state)
-    // -------------------------------------------------------------------------
+// -------------------------------------------------------------------------
+// Types to smooth — derived from measurementTypes, always up to date
+// -------------------------------------------------------------------------
 
-    private val _typesToSmoothAndDisplay = MutableStateFlow<Set<Int>>(emptySet())
-    val typesToSmoothAndDisplay: StateFlow<Set<Int>> = _typesToSmoothAndDisplay.asStateFlow()
+    // All enabled numeric types are eligible for smoothing.
+    // Derived reactively from measurementTypes so it never needs a manual setter.
+    val typesToSmoothAndDisplay: StateFlow<Set<Int>> =
+        measurementTypes
+            .map { types ->
+                types
+                    .filter { it.isEnabled &&
+                            (it.inputType == InputFieldType.FLOAT ||
+                                    it.inputType == InputFieldType.INT) }
+                    .map { it.id }
+                    .toSet()
+            }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
 
     // -------------------------------------------------------------------------
     // Last measurement of selected user (used by add-measurement screen pre-fill)
