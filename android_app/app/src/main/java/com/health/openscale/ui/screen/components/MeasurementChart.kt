@@ -248,10 +248,10 @@ fun MeasurementChart(
                 lineTypesToActuallyPlot.any { it.id == goal.measurementTypeId }
             }
         }
-    }.collectAsStateWithLifecycle(initialValue = emptyList())
+    }.collectAsStateWithLifecycle(initialValue = null)
 
     val goalValuesForScaling = remember(goalsToActuallyPlot, showGoalLinesSetting) {
-        if (showGoalLinesSetting) goalsToActuallyPlot.map { it.goalValue.toFloat() }
+        if (showGoalLinesSetting) goalsToActuallyPlot?.map { it.goalValue.toFloat() } ?: emptyList()
         else emptyList()
     }
 
@@ -472,6 +472,12 @@ fun MeasurementChart(
             }
 
             else -> {
+                if (goalsToActuallyPlot == null && showGoalLinesSetting) {
+                    Box(
+                        modifier = Modifier.weight(1f).fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) { CircularProgressIndicator() }
+                } else {
                 val scrollState = rememberVicoScrollState()
                 val zoomState   = rememberVicoZoomState(zoomEnabled = true, initialZoom = Zoom.Content)
 
@@ -499,11 +505,11 @@ fun MeasurementChart(
                 val typeById = remember(allAvailableMeasurementTypes) {
                     allAvailableMeasurementTypes.associateBy { it.id }
                 }
-                val goalDecorations = if (showGoalLinesSetting) {
-                    goalsToActuallyPlot.map { goal ->
-                        rememberGoalLine(goal = goal, type = typeById[goal.measurementTypeId])
-                    }
-                } else emptyList()
+                    val goalDecorations = if (showGoalLinesSetting) {
+                        goalsToActuallyPlot?.map { goal ->
+                            rememberGoalLine(goal = goal, type = typeById[goal.measurementTypeId])
+                        } ?: emptyList()
+                    } else emptyList()
 
                 val chart = rememberCartesianChart(
                     layers                   = layers.toTypedArray(),
@@ -525,6 +531,7 @@ fun MeasurementChart(
                     zoomState     = zoomState,
                 )
             }
+                }
         }
 
         if (showFilterTitle) {
