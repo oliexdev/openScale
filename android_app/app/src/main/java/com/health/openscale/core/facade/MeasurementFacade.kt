@@ -99,10 +99,12 @@ class MeasurementFacade @Inject constructor(
             val differenceValues = enricher.enrichWithDifferences(measurements, types)
             val projectedValues  = enricher.enrichWithProjection(measurements, types)
 
+            val differencesByMeasurementId = differenceValues.groupBy {
+                it.currentValue.value.measurementId
+            }
+
             measurements.mapIndexed { index, current ->
-                val trendsForCurrent = differenceValues.filter {
-                    it.currentValue.value.measurementId == current.measurement.id
-                }
+                val trendsForCurrent = differencesByMeasurementId[current.measurement.id] ?: emptyList()
                 val projectedForCurrent = if (index == 0) projectedValues else emptyList()
                 EnrichedMeasurement(
                     measurementWithValues          = current,
