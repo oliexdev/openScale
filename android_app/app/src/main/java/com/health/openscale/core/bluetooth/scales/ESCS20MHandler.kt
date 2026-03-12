@@ -49,16 +49,16 @@ import java.util.UUID
  * Notifications received on CHR_RESULTS (0x2A10):
  *   0x11  START/STOP          byte[5]=0x01 start, 0x00 stop
  *   0x14  Weight frame        frame[8:9]=weight u16be/100=kg (resistance bytes always 0x0000)
- *   0x16  History-save ACK    payload=0x01 (no body-comp data)
+ *   0x16  History-save ACK    pre-meas: byte[5]=0x01 accepted / 0x00 rejected; post-BIA: ignored
  *   0x17  Profile ACK         payload=0x01 0x01
  *   0x18  Final BIA result    frame[10:11]=weight, frame[12:13]=r1(Ω), frame[14:15]=r2(Ω)
  *   0x19  Interim BIA result  frame[11:12]=weight, frame[13:14]=r1(Ω) — multi-fragment
- *   0x10  Op callback         frame[5]=0x01 success, 0x00 failure
+ *   0x10  Op callback         frame[5]=0x00 BIA mode active, 0x01 weight-only mode (NOT success/failure)
  *
  * Connection sequence:
  *   onConnected → setNotifyOn(CHR_RESULTS) + write 0x97
  *   (0x17 ACK) → write 0x96 (pre-meas, with user.initialWeight as reference weight)
- *   (0x16 ACK) → write 0x90
+ *   (0x16 ACK, byte[5]=0x01 accepted) → write 0x90  ← skipped if rejected (refWeight=0)
  *   scale sends 0x14 weight frames × N
  *   scale sends 0x19 intermediate BIA → write 0x99 + 0x96 (intermediate weight)
  *   scale sends 0x18 final BIA → extract r1 → write 0x96 × 2 (final weight)
@@ -73,7 +73,7 @@ class ESCS20mHandler : ScaleDeviceHandler() {
         private const val TAG = "ESCS20mHandler"
 
         // Lefu frame message IDs (frame byte[2])
-        private const val MSG_OP_CALLBACK:  Int = 0x10  // result of 0x90/0x99 commands
+        private const val MSG_OP_CALLBACK:  Int = 0x10  // mode callback from 0x90 (0x00=BIA, 0x01=weight-only)
         private const val MSG_START_STOP:   Int = 0x11  // byte[5]=0x01 start, 0x00 stop
         private const val MSG_WEIGHT:       Int = 0x14  // weight frame (~5 Hz)
         private const val MSG_HIST_ACK:     Int = 0x16  // ACK to 0x96 history saves
@@ -173,7 +173,9 @@ class ESCS20mHandler : ScaleDeviceHandler() {
                 handleLefuFrame(complete, user)
             }
             else -> {
-                lefuFrag = null
+                // Do NOT clear lefuFrag here: 0x14 weight frames arrive at ~5 Hz and can
+                // legitimately interleave between FRAG_FIRST and FRAG_CONT of a 0x19 pair.
+                // A new FRAG_FIRST will overwrite lefuFrag when needed.
                 handleLefuFrame(data, user)
             }
         }
@@ -194,7 +196,7 @@ class ESCS20mHandler : ScaleDeviceHandler() {
 
         when (msgId) {
             MSG_PROFILE_ACK  -> onProfileAck(user)
-            MSG_HIST_ACK     -> onHistAck(user)
+            MSG_HIST_ACK     -> onHistAck(data)
             MSG_BIA_INTERIM  -> onBiaInterim(data, user)
             MSG_BIA_FINAL    -> onBiaFinal(data, user)
             MSG_START_STOP   -> onStartStop(data, user)
@@ -215,25 +217,48 @@ class ESCS20mHandler : ScaleDeviceHandler() {
 
     /**
      * 0x16 – Scale acknowledged a 0x96 history-save write.
-     * During setup (PHASE_WAIT_HIST_ACK): this is the pre-meas ACK → send 0x90 to start BIA.
-     * During/after measurement: these are history-save ACKs → no action needed.
+     *
+     * During setup (PHASE_WAIT_HIST_ACK): this is the pre-meas config ACK.
+     *   payload byte[5]=0x01 → config accepted; send 0x90 to arm BIA measurement.
+     *   payload byte[5]=0x00 → config rejected (observed when refWeight=0, i.e., first-ever
+     *                          measurement before any weight is stored in the user profile).
+     *                          In this case 0x90 is skipped; BIA will not be available.
+     *                          Weight-only measurement still proceeds via the scale's auto-start.
+     * During/after measurement: these are post-BIA history-save ACKs → no action needed.
      */
-    private fun onHistAck(user: ScaleUser) {
+    private fun onHistAck(data: ByteArray) {
         if (connPhase == PHASE_WAIT_HIST_ACK) {
-            LogManager.d(TAG, "0x16 pre-meas ACK → sending 0x90 start (BIA-enabled)")
-            writeTo(SVC_MAIN, CHR_CUR_TIME, buildCmd90())
+            val accepted = data.size >= 6 && (data[5].toInt() and 0xFF) == 0x01
+            if (accepted) {
+                LogManager.d(TAG, "0x16 pre-meas ACK accepted → sending 0x90 start (BIA-enabled)")
+                writeTo(SVC_MAIN, CHR_CUR_TIME, buildCmd90())
+            } else {
+                LogManager.w(TAG, "0x16 pre-meas config rejected by scale (refWeight=0 on first measurement?); BIA unavailable this session")
+            }
             connPhase = PHASE_MEASURING
         } else {
             LogManager.d(TAG, "0x16 history-save ACK (phase=$connPhase)")
         }
     }
 
-    /** 0x10 – Operation callback (result of 0x90/0x99 commands). Logs failures for diagnostics. */
+    /**
+     * 0x10 – Mode confirmation callback sent by the scale in response to 0x90.
+     *
+     * Confirmed against Renpho reference capture and openScale test logs:
+     *   byte[5]=0x00 → BIA mode active; scale will deliver 0x19 interim + 0x18 final BIA frames.
+     *   byte[5]=0x01 → weight-only mode active; no BIA frames will follow.
+     *
+     * This is NOT a success/failure flag — 0x00 is the expected response for BIA measurements.
+     * The original Renpho-app capture showed 0x01 only when the weight-only payload [01 00 00 00]
+     * was used (byte[2]=0x00 = no BIA).
+     */
     private fun onOpCallback(data: ByteArray) {
         if (data.size < 6) return
-        val ok = (data[5].toInt() and 0xFF) == 0x01
-        if (ok) LogManager.d(TAG, "0x10 op callback: success")
-        else    LogManager.w(TAG, "0x10 op callback: FAILURE")
+        when (data[5].toInt() and 0xFF) {
+            0x00 -> LogManager.d(TAG, "0x10 mode callback: BIA mode active")
+            0x01 -> LogManager.d(TAG, "0x10 mode callback: weight-only mode active")
+            else -> LogManager.d(TAG, "0x10 mode callback: unknown byte[5]=0x${(data[5].toInt() and 0xFF).toString(16)}")
+        }
     }
 
     /** 0x14 – Weight frame. Track the most recent weight for post-BIA 0x96 payload. */
