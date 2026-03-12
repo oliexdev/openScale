@@ -673,4 +673,13 @@
     <string name="bt_sbf72_choice_slot_other_user">P%1$d：由 %2$s 使用（接管？）</string>
     <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d：已占用（未链接）</string>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d：在此创建“%2$s”</string>
+    <string name="route_title_table_drilldown">详情</string>
+    <string name="calendar_week_abbrev">CW</string>
+    <string name="filter_section_time_range">时间范围</string>
+    <string name="filter_section_aggregation">汇总</string>
+    <string name="content_description_aggregation_selected">已选择%1$s</string>
+    <string name="aggregation_level_day">日</string>
+    <string name="aggregation_level_week">周</string>
+    <string name="aggregation_level_month">月</string>
+    <string name="aggregation_level_year">年</string>
 </resources>
