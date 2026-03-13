@@ -210,7 +210,7 @@ class ESCS20mHandler : ScaleDeviceHandler() {
     private fun onProfileAck(user: ScaleUser) {
         if (connPhase != PHASE_WAIT_PROFILE_ACK) return
         val refWeightRaw = (user.initialWeight.coerceAtLeast(0f) * 100f).toInt()
-        LogManager.d(TAG, "0x17 profile ACK → sending pre-meas 0x96 (refWeight=${refWeightRaw/100f}kg)")
+        LogManager.d(TAG, "0x17 profile ACK → sending pre-meas 0x96 (refWeight=${"%.2f".format(refWeightRaw/100f)}kg)")
         writeTo(SVC_MAIN, CHR_CUR_TIME, buildCmd96(user, refWeightRaw))
         connPhase = PHASE_WAIT_HIST_ACK
     }
@@ -267,7 +267,7 @@ class ESCS20mHandler : ScaleDeviceHandler() {
         val raw = u16be(data, 8)
         if (raw > 0) {
             lastWeightRaw = raw
-            LogManager.d(TAG, "Lefu 0x14 weight=${raw / 100f}kg")
+            LogManager.d(TAG, "Lefu 0x14 weight=${"%.2f".format(raw / 100f)}kg")
         }
     }
 
@@ -282,7 +282,7 @@ class ESCS20mHandler : ScaleDeviceHandler() {
      */
     private fun onBiaInterim(data: ByteArray, user: ScaleUser) {
         val interimWeightRaw = if (data.size >= 13) u16be(data, 11) else lastWeightRaw
-        LogManager.d(TAG, "0x19 interim BIA: weight=${interimWeightRaw/100f}kg → 0x99 + 0x96")
+        LogManager.d(TAG, "0x19 interim BIA: weight=${"%.2f".format(interimWeightRaw/100f)}kg → 0x99 + 0x96")
         writeTo(SVC_MAIN, CHR_CUR_TIME, buildCmd99())
         writeTo(SVC_MAIN, CHR_CUR_TIME, buildCmd96(user, interimWeightRaw))
     }
@@ -303,7 +303,7 @@ class ESCS20mHandler : ScaleDeviceHandler() {
         val finalWeightRaw = u16be(data, 10)
         val r1 = u16be(data, 12)
         val r2 = u16be(data, 14)
-        LogManager.i(TAG, "0x18 final BIA: weight=${finalWeightRaw/100f}kg r1=${r1}Ω r2=${r2}Ω")
+        LogManager.i(TAG, "0x18 final BIA: weight=${"%.2f".format(finalWeightRaw/100f)}kg r1=${r1}Ω r2=${r2}Ω")
 
         if (r1 > 0) biaResistance = r1
         if (finalWeightRaw > 0) lastWeightRaw = finalWeightRaw
@@ -435,7 +435,7 @@ class ESCS20mHandler : ScaleDeviceHandler() {
         }
 
         acc.weight = weightKg
-        LogManager.i(TAG, "Weight: ${weightKg}kg  BIA resistance: ${biaResistance}Ω")
+        LogManager.i(TAG, "Weight: ${"%.2f".format(weightKg)}kg  BIA resistance: ${biaResistance}Ω")
 
         if (biaResistance > 0) {
             // Body composition formula: Renpho's proprietary formula is not publicly available
