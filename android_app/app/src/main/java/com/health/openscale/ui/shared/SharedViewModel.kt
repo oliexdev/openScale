@@ -437,6 +437,13 @@ class SharedViewModel @Inject constructor(
     // Drill-down flow — raw, non-aggregated, fixed time window
     // -------------------------------------------------------------------------
 
+    private val _lastDrillDownPeriodStart = MutableStateFlow<Long?>(null)
+    val lastDrillDownPeriodStart: StateFlow<Long?> = _lastDrillDownPeriodStart.asStateFlow()
+
+    fun setLastDrillDownPeriodStart(periodStart: Long?) {
+        _lastDrillDownPeriodStart.value = periodStart
+    }
+
     /**
      * Cache of drill-down StateFlows keyed by "$startMillis-$endMillis".
      *

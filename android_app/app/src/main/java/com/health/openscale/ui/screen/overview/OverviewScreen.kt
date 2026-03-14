@@ -81,6 +81,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -130,6 +131,8 @@ import com.health.openscale.ui.screen.settings.BluetoothViewModel
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Date
@@ -279,7 +282,7 @@ fun OverviewScreen(
 
     // ── Top bar ───────────────────────────────────────────────────────────────
     val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner, selectedUserId, bluetoothAction, timeFilterAction, isDrillDown) {
+    DisposableEffect(lifecycleOwner, selectedUserId, bluetoothAction, timeFilterAction, isDrillDown, aggregatedItems) {
         fun updateTopBar() {
             if (isDrillDown) {
                 val fmt = DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault())
@@ -297,7 +300,17 @@ fun OverviewScreen(
         }
         updateTopBar()
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) updateTopBar()
+            if (event == Lifecycle.Event.ON_RESUME) {
+                updateTopBar()
+                val target = sharedViewModel.lastDrillDownPeriodStart.value ?: return@LifecycleEventObserver
+                val idx = aggregatedItems.indexOfFirst { it.periodStartMillis == target }
+                if (idx >= 0) {
+                    scope.launch {
+                        listState.scrollToItem(idx)
+                        sharedViewModel.setLastDrillDownPeriodStart(null)
+                    }
+                }
+            }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
@@ -568,11 +581,10 @@ fun OverviewScreen(
                                             measurementWithValues      = enrichedItem.measurementWithValues,
                                             processedValuesForDisplay  = enrichedItem.valuesWithTrend,
                                             userEvaluationContext      = userEvalContext,
-                                            onClick                    = {
+                                            onClick = {
                                                 currentSelectedAggregatedTs = ts
-                                                navController.navigate(
-                                                    Routes.overviewDrillDown(periodStart, periodEnd)
-                                                )
+                                                sharedViewModel.setLastDrillDownPeriodStart(periodStart)
+                                                navController.navigate(Routes.overviewDrillDown(periodStart, periodEnd))
                                             },
                                             onEdit                     = {
                                                 currentSelectedAggregatedTs = ts

@@ -68,6 +68,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -560,19 +561,32 @@ fun TableScreen(
     }
 
     // ── Scroll + highlight ────────────────────────────────────────────────────
-    val latestMeasurementId   = remember(tableData) { tableData.firstOrNull()?.measurementId }
     var highlightedItemId     by remember { mutableStateOf<Int?>(null) }
     val lazyListState         = rememberLazyListState()
 
-    LaunchedEffect(latestMeasurementId) {
-        if (latestMeasurementId != null && tableData.isNotEmpty() && !isDrillDown) {
-            kotlinx.coroutines.delay(500)
-            if (latestMeasurementId == tableData.firstOrNull()?.measurementId) {
-                highlightedItemId = latestMeasurementId
-                lazyListState.animateScrollToItem(0)
-                kotlinx.coroutines.delay(1500)
-                highlightedItemId = null
-            }
+    val lastDrillDownPeriodStart by sharedViewModel.lastDrillDownPeriodStart.collectAsState()
+
+    LaunchedEffect(lastDrillDownPeriodStart) {
+        val target = lastDrillDownPeriodStart ?: return@LaunchedEffect
+
+        snapshotFlow { tableData }
+            .filter { it.isNotEmpty() }
+            .first()
+
+        val idx = tableData.indexOfFirst { it.periodStartMillis == target }
+        if (idx >= 0) {
+            lazyListState.scrollToItem(idx)
+            sharedViewModel.setLastDrillDownPeriodStart(null)
+            return@LaunchedEffect
+        }
+
+        val latestId = tableData.firstOrNull()?.measurementId ?: return@LaunchedEffect
+        kotlinx.coroutines.delay(500)
+        if (latestId == tableData.firstOrNull()?.measurementId) {
+            highlightedItemId = latestId
+            lazyListState.animateScrollToItem(0)
+            kotlinx.coroutines.delay(1500)
+            highlightedItemId = null
         }
     }
 
@@ -826,11 +840,9 @@ fun TableScreen(
                                     if (isInSelectionMode) {
                                         toggleKey(key)
                                     } else if (rowData.isAggregated) {
+                                        sharedViewModel.setLastDrillDownPeriodStart(rowData.periodStartMillis)
                                         navController.navigate(
-                                            Routes.tableDrillDown(
-                                                startMillis = rowData.periodStartMillis!!,
-                                                endMillis   = rowData.periodEndMillis!!,
-                                            )
+                                            Routes.tableDrillDown(rowData.periodStartMillis!!, rowData.periodEndMillis!!)
                                         )
                                     } else {
                                         navController.navigate(
