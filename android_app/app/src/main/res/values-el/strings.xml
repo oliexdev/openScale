@@ -158,4 +158,23 @@
     <string name="measurement_type_whtr">Αναλογία μέσης-ύψους</string>
     <string name="action_enable">ενεργοποίηση</string>
     <string name="action_disable">απενεργοποίηση</string>
+    <string name="route_title_table_drilldown">Λεπτομέρειες</string>
+    <string name="calendar_week_abbrev">Εβδ.</string>
+    <string name="action_edit_measurement_desc">Επεξεργασία μέτρησης από τις %1$s</string>
+    <string name="dialog_title_edit_value">Επεξεργασία %1$s</string>
+    <string name="dialog_title_change_value">Αλλαγή %1$s</string>
+    <string name="content_desc_increase_value">Αύξηση %1$s</string>
+    <string name="content_desc_decrease_value">Μείωση %1$s</string>
+    <string name="content_desc_edit_value">Επεξεργασία %1$s</string>
+    <string name="measurement_type_caliper1">Παχύμετρο 1</string>
+    <string name="measurement_type_caliper2">Παχύμετρο 2</string>
+    <string name="measurement_type_caliper3">Παχύμετρο 3</string>
+    <string name="measurement_type_fat_caliper">Παχύμετρο Λίπους</string>
+    <string name="goal_target_date_label">Ημερομηνία στόχου</string>
+    <string name="content_desc_select_date">Επιλογή ημερομηνίας</string>
+    <string name="my_goals_label">Οι στόχοι μου</string>
+    <string name="user_detail_goals">Στόχοι του/της %d</string>
+    <string name="user_detail_no_goals">Χωρίς στόχους</string>
+    <string name="dialog_title_edit_goal">Επεξεργασία στόχου %1$s</string>
+    <string name="dialog_title_add_goal">Επιλογή στόχου %1$s</string>
 </resources>
