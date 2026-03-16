@@ -673,4 +673,14 @@
     <string name="s400_bind_key_description">A balança Xiaomi S400 requer uma chave de vinculação BLE para a descriptografia. Extraia esta chave da Xiaomi Cloud utilizando a ferramenta Xiaomi Cloud Tokens Extractor.</string>
     <string name="s400_bind_key_error">A chave de vinculação deve ter exatamente 32 caracteres hexadecimais</string>
     <string name="bt_s400_missing_bind_key">S400: Chave de vinculação não configurada. Vá para as configurações de Bluetooth para inserir sua chave BLE.</string>
+    <string name="route_title_table_drilldown">Detalhes</string>
+    <string name="calendar_week_abbrev">Sem.</string>
+    <string name="filter_section_time_range">Período</string>
+    <string name="filter_section_aggregation">Agrupamento</string>
+    <string name="content_description_aggregation_selected">%1$s selecionado</string>
+    <string name="aggregation_level_none">Sem Agrupamento</string>
+    <string name="aggregation_level_day">Dia</string>
+    <string name="aggregation_level_week">Semana</string>
+    <string name="aggregation_level_month">Meses</string>
+    <string name="aggregation_level_year">Ano</string>
 </resources>
