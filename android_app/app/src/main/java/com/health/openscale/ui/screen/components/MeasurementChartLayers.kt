@@ -31,7 +31,6 @@ import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.utils.LocaleUtils
-import com.health.openscale.ui.theme.White
 import com.patrykandpatrick.vico.compose.cartesian.axis.Axis
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisGuidelineComponent
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
@@ -273,8 +272,9 @@ internal fun rememberGoalLine(goal: UserGoals, type: MeasurementType?): Horizont
     val goalColor = type?.let { Color(it.color) } ?: MaterialTheme.colorScheme.onSurface
     val goalFill = Fill(goalColor.copy(alpha = 0.7f))
     val line = rememberLineComponent(fill = goalFill, thickness = 2.dp)
+    val labelTextColor = MaterialTheme.colorScheme.onPrimary
     val labelComponent = rememberTextComponent(
-        style = TextStyle(color = White),
+        style = TextStyle(color = labelTextColor),
         margins = Insets(start = 6.dp),
         padding = Insets(start = 8.dp, end = 8.dp, bottom = 2.dp, top = 2.dp),
         background = ShapeComponent(goalFill, shape = RoundedCornerShape(50)),

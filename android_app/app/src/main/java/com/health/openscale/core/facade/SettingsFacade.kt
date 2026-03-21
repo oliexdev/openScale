@@ -71,6 +71,7 @@ object SettingsPreferenceKeys {
     val CURRENT_USER_ID = intPreferencesKey("current_user_id")
     val APP_LANGUAGE_CODE = stringPreferencesKey("app_language_code")
     val HAPTIC_ON_MEASUREMENT = booleanPreferencesKey("haptic_on_measurement")
+    val USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
 
     // Settings for specific UI components
     val SELECTED_TYPES_TABLE = stringSetPreferencesKey("selected_types_table") // IDs of measurement types selected for the data table
@@ -163,6 +164,9 @@ interface SettingsFacade {
 
     val hapticOnMeasurement: Flow<Boolean>
     suspend fun setHapticOnMeasurement(value: Boolean)
+
+    val useDynamicColor: Flow<Boolean>
+    suspend fun setUseDynamicColor(enabled: Boolean)
 
     val currentUserId: Flow<Int?>
     suspend fun setCurrentUserId(userId: Int?)
@@ -351,6 +355,15 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun setHapticOnMeasurement(value: Boolean) {
         LogManager.d(TAG, "Setting hapticOnMeasurement to: $value")
         saveSetting(SettingsPreferenceKeys.HAPTIC_ON_MEASUREMENT.name, value)
+    }
+
+    override val useDynamicColor: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.USE_DYNAMIC_COLOR.name,
+        false
+    )
+
+    override suspend fun setUseDynamicColor(enabled: Boolean) {
+        saveSetting(SettingsPreferenceKeys.USE_DYNAMIC_COLOR.name, enabled)
     }
 
     override val currentUserId: Flow<Int?> = dataStore.data

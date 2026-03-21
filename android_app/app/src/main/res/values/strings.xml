@@ -521,6 +521,8 @@
     <string name="reminder_notification_title">openScale</string>
     <string name="settings_reminder_days_label">Days</string>
     <string name="permission_denied">Notifications permission denied</string>
+    <string name="settings_appearance_title">Appearance</string>
+    <string name="settings_dynamic_color_label">Dynamic colors</string>
 
     <string name="monday_short">Mon</string>
     <string name="tuesday_short">Tue</string>

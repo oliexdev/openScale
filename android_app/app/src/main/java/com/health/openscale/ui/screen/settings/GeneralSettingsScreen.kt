@@ -50,6 +50,7 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
@@ -124,6 +125,7 @@ fun GeneralSettingsScreen(
     val currentLanguageCode by sharedViewModel.appLanguageCode.collectAsState(initial = null)
     var expandedLanguageMenu by remember { mutableStateOf(false) }
     val hapticsEnabled by sharedViewModel.hapticOnMeasurement.collectAsState(initial = false)
+    val useDynamicColor by sharedViewModel.useDynamicColor.collectAsState(initial = false)
 
     val selectedLanguage: SupportedLanguage = remember(currentLanguageCode, supportedLanguagesEnumEntries) {
         val systemDefault = SupportedLanguage.getDefault().code
@@ -352,6 +354,24 @@ fun GeneralSettingsScreen(
             }
         }
 
+        // --- Appearance ---
+        SettingsSectionTitle(text = stringResource(R.string.settings_appearance_title))
+
+        SettingsGroup(
+            leadingIcon = {
+                Icon(
+                    imageVector        = Icons.Filled.Palette,
+                    contentDescription = null,
+                    tint               = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+            title           = stringResource(R.string.settings_dynamic_color_label),
+            checked         = useDynamicColor,
+            onCheckedChange = { enabled ->
+                scope.launch { sharedViewModel.setUseDynamicColor(enabled) }
+            }
+        )
+
         // ---- Haptic section ----
         SettingsSectionTitle(text = stringResource(R.string.settings_feedback_title))
 
@@ -375,8 +395,6 @@ fun GeneralSettingsScreen(
                             context.getString(R.string.settings_haptics_disabled_snackbar)
                     )
                 }
-            },
-            content = {
             }
         )
 
@@ -622,8 +640,9 @@ fun SettingsGroup(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     summary: String? = null,
-    content: @Composable ColumnScope.() -> Unit,
-    persistentContent: (@Composable ColumnScope.() -> Unit)? = null
+    content: (@Composable ColumnScope.() -> Unit)? = null,
+    persistentContent: (@Composable ColumnScope.() -> Unit)? = null,
+    showCard: Boolean = content != null || persistentContent != null,
 ) {
     val container = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
     val borderColor = if (checked)
@@ -631,18 +650,21 @@ fun SettingsGroup(
     else
         MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
 
-    Column(
-        modifier = Modifier
+    val cardModifier = if (showCard) {
+        Modifier
             .fillMaxWidth()
             .padding(top = 12.dp)
-            .then(
-                Modifier
-                    .clip(MaterialTheme.shapes.medium)
-                    .border(1.dp, borderColor, MaterialTheme.shapes.medium)
-                    .background(container)
-            )
+            .clip(MaterialTheme.shapes.medium)
+            .border(1.dp, borderColor, MaterialTheme.shapes.medium)
+            .background(container)
             .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
+    } else {
+        Modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp, bottom = 4.dp)
+    }
+
+    Column(modifier = cardModifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -650,14 +672,14 @@ fun SettingsGroup(
                 .semantics { contentDescription = title }
                 .clickable { onCheckedChange(!checked) },
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                 leadingIcon?.invoke()
                 Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(start = if (leadingIcon != null) 12.dp else 0.dp)
+                    text     = title,
+                    style    = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(start = if (leadingIcon != null) 12.dp else 0.dp),
                 )
             }
             Switch(checked = checked, onCheckedChange = onCheckedChange)
@@ -665,19 +687,17 @@ fun SettingsGroup(
 
         if (!summary.isNullOrBlank()) {
             Text(
-                text = summary,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp)
+                text     = summary,
+                style    = MaterialTheme.typography.bodySmall,
+                color    = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp),
             )
         }
 
         if (checked) {
-            content()
+            content?.invoke(this)
         }
 
-        if (persistentContent != null) {
-            persistentContent()
-        }
+        persistentContent?.invoke(this)
     }
 }

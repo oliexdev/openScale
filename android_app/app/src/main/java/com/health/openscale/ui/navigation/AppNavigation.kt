@@ -133,9 +133,7 @@ import com.health.openscale.ui.screen.settings.UserDetailScreen
 import com.health.openscale.ui.screen.settings.UserSettingsScreen
 import com.health.openscale.ui.screen.statistics.StatisticsScreen
 import com.health.openscale.ui.screen.table.TableScreen
-import com.health.openscale.ui.theme.Black
-import com.health.openscale.ui.theme.Blue
-import com.health.openscale.ui.theme.White
+import com.health.openscale.ui.theme.AppBrandBlue
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -433,16 +431,13 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet(
-                drawerContainerColor = Black, // Custom drawer background color
-                drawerContentColor = White    // Custom drawer content color for icons and text
-            ) {
+            ModalDrawerSheet {
                 // Drawer Header: Displays the app logo and name.
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .clip(RoundedCornerShape(topEnd = 24.dp)) // Specific rounding for visual style
-                        .background(Blue) // Themed background for the header
+                        .background(AppBrandBlue) // Themed background for the header
                         .padding(8.dp)
                         .fillMaxWidth()
                 ) {
@@ -456,14 +451,15 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(id = R.string.app_name),
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp)) // Spacing after the header
 
                 // Drawer Items: Dynamically created for each main route.
                 LazyColumn() {
-                    items(mainRoutes, key = {it}) { route ->
+                    items(mainRoutes, key = { it }) { route ->
                         // Add a divider before the "Settings" item for visual separation.
                         if (route == Routes.SETTINGS) {
                             HorizontalDivider(
@@ -493,7 +489,8 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                                 navController.navigate(route) {
                                     // Pop up to the start destination of the graph to avoid building up a large back stack.
                                     popUpTo(navController.graph.startDestinationId) {
-                                        saveState = true // Save the state of popped destinations.
+                                        saveState =
+                                            true // Save the state of popped destinations.
                                     }
                                     // Avoid multiple copies of the same destination when reselecting the same item.
                                     launchSingleTop = true
@@ -503,14 +500,14 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                                 scope.launch { drawerState.close() } // Close the drawer after selection.
                             },
                             colors = NavigationDrawerItemDefaults.colors(
-                                // Custom colors for selected and unselected drawer items.
-                                selectedIconColor = Blue,
-                                selectedTextColor = Blue,
-                                selectedContainerColor = Color.Transparent, // No background for the selected item itself.
-
-                                unselectedIconColor = White,
-                                unselectedTextColor = White,
-                                unselectedContainerColor = Color.Transparent
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(
+                                    alpha = 0.3f
+                                ),
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedContainerColor = Color.Transparent,
                             )
                         )
                     }
@@ -525,8 +522,8 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                     Snackbar(
                         modifier = Modifier.padding(8.dp), // Padding around the snackbar.
                         shape = RoundedCornerShape(8.dp), // Rounded corners for the snackbar.
-                        containerColor = Blue, // Custom background color.
-                        contentColor = White,    // Custom text and icon color.
+                        containerColor = MaterialTheme.colorScheme.inverseSurface,
+                        contentColor = MaterialTheme.colorScheme.inverseOnSurface,
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
@@ -548,10 +545,10 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                         overflow = TextOverflow.Ellipsis
                     ) },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Black,
-                        titleContentColor = White,
-                        navigationIconContentColor = White,
-                        actionIconContentColor = White
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                        actionIconContentColor = MaterialTheme.colorScheme.onSurface,
                     ),
                     navigationIcon = {
                         if (currentRoute in mainRoutes) {
@@ -804,7 +801,7 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                                 .asPaddingValues()
                                 .calculateBottomPadding() // Calculate its height.
                         )
-                        .background(Black) // Match TopAppBar color or general theme background.
+                        .background(MaterialTheme.colorScheme.surfaceContainer) // Match TopAppBar color or general theme background.
                 )
             }
         }

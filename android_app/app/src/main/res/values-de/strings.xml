@@ -505,6 +505,8 @@
     <string name="reminder_notification_title">openScale</string>
     <string name="settings_reminder_days_label">Tage</string>
     <string name="permission_denied">Erinnerungsfunktion-Berechtigungen abgelehnt</string>
+    <string name="settings_appearance_title">Erscheinungsbild</string>
+    <string name="settings_dynamic_color_label">Dynamische Farben</string>
 
     <string name="monday_short">Mo</string>
     <string name="tuesday_short">Di</string>

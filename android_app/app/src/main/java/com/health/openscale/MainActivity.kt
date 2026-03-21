@@ -22,11 +22,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.health.openscale.core.facade.SettingsFacade
@@ -58,7 +56,15 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            OpenScaleTheme {
+            // The main UI of the app.
+            val sharedViewModel: SharedViewModel = hiltViewModel()
+            val darkTheme = isSystemInDarkTheme()
+            val useDynamicColor by settingsFacade.useDynamicColor.collectAsStateWithLifecycle(initialValue = true)
+
+            OpenScaleTheme(
+                darkTheme       = darkTheme,
+                useDynamicColor = useDynamicColor,
+            ) {
                 // For APIs before Android 13 (Tiramisu), we need to manually
                 // listen for language changes and recreate the activity.
                 // For API 33+, the system handles this automatically via LocaleManager.
@@ -77,19 +83,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // The main UI of the app.
-                val sharedViewModel: SharedViewModel = hiltViewModel()
-
-                val view = LocalView.current
-                if (!view.isInEditMode) {
-                    DisposableEffect(Unit) {
-                        val window = this@MainActivity.window
-                        val insetsController = WindowCompat.getInsetsController(window, view)
-                        insetsController.isAppearanceLightStatusBars = false
-                        insetsController.isAppearanceLightNavigationBars = false
-                        onDispose { }
-                    }
-                }
                 AppNavigation(sharedViewModel)
             }
         }
