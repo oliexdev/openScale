@@ -41,12 +41,9 @@ class EtekcityESF551Handler : ScaleDeviceHandler() {
                 DeviceCapability.UNIT_CONFIG
             ),
             implemented = setOf(
-                // TODO: Is this correct? We only send the final measurement because otherwise all streamed measurements
-                //  would get saved.
                 DeviceCapability.LIVE_WEIGHT_STREAM,
                 DeviceCapability.BODY_COMPOSITION,
-                // TODO: Enable support for setting units.
-//                DeviceCapability.UNIT_CONFIG
+                DeviceCapability.UNIT_CONFIG
             ),
             linkMode = LinkMode.CONNECT_GATT
         )
@@ -55,8 +52,7 @@ class EtekcityESF551Handler : ScaleDeviceHandler() {
     override fun onConnected(user: ScaleUser) {
         logI("ESF-551 connected, starting setup sequence")
 
-        // TODO: Enable support for setting units
-//        setUnit(user.scaleUnit)
+        setUnit(user.scaleUnit)
 
         setNotifyOn(SCALE_SERVICE, WEIGHT_CHARACTERISTIC_NOTIFY)
         logD("Enabled notifications on weight characteristic")
