@@ -523,6 +523,7 @@
     <string name="permission_denied">Notifications permission denied</string>
     <string name="settings_appearance_title">Appearance</string>
     <string name="settings_dynamic_color_label">Dynamic colors</string>
+    <string name="settings_high_contrast_label">High contrast</string>
 
     <string name="monday_short">Mon</string>
     <string name="tuesday_short">Tue</string>

@@ -46,6 +46,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
@@ -126,6 +127,7 @@ fun GeneralSettingsScreen(
     var expandedLanguageMenu by remember { mutableStateOf(false) }
     val hapticsEnabled by sharedViewModel.hapticOnMeasurement.collectAsState(initial = false)
     val useDynamicColor by sharedViewModel.useDynamicColor.collectAsState(initial = false)
+    val useHighContrast by sharedViewModel.useHighContrast.collectAsState(initial = false)
 
     val selectedLanguage: SupportedLanguage = remember(currentLanguageCode, supportedLanguagesEnumEntries) {
         val systemDefault = SupportedLanguage.getDefault().code
@@ -369,6 +371,21 @@ fun GeneralSettingsScreen(
             checked         = useDynamicColor,
             onCheckedChange = { enabled ->
                 scope.launch { sharedViewModel.setUseDynamicColor(enabled) }
+            }
+        )
+
+        SettingsGroup(
+            leadingIcon = {
+                Icon(
+                    imageVector        = Icons.Filled.Contrast,
+                    contentDescription = null,
+                    tint               = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+            title           = stringResource(R.string.settings_high_contrast_label),
+            checked         = useHighContrast,
+            onCheckedChange = { enabled ->
+                scope.launch { sharedViewModel.setHighContrast(enabled) }
             }
         )
 

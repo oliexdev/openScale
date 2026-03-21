@@ -507,6 +507,7 @@
     <string name="permission_denied">Erinnerungsfunktion-Berechtigungen abgelehnt</string>
     <string name="settings_appearance_title">Erscheinungsbild</string>
     <string name="settings_dynamic_color_label">Dynamische Farben</string>
+    <string name="settings_high_contrast_label">Hoher Kontrast</string>
 
     <string name="monday_short">Mo</string>
     <string name="tuesday_short">Di</string>

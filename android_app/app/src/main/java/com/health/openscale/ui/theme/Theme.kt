@@ -265,7 +265,7 @@ fun OpenScaleTheme(
     val context = LocalContext.current
 
     val colorScheme: ColorScheme = when {
-        useDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
+        useDynamicColor ->
             if (darkTheme) dynamicDarkColorScheme(context)
             else dynamicLightColorScheme(context)
 

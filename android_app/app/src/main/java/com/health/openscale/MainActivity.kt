@@ -59,10 +59,12 @@ class MainActivity : ComponentActivity() {
             // The main UI of the app.
             val sharedViewModel: SharedViewModel = hiltViewModel()
             val darkTheme = isSystemInDarkTheme()
-            val useDynamicColor by settingsFacade.useDynamicColor.collectAsStateWithLifecycle(initialValue = true)
+            val useDynamicColor by settingsFacade.useDynamicColor.collectAsStateWithLifecycle(initialValue = false)
+            val useHighContrast by settingsFacade.useHighContrast.collectAsStateWithLifecycle(initialValue = false)
 
             OpenScaleTheme(
                 darkTheme       = darkTheme,
+                highContrast    = useHighContrast,
                 useDynamicColor = useDynamicColor,
             ) {
                 // For APIs before Android 13 (Tiramisu), we need to manually
