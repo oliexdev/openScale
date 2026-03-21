@@ -75,6 +75,10 @@ object ConverterUtils {
     }
 
     @JvmStatic
+    fun stLbToStDecimal(st: Int, lb: Int): Double =
+        st + (lb / LB_PER_ST_DOUBLE)
+
+    @JvmStatic
     fun fromSignedInt16Le(data: ByteArray, offset: Int): Int {
         var value = data[offset + 1].toInt() shl 8
         value += data[offset].toInt() and 0xFF
@@ -247,5 +251,16 @@ object ConverterUtils {
 
         return value
     }
+
+    /**
+     * Removes all non-digit characters from [input] and truncates the result to [maxLen] characters.
+     *
+     * @param input  The raw string to sanitize.
+     * @param maxLen The maximum number of digit characters to retain.
+     * @return       A string containing only digit characters, at most [maxLen] characters long.
+     */
+    @JvmStatic
+    fun sanitizeDigits(input: String, maxLen: Int): String =
+        input.filter { it.isDigit() }.take(maxLen)
 
 }
