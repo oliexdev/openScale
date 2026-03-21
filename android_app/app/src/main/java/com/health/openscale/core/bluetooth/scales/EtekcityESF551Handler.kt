@@ -1,3 +1,20 @@
+/*
+ * openScale
+ * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
@@ -17,12 +34,10 @@ import java.util.UUID
 class EtekcityESF551Handler : ScaleDeviceHandler() {
 
     companion object {
-        // TODO: Why can't uuid16 be used at the companion level? It's currently coupled to ScaleDeviceHandler.
         private val SCALE_SERVICE = UUID.fromString("0000fff0-0000-1000-8000-00805f9b34fb")
         private val WEIGHT_CHARACTERISTIC_NOTIFY = UUID.fromString("0000fff1-0000-1000-8000-00805f9b34fb")
         private val ALIRO_CHARACTERISTIC = UUID.fromString("0000fff2-0000-1000-8000-00805f9b34fb")
 
-        // TODO: These services and characteristics probably should be defined globally for all handlers.
         private val DEVICE_INFORMATION_SERVICE = UUID.fromString("0000180a-0000-1000-8000-00805f9b34fb")
         private val HW_REVISION_STRING_CHARACTERISTIC = UUID.fromString("00002a27-0000-1000-8000-00805f9b34fb")
         private val SW_REVISION_STRING_CHARACTERISTIC = UUID.fromString("00002a28-0000-1000-8000-00805f9b34fb")
