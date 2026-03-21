@@ -5,13 +5,6 @@ import kotlin.math.floor
 
 // Based on https://github.com/ronnnnnnnnnnnnn/etekcity_esf551_ble
 
-// TODO: Why are there multiple different ways to calculate these values?
-//  Some values might depend on device-specific factors, but others are independent or could be added even for devices
-//  which don't otherwise provide these values.
-//  Introduce either one true calculation method or maybe configurable alternatives (why?), so we have standard
-//  calculations across all devices instead of re-implementing this in different ways.
-//  Values that are measured by the hardware itself can still be taken from the hardware via the handler, but all
-//  undefined values could fall back to the standard calculation.
 data class EtekcityLib(
     val gender: GenderType,
     val age: Int,

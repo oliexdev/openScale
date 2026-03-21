@@ -132,8 +132,6 @@ class EtekcityESF551Handler : ScaleDeviceHandler() {
 //            measurement.metabolicAge = lib.metabolicAge
         }
 
-        // TODO: Why do streamed measurements all get saved?
-        //  We want just the final measurement, so skip anything else, for now.
         if (data[20] == 1.toByte() && impedance > 0) {
             logD("Final measurement: $measurement")
             return measurement
