@@ -8,6 +8,8 @@ import org.junit.Test
  * Unit tests for [EtekcityLib].
  */
 class EtekcityLibTest {
+    internal val EPS = 1e-3 // general float tolerance
+
     val lib = EtekcityLib(gender = GenderType.MALE, age = 30, weightKg = 70.0, heightM = 1.8, impedance = 527.0)
 
     @Test
