@@ -673,4 +673,13 @@
     <string name="formula_bf_us_navy">U.S. Navy</string>
     <string name="bf_us_navy_short">Metodo U.S. Navy</string>
     <string name="bf_us_navy_long">Calcola la percentuale di grasso corporeo in base alla circonferenza della vita, del collo e (per le donne) dei fianchi secondo lo standard della Marina Militare degli Stati Uniti.</string>
+    <string name="route_title_table_drilldown">Dettagli</string>
+    <string name="filter_section_time_range">Intervallo di tempo</string>
+    <string name="filter_section_aggregation">Aggregazione</string>
+    <string name="content_description_aggregation_selected">%1$s selezionato</string>
+    <string name="aggregation_level_none">Nessuna Aggregazione</string>
+    <string name="aggregation_level_day">Giorno</string>
+    <string name="aggregation_level_week">Settimana</string>
+    <string name="aggregation_level_month">Mesi</string>
+    <string name="aggregation_level_year">Anno</string>
 </resources>
