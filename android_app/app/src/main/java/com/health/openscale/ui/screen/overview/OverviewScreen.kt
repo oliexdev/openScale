@@ -17,7 +17,6 @@
  */
 package com.health.openscale.ui.screen.overview
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
@@ -49,6 +48,7 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Error
@@ -56,6 +56,7 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PersonSearch
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -81,13 +82,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -131,8 +132,6 @@ import com.health.openscale.ui.screen.settings.BluetoothViewModel
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Date
@@ -976,12 +975,21 @@ fun MeasurementValueRow(
 
     val flagged    = noAgeBand || outOfPlausibleRange
     val evalState  = evalResult?.state ?: EvaluationState.UNDEFINED
-    val evalSymbol = if (flagged) "!" else when (evalState) {
-        EvaluationState.LOW     -> "▼"
-        EvaluationState.NORMAL  -> "●"
-        EvaluationState.HIGH    -> "▲"
-        EvaluationState.UNDEFINED -> "●"
+    val evalIcon: ImageVector? = if (flagged) Icons.Filled.Warning
+    else when (evalState) {
+        EvaluationState.LOW       -> Icons.Filled.Circle
+        EvaluationState.NORMAL    -> Icons.Filled.Circle
+        EvaluationState.HIGH      -> Icons.Filled.Circle
+        EvaluationState.UNDEFINED -> null
     }
+    val iconSize = if (flagged) 14.dp
+    else when (evalState)  {
+        EvaluationState.LOW       -> 10.dp
+        EvaluationState.NORMAL    -> 10.dp
+        EvaluationState.HIGH      -> 10.dp
+        EvaluationState.UNDEFINED -> 10.dp
+    }
+
     val evalColor = if (flagged) MaterialTheme.colorScheme.error else evalState.toColor()
 
     Row(
@@ -1053,7 +1061,16 @@ fun MeasurementValueRow(
                 textAlign  = TextAlign.End,
             )
             Spacer(Modifier.width(6.dp))
-            Text(text = evalSymbol, color = evalColor, style = MaterialTheme.typography.bodyLarge)
+            if (evalIcon != null) {
+                Icon(
+                    imageVector        = evalIcon,
+                    contentDescription = null,
+                    tint               = evalColor,
+                    modifier           = Modifier.size(iconSize),
+                )
+            } else {
+                Spacer(modifier = Modifier.size(iconSize))
+            }
         }
     }
 }

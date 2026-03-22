@@ -46,10 +46,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.SupervisorAccount
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.CheckBox
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -975,7 +977,7 @@ fun TableDataCellInternal(
                             text       = "⌀",
                             style      = MaterialTheme.typography.bodyLarge,
                             fontWeight = if (isAggregated) FontWeight.SemiBold else FontWeight.Normal,
-                            modifier   = Modifier.alignByBaseline().padding(end = 2.dp),
+                            modifier   = Modifier.padding(end = 2.dp),
                         )
                     }
                     Text(
@@ -985,19 +987,31 @@ fun TableDataCellInternal(
                         textAlign  = alignment,
                         maxLines   = 2,
                         overflow   = TextOverflow.Ellipsis,
-                        modifier   = Modifier.alignByBaseline(),
                     )
                     if (cellData.evalState != null) {
-                        val symbol = when {
-                            cellData.flagged -> "!"
-                            cellData.evalState == EvaluationState.HIGH -> "▲"
-                            cellData.evalState == EvaluationState.LOW  -> "▼"
-                            else -> "●"
+                        val evalIcon = when {
+                            cellData.flagged                            -> Icons.Filled.Warning
+                            cellData.evalState == EvaluationState.HIGH  -> Icons.Filled.Circle
+                            cellData.evalState == EvaluationState.LOW   -> Icons.Filled.Circle
+                            else                                        -> Icons.Filled.Circle
                         }
+
+                        val iconSize = when {
+                            cellData.flagged                            -> 14.dp
+                            cellData.evalState == EvaluationState.HIGH  -> 10.dp
+                            cellData.evalState == EvaluationState.LOW   -> 10.dp
+                            else                                        -> 10.dp
+                        }
+
                         val color = if (cellData.flagged) MaterialTheme.colorScheme.error
                         else cellData.evalState.toColor()
-                        Box(Modifier.width(symbolColWidth).alignByBaseline(), Alignment.CenterEnd) {
-                            Text(text = symbol, color = color, style = MaterialTheme.typography.bodyLarge)
+                        Box(Modifier.width(symbolColWidth), Alignment.Center) {
+                            Icon(
+                                imageVector        = evalIcon,
+                                contentDescription = null,
+                                tint               = color,
+                                modifier           = Modifier.size(iconSize),
+                            )
                         }
                     } else {
                         Spacer(Modifier.width(symbolColWidth))
