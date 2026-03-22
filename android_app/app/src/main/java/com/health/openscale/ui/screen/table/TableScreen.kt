@@ -21,6 +21,7 @@ import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -104,6 +105,7 @@ import com.health.openscale.ui.screen.settings.BluetoothViewModel
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
 import com.health.openscale.core.utils.LocaleUtils
+import com.health.openscale.ui.screen.components.SHOW_TYPE_FILTER_ROW_SUFFIX
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.filter
@@ -203,6 +205,9 @@ fun TableScreen(
     // ── Selection ─────────────────────────────────────────────────────────────
     var isInSelectionMode by rememberSaveable { mutableStateOf(false) }
     var selectedKeys by remember { mutableStateOf<Set<String>>(emptySet()) }
+    val showTypeFilterRow by sharedViewModel
+        .observeSetting("${SettingsPreferenceKeys.TABLE_SCREEN_CONTEXT}${SHOW_TYPE_FILTER_ROW_SUFFIX}", true)
+        .collectAsState(initial = true)
 
     fun toggleKey(key: String) {
         selectedKeys = if (key in selectedKeys) selectedKeys - key else selectedKeys + key
@@ -618,7 +623,6 @@ fun TableScreen(
 
     val addMeasurementAction = rememberAddMeasurementActionButton(sharedViewModel, navController)
     val bluetoothAction      = rememberBluetoothActionButton(bluetoothViewModel, sharedViewModel, navController)
-    // FIX: also provide filter action in drill-down (was null before)
     val filterAction         = if (!isDrillDown) provideFilterTopBarAction(
         sharedViewModel   = sharedViewModel,
         screenContextName = SettingsPreferenceKeys.TABLE_SCREEN_CONTEXT,
@@ -665,7 +669,6 @@ fun TableScreen(
                 actions.add(bluetoothAction)
                 actions.add(addMeasurementAction)
             }
-            // FIX: show selection mode button also in drill-down if there are items
             if (aggregatedItems.isNotEmpty()) {
                 actions.add(TopBarAction(
                     icon                    = Icons.Outlined.CheckBox,
@@ -678,7 +681,6 @@ fun TableScreen(
         }
     }
 
-    // FIX: BackHandler also active in drill-down when in selection mode
     if (isInSelectionMode) {
         BackHandler(enabled = true) {
             isInSelectionMode = false
@@ -700,7 +702,7 @@ fun TableScreen(
     val dateColumnHeader               = stringResource(R.string.table_header_date)
 
     Column(modifier = Modifier.fillMaxSize()) {
-        if (!isDrillDown) {
+        AnimatedVisibility(visible = !isDrillDown && showTypeFilterRow) {
             MeasurementTypeFilterRow(
                 allMeasurementTypesProvider = { allAvailableTypesFromVM },
                 selectedTypeIdsFlowProvider = { sharedViewModel.selectedTableTypeIds },
@@ -737,7 +739,6 @@ fun TableScreen(
             )
             HorizontalDivider()
         }
-
         when {
             tableUiState is SharedViewModel.UiState.Loading -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
