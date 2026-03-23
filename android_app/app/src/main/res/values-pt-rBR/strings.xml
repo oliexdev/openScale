@@ -683,4 +683,7 @@
     <string name="aggregation_level_week">Semana</string>
     <string name="aggregation_level_month">Meses</string>
     <string name="aggregation_level_year">Ano</string>
+    <string name="settings_appearance_title">Aparência</string>
+    <string name="settings_dynamic_color_label">Cores dinâmicas</string>
+    <string name="settings_high_contrast_label">Alto contraste</string>
 </resources>
