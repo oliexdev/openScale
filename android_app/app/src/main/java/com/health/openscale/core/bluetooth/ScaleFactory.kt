@@ -50,6 +50,7 @@ import com.health.openscale.core.bluetooth.scales.QNHandler
 import com.health.openscale.core.bluetooth.scales.RealmeScaleHandler
 import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
 import com.health.openscale.core.bluetooth.scales.RenphoHandler
+import com.health.openscale.core.bluetooth.scales.RunstarR5Handler
 import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler
 import com.health.openscale.core.bluetooth.scales.SenssunHandler
 import com.health.openscale.core.bluetooth.scales.SinocareHandler
@@ -103,6 +104,7 @@ class ScaleFactory @Inject constructor(
         OkOkHandler(),
         MiScaleS400Handler(),
         MiScaleHandler(),
+        RunstarR5Handler(),
         MGBHandler(),
         MedisanaBs44xHandler(),
         InlifeHandler(),
