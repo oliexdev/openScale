@@ -686,4 +686,5 @@
     <string name="aggregation_level_year">År</string>
     <string name="settings_appearance_title">Utseende</string>
     <string name="settings_dynamic_color_label">Dynamiska färger</string>
+    <string name="auto_connect_on_startup_title">automatisk anslutning vid uppstart</string>
 </resources>
