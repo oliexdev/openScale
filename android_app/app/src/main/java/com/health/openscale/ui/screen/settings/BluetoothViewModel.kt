@@ -32,7 +32,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 /**
@@ -69,6 +72,7 @@ class BluetoothViewModel @Inject constructor(
     val isSmartAssignmentEnabled = settingsFacade.isSmartAssignmentEnabled
     val smartAssignmentTolerancePercent = settingsFacade.smartAssignmentTolerancePercent
     val smartAssignmentIgnoreOutsideTolerance = settingsFacade.smartAssignmentIgnoreOutsideTolerance
+    val autoConnectOnStartup = settingsFacade.autoConnectOnStartup
 
     fun setSmartAssignmentEnabled(enabled: Boolean) = viewModelScope.launch {
         settingsFacade.setSmartAssignmentEnabled(enabled)
@@ -82,6 +86,9 @@ class BluetoothViewModel @Inject constructor(
         settingsFacade.setSmartAssignmentIgnoreOutsideTolerance(ignore)
     }
 
+    fun setAutoConnectOnStartup(enabled: Boolean) = viewModelScope.launch {
+        settingsFacade.setAutoConnectOnStartup(enabled)
+    }
     // --- Snackbar events for UI ---
     private val _snackbarEvents = MutableSharedFlow<SnackbarEvent>(replay = 0, extraBufferCapacity = 1)
     val snackbarEvents: SharedFlow<SnackbarEvent> = _snackbarEvents.asSharedFlow()
@@ -90,6 +97,22 @@ class BluetoothViewModel @Inject constructor(
         viewModelScope.launch {
             bt.snackbarEventsFromConnector.collect { evt ->
                 _snackbarEvents.emit(evt)
+            }
+        }
+
+        // Auto-connect on startup
+        viewModelScope.launch {
+            val enabled = settingsFacade.autoConnectOnStartup.first()
+            if (!enabled) return@launch
+
+            val device = withTimeoutOrNull(1_500) {
+                bt.savedDevice
+                    .filter { it != null }
+                    .first()
+            }
+
+            if (device != null) {
+                bt.attemptAutoConnectToSavedDevice()
             }
         }
     }
@@ -121,8 +144,6 @@ class BluetoothViewModel @Inject constructor(
     fun setSavedTuning(profile: TuningProfile) = bt.setSavedTuning(profile)
 
     fun clearAllErrors() = bt.clearErrors()
-
-    fun attemptAutoConnectToSavedScale() = bt.attemptAutoConnectToSavedDevice()
 
     fun provideUserInteractionFeedback(type: BluetoothEvent.UserInteractionType, feedbackData: Any) =
         bt.provideUserInteractionFeedback(type, feedbackData)

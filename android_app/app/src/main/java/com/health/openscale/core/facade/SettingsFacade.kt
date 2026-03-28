@@ -89,6 +89,7 @@ object SettingsPreferenceKeys {
     val SAVED_BLUETOOTH_SMART_ASSIGNMENT_ENABLED = booleanPreferencesKey("saved_bluetooth_smart_assignment_enabled")
     val SAVED_BLUETOOTH_TOLERANCE_PERCENT = intPreferencesKey("saved_bluetooth_tolerance_percent")
     val SAVED_BLUETOOTH_IGNORE_OUTSIDE_TOLERANCE = booleanPreferencesKey("saved_bluetooth_ignore_outside_tolerance")
+    val SAVED_BLUETOOTH_AUTO_CONNECT = booleanPreferencesKey("saved_bluetooth_auto_connect")
 
     // Settings for chart
     val CHART_SHOW_DATA_POINTS = booleanPreferencesKey("chart_show_data_points")
@@ -273,6 +274,9 @@ interface SettingsFacade {
 
     val selectedLbmFormula: Flow<LbmFormulaOption>
     suspend fun setSelectedLbmFormula(option: LbmFormulaOption)
+
+    val autoConnectOnStartup: Flow<Boolean>
+    suspend fun setAutoConnectOnStartup(enabled: Boolean)
 
     // Generic Settings Accessors
     /**
@@ -535,6 +539,7 @@ class SettingsFacadeImpl @Inject constructor(
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS)
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT)
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA)
+            prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_AUTO_CONNECT)
         }
     }
 
@@ -572,6 +577,15 @@ class SettingsFacadeImpl @Inject constructor(
                 preferences.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_TUNE_PROFILE)
             }
         }
+    }
+
+    override val autoConnectOnStartup: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.SAVED_BLUETOOTH_AUTO_CONNECT.name,
+        false
+    )
+
+    override suspend fun setAutoConnectOnStartup(enabled: Boolean) {
+        saveSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_AUTO_CONNECT.name, enabled)
     }
 
     override val isSmartAssignmentEnabled: Flow<Boolean> = observeSetting(

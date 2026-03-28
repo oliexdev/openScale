@@ -364,6 +364,7 @@
     <string name="tolerance_desc">Max. weight deviation to automatically assign to a user.</string>
     <string name="developer_section_title">Developer</string>
     <string name="danger_zone_title">Danger Zone</string>
+    <string name="auto_connect_on_startup_title">Auto-connect on startup</string>
 
     <!-- Scale Configuration (generic, shown when a handler declares config fields) -->
     <string name="scale_configuration_title">Scale Configuration</string>

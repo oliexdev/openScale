@@ -359,6 +359,7 @@
     <string name="tolerance_desc">Max. Gewichtsabweichung, um eine Messung automatisch einem Benutzer zuzuweisen.</string>
     <string name="developer_section_title">Entwickler</string>
     <string name="danger_zone_title">Gefahrenzone</string>
+    <string name="auto_connect_on_startup_title">Automatisch verbinden beim Start</string>
 
     <!-- Bluetooth Connector -->
     <string name="bluetooth_connector_connected_to">Verbunden mit %1$s</string>

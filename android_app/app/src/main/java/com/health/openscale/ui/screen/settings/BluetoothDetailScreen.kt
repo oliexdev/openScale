@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BluetoothConnected
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.People
@@ -105,6 +106,7 @@ fun BluetoothDetailScreen(
     var tuningDropdownExpanded by remember { mutableStateOf(false) }
     val availableTuningProfiles = remember { TuningProfile.entries.toList() }
     var showToleranceDialog by remember { mutableStateOf(false) }
+    val autoConnectOnStartup by bluetoothViewModel.autoConnectOnStartup.collectAsStateWithLifecycle(false)
 
     if (showToleranceDialog) {
         NumberInputDialog(
@@ -194,6 +196,17 @@ fun BluetoothDetailScreen(
 
         // --- BLUETOOTH MEASUREMENT SECTION ---
         SettingsSectionTitle(title = stringResource(R.string.bluetooth_measurement_title))
+        SettingsRow(
+            modifier    = Modifier.padding(horizontal = 16.dp),
+            label       = stringResource(R.string.auto_connect_on_startup_title),
+            icon        = Icons.Default.BluetoothConnected,
+            onClick     = { scope.launch { bluetoothViewModel.setAutoConnectOnStartup(!autoConnectOnStartup) } }
+        ) {
+            Switch(
+                checked         = autoConnectOnStartup,
+                onCheckedChange = null,
+            )
+        }
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 SettingsRow(
@@ -342,6 +355,7 @@ private fun SettingsSectionTitle(
  */
 @Composable
 private fun SettingsRow(
+    modifier: Modifier = Modifier,
     label: String,
     description: String? = null,
     icon: ImageVector? = null,
@@ -349,7 +363,7 @@ private fun SettingsRow(
     content: @Composable () -> Unit
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
     ) {
