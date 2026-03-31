@@ -683,4 +683,8 @@
     <string name="aggregation_level_none">Sin agregación</string>
     <string name="filter_section_time_range">Intervalo de tiempo</string>
     <string name="calendar_week_abbrev">Sem</string>
+    <string name="auto_connect_on_startup_title">Conexión automática al iniciar</string>
+    <string name="settings_appearance_title">Apariencia</string>
+    <string name="settings_dynamic_color_label">Colores dinámicos</string>
+    <string name="settings_high_contrast_label">Alto contraste</string>
 </resources>
