@@ -85,10 +85,15 @@ class QNHandler : ScaleDeviceHandler() {
         val uuids = device.serviceUuids.toSet()
 
         val hasQN = uuids.contains(uuid16(0xFFE0)) || uuids.contains(uuid16(0xFFF0))
-        val nameIsQn = nameLc.contains("qn-scale") || nameLc.contains("renpho-scale")
+        val nameIsQnFamily =
+            nameLc.contains("qn-scale") ||
+            nameLc.contains("renpho-scale") ||
+            // SEB/Tefal Goodvibes variants advertise under SEB branding
+            // while keeping the QN/Yolanda service layout.
+            nameLc.contains("seb-scale")
 
-        // Require BOTH: QN services AND QN-typical name,
-        if (!((hasQN && nameIsQn))) return null
+        // Require BOTH: QN services AND a QN-family name hint.
+        if (!(hasQN && nameIsQnFamily)) return null
 
         likelyUseType1 = uuids.contains(uuid16(0xFFE0)) && !uuids.contains(uuid16(0xFFF0))
 
