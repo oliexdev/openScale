@@ -108,6 +108,8 @@ class BackupRestoreUseCases @Inject constructor(
         val dbFile = appContext.getDatabasePath(dbName)
         val dbDir = dbFile.parentFile ?: error("Database directory not found")
         val restored = mutableListOf<String>()
+        // Restore into a temporary workspace first so the live database is untouched
+        // until the incoming payload has been staged and validated.
         val restoreSessionDir = File(dbDir, "$dbName.restore-${System.currentTimeMillis()}").apply {
             mkdirs()
         }
@@ -189,6 +191,7 @@ class BackupRestoreUseCases @Inject constructor(
     ): String {
         val mainDb = File(stagingDir, dbName)
         val allowedNames = setOf(dbName, "$dbName-shm", "$dbName-wal")
+        // Support both the current ZIP backup format and older single-file database exports.
         val isZip = contentResolver.openInputStream(restoreUri)?.use { input ->
             val header = ByteArray(4)
             val read = input.read(header)
@@ -207,6 +210,7 @@ class BackupRestoreUseCases @Inject constructor(
                         val entryName = entry.name
                         when {
                             entry.isDirectory -> Unit
+                            // ZIP restores only accept the database files at the archive root.
                             entryName.contains('/') || entryName.contains('\\') -> {
                                 LogManager.w(TAG, "Skipping nested ZIP entry '$entryName' during restore.")
                             }
@@ -230,6 +234,8 @@ class BackupRestoreUseCases @Inject constructor(
             } ?: throw IOException("Cannot open InputStream for Uri: $restoreUri")
         }
 
+        // The staged main database must both look like SQLite and match the openScale schema
+        // before the live files are closed or replaced.
         require(mainDb.exists()) { "Main DB file '$dbName' missing in backup" }
         require(isValidOpenScaleMainDb(mainDb)) {
             "Main DB file '$dbName' is not a valid openScale database"
@@ -251,6 +257,7 @@ class BackupRestoreUseCases @Inject constructor(
 
         val movedLiveNames = mutableListOf<String>()
         try {
+            // Move the current live files aside first so they can be restored if the swap fails.
             managedNames.forEach { name ->
                 val live = liveFiles.getValue(name)
                 if (live.exists()) {
@@ -259,6 +266,7 @@ class BackupRestoreUseCases @Inject constructor(
                 }
             }
 
+            // Promote the staged files into the live database location.
             managedNames.forEach { name ->
                 val staged = stagedFiles.getValue(name)
                 if (staged.exists()) {
@@ -266,6 +274,7 @@ class BackupRestoreUseCases @Inject constructor(
                 }
             }
         } catch (swapError: Exception) {
+            // Remove any partially restored files before moving the previous live files back.
             managedNames.forEach { name ->
                 val live = liveFiles.getValue(name)
                 if (live.exists() && !live.delete()) {
@@ -299,6 +308,7 @@ class BackupRestoreUseCases @Inject constructor(
     private fun moveReplacing(source: File, destination: File) {
         destination.parentFile?.mkdirs()
         try {
+            // Keep the swap atomic when the filesystem supports it.
             Files.move(
                 source.toPath(),
                 destination.toPath(),
@@ -335,6 +345,8 @@ class BackupRestoreUseCases @Inject constructor(
                     }
                 }
 
+                // Accept both the current Room schema and the legacy schema that older
+                // openScale backups may still contain.
                 tableNames.containsAll(CURRENT_OPEN_SCALE_TABLES) ||
                     tableNames.containsAll(LEGACY_OPEN_SCALE_TABLES)
             } finally {

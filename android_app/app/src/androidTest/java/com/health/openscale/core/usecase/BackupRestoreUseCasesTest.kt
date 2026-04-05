@@ -176,6 +176,33 @@ class BackupRestoreUseCasesTest {
     }
 
     @Test
+    fun restoreDatabase_withLegacySingleFile_restoresAndMigrates() = runBlocking {
+        val legacyDb = File(sandboxRoot, "legacy-openscale.db")
+        createLegacyDatabase(legacyDb)
+
+        val result = useCases.restoreDatabase(Uri.fromFile(legacyDb), baseContext.contentResolver)
+        assertTrue("restore should accept legacy openScale single-file databases", result.isSuccess)
+
+        val reopened = buildDatabase(sandboxContext)
+        try {
+            val reopenedRepo = DatabaseRepository(
+                database = reopened,
+                userDao = reopened.userDao(),
+                userGoalsDao = reopened.userGoalsDao(),
+                measurementDao = reopened.measurementDao(),
+                measurementTypeDao = reopened.measurementTypeDao(),
+                measurementValueDao = reopened.measurementValueDao()
+            )
+
+            val users = reopenedRepo.getAllUsers().first()
+            assertEquals(1, users.size)
+            assertEquals("legacy-user", users.single().name)
+        } finally {
+            reopened.close()
+        }
+    }
+
+    @Test
     fun restoreDatabase_withValidBackupZip_restoresPreviousSnapshot() = runBlocking {
         val backupZip = File(sandboxRoot, "valid-backup.zip")
         useCases.backupDatabase(Uri.fromFile(backupZip), baseContext.contentResolver).getOrThrow()
@@ -232,4 +259,65 @@ class BackupRestoreUseCasesTest {
                 com.health.openscale.core.database.MIGRATION_13_14
             )
             .build()
+
+    private fun createLegacyDatabase(file: File) {
+        val database = SQLiteDatabase.openOrCreateDatabase(file, null)
+        try {
+            database.execSQL(
+                """
+                    CREATE TABLE scaleUsers (
+                        id INTEGER PRIMARY KEY,
+                        username TEXT NOT NULL,
+                        birthday INTEGER NOT NULL,
+                        gender INTEGER NOT NULL,
+                        bodyHeight REAL NOT NULL,
+                        activityLevel INTEGER NOT NULL
+                    )
+                """.trimIndent()
+            )
+            database.execSQL(
+                """
+                    CREATE TABLE scaleMeasurements (
+                        id INTEGER PRIMARY KEY,
+                        userId INTEGER NOT NULL,
+                        datetime INTEGER,
+                        enabled INTEGER NOT NULL,
+                        weight REAL,
+                        fat REAL,
+                        water REAL,
+                        muscle REAL,
+                        visceralFat REAL,
+                        lbm REAL,
+                        waist REAL,
+                        hip REAL,
+                        bone REAL,
+                        chest REAL,
+                        thigh REAL,
+                        biceps REAL,
+                        neck REAL,
+                        caliper1 REAL,
+                        caliper2 REAL,
+                        caliper3 REAL,
+                        calories REAL,
+                        comment TEXT
+                    )
+                """.trimIndent()
+            )
+            database.execSQL(
+                """
+                    INSERT INTO scaleUsers (id, username, birthday, gender, bodyHeight, activityLevel)
+                    VALUES (1, 'legacy-user', 946684800000, 1, 168.0, 2)
+                """.trimIndent()
+            )
+            database.execSQL(
+                """
+                    INSERT INTO scaleMeasurements (id, userId, datetime, enabled, weight, comment)
+                    VALUES (1, 1, 1712325600000, 1, 72.5, 'legacy measurement')
+                """.trimIndent()
+            )
+            database.execSQL("PRAGMA user_version = 6")
+        } finally {
+            database.close()
+        }
+    }
 }
