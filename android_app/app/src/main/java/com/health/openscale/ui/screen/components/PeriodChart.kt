@@ -117,14 +117,16 @@ fun PeriodChart(
         columnLayer,
         startAxis = null,
         bottomAxis = HorizontalAxis.rememberBottom(
-            itemPlacer = HorizontalAxis.ItemPlacer.segmented(),
+            itemPlacer = HorizontalAxis.ItemPlacer.aligned(
+                addExtremeLabelPadding = true,
+            ),
             valueFormatter = CartesianValueFormatter { context, x, _ ->
                 val labels = context.model.extraStore[BottomAxisLabelKey]
                 if (labels.isNotEmpty() && x.toInt() in labels.indices) labels[x.toInt()] else ""
             },
             guideline = null,
             label = rememberAxisLabelComponent(
-                lineCount = 2,       // allow wrapping if needed
+                lineCount = 1,       // no wrap
             )
         ),
         marker = rememberMarker(

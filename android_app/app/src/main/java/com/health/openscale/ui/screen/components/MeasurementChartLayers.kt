@@ -24,9 +24,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.health.openscale.R
+import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.UserGoals
@@ -56,6 +60,7 @@ import com.patrykandpatrick.vico.compose.common.data.ExtraStore
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -374,14 +379,30 @@ internal fun rememberMarkerVisibilityListener(
 
 /**
  * Remembers a [CartesianValueFormatter] for the X-axis that formats epoch day floats
- * back to human-readable date strings.
+ * back to human-readable date strings. The date format adapts to the current [aggregationLevel]:
  */
 @Composable
-internal fun rememberXAxisValueFormatter(chartSeries: List<ChartSeries>): CartesianValueFormatter =
-    remember(chartSeries) {
+internal fun rememberXAxisValueFormatter(
+    chartSeries: List<ChartSeries>,
+    aggregationLevel: AggregationLevel = AggregationLevel.NONE,
+): CartesianValueFormatter {
+    val weekAbbrev = stringResource(R.string.calendar_week_abbrev)
+    return remember(chartSeries, aggregationLevel, weekAbbrev) {
         val xToDatesMap = chartSeries.flatMap { it.points }.associate { it.x to it.date }
+
+        val pattern = when (aggregationLevel) {
+            AggregationLevel.NONE  -> "d MMM"
+            AggregationLevel.DAY   -> "d MMM"
+            AggregationLevel.WEEK  -> "'${weekAbbrev}'w MMM"
+            AggregationLevel.MONTH -> "MMM yy"
+            AggregationLevel.YEAR  -> "yyyy"
+        }
+
+        val formatter = DateTimeFormatter.ofPattern(pattern)
+
         CartesianValueFormatter { _, value, _ ->
             (xToDatesMap[value.toFloat()] ?: LocalDate.ofEpochDay(value.toLong()))
-                .format(DateTimeFormatter.ofPattern("d MMM"))
+                .format(formatter)
         }
     }
+}

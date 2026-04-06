@@ -52,6 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.health.openscale.R
+import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
@@ -168,6 +169,7 @@ fun MeasurementChart(
     val isSmoothingActive by remember {
         sharedViewModel.selectedSmoothingAlgorithm.map { it != SmoothingAlgorithm.NONE }
     }.collectAsStateWithLifecycle(initialValue = false)
+    val activeAggregationLevel by rememberResolvedAggregationLevel(screenContextName, sharedViewModel)
 
     // ── Time range — still needed for the filter title label and period chart ─
     // Note: start/end are NOT passed to the data pipeline anymore (that happens
@@ -483,10 +485,24 @@ fun MeasurementChart(
 
                 val xAxis = if (targetMeasurementTypeId == null) {
                     HorizontalAxis.rememberBottom(
-                        valueFormatter = rememberXAxisValueFormatter(chartSeries),
-                        guideline      = null,
+                        valueFormatter = rememberXAxisValueFormatter(chartSeries, activeAggregationLevel),
+                        itemPlacer = remember(activeAggregationLevel) {
+                            val spacing = when (activeAggregationLevel) {
+                                AggregationLevel.NONE    -> 1
+                                AggregationLevel.DAY   -> 1
+                                AggregationLevel.WEEK  -> 7
+                                AggregationLevel.MONTH -> 30
+                                AggregationLevel.YEAR  -> 365
+                            }
+                            HorizontalAxis.ItemPlacer.aligned(
+                                spacing = { spacing },
+                                addExtremeLabelPadding = true,
+                            )
+                        },
+                        guideline = null,
                     )
                 } else null
+
                 val startYAxis = if (showYAxis)
                     VerticalAxis.rememberStart(valueFormatter = CartesianValueFormatter.decimal())
                 else null
