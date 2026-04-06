@@ -20,7 +20,7 @@ package com.health.openscale.core.bluetooth.scales
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
-import com.health.openscale.core.bluetooth.libs.EtekcityLib
+import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
 import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
@@ -110,7 +110,7 @@ class EtekcityESF551Handler : ScaleDeviceHandler() {
         }
 
         val weightRaw = data[10].toUInt() or data[11].toUInt().shl(8) or data[12].toUInt().shl(16)
-        val weightKg = weightRaw.toInt() / 1000.0
+        val weightKg = weightRaw.toDouble() / 1000.0
         val impedance = (data[13].toUInt() or data[14].toUInt().shl(8)).toDouble()
 //        val displayUnit = WeightUnit.fromInt(data[21].toInt())
         val measurement = ScaleMeasurement(
@@ -120,31 +120,19 @@ class EtekcityESF551Handler : ScaleDeviceHandler() {
             impedance = impedance,
         )
 
-        if (impedance > 0) {
-            val lib = EtekcityLib(
+        if (impedance > 0 && impedance < 1500) {
+            val lib = StandardImpedanceLib(
                 gender = user.gender,
                 age = user.age,
                 weightKg = weightKg,
                 heightM = user.bodyHeight / 100.0,
                 impedance = impedance,
             )
-            measurement.fat = lib.bodyFatPercentage.toFloat()
-            measurement.water = lib.water.toFloat()
+            measurement.fat = lib.totalFatPercentage.toFloat()
+            measurement.water = lib.totalBodyWaterPercentage.toFloat()
             measurement.muscle = lib.skeletalMusclePercentage.toFloat()
-            measurement.visceralFat = lib.visceralFat.toFloat()
-            measurement.bone = lib.boneMass.toFloat()
+            measurement.bone = lib.boneMassKg.toFloat()
             measurement.bmr = lib.basalMetabolicRate.toFloat()
-
-            // TODO: Add other measurements once supported
-//            measurement.fatFreeWeight = lib.fatFreeWeight.toFloat()
-//            measurement.subcutaneousFat = lib.subcutaneousFat.toFloat()
-//            measurement.muscleMass = lib.muscleMass.toFloat()
-//            measurement.proteinPercentage = lib.proteinPercentage.toFloat()
-//            measurement.weightScore = lib.weightScore
-//            measurement.fatScore = lib.fatScore
-//            measurement.bmiScore = lib.bmiScore
-//            measurement.healthScore = lib.healthScore
-//            measurement.metabolicAge = lib.metabolicAge
         }
 
         if (data[20] == 1.toByte() && impedance > 0) {

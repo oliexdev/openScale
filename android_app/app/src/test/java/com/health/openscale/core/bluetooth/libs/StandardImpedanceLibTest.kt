@@ -22,31 +22,26 @@ import com.health.openscale.core.data.GenderType
 import org.junit.Test
 
 /**
- * Unit tests for [EtekcityLib].
+ * Unit tests for [StandardImpedanceLib].
  */
-class EtekcityLibTest {
+class StandardImpedanceLibTest {
     internal val EPS = 1e-3 // general float tolerance
 
-    val lib = EtekcityLib(gender = GenderType.MALE, age = 30, weightKg = 80.0, heightM = 1.8, impedance = 527.0)
+    val lib = StandardImpedanceLib(gender = GenderType.MALE, age = 30, weightKg = 80.0, heightM = 1.8, impedance = 527.0)
 
     @Test
     fun bmi_isComputedCorrectly_forTypicalMale() {
         assertThat(lib.bmi).isWithin(EPS).of(24.69136)
-        assertThat(lib.bodyFatPercentage).isWithin(EPS).of(17.7)
-        assertThat(lib.fatFreeWeight).isWithin(EPS).of(65.84)
-        assertThat(lib.visceralFat).isWithin(EPS).of(7.64163)
-        assertThat(lib.water).isWithin(EPS).of(59.4206)
-        assertThat(lib.basalMetabolicRate).isWithin(EPS).of(1792.144)
-        assertThat(lib.skeletalMusclePercentage).isWithin(EPS).of(53.1658)
-        assertThat(lib.boneMass).isWithin(EPS).of(3.292)
-        assertThat(lib.subcutaneousFat).isWithin(EPS).of(15.3993)
-        assertThat(lib.muscleMass).isWithin(EPS).of(62.548)
-        assertThat(lib.proteinPercentage).isWithin(EPS).of(18.7644)
-        assertThat(lib.weightScore).isEqualTo(76)
-        assertThat(lib.fatScore).isEqualTo(97)
-        assertThat(lib.bmiScore).isEqualTo(89)
-        assertThat(lib.healthScore).isEqualTo(87)
-        assertThat(lib.metabolicAge).isEqualTo(29)
+        assertThat(lib.fatFreeMassKg).isWithin(EPS).of(60.622)
+        assertThat(lib.totalFatPercentage).isWithin(EPS).of(24.222)
+        assertThat(lib.totalBodyWaterPercentage).isWithin(EPS).of(53.819)
+        assertThat(lib.basalMetabolicRate).isWithin(EPS).of(1679.436)
+        assertThat(lib.skeletalMusclePercentage).isWithin(EPS).of(39.313)
+        assertThat(lib.boneMassKg).isWithin(EPS).of(3.455)
+
+        // We're within ±3% of TBW / FFM = 0.732 (https://pmc.ncbi.nlm.nih.gov/articles/PMC11625996/)
+        val tbwFFM = 0.732
+        assertThat(lib.totalBodyWaterKg / lib.fatFreeMassKg).isWithin(tbwFFM * 0.03).of(tbwFFM)
     }
 
     @Test
