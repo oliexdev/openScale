@@ -673,4 +673,18 @@
     <string name="formula_bf_us_navy">Marina de EE. UU.</string>
     <string name="bf_us_navy_short">Método de la Marina de EE. UU.</string>
     <string name="bf_us_navy_long">Calcula el porcentaje de grasa corporal a partir de las circunferencias de la cintura, el cuello y, en el caso de las mujeres, las caderas, según el estándar de la Marina de EE. UU.</string>
+    <string name="route_title_table_drilldown">Detalles</string>
+    <string name="content_description_aggregation_selected">%1$s seleccionado</string>
+    <string name="aggregation_level_day">Día</string>
+    <string name="aggregation_level_week">Semana</string>
+    <string name="aggregation_level_month">Mes</string>
+    <string name="aggregation_level_year">Año</string>
+    <string name="filter_section_aggregation">Agregación</string>
+    <string name="aggregation_level_none">Sin agregación</string>
+    <string name="filter_section_time_range">Intervalo de tiempo</string>
+    <string name="calendar_week_abbrev">Sem</string>
+    <string name="auto_connect_on_startup_title">Conexión automática al iniciar</string>
+    <string name="settings_appearance_title">Apariencia</string>
+    <string name="settings_dynamic_color_label">Colores dinámicos</string>
+    <string name="settings_high_contrast_label">Alto contraste</string>
 </resources>
