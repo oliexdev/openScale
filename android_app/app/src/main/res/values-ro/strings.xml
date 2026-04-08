@@ -1,3 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_logo_content_description">Logo aplicație</string>
+    <string name="text_none">Nimic</string>
+    <string name="not_available">N/A</string>
+    <string name="placeholder_empty_value">-</string>
+    <string name="theme_light">Luminos</string>
+    <string name="theme_dark">Întunecat</string>
+    <string name="enable_button">Activează</string>
+    <string name="cancel_button">Anulează</string>
+    <string name="clear_button">Șterge</string>
+    <string name="confirm_button">Confirmă</string>
+    <string name="dialog_ok">OK</string>
+    <string name="saved">Salvat</string>
+    <string name="switch_on">Pornit</string>
+    <string name="switch_off">Oprit</string>
+    <string name="open_link_content_description">Deschide link</string>
+    <string name="content_desc_warning_icon">Iconița de avertizare</string>
+    <string name="content_desc_restore_icon">Iconiță de restaurare</string>
+    <string name="content_desc_information">Informație</string>
+    <string name="content_desc_open_menu">Deschide meniu</string>
+    <string name="content_desc_back">Înapoi</string>
+    <string name="content_desc_selected">Selectat</string>
+    <string name="derived_backfill_start">Se calculează valori derivate …</string>
+    <string name="derived_backfill_done">Valori derivate actualizate cu succes.</string>
+    <string name="error_generic">Eroare.</string>
 </resources>
