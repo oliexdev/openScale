@@ -270,16 +270,19 @@ class MiScaleHandler : ScaleDeviceHandler() {
             return
         }
 
-        // Response to “only last”: 0x01 <count> FF FF <uniqHi> <uniqLo>
+        // Response to "only last" or "all": 0x01 <count> 0x00 <marker/echo bytes...>
         if (d.size >= 6 && d[0] == 0x01.toByte()) {
             val count = d[1].toInt() and 0xFF
-            // Accept FF FF and 00 00
             val marker = (d[2].toInt() and 0xFF) shl 8 or (d[3].toInt() and 0xFF)
             if (marker == 0xFFFF || marker == 0x0000) {
                 pendingHistoryCount = count
+                histBufReset() // Discard any stale bytes (e.g. magic-echo) before history data arrives.
                 logI("History count announced (marker=${marker.toString(16)}): $pendingHistoryCount")
-                return
+            } else {
+                // Control response (e.g. magic-echo) with unrecognized marker — discard, not history data.
+                logD("Ignoring control response (marker=${marker.toString(16)}, len=${d.size}): ${d.toHexPreview(16)}")
             }
+            return
         }
 
         // Live frames (13B) or combined (26B)
