@@ -1,0 +1,4 @@
+* Add support for Body Fat-B2 / Belter Body Fat Scale / Etekcity ESF-551 / Runstar R5 / SEB Scale
+* Add aggregation support
+* Improve App perfomance
+* Support of App Material 3 theming, dynmaic coloring and hight contrast

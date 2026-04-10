@@ -393,7 +393,7 @@ internal fun rememberXAxisValueFormatter(
         val pattern = when (aggregationLevel) {
             AggregationLevel.NONE  -> "d MMM"
             AggregationLevel.DAY   -> "d MMM"
-            AggregationLevel.WEEK  -> "'${weekAbbrev}'w MMM"
+            AggregationLevel.WEEK  -> "'${weekAbbrev}'w yy"
             AggregationLevel.MONTH -> "MMM yy"
             AggregationLevel.YEAR  -> "yyyy"
         }
