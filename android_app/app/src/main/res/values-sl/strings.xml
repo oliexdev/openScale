@@ -673,4 +673,18 @@
     <string name="bt_warn_write_failed_status">Pisanje na %1$s spodletelo: %2$s</string>
     <string name="bt_warn_notify_state_failed_status">Obvestilo o stanju ni uspelo za %1$s: %2$s</string>
     <string name="bt_error_no_user_selected">Ni izbran noben uporabnik</string>
+    <string name="route_title_table_drilldown">Podrobnosti</string>
+    <string name="calendar_week_abbrev">Ted.</string>
+    <string name="auto_connect_on_startup_title">Samodejna povezava ob zagonu</string>
+    <string name="filter_section_time_range">Časovno obdobje</string>
+    <string name="filter_section_aggregation">Združevanje</string>
+    <string name="content_description_aggregation_selected">%1$s izbrano</string>
+    <string name="aggregation_level_none">Brez združevanja</string>
+    <string name="aggregation_level_day">Dnevno</string>
+    <string name="aggregation_level_week">Tedensko</string>
+    <string name="aggregation_level_month">Mesečno</string>
+    <string name="aggregation_level_year">Letno</string>
+    <string name="settings_appearance_title">Videz</string>
+    <string name="settings_dynamic_color_label">Dinamične barve</string>
+    <string name="settings_high_contrast_label">Visok kontrast</string>
 </resources>
