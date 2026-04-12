@@ -42,6 +42,7 @@
     <string name="route_title_graph">Charts</string>
     <string name="route_title_table">Table</string>
     <string name="route_title_statistics">Statistics</string>
+    <string name="route_title_insights">Insights</string>
     <string name="route_title_settings">Settings</string>
     <string name="route_title_table_drilldown">Details</string>
     <string name="calendar_week_abbrev">CW</string>
@@ -488,6 +489,40 @@
     <string name="snackbar_no_other_users_to_change_to">No other users available to change to.</string>
     <string name="snackbar_items_user_changed_successfully">User changed for %1$d items successfully.</string>
     <string name="snackbar_error_user_changed_items">Error changing user for some items.</string>
+
+    <!-- Insights Screen -->
+    <string name="insights_confidence_low">Limited data</string>
+    <string name="insights_section_body_shift">Your %1$s Analysis</string>
+    <string name="insights_no_data">Not enough data to compute insights yet. Keep measuring!</string>
+    <string name="insights_based_on">based on %1$d measurements</string>
+    <string name="insights_short_term_trend">Short-term trend (30d)</string>
+    <string name="insights_long_term_trend">Long-term trend</string>
+    <string name="insights_placeholder_body_shift">At least %1$d measurements are needed to analyse how your body changed over time.</string>
+    <string name="insights_placeholder_weekday">At least %1$d measurements per weekday are needed to detect weekly habits.</string>
+    <string name="insights_placeholder_seasonal">At least %1$d years of data are needed to detect seasonal patterns.</string>
+    <string name="insights_placeholder_anomalies">At least %1$d measurements are needed to detect unusual values.</string>
+    <string name="insights_best_period_label">Best month</string>
+    <string name="insights_trend_up">Increasing</string>
+    <string name="insights_trend_down">Decreasing</string>
+    <string name="insights_trend_stable">Stable</string>
+    <string name="insights_rate_per_month">Rate / month</string>
+    <string name="insights_volatility">Volatility</string>
+    <string name="insights_volatility_stable">Stable</string>
+    <string name="insights_volatility_moderate">Moderate</string>
+    <string name="insights_volatility_high">High</string>
+    <string name="insights_plateau_label">Stable period</string>
+    <string name="insights_plateau_days">%1$d days</string>
+    <string name="insights_best_period">Best month: %1$s %2$d (%3$s)</string>
+    <string name="insights_section_weekday">Your Weekly Habits</string>
+    <string name="insights_weekday_summary_high">You tend to measure highest on %1$s and lowest on %2$s</string>
+    <string name="insights_weekday_summary_low">Preliminary pattern — measure more regularly for reliable results</string>
+    <string name="insights_section_seasonal">Your Year in Review</string>
+    <string name="insights_seasonal_summary_high">Your values tend to peak in %1$s and dip in %2$s</string>
+    <string name="insights_seasonal_summary_low">Only one year of data — keep measuring to reveal seasonal patterns</string>
+    <string name="insights_section_anomalies">Unusual Measurements</string>
+    <string name="insights_anomalies_none">No unusual measurements detected.</string>
+    <string name="insights_anomaly_deviation">%1$s from expected %2$s</string>
+    <string name="insights_anomaly_comment">"%1$s"</string>
 
     <!-- Statistics Screen -->
     <string name="statistics_no_relevant_types">No relevant measurement types available or configured for statistics.</string>

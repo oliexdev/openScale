@@ -126,6 +126,7 @@ object SettingsPreferenceKeys {
     const val GRAPH_SCREEN_CONTEXT = "graph_screen"
     const val TABLE_SCREEN_CONTEXT = "table_screen"
     const val STATISTICS_SCREEN_CONTEXT = "statistics_screen"
+    const val INSIGHTS_SCREEN_CONTEXT = "insights_screen"
 }
 
 @Module

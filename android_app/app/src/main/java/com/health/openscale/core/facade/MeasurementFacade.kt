@@ -27,6 +27,7 @@ import com.health.openscale.core.data.SmoothingAlgorithm
 import com.health.openscale.core.data.User
 import com.health.openscale.core.model.AggregatedMeasurement
 import com.health.openscale.core.model.EnrichedMeasurement
+import com.health.openscale.core.model.MeasurementInsight
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.service.MeasurementEnricher
@@ -34,15 +35,20 @@ import com.health.openscale.core.usecase.MeasurementAggregationUseCase
 import com.health.openscale.core.usecase.MeasurementCrudUseCases
 import com.health.openscale.core.usecase.MeasurementEvaluationUseCases
 import com.health.openscale.core.usecase.MeasurementFilterUseCases
+import com.health.openscale.core.usecase.MeasurementInsightsUseCase
 import com.health.openscale.core.usecase.MeasurementQueryUseCases
 import com.health.openscale.core.usecase.MeasurementSmoothingUseCases
 import com.health.openscale.core.usecase.MeasurementTransformationUseCase
 import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -70,6 +76,7 @@ class MeasurementFacade @Inject constructor(
     private val enricher: MeasurementEnricher,
     private val evaluationUseCases: MeasurementEvaluationUseCases,
     private val aggregation: MeasurementAggregationUseCase,
+    private val insights: MeasurementInsightsUseCase,
 ) {
 
     private var pendingReferenceUser: User? = null
@@ -186,6 +193,29 @@ class MeasurementFacade @Inject constructor(
             listOf(withProjection) + list.drop(1)
         }
     }
+
+    // -------------------------------------------------------------------------
+    // Insights
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns a [Flow] emitting a computed [MeasurementInsight] for the given user.
+     * Reacts automatically to measurement data changes.
+     * Heavy computation is dispatched to [kotlinx.coroutines.Dispatchers.Default].
+     *
+     * @param userId        Database id of the user.
+     * @param primaryTypeId Optional explicit primary type ID for weekday and seasonal
+     *                      pattern computation. If null, the use case selects the type
+     *                      with the most measurements automatically.
+     */
+    fun insightsForUser(userId: Int, primaryTypeId: Int? = null): Flow<MeasurementInsight> =
+        getMeasurementsForUser(userId)
+            .distinctUntilChanged()
+            .map { measurements ->
+                withContext(Dispatchers.Default) {
+                    insights.compute(measurements, primaryTypeId)
+                }
+            }
 
     // -------------------------------------------------------------------------
     // BLE

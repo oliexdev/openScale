@@ -69,6 +69,7 @@ import kotlinx.coroutines.launch
  * @param defaultSelectionLogic A lambda function that determines the default selection of type IDs (as Ints) if no persisted selection is found or if the persisted selection is invalid for the currently available types.
  * @param modifier The [Modifier] to be applied to this Composable.
  * @param allowEmptySelection If true, the user can deselect all types. If false, at least one type must remain selected (if there's more than one option).
+ * @param singleSelect If true, only one type can be selected at a time.
  * @param iconBoxSize The size of the circular background for each measurement type icon.
  * @param iconSize The size of the measurement type icon itself.
  * @param spaceBetweenItems The horizontal spacing between each measurement type item in the row.
@@ -83,6 +84,7 @@ fun MeasurementTypeFilterRow(
     defaultSelectionLogic: (List<MeasurementType>) -> List<Int>,
     modifier: Modifier = Modifier,
     allowEmptySelection: Boolean = true,
+    singleSelect: Boolean = false,
     iconBoxSize: Dp = 40.dp,
     iconSize: Dp = 24.dp,
     spaceBetweenItems: Dp = 8.dp
@@ -206,16 +208,23 @@ fun MeasurementTypeFilterRow(
                             val currentSelectionMutable = displayedSelectedIds.toMutableList()
                             val currentlySelectedInList = type.id in currentSelectionMutable
 
-                            if (currentlySelectedInList) {
-                                // Only allow deselection if empty selection is allowed or if more than one item is selected
-                                if (allowEmptySelection || currentSelectionMutable.size > 1) {
-                                    currentSelectionMutable.remove(type.id)
+                            if (singleSelect) {
+                                if (currentlySelectedInList) {
+                                    if (allowEmptySelection) currentSelectionMutable.clear()
                                 } else {
-                                    // Prevent deselecting the last item if allowEmptySelection is false
-                                    return@clickable
+                                    currentSelectionMutable.clear()
+                                    currentSelectionMutable.add(type.id)
                                 }
                             } else {
-                                currentSelectionMutable.add(type.id)
+                                if (currentlySelectedInList) {
+                                    if (allowEmptySelection || currentSelectionMutable.size > 1) {
+                                        currentSelectionMutable.remove(type.id)
+                                    } else {
+                                        return@clickable
+                                    }
+                                } else {
+                                    currentSelectionMutable.add(type.id)
+                                }
                             }
 
                             val newSelectedIdsList = currentSelectionMutable.toList()

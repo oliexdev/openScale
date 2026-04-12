@@ -40,6 +40,7 @@ import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.core.facade.UserFacade
 import com.health.openscale.core.model.AggregatedMeasurement
+import com.health.openscale.core.model.MeasurementInsight
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.utils.LogManager
@@ -406,6 +407,47 @@ class SharedViewModel @Inject constructor(
                 initialValue = UiState.Loading,
             )
     }
+
+// -------------------------------------------------------------------------
+// Insights — primary type selection + flow
+// -------------------------------------------------------------------------
+
+    /**
+     * Emits a fully computed [MeasurementInsight] for the currently selected user.
+     * Reacts automatically to user switches, measurement data changes, and primary
+     * type selection changes from [insightsPrimaryTypeIdFlow].
+     *
+     * The computation is dispatched to [kotlinx.coroutines.Dispatchers.Default] inside
+     * [MeasurementFacade.insightsForUser] to keep the main thread free.
+     * [kotlinx.coroutines.flow.distinctUntilChanged] inside the facade prevents redundant
+     * recomputation when Room emits an unrelated table update that does not affect
+     * the measurement list.
+     *
+     * Emits [UiState.Loading] while the selected user is being resolved or while the
+     * first computation is in progress. Emits [UiState.Error] if the computation fails.
+     *
+     * The flow is eagerly shared for the ViewModel's lifetime — identical reasoning
+     * as [screenFlow]: a [kotlinx.coroutines.flow.SharingStarted.WhileSubscribed] gap
+     * would cause a [UiState.Loading] flash on navigation back to the Insights screen.
+     */
+    private val insightsFlowCache = mutableMapOf<Int?, StateFlow<UiState<MeasurementInsight>>>()
+
+    fun insightsFlow(primaryTypeId: Int?): StateFlow<UiState<MeasurementInsight>> =
+        insightsFlowCache.getOrPut(primaryTypeId) {
+            selectedUserId
+                .flatMapLatest { uid ->
+                    if (uid == null) return@flatMapLatest flowOf(UiState.Loading)
+                    measurementFacade.insightsForUser(uid, primaryTypeId)
+                        .map<MeasurementInsight, UiState<MeasurementInsight>> { UiState.Success(it) }
+                        .onStart { emit(UiState.Loading) }
+                        .catch { emit(UiState.Error(it.message)) }
+                }
+                .stateIn(
+                    scope        = viewModelScope,
+                    started      = SharingStarted.Eagerly,
+                    initialValue = UiState.Loading,
+                )
+        }
 
     /**
      * Resolves a [TimeRangeFilter] into concrete start/end epoch-millisecond bounds.
