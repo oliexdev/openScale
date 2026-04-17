@@ -203,47 +203,50 @@ class QNHandler : ScaleDeviceHandler() {
             }
             0x12 -> handleScaleInfoFrame(data)         // scale factor setup
             0x21 -> {
-                // ES-30M requires TWO 0xA0 response frames (from BLE capture analysis)
-                logD("QN: received 0x21 frame, sending TWO 0xA0 responses")
+                // Reply with a single 0xA0 user-profile frame (sub-opcode 0x02).
+                // Matches the proven working sequence from keeperofdakeys (PR #1152).
+                // NOTE: Do NOT send the 0x04 sub-opcode — the extra frame prevents
+                // the scale from entering live measurement mode.
+                // NOTE: Do NOT send 0x22 here — wait for the 0xA1 ACK first.
+                logD("QN: received 0x21 frame, sending single 0xA0 response")
 
-                // Response 1: a00d04fe0000000000000000XX
-                val msg1 = byteArrayOf(
+                val msg = byteArrayOf(
                     0xa0.toByte(), // Opcode
                     0x0d,          // Length (13 bytes)
-                    0x04,          // Sub-opcode type (not protocol type!)
-                    0xfe.toByte(), // Payload
-                    0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00, 0x00,
+                    0x02,          // Sub-opcode type
+                    0xfe.toByte(), // 0xFE = no specific user slot
+                    0xff.toByte(), // Payload bytes from working capture
+                    0xee.toByte(),
+                    0x01,
+                    0x1c,
+                    0x06,
+                    0x86.toByte(),
+                    0x03,
+                    0x02,
                     0x00           // Checksum placeholder
                 )
-                msg1[msg1.lastIndex] = checksum(msg1, 0, msg1.lastIndex - 1)
+                msg[msg.lastIndex] = checksum(msg, 0, msg.lastIndex - 1)
 
-                // Response 2: a00d02010008002106b804029d
-                val msg2 = byteArrayOf(
-                    0xa0.toByte(), // Opcode
-                    0x0d,          // Length (13 bytes)
-                    0x02,          // Sub-opcode type (not protocol type!)
-                    0x01, 0x00, 0x08, 0x00,
-                    0x21, 0x06, 0xb8.toByte(), 0x04, 0x02,
-                    0x00           // Checksum placeholder
-                )
-                msg2[msg2.lastIndex] = checksum(msg2, 0, msg2.lastIndex - 1)
-
-                // Write both responses
                 if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
-                    writeTo(SVC_T2, CHR_T2_WRITE_SHARED, msg1, true)
-                    writeTo(SVC_T2, CHR_T2_WRITE_SHARED, msg2, true)
+                    writeTo(SVC_T2, CHR_T2_WRITE_SHARED, msg, true)
                 } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
-                    writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, msg1, true)
-                    writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, msg2, true)
+                    writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, msg, true)
                 }
+            }
+            0x23 -> {
+                // Historical record frame - user data from scale memory
+                logD("QN: received user data frame (0x23)")
+            }
+            0xA1 -> {
+                // Scale acknowledged our 0xA0 profile — now send 0x22 stored-data query.
+                // Must wait for 0xA1 before sending 0x22 (protocol ordering).
+                logD("QN: received 0xA1 acknowledgment, sending 0x22 stored-data query")
 
-                // After 0xA0 responses, send 0x22 query for stored data
                 val queryMsg = byteArrayOf(
                     0x22, // Opcode
                     0x06, // Length
                     seenProtocolType,
-                    0x00, 0x03,
+                    0x00, 0x01,  // byte[4]=0x01 (not 0x03) per working capture
                     0x00  // Checksum placeholder
                 )
                 queryMsg[queryMsg.lastIndex] = checksum(queryMsg, 0, queryMsg.lastIndex - 1)
@@ -253,14 +256,6 @@ class QNHandler : ScaleDeviceHandler() {
                 } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
                     writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, queryMsg, true)
                 }
-            }
-            0x23 -> {
-                // Historical record frame - user data from scale memory
-                logD("QN: received user data frame (0x23)")
-            }
-            0xA1 -> {
-                // Acknowledgment from scale
-                logD("QN: received 0xA1 acknowledgment")
             }
             0xA3 -> {
                 // Acknowledgment from scale
@@ -312,8 +307,14 @@ class QNHandler : ScaleDeviceHandler() {
 
         var weightKg = raw / weightScaleFactor
 
-        // Heuristic fallback: some "type 2" devices report with /10 even before 0x12 arrives.
-        // If weight looks unreasonably small or large, try the /10 fallback once.
+        // Type-2 (FFF0) scales with protocol 0xFF need an additional /10 factor.
+        // The 0x12 frame sets weightScaleFactor=10, but actual weight = raw/100 for these devices.
+        // (Confirmed by keeperofdakeys' PR #1152: type-2 divides an extra /10.)
+        if (!likelyUseType1 && weightScaleFactor == 10.0f) {
+            weightKg /= 10.0f
+        }
+
+        // Heuristic fallback: if weight still looks unreasonable, try another /10.
         if (weightKg <= 5f || weightKg >= 250f) {
             weightKg = weightKg / 10.0f
         }
