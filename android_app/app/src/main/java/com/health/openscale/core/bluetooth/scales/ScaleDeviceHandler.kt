@@ -109,6 +109,14 @@ enum class BroadcastAction { IGNORED, CONSUMED_KEEP_SCANNING, CONSUMED_STOP }
 abstract class ScaleDeviceHandler {
     val TAG = this::class.simpleName ?: "ScaleDeviceHandler"
 
+    /**
+     * Some older peripherals (such as the Sanitas SBF 70) lock up or drop
+     * the connection when the central requests HIGH connection priority 
+     * during their handshake. Handlers for such devices should override
+     * this to false so the adapter does not interrupt the handshake.
+     */
+    open val supportsHighConnectionPriority: Boolean = true
+
     companion object {
         // Pseudo UUIDs for Classic/SPP
         val CLASSIC_FAKE_SERVICE: UUID =

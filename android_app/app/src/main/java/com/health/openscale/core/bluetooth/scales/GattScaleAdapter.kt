@@ -179,7 +179,9 @@ class GattScaleAdapter(
             LogManager.d(TAG, "Services discovered for ${peripheral.address}")
             currentPeripheral = peripheral
 
-            if (tuning.requestHighConnectionPriority) runCatching { peripheral.requestConnectionPriority(ConnectionPriority.HIGH) }
+            if (tuning.requestHighConnectionPriority && handler.supportsHighConnectionPriority) {
+                runCatching { peripheral.requestConnectionPriority(ConnectionPriority.HIGH) }
+            }
             if (tuning.requestMtuBytes > 23) runCatching { peripheral.requestMtu(tuning.requestMtuBytes) }
 
             val user = selectedUserSnapshot ?: run {

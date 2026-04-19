@@ -46,6 +46,10 @@ import kotlin.math.max
  */
 class BeurerSanitasHandler : ScaleDeviceHandler() {
 
+    // These scales drop the link if the central renegotiates connection
+    // priority during the handshake; the legacy driver never did so.
+    override val supportsHighConnectionPriority: Boolean = false
+
     enum class DeviceType { BEURER_BF700_800_RT_LIBRA, BEURER_BF710, SANITAS_SBF70_70 }
 
     // UUIDs
