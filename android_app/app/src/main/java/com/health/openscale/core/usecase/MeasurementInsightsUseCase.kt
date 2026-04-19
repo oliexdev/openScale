@@ -19,8 +19,11 @@ package com.health.openscale.core.usecase
 
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.Trend
+import com.health.openscale.core.model.BodyCompositionPattern
 import com.health.openscale.core.model.BodyCompositionShift
+import com.health.openscale.core.model.CompositionPatternType
 import com.health.openscale.core.model.InsightConfidence
 import com.health.openscale.core.model.MeasurementAnomaly
 import com.health.openscale.core.model.MeasurementInsight
@@ -99,12 +102,6 @@ class MeasurementInsightsUseCase @Inject constructor() {
         private const val SHORT_TERM_TREND_DAYS = 30L
 
         /**
-         * Minimum relative change (fraction of mean) to count as meaningful for
-         * plateau detection. Below this threshold consecutive measurements are stagnant.
-         */
-        private const val PLATEAU_THRESHOLD_FRACTION = 0.01f
-
-        /**
          * Standard deviation thresholds relative to the mean for [Volatility] classification.
          * Below [VOLATILITY_STABLE_THRESHOLD]   → [Volatility.STABLE]
          * Below [VOLATILITY_MODERATE_THRESHOLD] → [Volatility.MODERATE]
@@ -112,6 +109,16 @@ class MeasurementInsightsUseCase @Inject constructor() {
          */
         private const val VOLATILITY_STABLE_THRESHOLD   = 0.01f
         private const val VOLATILITY_MODERATE_THRESHOLD = 0.03f
+
+        /** Number of days used as the rolling window for body composition pattern analysis. */
+        const val CORRELATION_WINDOW_DAYS = 90L
+        /**
+         * Minimum number of measurements where all four canonical body composition
+         * metrics (weight, fat, muscle, water) are present to compute a reliable pattern.
+         */
+        const val CORRELATION_MIN_MEASUREMENTS = 4
+        /** Number of preceding 90-day windows kept as pattern history. */
+        const val PATTERN_HISTORY_WINDOWS = 5
     }
 
     // -------------------------------------------------------------------------
@@ -139,6 +146,7 @@ class MeasurementInsightsUseCase @Inject constructor() {
     ): MeasurementInsight {
         val empty = MeasurementInsight(
             bodyCompositionShift = null,
+            bodyCompositionPattern = null,
             weekdayPattern       = null,
             seasonalPattern      = null,
             anomalies            = emptyList(),
@@ -162,6 +170,7 @@ class MeasurementInsightsUseCase @Inject constructor() {
 
         return MeasurementInsight(
             bodyCompositionShift = computeBodyCompositionShift(sorted, primaryType),
+            bodyCompositionPattern  = computeBodyCompositionPattern(sorted),
             weekdayPattern       = computeWeekdayPattern(sorted, primaryType),
             seasonalPattern      = computeSeasonalPattern(sorted, primaryType),
             anomalies            = computeAnomalies(sorted, primaryType),
@@ -257,25 +266,34 @@ class MeasurementInsightsUseCase @Inject constructor() {
         val ratePerMonth = if (totalMonths > 0f) deltaAbs / totalMonths else 0f
 
         // ── Plateau detection ─────────────────────────────────────────────────
-        // Walk backwards from the tail; count consecutive measurements where the
-        // change stays below PLATEAU_THRESHOLD_FRACTION of the mean.
-        val plateauDays: Int? = run {
-            if (dataPoints.size < 3) return@run null
-            val threshold    = mean * PLATEAU_THRESHOLD_FRACTION
-            var plateauStart = dataPoints.last().first
-            var inPlateau    = true
+        val (plateauDays, plateauStartDate) = run {
+            if (dataPoints.size < 3) return@run null to null
+
+            // Use half the series standard deviation as the plateau threshold.
+            // This is self-calibrating: a volatile series requires larger changes
+            // to break a plateau, a stable one requires smaller ones.
+            val threshold = stdDev * 0.5f
+
+            // A near-zero stdDev means all values are identical — not meaningful as plateau.
+            if (threshold < 1e-6f) return@run null to null
+
+            var plateauStartIndex = dataPoints.size - 1
 
             for (i in dataPoints.indices.reversed().drop(1)) {
-                if (abs(dataPoints[i + 1].second - dataPoints[i].second) > threshold) {
-                    inPlateau = false
-                    break
-                }
-                plateauStart = dataPoints[i].first
+                val change = abs(dataPoints[i + 1].second - dataPoints[i].second)
+                if (change > threshold) break
+                plateauStartIndex = i
             }
 
-            if (!inPlateau) null
-            else ChronoUnit.DAYS.between(plateauStart, dataPoints.last().first)
-                .toInt().takeIf { it > 0 }
+            // No plateau if only the last point qualifies.
+            if (plateauStartIndex == dataPoints.size - 1) return@run null to null
+
+            val days = ChronoUnit.DAYS.between(
+                dataPoints[plateauStartIndex].first,
+                dataPoints.last().first,
+            ).toInt().takeIf { it > 0 }
+
+            days to dataPoints[plateauStartIndex].first
         }
 
         // ── Best calendar month ───────────────────────────────────────────────
@@ -314,6 +332,7 @@ class MeasurementInsightsUseCase @Inject constructor() {
             longTermTrend   = longTermTrend,
             ratePerMonth    = ratePerMonth,
             plateauDays     = plateauDays,
+            plateauStartDate = plateauStartDate,
             bestPeriodStart = bestPeriodStart,
             bestPeriodDelta = bestPeriodDelta,
             firstMeasuredOn = dataPoints.first().first,
@@ -322,6 +341,197 @@ class MeasurementInsightsUseCase @Inject constructor() {
         )
     }
 
+    // -------------------------------------------------------------------------
+    // Body composition pattern
+    // -------------------------------------------------------------------------
+
+    /**
+     * Analyses the four canonical body composition metrics (weight, fat, muscle, water)
+     * together over the current [CORRELATION_WINDOW_DAYS]-day window and attaches up to
+     * [PATTERN_HISTORY_WINDOWS] preceding non-overlapping windows as history.
+     *
+     * History windows run backwards from the start of the current window:
+     *   - window 1: today-180d..today-90d  (most recent history)
+     *   - window 2: today-270d..today-180d
+     *   - ...
+     *   - window 5: today-540d..today-450d (oldest history)
+     *
+     * Windows with fewer than [CORRELATION_MIN_MEASUREMENTS] quad-complete measurements
+     * are skipped — no phantom points appear on the canvas.
+     *
+     * Returns null when the current window contains no data at all.
+     */
+    private fun computeBodyCompositionPattern(
+        sorted: List<MeasurementWithValues>,
+    ): BodyCompositionPattern? {
+
+        // Resolve canonical types once from the full series so history windows
+        // can also use them without re-scanning each time.
+        val typesByKey: Map<MeasurementTypeKey, MeasurementType> = sorted
+            .flatMap { it.values }
+            .filter { isNumeric(it.type) }
+            .associateBy { it.type.key }
+            .mapValues { it.value.type }
+
+        val weightType = typesByKey[MeasurementTypeKey.WEIGHT] ?: return null
+        val fatType    = typesByKey[MeasurementTypeKey.BODY_FAT] ?: return null
+        val muscleType = typesByKey[MeasurementTypeKey.MUSCLE] ?: return null
+        val waterType  = typesByKey[MeasurementTypeKey.WATER] ?: return null
+
+        data class QuadPoint(
+            val date: LocalDate,
+            val weight: Float,
+            val fat: Float,
+            val muscle: Float,
+            val water: Float,
+        )
+
+        // Extracts quad-complete measurements within [start, end).
+        fun quadPointsInWindow(start: LocalDate, end: LocalDate): List<QuadPoint> =
+            sorted
+                .filter {
+                    val d = toLocalDate(it.measurement.timestamp)
+                    d in start..<end
+                }
+                .mapNotNull { mwv ->
+                    QuadPoint(
+                        date   = toLocalDate(mwv.measurement.timestamp),
+                        weight = numericValueFor(mwv, weightType) ?: return@mapNotNull null,
+                        fat    = numericValueFor(mwv, fatType)    ?: return@mapNotNull null,
+                        muscle = numericValueFor(mwv, muscleType) ?: return@mapNotNull null,
+                        water  = numericValueFor(mwv, waterType)  ?: return@mapNotNull null,
+                    )
+                }
+
+        // Shared trend helper — quarter-average comparison identical to computeBodyCompositionShift.
+        fun List<Float>.trend(): ShiftTrend {
+            val mean        = average().toFloat()
+            val quarterSize = (size / 4).coerceAtLeast(1)
+            return classifyTrend(
+                takeLast(quarterSize).average().toFloat() - take(quarterSize).average().toFloat(),
+                mean,
+            )
+        }
+
+        // Builds a BodyCompositionPattern from a ready-made point list.
+        fun buildPattern(
+            points: List<QuadPoint>,
+            windowStart: LocalDate,
+            windowEnd: LocalDate,
+            history: List<BodyCompositionPattern> = emptyList(),
+        ): BodyCompositionPattern {
+            val wTrend = points.map { it.weight }.trend()
+            val fTrend = points.map { it.fat }.trend()
+            val mTrend = points.map { it.muscle }.trend()
+            val wtrTrend = points.map { it.water }.trend()
+            val fDelta = points.last().fat - points.first().fat
+            val mDelta = points.last().muscle - points.first().muscle
+
+            return BodyCompositionPattern(
+                weightTrend     = wTrend,
+                fatTrend        = fTrend,
+                muscleTrend     = mTrend,
+                waterTrend      = wtrTrend,
+                fatDelta        = fDelta,
+                muscleDelta     = mDelta,
+                pattern         = classifyCompositionPattern(wTrend, fTrend, mTrend),
+                basedOnCount    = points.size,
+                windowStartDate = windowStart,
+                windowEndDate   = windowEnd,
+                confidence      = if (points.size >= CORRELATION_MIN_MEASUREMENTS * 2)
+                    InsightConfidence.HIGH else InsightConfidence.LOW,
+                history         = history,
+            )
+        }
+
+        val today        = LocalDate.now()
+        val currentStart = today.minusDays(CORRELATION_WINDOW_DAYS)
+        val currentEnd   = today
+
+        // Build history: windows 5→1 in chronological order (oldest first after reversed).
+        val historyPatterns: List<BodyCompositionPattern> = (1..PATTERN_HISTORY_WINDOWS)
+            .mapNotNull { windowIndex ->
+                val windowEnd   = today.minusDays(CORRELATION_WINDOW_DAYS * windowIndex)
+                val windowStart = windowEnd.minusDays(CORRELATION_WINDOW_DAYS)
+                val points      = quadPointsInWindow(windowStart, windowEnd)
+                if (points.size < CORRELATION_MIN_MEASUREMENTS) return@mapNotNull null
+                buildPattern(points, windowStart, windowEnd)
+            }
+            .reversed()
+
+        val currentPoints = quadPointsInWindow(currentStart, currentEnd)
+
+        if (currentPoints.isEmpty()) return null
+
+        if (currentPoints.size < CORRELATION_MIN_MEASUREMENTS) {
+            return BodyCompositionPattern(
+                weightTrend     = ShiftTrend.STABLE,
+                fatTrend        = ShiftTrend.STABLE,
+                muscleTrend     = ShiftTrend.STABLE,
+                waterTrend      = ShiftTrend.STABLE,
+                pattern         = CompositionPatternType.UNDEFINED,
+                basedOnCount    = currentPoints.size,
+                windowStartDate = currentPoints.first().date,
+                windowEndDate   = currentPoints.last().date,
+                confidence      = InsightConfidence.INSUFFICIENT,
+                history         = emptyList(),
+            )
+        }
+
+        return buildPattern(
+            points      = currentPoints,
+            windowStart = currentStart,
+            windowEnd   = currentEnd,
+            history     = historyPatterns,
+        )
+    }
+
+    /**
+     * Classifies the body composition pattern from the three primary trends.
+     * Water is intentionally excluded from classification — it is shown for
+     * context but does not drive the pattern label since it fluctuates heavily
+     * due to hydration, hormones, and measurement timing.
+     */
+    private fun classifyCompositionPattern(
+        wTrend: ShiftTrend,
+        fTrend: ShiftTrend,
+        mTrend: ShiftTrend,
+    ): CompositionPatternType = when {
+        // Fat down AND muscle up — best case regardless of weight
+        fTrend == ShiftTrend.DOWN && mTrend == ShiftTrend.UP ->
+            CompositionPatternType.RECOMPOSITION
+
+        // Fat down, muscle stable — clean fat loss
+        fTrend == ShiftTrend.DOWN && mTrend != ShiftTrend.DOWN ->
+            CompositionPatternType.FAT_LOSS
+
+        // Fat down but muscle also declining — mixed loss despite fat reduction
+        fTrend == ShiftTrend.DOWN && mTrend == ShiftTrend.DOWN ->
+            CompositionPatternType.WEIGHT_LOSS_MIXED
+
+        // Fat up AND muscle up — bulk phase
+        mTrend == ShiftTrend.UP && fTrend == ShiftTrend.UP ->
+            CompositionPatternType.MUSCLE_AND_FAT_GAIN
+
+        // Muscle up, fat not rising — clean muscle gain
+        mTrend == ShiftTrend.UP ->
+            CompositionPatternType.MUSCLE_GAIN
+
+        // Fat up — covers fat gain with any muscle direction except UP (handled above)
+        fTrend == ShiftTrend.UP ->
+            CompositionPatternType.FAT_GAIN
+
+        // Weight down AND muscle down, fat stable — losing both without fat gain
+        wTrend == ShiftTrend.DOWN && mTrend == ShiftTrend.DOWN ->
+            CompositionPatternType.WEIGHT_LOSS_MIXED
+
+        // Muscle declining, fat stable — muscle loss without other clear signal
+        mTrend == ShiftTrend.DOWN ->
+            CompositionPatternType.WEIGHT_LOSS_MIXED
+
+        // All remaining — fat and muscle stable regardless of weight
+        else -> CompositionPatternType.STABLE
+    }
     // -------------------------------------------------------------------------
     // Weekday pattern
     // -------------------------------------------------------------------------

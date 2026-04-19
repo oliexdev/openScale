@@ -43,6 +43,7 @@ import com.health.openscale.core.model.AggregatedMeasurement
 import com.health.openscale.core.model.MeasurementInsight
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
+import com.health.openscale.core.usecase.MeasurementDemoUseCase
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.screen.components.AGGREGATION_LEVEL_SUFFIX
 import com.health.openscale.ui.screen.components.CUSTOM_END_DATE_MILLIS_SUFFIX
@@ -72,6 +73,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.text.DateFormat
+import java.time.LocalDate
 import java.util.Date
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -448,6 +450,43 @@ class SharedViewModel @Inject constructor(
                     initialValue = UiState.Loading,
                 )
         }
+
+    fun generateDemoData(
+        scenario: MeasurementDemoUseCase.DemoScenario,
+        range: MeasurementDemoUseCase.TimeRange,
+        wipe: Boolean
+    ) {
+        val user = selectedUser.value ?: return
+        val userId = user.id
+        val userName = user.name
+
+        viewModelScope.launch {
+            // Estimate count based on range (should match MeasurementDemoUseCase logic)
+            val count = when (range) {
+                MeasurementDemoUseCase.TimeRange.LAST_30_DAYS -> 15
+                MeasurementDemoUseCase.TimeRange.LAST_6_MONTHS -> 70
+                MeasurementDemoUseCase.TimeRange.LAST_2_YEARS -> 250
+                MeasurementDemoUseCase.TimeRange.LAST_4_YEARS -> 500
+            }
+
+            showSnackbar(
+                messageResId = R.string.dev_tools_toast_generating,
+                formatArgs = listOf(count, userName)
+            )
+
+            try {
+                measurementFacade.generateDemoData(userId, scenario, range, wipe)
+
+                showSnackbar(
+                    messageResId = R.string.dev_tools_toast_success,
+                    formatArgs = listOf(count, userName)
+                )
+            } catch (e: Exception) {
+                LogManager.e(TAG, "Failed to generate demo data", e)
+                showSnackbar(message = "Error: ${e.message}")
+            }
+        }
+    }
 
     /**
      * Resolves a [TimeRangeFilter] into concrete start/end epoch-millisecond bounds.

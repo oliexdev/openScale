@@ -18,11 +18,13 @@
 package com.health.openscale.ui.screen.insights
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,14 +38,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MultilineChart
+import androidx.compose.material.icons.automirrored.filled.ShowChart
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.automirrored.filled.TrendingFlat
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.NorthEast
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material.icons.filled.SouthWest
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Timeline
@@ -57,6 +63,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
@@ -84,13 +91,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.lerp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.facade.SettingsPreferenceKeys.INSIGHTS_SCREEN_CONTEXT
+import com.health.openscale.core.model.BodyCompositionPattern
 import com.health.openscale.core.model.BodyCompositionShift
+import com.health.openscale.core.model.CompositionPatternType
 import com.health.openscale.core.model.InsightConfidence
 import com.health.openscale.core.model.MeasurementAnomaly
 import com.health.openscale.core.model.MeasurementInsight
@@ -110,9 +122,16 @@ import com.health.openscale.ui.screen.settings.BluetoothViewModel
 import com.health.openscale.ui.shared.SharedViewModel
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.Month
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.time.format.TextStyle
+import java.time.temporal.ChronoUnit
 import java.util.Locale
+import kotlin.collections.isNotEmpty
+import kotlin.math.max
+import kotlin.math.abs
 
 /** Maximum anomalies shown before the "Show more" button appears. */
 private const val ANOMALIES_INITIAL_COUNT = 5
@@ -231,27 +250,6 @@ fun InsightsScreen(
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-
-                    // ── Active type + measurement count header ─────────────────
-                    /*item {
-                        Text(
-                            text = buildString {
-                                append(primaryType?.getDisplayName(context) ?: "")
-                                append(" ")
-                                append(
-                                    stringResource(
-                                        R.string.insights_based_on,
-                                        insight.basedOnCount
-                                    )
-                                )
-                            },
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }*/
-
                     // ── Section 1: Body Composition Shift ─────────────────────
                     item {
                         val shift = insight.bodyCompositionShift
@@ -267,6 +265,24 @@ fun InsightsScreen(
                                     R.string.insights_placeholder_body_shift,
                                     MeasurementInsightsUseCase.MIN_TOTAL_MEASUREMENTS,
                                 ),
+                            )
+                        }
+                    }
+
+                    // ── Section X: Body Composition State ─────────────────────────
+                    item {
+                        val pattern = insight.bodyCompositionPattern
+
+                        if (pattern != null && pattern.confidence != InsightConfidence.INSUFFICIENT) {
+                            BodyCompositionStatePlaneCard(pattern)
+                        } else {
+                            InsightPlaceholderCard(
+                                title = stringResource(R.string.insights_section_body_pattern),
+                                message = stringResource(
+                                    R.string.insights_placeholder_body_pattern,
+                                    MeasurementInsightsUseCase.CORRELATION_MIN_MEASUREMENTS,
+                                    MeasurementInsightsUseCase.CORRELATION_WINDOW_DAYS
+                                )
                             )
                         }
                     }
@@ -353,9 +369,13 @@ private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
     fun fmtSigned(v: Float) =
         LocaleUtils.formatValueForDisplay(v.toString(), shift.type.unit, includeSign = true)
 
+    val dateFormatter = remember {
+        DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
+    }
+
     val deltaColor = when {
         shift.deltaAbsolute > 0f -> MaterialTheme.colorScheme.error
-        shift.deltaAbsolute < 0f -> Color(0xFF4CAF50)
+        shift.deltaAbsolute < 0f -> MaterialTheme.colorScheme.tertiary
         else                     -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
@@ -368,7 +388,7 @@ private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
     @Composable
     fun trendColor(t: ShiftTrend): Color = when (t) {
         ShiftTrend.UP     -> MaterialTheme.colorScheme.error
-        ShiftTrend.DOWN   -> Color(0xFF4CAF50)
+        ShiftTrend.DOWN   -> MaterialTheme.colorScheme.tertiary
         ShiftTrend.STABLE -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
@@ -392,7 +412,7 @@ private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
         ShiftMetricRow(
             icon        = Icons.Filled.Timeline,
             iconTint    = deltaColor,
-            label       = "${shift.firstMeasuredOn}  →  ${shift.lastMeasuredOn}",
+            label       = "${shift.firstMeasuredOn.format(dateFormatter)}  →  ${shift.lastMeasuredOn.format(dateFormatter)}",
             valueText   = "${fmt(shift.firstValue)}  →  ${fmt(shift.lastValue)}",
             subText     = "${fmtSigned(shift.deltaAbsolute)}  (${fmtSigned(shift.deltaPercent)} %)",
             subTextColor = deltaColor,
@@ -406,7 +426,7 @@ private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
             iconTint  = MaterialTheme.colorScheme.primary,
             label     = stringResource(R.string.statistics_label_min),
             valueText = fmt(shift.minValue),
-            subText   = shift.minValueDate.toString(),
+            subText   = shift.minValueDate.format(dateFormatter),
         )
 
         Spacer(Modifier.height(rowSpacing))
@@ -417,7 +437,7 @@ private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
             iconTint  = MaterialTheme.colorScheme.error,
             label     = stringResource(R.string.statistics_label_max),
             valueText = fmt(shift.maxValue),
-            subText   = shift.maxValueDate.toString(),
+            subText   = shift.maxValueDate.format(dateFormatter),
         )
 
         Spacer(Modifier.height(rowSpacing))
@@ -444,7 +464,7 @@ private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
 
         // ── 6. Rate per month ─────────────────────────────────────────────
         ShiftMetricRow(
-            icon      = Icons.Filled.ShowChart,
+            icon      = Icons.AutoMirrored.Filled.ShowChart,
             iconTint  = MaterialTheme.colorScheme.primary,
             label     = stringResource(R.string.insights_rate_per_month),
             valueText = fmtSigned(shift.ratePerMonth),
@@ -454,7 +474,7 @@ private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
 
         // ── 7. Volatility ─────────────────────────────────────────────────
         val volatilityColor = when (shift.volatility) {
-            Volatility.STABLE   -> Color(0xFF4CAF50)
+            Volatility.STABLE   -> MaterialTheme.colorScheme.tertiary
             Volatility.MODERATE -> MaterialTheme.colorScheme.primary
             Volatility.HIGH     -> MaterialTheme.colorScheme.error
         }
@@ -480,6 +500,9 @@ private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
             iconTint  = MaterialTheme.colorScheme.primary,
             label     = stringResource(R.string.insights_plateau_label),
             valueText = stringResource(R.string.insights_plateau_days, shift.plateauDays ?: 0),
+            subText   = if (shift.plateauDays != null && shift.plateauStartDate != null)
+                "${shift.plateauStartDate.format(dateFormatter)}  –  ${shift.lastMeasuredOn.format(dateFormatter)}"
+            else null,
         )
 
         Spacer(Modifier.height(rowSpacing))
@@ -489,8 +512,37 @@ private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
             icon      = Icons.Filled.Star,
             iconTint  = MaterialTheme.colorScheme.primary,
             label     = stringResource(R.string.insights_best_period_label),
-            valueText = "${shift.bestPeriodStart?.month?.getDisplayName(TextStyle.FULL, locale)} ${shift.bestPeriodStart?.year}",
+            valueText = if (shift.bestPeriodStart != null)
+                "${shift.bestPeriodStart.month.getDisplayName(TextStyle.FULL, locale)} ${shift.bestPeriodStart.year}"
+            else "-",
+            subText   = shift.bestPeriodDelta?.let { fmtSigned(it) },
         )
+
+        Spacer(Modifier.height(rowSpacing))
+
+        // ── Summary ───────────────────────────────────────────────────
+        val summary: String? = when {
+            shift.plateauDays != null &&
+                    shift.plateauDays > 14 &&
+                    ChronoUnit.DAYS.between(shift.lastMeasuredOn, LocalDate.now()) <= MeasurementInsightsUseCase.ANOMALY_GAP_RESET_DAYS ->
+                stringResource(R.string.insights_summary_plateau, shift.plateauDays)
+
+            shift.shortTermTrend != shift.longTermTrend -> when (shift.shortTermTrend) {
+                ShiftTrend.DOWN   -> stringResource(R.string.insights_summary_trend_change_down)
+                ShiftTrend.UP     -> stringResource(R.string.insights_summary_trend_change_up)
+                ShiftTrend.STABLE -> null
+            }
+
+            shift.volatility == Volatility.HIGH ->
+                stringResource(R.string.insights_summary_volatility_high)
+
+            shift.volatility == Volatility.STABLE ->
+                stringResource(R.string.insights_summary_volatility_stable)
+
+            else -> null
+        }
+
+        summary?.let { InsightSummaryText(it) }
     }
 }
 
@@ -541,6 +593,319 @@ private fun ShiftMetricRow(
     }
 }
 
+@Composable
+private fun BodyCompositionStatePlaneCard(
+    pattern: BodyCompositionPattern,
+) {
+    val history  = pattern.history
+    val locale   = Locale.getDefault()
+    // Formatter is cheap to create and not composable-state — no remember needed.
+    val shortFmt = DateTimeFormatter.ofPattern("MMM yy", locale)
+
+    // null = "Now" chip active (current pattern shown)
+    var selectedIndex by remember { mutableStateOf<Int?>(null) }
+
+    val transition = remember { Animatable(1f) }
+    LaunchedEffect(pattern.windowStartDate) {
+        transition.snapTo(0f)
+        transition.animateTo(1f, tween(800, easing = EaseOutCubic))
+    }
+
+    // Continuous pulse for the active point — restarts whenever selection changes.
+    val pulseAnim = remember { Animatable(0f) }
+
+    LaunchedEffect(selectedIndex) {
+        pulseAnim.snapTo(0f)
+        while (true) {
+            pulseAnim.animateTo(1f, tween(1100, easing = EaseOutCubic))
+            pulseAnim.animateTo(0f, tween(700))
+        }
+    }
+
+    val colorScheme = MaterialTheme.colorScheme
+
+    val mapped = remember(pattern, history) {
+        val allPoints = history + pattern
+
+        val maxAbsDelta = allPoints.maxOfOrNull { p ->
+            max(abs(p.fatDelta), abs(p.muscleDelta))
+        }?.takeIf { it > 0.1f } ?: 1.0f
+
+        val edgePadding = 0.2f
+        val scale = (0.5f - edgePadding) / maxAbsDelta
+
+        fun map(p: BodyCompositionPattern): Pair<Float, Float> {
+            val x = 0.5f + (p.fatDelta * scale)
+            val y = 0.5f - (p.muscleDelta * scale)
+            return x.coerceIn(0.05f, 0.95f) to y.coerceIn(0.05f, 0.95f)
+        }
+
+        history.map { map(it) } to map(pattern)
+    }
+
+    val (historyMappedPoints, currentPoint) = mapped
+    val (currentX, currentY) = currentPoint
+
+    // Summary text reflects the selected chip's pattern, not always the current one.
+    val displayedPattern = selectedIndex
+        ?.let { history.getOrNull(it)?.pattern }
+        ?: pattern.pattern
+
+    val shownEntry = selectedIndex?.let { history.getOrNull(it) }
+
+    val summaryText = when {
+        shownEntry != null && shownEntry.pattern == CompositionPatternType.UNDEFINED ->
+            stringResource(
+                R.string.insights_pattern_summary_undefined_with_data,
+                shownEntry.windowStartDate.format(shortFmt),
+            )
+        else -> when (displayedPattern) {
+            CompositionPatternType.FAT_GAIN -> stringResource(R.string.insights_pattern_summary_fat_gain)
+            CompositionPatternType.MUSCLE_AND_FAT_GAIN -> stringResource(R.string.insights_pattern_summary_fat_gain_with_muscle)
+            CompositionPatternType.MUSCLE_GAIN       -> stringResource(R.string.insights_pattern_summary_muscle_gain)
+            CompositionPatternType.WEIGHT_LOSS_MIXED -> stringResource(R.string.insights_pattern_summary_weight_loss_mixed)
+            CompositionPatternType.FAT_LOSS          -> stringResource(R.string.insights_pattern_summary_fat_loss)
+            CompositionPatternType.RECOMPOSITION     -> stringResource(R.string.insights_pattern_summary_recomposition)
+            CompositionPatternType.STABLE            -> stringResource(R.string.insights_pattern_summary_stable)
+            CompositionPatternType.UNDEFINED         -> stringResource(R.string.insights_pattern_summary_undefined)
+        }
+    }
+
+    InsightCard(
+        title      = stringResource(R.string.insights_section_body_pattern),
+        confidence = pattern.confidence,
+    ) {
+        Spacer(Modifier.height(12.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(240.dp),
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val w = size.width
+                val h = size.height
+
+                // Uniform 6-cell grid — center lines (i==3) are drawn thicker.
+                // Equal spacing ensures the center cross aligns with the fine grid.
+                for (i in 1..5) {
+                    val isAxis      = i == 3
+                    val alpha       = if (isAxis) 0.4f else 0.2f
+                    val strokeWidth = if (isAxis) 1.5f  else 0.8f
+                    val color       = colorScheme.onSurface.copy(alpha = alpha)
+                    drawLine(color, Offset(w * i / 6f, 0f), Offset(w * i / 6f, h), strokeWidth)
+                    drawLine(color, Offset(0f, h * i / 6f), Offset(w, h * i / 6f), strokeWidth)
+                }
+
+                // History points — glowing if selected, dimmed otherwise.
+                historyMappedPoints.forEachIndexed { index, (hx, hy) ->
+                    val center   = Offset(hx * w, hy * h)
+                    val isActive = selectedIndex == index
+
+                    if (isActive) {
+                        drawCircle(
+                            color  = colorScheme.primary.copy(alpha = 0.12f + 0.13f * (1f - pulseAnim.value)),
+                            radius = 22f + pulseAnim.value * 12f,
+                            center = center,
+                        )
+                        drawCircle(colorScheme.primary.copy(alpha = 0.28f), 18f, center)
+                        drawCircle(colorScheme.primary, 9f, center)
+                        drawCircle(colorScheme.surface.copy(alpha = 0.55f), 3.5f, center)
+                    } else {
+                        drawCircle(colorScheme.onSurface.copy(alpha = 0.10f), 9f, center)
+                        drawCircle(colorScheme.onSurface.copy(alpha = 0.22f), 5f, center)
+                    }
+                }
+
+                // Current point animates in from the last history position on first render.
+                val lastHistoryOffset = historyMappedPoints.lastOrNull()
+                    ?.let { (hx, hy) -> Offset(hx * w, hy * h) }
+                val target    = Offset(currentX * w, currentY * h)
+                val animated  = Offset(
+                    lerp((lastHistoryOffset?.x ?: target.x), target.x, transition.value),
+                    lerp((lastHistoryOffset?.y ?: target.y), target.y, transition.value),
+                )
+
+                if (selectedIndex == null) {
+                    // Active — pulsing glow
+                    drawCircle(
+                        color  = colorScheme.primary.copy(alpha = 0.10f + 0.12f * (1f - pulseAnim.value)),
+                        radius = 26f + pulseAnim.value * 14f,
+                        center = animated,
+                    )
+                    drawCircle(colorScheme.primary.copy(alpha = 0.25f), 20f, animated)
+                    drawCircle(colorScheme.primary, 10f, animated)
+                    drawCircle(colorScheme.surface.copy(alpha = 0.55f), 4f, animated)
+                } else {
+                    // Inactive — dimmed while a history chip is selected
+                    drawCircle(colorScheme.onSurface.copy(alpha = 0.08f), 20f, animated)
+                    drawCircle(colorScheme.onSurface.copy(alpha = 0.20f), 10f, animated)
+                }
+            }
+
+            // Zone corner labels positioned according to the axes
+            Column(
+                modifier = Modifier.fillMaxSize().padding(12.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    TrendLabel(
+                        label       = stringResource(R.string.insights_label_recomposition),
+                        trend       = ShiftTrend.UP,
+                        invertColor = true,
+                        tooltipText = stringResource(R.string.insights_zone_tooltip_recomposition),
+                    )
+                    TrendLabel(
+                        label       = stringResource(R.string.insights_label_bulking),
+                        trend       = ShiftTrend.UP,
+                        invertColor = true,
+                        tooltipText = stringResource(R.string.insights_zone_tooltip_bulking),
+                    )
+                }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    TrendLabel(
+                        label       = stringResource(R.string.insights_label_mixed_loss),
+                        trend       = ShiftTrend.DOWN,
+                        invertColor = true,
+                        tooltipText = stringResource(R.string.insights_zone_tooltip_mixed_loss),
+                    )
+                    TrendLabel(
+                        label       = stringResource(R.string.insights_label_fat_gain),
+                        trend       = ShiftTrend.UP,
+                        invertColor = false,
+                        tooltipText = stringResource(R.string.insights_zone_tooltip_fat_gain),
+                    )
+                }
+            }
+        }
+
+        // Chips are only rendered when history data is available.
+        if (history.isNotEmpty()) {
+            Spacer(Modifier.height(10.dp))
+            // Enable horizontal scrolling for the chips
+            Row(
+                modifier              = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()), // Makes the row scrollable
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment     = Alignment.CenterVertically,
+            ) {
+                // 1. "Now" chip is now FIRST (leftmost)
+                SuggestionChip(
+                    onClick = { selectedIndex = null },
+                    label   = {
+                        Text(
+                            text     = stringResource(R.string.insights_chip_now),
+                            maxLines = 1,
+                            style    = MaterialTheme.typography.labelSmall,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    },
+                    colors = SuggestionChipDefaults.suggestionChipColors(
+                        containerColor = if (selectedIndex == null)
+                            MaterialTheme.colorScheme.primaryContainer
+                        else
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+                        labelColor = if (selectedIndex == null)
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.50f),
+                    ),
+                )
+
+                // 2. History chips follow, reversed to show newest first
+                // We use reversed() to go from most recent to oldest
+                history.asReversed().forEachIndexed { reversedIdx, p ->
+                    // Since we reversed the list for display, we need to map the index
+                    // back to the original history list to keep selection logic working
+                    val originalIdx = history.size - 1 - reversedIdx
+                    val isSelected  = selectedIndex == originalIdx
+
+                    SuggestionChip(
+                        onClick = { selectedIndex = if (isSelected) null else originalIdx },
+                        label   = {
+                            Text(
+                                text     = p.windowStartDate.format(shortFmt),
+                                maxLines = 1,
+                                style    = MaterialTheme.typography.labelSmall,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        },
+                        colors = SuggestionChipDefaults.suggestionChipColors(
+                            containerColor = if (isSelected)
+                                MaterialTheme.colorScheme.primaryContainer
+                            else
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+                            labelColor = if (isSelected)
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            else
+                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.50f),
+                        ),
+                    )
+                }
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        InsightSummaryText(summaryText)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TrendLabel(
+    label: String,
+    trend: ShiftTrend,
+    invertColor: Boolean = false,
+    tooltipText: String,
+) {
+    val icon = when (trend) {
+        ShiftTrend.UP     -> Icons.AutoMirrored.Filled.TrendingUp
+        ShiftTrend.DOWN   -> Icons.AutoMirrored.Filled.TrendingDown
+        ShiftTrend.STABLE -> Icons.AutoMirrored.Filled.TrendingFlat
+    }
+    val color = when (trend) {
+        ShiftTrend.UP     -> if (invertColor) MaterialTheme.colorScheme.tertiary
+        else MaterialTheme.colorScheme.error
+        ShiftTrend.DOWN   -> if (invertColor) MaterialTheme.colorScheme.error
+        else MaterialTheme.colorScheme.tertiary
+        ShiftTrend.STABLE -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    val tooltipState = rememberTooltipState(isPersistent = true)
+    val scope        = rememberCoroutineScope()
+
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+        tooltip = {
+            PlainTooltip {
+                Text(
+                    text  = tooltipText,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        },
+        state = tooltipState,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier          = Modifier.clickable { scope.launch { tooltipState.show() } },
+        ) {
+            Icon(
+                imageVector        = icon,
+                contentDescription = null,
+                tint               = color,
+                modifier           = Modifier.size(14.dp),
+            )
+            Spacer(Modifier.width(3.dp))
+            Text(
+                text  = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = color,
+            )
+        }
+    }
+}
+
 /**
  * Displays the average deviation per weekday as animated horizontal bars.
  * Bar widths animate from zero with a staggered delay per row.
@@ -582,14 +947,16 @@ private fun WeekdayPatternCard(pattern: WeekdayPattern) {
                 deviation > 0f -> MaterialTheme.colorScheme.error.copy(
                     alpha = 0.6f + 0.4f * animatedWidth,
                 )
-                deviation < 0f -> Color(0xFF4CAF50).copy(
+                deviation < 0f -> MaterialTheme.colorScheme.tertiary.copy(
                     alpha = 0.6f + 0.4f * animatedWidth,
                 )
                 else           -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
             }
 
             Row(
-                modifier          = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+                modifier          = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 3.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
@@ -722,7 +1089,9 @@ private fun SeasonalPatternCard(pattern: SeasonalPattern) {
         sortedYears.forEachIndexed { yearIndex, year ->
             val monthMap = pattern.averageValueByMonthAndYear[year] ?: emptyMap()
             Row(
-                modifier          = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                modifier          = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
@@ -881,7 +1250,11 @@ private fun AnomalyRow(
     anomaly: MeasurementAnomaly,
     onAnomalyClick: (MeasurementAnomaly) -> Unit
 ) {
-    val context = LocalContext.current
+    val locale = Locale.getDefault()
+    val dateFormatter = remember {
+        DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -897,7 +1270,7 @@ private fun AnomalyRow(
             )
             Spacer(Modifier.width(6.dp))
             Text(
-                text       = anomaly.date.toString(),
+                text       = anomaly.date.format(dateFormatter),
                 style      = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.SemiBold,
             )

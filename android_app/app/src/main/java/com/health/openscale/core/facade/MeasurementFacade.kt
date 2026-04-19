@@ -33,6 +33,7 @@ import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.service.MeasurementEnricher
 import com.health.openscale.core.usecase.MeasurementAggregationUseCase
 import com.health.openscale.core.usecase.MeasurementCrudUseCases
+import com.health.openscale.core.usecase.MeasurementDemoUseCase
 import com.health.openscale.core.usecase.MeasurementEvaluationUseCases
 import com.health.openscale.core.usecase.MeasurementFilterUseCases
 import com.health.openscale.core.usecase.MeasurementInsightsUseCase
@@ -77,7 +78,8 @@ class MeasurementFacade @Inject constructor(
     private val evaluationUseCases: MeasurementEvaluationUseCases,
     private val aggregation: MeasurementAggregationUseCase,
     private val insights: MeasurementInsightsUseCase,
-) {
+    private val demoUseCase: MeasurementDemoUseCase,
+    ) {
 
     private var pendingReferenceUser: User? = null
 
@@ -275,6 +277,13 @@ class MeasurementFacade @Inject constructor(
         updated: MeasurementType,
     ): Result<MeasurementTypeCrudUseCases.UnitConversionReport> =
         typeCrud.updateTypeAndConvertValues(original, updated)
+
+    suspend fun generateDemoData(
+        userId: Int,
+        scenario: MeasurementDemoUseCase.DemoScenario,
+        range: MeasurementDemoUseCase.TimeRange,
+        wipeExisting: Boolean
+    ) = demoUseCase.generate(userId, scenario, range, wipeExisting)
 
     // -------------------------------------------------------------------------
     // Evaluation / plausibility

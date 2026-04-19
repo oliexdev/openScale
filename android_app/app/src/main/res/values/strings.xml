@@ -493,8 +493,11 @@
     <!-- Insights Screen -->
     <string name="insights_confidence_low">Limited data</string>
     <string name="insights_section_body_shift">Your %1$s Analysis</string>
-    <string name="insights_no_data">Not enough data to compute insights yet. Keep measuring!</string>
-    <string name="insights_based_on">based on %1$d measurements</string>
+    <string name="insights_label_recomposition">Recomposition</string>
+    <string name="insights_label_bulking">Bulking</string>
+    <string name="insights_label_mixed_loss">Mixed Loss</string>
+    <string name="insights_label_fat_gain">Fat Gain</string>
+    <string name="insights_chip_now">Now</string>
     <string name="insights_short_term_trend">Short-term trend (30d)</string>
     <string name="insights_long_term_trend">Long-term trend</string>
     <string name="insights_placeholder_body_shift">At least %1$d measurements are needed to analyse how your body changed over time.</string>
@@ -512,7 +515,6 @@
     <string name="insights_volatility_high">High</string>
     <string name="insights_plateau_label">Stable period</string>
     <string name="insights_plateau_days">%1$d days</string>
-    <string name="insights_best_period">Best month: %1$s %2$d (%3$s)</string>
     <string name="insights_section_weekday">Your Weekly Habits</string>
     <string name="insights_weekday_summary_high">You tend to measure highest on %1$s and lowest on %2$s</string>
     <string name="insights_weekday_summary_low">Preliminary pattern — measure more regularly for reliable results</string>
@@ -523,6 +525,26 @@
     <string name="insights_anomalies_none">No unusual measurements detected.</string>
     <string name="insights_anomaly_deviation">%1$s from expected %2$s</string>
     <string name="insights_anomaly_comment">"%1$s"</string>
+    <string name="insights_summary_plateau">No significant change for %1$d days — your body may be adapting.</string>
+    <string name="insights_summary_trend_change_down">Recent downward trend — positive change compared to your long-term direction.</string>
+    <string name="insights_summary_trend_change_up">Recent upward trend — keep an eye on the long-term direction.</string>
+    <string name="insights_summary_volatility_high">High fluctuation detected — this is common and can reflect natural body changes like water retention.</string>
+    <string name="insights_summary_volatility_stable">Your values are very consistent — reliable data basis.</string>
+    <string name="insights_section_body_pattern">Your Body Composition</string>
+    <string name="insights_placeholder_body_pattern">At least %1$d measurements with all four metrics (weight, body fat, muscle, water) are needed within the last %2$d days to compute this insight.</string>
+    <string name="insights_pattern_summary_fat_loss">Weight and fat are dropping while muscle mass is being preserved or even slightly growing — you are losing primarily fat mass.</string>
+    <string name="insights_pattern_summary_recomposition">Your body is efficiently recomposing: you are losing fat while simultaneously building significant muscle mass.</string>
+    <string name="insights_pattern_summary_muscle_gain">You are gaining muscle mass while body fat remains stable or decreases — a positive body composition trend.</string>
+    <string name="insights_pattern_summary_weight_loss_mixed">Warning: You are losing weight, but your muscle mass is also declining.</string>
+    <string name="insights_pattern_summary_fat_gain">Fat mass is increasing. If this is not a deliberate bulk, consider reviewing your activity levels.</string>
+    <string name="insights_pattern_summary_fat_gain_with_muscle">Both fat and muscle are increasing — this looks like a bulk phase. If muscle gain is your goal, consider whether the fat increase is within your target range.</string>
+    <string name="insights_pattern_summary_stable">All metrics are stable — you are in a maintenance phase.</string>
+    <string name="insights_pattern_summary_undefined">No clear pattern detected yet — more measurements including weight, body fat, muscle, and water are needed.</string>
+    <string name="insights_pattern_summary_undefined_with_data">Mixed signals in %1$s — weight, fat, and muscle trends don\'t match a clear pattern yet.</string>
+    <string name="insights_zone_tooltip_recomposition">Fat is decreasing while muscle is increasing — the best possible outcome.</string>
+    <string name="insights_zone_tooltip_bulking">Both fat and muscle are increasing.</string>
+    <string name="insights_zone_tooltip_mixed_loss">Both fat and muscle are decreasing. Weight is dropping, but muscle mass is also being lost.</string>
+    <string name="insights_zone_tooltip_fat_gain">Fat is increasing while muscle is decreasing or stable — the least favourable outcome.</string>
 
     <!-- Statistics Screen -->
     <string name="statistics_no_relevant_types">No relevant measurement types available or configured for statistics.</string>
@@ -618,6 +640,35 @@
     <string name="log_export_cancelled">Export cancelled.</string>
     <string name="log_export_no_app_error">No suitable app found to export the file.</string>
     <string name="export_log_file_button">Export Log File</string>
+    <!-- Developer Tools (Debug only, not translatable) -->
+    <string name="dev_tools_title" translatable="false">Developer Tools</string>
+    <string name="dev_tools_scenario_label" translatable="false">Scenario</string>
+    <string name="dev_tools_time_range_label" translatable="false">Time Range</string>
+    <string name="dev_tools_wipe_data_label" translatable="false">Wipe existing data</string>
+    <string name="dev_tools_generate_button" translatable="false">Generate Demo Data</string>
+    <string name="dev_tools_range_30_days" translatable="false">Last 30 days</string>
+    <string name="dev_tools_range_6_months" translatable="false">Last 6 months</string>
+    <string name="dev_tools_range_2_years" translatable="false">Last 2 years</string>
+    <string name="dev_tools_range_4_years" translatable="false">Last 4 years</string>
+    <string name="dev_tools_dialog_title" translatable="false">Irreversible Action</string>
+    <string name="dev_tools_dialog_wipe_warning" translatable="false">This will DELETE ALL measurements for the current user and replace them with demo data. This cannot be undone!</string>
+    <string name="dev_tools_dialog_add_warning" translatable="false">This will add many mock measurements to the current user profile.</string>
+    <string name="dev_tools_dialog_confirm" translatable="false">Confirm &amp; Generate</string>
+    <string name="dev_tools_toast_generating" translatable="false">Generating %1$d measurements for %2$s…</string>
+    <string name="dev_tools_toast_success" translatable="false">Successfully generated %1$d measurements for %2$s</string>
+    <string name="dev_tools_scenario_recomposition" translatable="false">Recomposition</string>
+    <string name="dev_tools_scenario_stable" translatable="false">Stable (Plateau)</string>
+    <string name="dev_tools_scenario_trend" translatable="false">Trend Progress</string>
+    <string name="dev_tools_scenario_muscle_gain" translatable="false">Muscle Gain (fat stable)</string>
+    <string name="dev_tools_scenario_bulk" translatable="false">Bulk (fat + muscle up)</string>
+    <string name="dev_tools_scenario_fat_loss" translatable="false">Fat Loss (muscle stable)</string>
+    <string name="dev_tools_scenario_fat_gain" translatable="false">Fat Gain (muscle stable)</string>
+    <string name="dev_tools_scenario_mixed_loss" translatable="false">Mixed Loss (fat + muscle down)</string>
+    <string name="dev_tools_scenario_with_anomalies" translatable="false">With Anomalies (z-score spikes)</string>
+    <string name="dev_tools_scenario_seasonal" translatable="false">Seasonal Pattern (2+ years)</string>
+    <string name="dev_tools_scenario_weekday_habits" translatable="false">Weekday Habits (daily cadence)</string>
+    <string name="dev_tools_scenario_sparse_metrics" translatable="false">Sparse Metrics (weight only)</string>
+    <string name="dev_tools_scenario_with_gaps" translatable="false">With Gaps (30d+ breaks)</string>
 
     <!-- Data Management (Export, Import, Backup, Restore, Delete) -->
     <string name="settings_export_measurements_csv">Export measurements (CSV)</string>

@@ -46,6 +46,71 @@ enum class ShiftTrend { UP, DOWN, STABLE }
 enum class Volatility { STABLE, MODERATE, HIGH }
 
 /**
+ * The classified body composition pattern derived from the four-metric trend analysis.
+ *
+ * - [FAT_GAIN]:         Weight ↑, fat ↑, muscle stable/↓ — gaining fat mass.
+ * - [MUSCLE_GAIN]:      Weight ↑, fat stable/↓, muscle ↑ — gaining muscle mass.
+ * - [MUSCLE_AND_FAT_GAIN]: Weight ↑, fat ↑, muscle ↑ — gaining both fat and muscle.
+ * - [WEIGHT_LOSS_MIXED]:Weight ↓, fat ↓, muscle ↓ — losing both fat and muscle.
+ * - [FAT_LOSS]:         Weight ↓, fat ↓, muscle stable — losing primarily fat.
+ * - [RECOMPOSITION]:    Weight stable, fat ↓, muscle ↑ — body recomposition.
+ * - [STABLE]:           All metrics stable — maintenance phase.
+ * - [UNDEFINED]:        Pattern does not match any known category.
+ */
+enum class CompositionPatternType {
+    FAT_GAIN,
+    MUSCLE_GAIN,
+    MUSCLE_AND_FAT_GAIN,
+    WEIGHT_LOSS_MIXED,
+    FAT_LOSS,
+    RECOMPOSITION,
+    STABLE,
+    UNDEFINED,
+}
+
+/**
+ * Represents the detected body composition pattern over the last
+ * [com.health.openscale.core.usecase.MeasurementInsightsUseCase.CORRELATION_WINDOW_DAYS] days.
+ *
+ * All four canonical body composition metrics are analysed together rather than
+ * in isolation to give a holistic picture of how the body is changing.
+ * Only measurements where all four values are present are included.
+ *
+ * If fewer than [com.health.openscale.core.usecase.MeasurementInsightsUseCase.CORRELATION_MIN_MEASUREMENTS]
+ * such measurements exist, the pattern cannot be computed.
+ *
+ * @property weightTrend     Direction of weight change over the window.
+ * @property fatTrend        Direction of body fat change over the window.
+ * @property muscleTrend     Direction of muscle mass change over the window.
+ * @property waterTrend      Direction of body water change over the window.
+ * @property pattern         The classified body composition pattern.
+ * @property basedOnCount    Number of quad-complete measurements used for this analysis.
+ * @property windowStartDate Start of the analysis window.
+ * @property windowEndDate   End of the analysis window.
+ * @property fatDelta        Absolute change in fat mass (kg).
+ * @property muscleDelta     Absolute change in muscle mass (kg).
+ * @property confidence      Reliability based on data availability.
+ * @property history         Up to 5 preceding non-overlapping 90-day windows, oldest first.
+ *                           Only populated on the current pattern — history entries carry
+ *                           an empty list to avoid recursive nesting.
+ */
+@Immutable
+data class BodyCompositionPattern(
+    val weightTrend: ShiftTrend,
+    val fatTrend: ShiftTrend,
+    val muscleTrend: ShiftTrend,
+    val waterTrend: ShiftTrend,
+    val pattern: CompositionPatternType,
+    val basedOnCount: Int,
+    val windowStartDate: LocalDate,
+    val windowEndDate: LocalDate,
+    val fatDelta: Float = 0f,
+    val muscleDelta: Float = 0f,
+    val confidence: InsightConfidence,
+    val history: List<BodyCompositionPattern> = emptyList(),
+)
+
+/**
  * A rich analysis of how a single measurement type has evolved over the user's
  * full measurement history.
  *
@@ -94,6 +159,7 @@ data class BodyCompositionShift(
     val longTermTrend: ShiftTrend,
     val ratePerMonth: Float,
     val plateauDays: Int?,
+    val plateauStartDate: LocalDate?,
     val bestPeriodStart: LocalDate?,
     val bestPeriodDelta: Float?,
     val firstMeasuredOn: LocalDate,
@@ -202,6 +268,7 @@ data class MeasurementAnomaly(
  * extending it — it is derived from the full measurement history, not from a single entry.
  *
  * @property bodyCompositionShift  Rich analysis of how the primary type evolved over time, or null.
+ * @property bodyCompositionPattern Correlation analysis of four canonical metrics, or null.
  * @property weekdayPattern        Average deviation per weekday for the primary type, or null.
  * @property seasonalPattern       Average value per month grouped by year, or null.
  * @property anomalies             Detected anomalies sorted by date descending, empty if none found.
@@ -211,6 +278,7 @@ data class MeasurementAnomaly(
 @Immutable
 data class MeasurementInsight(
     val bodyCompositionShift: BodyCompositionShift?,
+    val bodyCompositionPattern: BodyCompositionPattern?,
     val weekdayPattern: WeekdayPattern?,
     val seasonalPattern: SeasonalPattern?,
     val anomalies: List<MeasurementAnomaly>,

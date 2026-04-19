@@ -20,8 +20,10 @@ package com.health.openscale.ui.screen.settings
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -30,14 +32,33 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Launch
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Copyright
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Timeline
+import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,6 +73,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.health.openscale.BuildConfig
 import com.health.openscale.R
+import com.health.openscale.core.usecase.MeasurementDemoUseCase
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.shared.SharedViewModel
 
@@ -62,6 +84,7 @@ import com.health.openscale.ui.shared.SharedViewModel
  * @param navController The NavController for navigation.
  * @param sharedViewModel The SharedViewModel for accessing shared data and actions.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
     navController: NavController,
@@ -138,9 +161,132 @@ fun AboutScreen(
             url = licenseUrl,
             uriHandler = uriHandler
         )
+
+
+        if (BuildConfig.DEBUG) {
+            Spacer(modifier = Modifier.height(24.dp))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+
+            // Danger Zone Title
+            Text(
+                text = stringResource(R.string.dev_tools_title),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
+                fontWeight = FontWeight.Bold
+            )
+
+            var selectedScenario by remember { mutableStateOf(MeasurementDemoUseCase.DemoScenario.TREND_PROGRESS) }
+            var selectedRange by remember { mutableStateOf(MeasurementDemoUseCase.TimeRange.LAST_6_MONTHS) }
+            var wipeExisting by remember { mutableStateOf(false) }
+            var showConfirmDialog by remember { mutableStateOf(false) }
+
+            // --- Scenario Dropdown ---
+            var scenarioExpanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = scenarioExpanded,
+                onExpandedChange = { scenarioExpanded = it },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.dev_tools_scenario_label), color = MaterialTheme.colorScheme.error) },
+                    supportingContent = { Text(selectedScenario.getDisplayName(context), color = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)) },
+                    leadingContent = { Icon(Icons.Default.Timeline, null, tint = MaterialTheme.colorScheme.error) },
+                    trailingContent = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = scenarioExpanded) },
+                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).clickable { scenarioExpanded = true },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                )
+                ExposedDropdownMenu(expanded = scenarioExpanded, onDismissRequest = { scenarioExpanded = false }) {
+                    MeasurementDemoUseCase.DemoScenario.entries.forEach { scenario ->
+                        DropdownMenuItem(
+                            text = { Text(scenario.getDisplayName(context), color = MaterialTheme.colorScheme.error) },
+                            onClick = { selectedScenario = scenario; scenarioExpanded = false }
+                        )
+                    }
+                }
+            }
+
+            // --- Time Range Dropdown ---
+            var rangeExpanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = rangeExpanded,
+                onExpandedChange = { rangeExpanded = it },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.dev_tools_time_range_label), color = MaterialTheme.colorScheme.error) },
+                    supportingContent = { Text(selectedRange.getDisplayName(context), color = MaterialTheme.colorScheme.error.copy(alpha = 0.7f)) },
+                    leadingContent = { Icon(Icons.Default.History, null, tint = MaterialTheme.colorScheme.error) },
+                    trailingContent = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = rangeExpanded) },
+                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).clickable { rangeExpanded = true },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                )
+                ExposedDropdownMenu(expanded = rangeExpanded, onDismissRequest = { rangeExpanded = false }) {
+                    MeasurementDemoUseCase.TimeRange.entries.forEach { range ->
+                        DropdownMenuItem(
+                            text = { Text(range.getDisplayName(context), color = MaterialTheme.colorScheme.error) },
+                            onClick = { selectedRange = range; rangeExpanded = false }
+                        )
+                    }
+                }
+            }
+
+            // --- Wipe Toggle ---
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.dev_tools_wipe_data_label), color = MaterialTheme.colorScheme.error) },
+                leadingContent = { Icon(Icons.Default.DeleteForever, null, tint = MaterialTheme.colorScheme.error) },
+                trailingContent = {
+                    Switch(
+                        checked = wipeExisting,
+                        onCheckedChange = { wipeExisting = it },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.error,
+                            checkedTrackColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    )
+                },
+                modifier = Modifier.clickable { wipeExisting = !wipeExisting },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- Generate Button ---
+            TextButton(
+                onClick = { showConfirmDialog = true },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+            ) {
+                Text(stringResource(R.string.dev_tools_generate_button).uppercase(), fontWeight = FontWeight.Bold)
+            }
+
+            // --- Confirmation Dialog ---
+            if (showConfirmDialog) {
+                AlertDialog(
+                    onDismissRequest = { showConfirmDialog = false },
+                    icon = { Icon(Icons.Default.WarningAmber, null, tint = MaterialTheme.colorScheme.error) },
+                    title = { Text(stringResource(R.string.dev_tools_dialog_title)) },
+                    text = {
+                        Text(if (wipeExisting) stringResource(R.string.dev_tools_dialog_wipe_warning)
+                        else stringResource(R.string.dev_tools_dialog_add_warning))
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                sharedViewModel.generateDemoData(selectedScenario, selectedRange, wipeExisting)
+                                showConfirmDialog = false
+                            },
+                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                        ) { Text(stringResource(R.string.dev_tools_dialog_confirm)) }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showConfirmDialog = false }) { Text(stringResource(R.string.cancel_button)) }
+                    }
+                )
+            }
+        }
     }
 }
-
 
 /**
  * A private composable function to display an information list item.
