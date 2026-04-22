@@ -83,7 +83,7 @@ data class BleGattTuning(
     val postWriteDelayMs: Long = 20,
     val postReadDelayMs: Long = 20,
     val connectAfterScanDelayMs: Long = 650,
-    val requestHighConnectionPriority: Boolean = true,
+    val requestHighConnectionPriority: Boolean = false,
     val requestMtuBytes: Int = 185,
     val operationTimeoutMs: Long = 1000
 )
@@ -135,7 +135,7 @@ fun TuningProfile.forGatt(): BleGattTuning = when (this) {
         postWriteDelayMs = 20,
         postReadDelayMs = 20,
         connectAfterScanDelayMs = 650,
-        requestHighConnectionPriority = true,
+        requestHighConnectionPriority = false,
         requestMtuBytes = 185,
         operationTimeoutMs = 1000
     )
@@ -147,7 +147,7 @@ fun TuningProfile.forGatt(): BleGattTuning = when (this) {
         postWriteDelayMs = 30,
         postReadDelayMs = 30,
         connectAfterScanDelayMs = 800,
-        requestHighConnectionPriority = true,
+        requestHighConnectionPriority = false,
         requestMtuBytes = 0,
         operationTimeoutMs = 2000
     )
@@ -459,7 +459,6 @@ abstract class ModernScaleAdapter(
             runCatching { id = u.id }
             runCatching { userName = u.name }
             when (val b = runCatching { u.birthDate }.getOrNull()) {
-                is Date -> birthday = b
                 is Long -> birthday = Date(b)
             }
             runCatching { bodyHeight = u.heightCm }

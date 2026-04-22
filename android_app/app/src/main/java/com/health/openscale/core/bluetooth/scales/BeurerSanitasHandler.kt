@@ -163,6 +163,7 @@ class BeurerSanitasHandler : ScaleDeviceHandler() {
             displayName = display,
             capabilities = caps,
             implemented = caps,
+            tuningProfile = TuningProfile.Balanced,
             linkMode = LinkMode.CONNECT_GATT
         )
     }
