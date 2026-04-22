@@ -120,6 +120,7 @@ class ScaleFactory @Inject constructor(
         EbelterBodyFatB2Handler(),
         ExcelvanCF36xHandler(),
         EtekcityESF551Handler(),
+        EufyC20Handler(),
         ESCS20MHandler(),
         RenphoES26BBHandler(),
         DigooDGSO38HHandler(),
