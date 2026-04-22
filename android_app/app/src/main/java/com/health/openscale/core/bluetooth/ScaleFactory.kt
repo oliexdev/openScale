@@ -47,6 +47,7 @@ import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
+import com.health.openscale.core.bluetooth.scales.QNBroadcastHandler
 import com.health.openscale.core.bluetooth.scales.QNHandler
 import com.health.openscale.core.bluetooth.scales.RealmeScaleHandler
 import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
@@ -100,6 +101,7 @@ class ScaleFactory @Inject constructor(
         SenssunHandler(),
         RenphoHandler(),
         QNHandler(),
+        QNBroadcastHandler(),
         OneByoneHandler(),
         OneByoneNewHandler(),
         OkOkHandler(),
