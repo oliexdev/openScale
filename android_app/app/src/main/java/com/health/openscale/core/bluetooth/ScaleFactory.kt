@@ -61,6 +61,7 @@ import com.health.openscale.core.bluetooth.scales.StandardBeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.TrisaBodyAnalyzeHandler
 import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.bluetooth.scales.YunmaiHandler
+import com.health.openscale.core.bluetooth.scales.IcomonBroadcastHandler
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
@@ -89,6 +90,7 @@ class ScaleFactory @Inject constructor(
 
     // List of modern Kotlin-based device handlers.
     private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
+        IcomonBroadcastHandler(),
         RealmeScaleHandler(), // Added Realme handler here
         YunmaiHandler(isMini = false),
         YunmaiHandler(isMini = true),
