@@ -203,34 +203,88 @@ class QNHandler : ScaleDeviceHandler() {
             }
             0x12 -> handleScaleInfoFrame(data)         // scale factor setup
             0x21 -> {
-                // Reply with a single 0xA0 user-profile frame (sub-opcode 0x02).
-                // Matches the proven working sequence from keeperofdakeys (PR #1152).
-                // NOTE: Do NOT send the 0x04 sub-opcode — the extra frame prevents
-                // the scale from entering live measurement mode.
-                // NOTE: Do NOT send 0x22 here — wait for the 0xA1 ACK first.
-                logD("QN: received 0x21 frame, sending single 0xA0 response")
+                // ES-30M needs two 0xA0 frames (sub-opcodes 0x04 then 0x02) plus
+                // an immediate 0x22 query.  Other QN scales (e.g. ES-CS20M) need
+                // only one 0xA0 (sub-opcode 0x02) and must wait for the 0xA1 ACK
+                // before sending 0x22.
+                // Detection: reuse the same heuristic from #1301's 0x10 parser.
+                // The 0x12 scale-info frame sets weightScaleFactor; ES-30M reports
+                // weightScaleFactor == 10.  If 0x12 hasn't arrived yet the default
+                // (1.0) will keep us on the original path, which is safe.
+                val isES30M = weightScaleFactor == 10.0f
 
-                val msg = byteArrayOf(
-                    0xa0.toByte(), // Opcode
-                    0x0d,          // Length (13 bytes)
-                    0x02,          // Sub-opcode type
-                    0xfe.toByte(), // 0xFE = no specific user slot
-                    0xff.toByte(), // Payload bytes from working capture
-                    0xee.toByte(),
-                    0x01,
-                    0x1c,
-                    0x06,
-                    0x86.toByte(),
-                    0x03,
-                    0x02,
-                    0x00           // Checksum placeholder
-                )
-                msg[msg.lastIndex] = checksum(msg, 0, msg.lastIndex - 1)
+                if (isES30M) {
+                    // ---- ES-30M path (from PR #1301) ----
+                    logD("QN: received 0x21 frame, sending TWO 0xA0 responses (ES-30M path)")
 
-                if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
-                    writeTo(SVC_T2, CHR_T2_WRITE_SHARED, msg, true)
-                } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
-                    writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, msg, true)
+                    // Response 1: sub-opcode 0x04
+                    val msg1 = byteArrayOf(
+                        0xa0.toByte(), 0x0d,
+                        0x04,                   // sub-opcode
+                        0xfe.toByte(),
+                        0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00,
+                        0x00                    // checksum placeholder
+                    )
+                    msg1[msg1.lastIndex] = checksum(msg1, 0, msg1.lastIndex - 1)
+
+                    // Response 2: sub-opcode 0x02
+                    val msg2 = byteArrayOf(
+                        0xa0.toByte(), 0x0d,
+                        0x02,                   // sub-opcode
+                        0x01, 0x00, 0x08, 0x00,
+                        0x21, 0x06,
+                        0xb8.toByte(), 0x04, 0x02,
+                        0x00                    // checksum placeholder
+                    )
+                    msg2[msg2.lastIndex] = checksum(msg2, 0, msg2.lastIndex - 1)
+
+                    if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
+                        writeTo(SVC_T2, CHR_T2_WRITE_SHARED, msg1, true)
+                        writeTo(SVC_T2, CHR_T2_WRITE_SHARED, msg2, true)
+                    } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
+                        writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, msg1, true)
+                        writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, msg2, true)
+                    }
+            
+                    // ES-30M: send 0x22 stored-data query immediately (no 0xA1 wait)
+                    val queryMsg = byteArrayOf(
+                        0x22, 0x06,
+                        seenProtocolType,
+                        0x00, 0x03,
+                        0x00                    // checksum placeholder
+                    )
+                    queryMsg[queryMsg.lastIndex] = checksum(queryMsg, 0, queryMsg.lastIndex - 1)
+
+                    if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
+                        writeTo(SVC_T2, CHR_T2_WRITE_SHARED, queryMsg, true)
+                    } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
+                        writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, queryMsg, true)
+                    }
+
+                } else {
+                    // ---- Original / ES-CS20M path ----
+                    logD("QN: received 0x21 frame, sending single 0xA0 response")
+
+                    val msg = byteArrayOf(
+                        0xa0.toByte(), 0x0d,
+                        0x02,                   // sub-opcode
+                        0xfe.toByte(),
+                        0xff.toByte(),
+                        0xee.toByte(),
+                        0x01, 0x1c, 0x06,
+                        0x86.toByte(),
+                        0x03, 0x02,
+                        0x00                    // checksum placeholder
+                    )
+                    msg[msg.lastIndex] = checksum(msg, 0, msg.lastIndex - 1)
+    
+                    if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
+                        writeTo(SVC_T2, CHR_T2_WRITE_SHARED, msg, true)
+                    } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
+                        writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, msg, true)
+                    }
+                    // Do NOT send 0x22 here — wait for 0xA1 ACK (handled below)
                 }
             }
             0x23 -> {
@@ -238,23 +292,27 @@ class QNHandler : ScaleDeviceHandler() {
                 logD("QN: received user data frame (0x23)")
             }
             0xA1 -> {
-                // Scale acknowledged our 0xA0 profile — now send 0x22 stored-data query.
-                // Must wait for 0xA1 before sending 0x22 (protocol ordering).
-                logD("QN: received 0xA1 acknowledgment, sending 0x22 stored-data query")
+                logD("QN: received 0xA1 acknowledgment")
 
-                val queryMsg = byteArrayOf(
-                    0x22, // Opcode
-                    0x06, // Length
-                    seenProtocolType,
-                    0x00, 0x01,  // byte[4]=0x01 (not 0x03) per working capture
-                    0x00  // Checksum placeholder
-                )
-                queryMsg[queryMsg.lastIndex] = checksum(queryMsg, 0, queryMsg.lastIndex - 1)
+                // Only send 0x22 here for non-ES-30M scales.
+                // ES-30M already sent 0x22 immediately after the dual 0xA0 in
+                // the 0x21 handler above.
+                val isES30M = weightScaleFactor == 10.0f
+                if (!isES30M) {
+                    logD("QN: sending 0x22 stored-data query")
+                    val queryMsg = byteArrayOf(
+                        0x22, 0x06,
+                        seenProtocolType,
+                        0x00, 0x01,   // byte[4]=0x01 per working ES-CS20M capture
+                        0x00          // checksum placeholder
+                    )
+                    queryMsg[queryMsg.lastIndex] = checksum(queryMsg, 0, queryMsg.lastIndex - 1)
 
-                if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
-                    writeTo(SVC_T2, CHR_T2_WRITE_SHARED, queryMsg, true)
-                } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
-                    writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, queryMsg, true)
+                    if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
+                        writeTo(SVC_T2, CHR_T2_WRITE_SHARED, queryMsg, true)
+                    } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
+                        writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, queryMsg, true)
+                    }
                 }
             }
             0xA3 -> {
