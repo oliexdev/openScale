@@ -67,7 +67,7 @@ import java.util.UUID
  * Long frames (e.g. 0x19, 26 bytes) exceed ATT MTU and are fragmented by the scale into
  * two ATT notifications using a 3-byte prefix: 0xAD=first fragment, 0xAF=continuation.
  */
-class ESCS20mHandler : ScaleDeviceHandler() {
+class ESCS20MHandler : ScaleDeviceHandler() {
 
     companion object {
         private const val TAG = "ESCS20mHandler"

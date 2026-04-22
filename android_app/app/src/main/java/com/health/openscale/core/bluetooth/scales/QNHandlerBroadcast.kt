@@ -45,7 +45,7 @@ import java.util.UUID
  *
  * Operated by [BroadcastScaleAdapter]; all GATT hooks are intentional no-ops.
  */
-class QNBroadcastHandler : ScaleDeviceHandler() {
+class QNHandlerBroadcast : ScaleDeviceHandler() {
 
     companion object {
         private const val TAG = "QNBroadcastHandler"

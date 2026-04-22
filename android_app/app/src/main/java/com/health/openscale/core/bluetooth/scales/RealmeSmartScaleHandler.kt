@@ -37,7 +37,7 @@ import kotlin.math.roundToInt
  * - Live and history measurement streams to 0xA621.
  * - Packets are fully XOR encrypted using a repeating MAC[i % 6] cipher.
  */
-class RealmeScaleHandler : ScaleDeviceHandler() {
+class RealmeSmartScaleHandler : ScaleDeviceHandler() {
 
     companion object {
         private const val TAG = "RealmeScaleHandler"
