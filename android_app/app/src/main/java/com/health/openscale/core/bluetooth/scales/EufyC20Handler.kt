@@ -10,7 +10,7 @@ import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import java.util.Locale
 
-class EufyC20 : ScaleDeviceHandler() {
+class EufyC20Handler : ScaleDeviceHandler() {
 
     private val MANUFACTURER_ID = 48228
 
