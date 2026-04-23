@@ -32,15 +32,19 @@ class EufyC20Handler : ScaleDeviceHandler() {
 
     private fun extractManufacturerIds(m: Any?): Iterable<Int> = when (m) {
         is Map<*, *> -> m.keys.filterIsInstance<Int>()
-        is SparseArray<*> -> (0 until m.size()).map { m.keyAt(it) }
-        is List<*> -> (m as? List<Pair<Int, *>>)?.map { it.first } ?: emptyList()
+        is SparseArray<*> -> (0 until m.size()).mapNotNull { m.keyAt(it) as? Int }
+        is List<*> -> m.mapNotNull {
+            if (it is Pair<*, *>) (it.first as? Int) else null
+        }
         else -> emptyList()
     }
+
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val m = device.manufacturerData
         if (m != null && extractManufacturerIds(m).any { it == MANUFACTURER_ID }) return deviceSupport
-        val name = device.name ?: return null
+        val name = device.name
+        if (name == null) return null
         val un = name.uppercase(Locale.US)
         if (un.startsWith("EUFY") && (un.contains("C20") || un.contains("T9130"))) {
             return deviceSupport
@@ -48,11 +52,13 @@ class EufyC20Handler : ScaleDeviceHandler() {
         return null
     }
 
+
     override fun onAdvertisement(result: ScanResult, user: ScaleUser): BroadcastAction {
         val msdRaw = result.scanRecord?.manufacturerSpecificData ?: return BroadcastAction.IGNORED
-        val msd = msdRaw as? SparseArray<ByteArray> ?: return BroadcastAction.IGNORED
+        val msd = msdRaw as? SparseArray<*> ?: return BroadcastAction.IGNORED
         if (msd.size() == 0) return BroadcastAction.IGNORED
-        val values = (0 until msd.size()).map { msd.valueAt(it) }
+        val values = (0 until msd.size()).mapNotNull { msd.valueAt(it) as? ByteArray }
+
         val payload = values.firstOrNull { it.size >= 14 } ?: return BroadcastAction.IGNORED
 
         return try {
