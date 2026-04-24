@@ -19,35 +19,23 @@ package com.health.openscale.ui.widget
 
 import android.content.Context
 import android.content.Intent
-import androidx.annotation.DrawableRes
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.Preferences
-import androidx.glance.GlanceId
-import androidx.glance.GlanceModifier
-import androidx.glance.GlanceTheme
-import androidx.glance.Image
-import androidx.glance.ImageProvider
+import androidx.glance.*
 import androidx.glance.action.clickable
-import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.GlanceAppWidgetManager
-import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.glance.appwidget.*
 import androidx.glance.appwidget.action.actionStartActivity
-import androidx.glance.appwidget.cornerRadius
-import androidx.glance.appwidget.provideContent
-import androidx.glance.background
-import androidx.glance.currentState
+import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.layout.*
 import androidx.glance.state.PreferencesGlanceStateDefinition
-import androidx.glance.text.FontWeight
-import androidx.glance.text.Text
-import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
+import androidx.glance.text.*
 import com.health.openscale.MainActivity
 import com.health.openscale.R
 import com.health.openscale.core.data.EvaluationState
+import com.health.openscale.core.data.IconResource
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.MeasurementTypeKey
@@ -60,32 +48,57 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import java.text.DecimalFormat
 import androidx.compose.ui.graphics.Color
-import androidx.glance.LocalSize
-import androidx.glance.appwidget.SizeMode
-import androidx.glance.appwidget.state.updateAppWidgetState
-import com.health.openscale.core.data.IconResource
-import kotlin.collections.firstOrNull
+import androidx.glance.color.ColorProvider
+import androidx.glance.unit.ColorProvider
+import com.health.openscale.core.data.UnitType
+import com.health.openscale.core.utils.LocaleUtils
+
+// ---------------------------------------------------------------------------
+// Widget entry point
+// ---------------------------------------------------------------------------
+
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface WidgetEntryPoint {
+    fun userFacade(): UserFacade
+    fun measurementFacade(): MeasurementFacade
+}
+
+// ---------------------------------------------------------------------------
+// Display model — all data pre-computed on IO thread, ready for Glance UI
+// ---------------------------------------------------------------------------
+
+private data class DisplayData(
+    val label: String,
+    val icon: MeasurementTypeIcon,
+    val badgeColor: ColorProvider?,
+    val symbolRes: Int?,
+    val symbolSize: Dp,
+    val symbolColor: ColorProvider,
+    val valueWithUnit: String,
+    val deltaText: String,
+    val deltaArrowRes: Int?,
+)
+
+// ---------------------------------------------------------------------------
+// Widget
+// ---------------------------------------------------------------------------
 
 class MeasurementWidget : GlanceAppWidget() {
-    // Enable currentState<Preferences>() inside provideContent
+
     override val stateDefinition = PreferencesGlanceStateDefinition
     override val sizeMode = SizeMode.Exact
 
     companion object {
-        /** Recompose all widget instances. */
+        /** Bump trigger key on all instances to force recomposition. */
         suspend fun refreshAll(context: Context) {
             withContext(Dispatchers.IO) {
                 val gm = GlanceAppWidgetManager(context)
                 val ids = gm.getGlanceIds(MeasurementWidget::class.java)
                 if (ids.isEmpty()) return@withContext
-
                 ids.forEach { glanceId ->
-                    updateAppWidgetState(
-                        context = context,
-                        glanceId = glanceId
-                    ) { prefs ->
+                    updateAppWidgetState(context, glanceId) { prefs ->
                         prefs[WidgetPrefs.KEY_TRIGGER] = (prefs[WidgetPrefs.KEY_TRIGGER] ?: 0) + 1
                     }
                     // update triggers provideGlance/provideContent recomposition
@@ -96,158 +109,86 @@ class MeasurementWidget : GlanceAppWidget() {
     }
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // Preload strings (no stringResource in Glance content)
+        // Strings must be loaded here — stringResource() is unavailable in Glance
         val txtNoUser = context.getString(R.string.no_user_selected_title)
         val txtNoMeas = context.getString(R.string.no_measurements_title)
-        val txtNA = context.getString(R.string.not_available)
+        val txtNA     = context.getString(R.string.not_available)
 
-        // Hilt entry points once, outside of Composable
+        // Resolve Hilt entry point once per provideGlance call, not per recomposition
         val entry = runCatching {
-            EntryPointAccessors.fromApplication(context.applicationContext, WidgetEntryPoint::class.java)
+            EntryPointAccessors.fromApplication(
+                context.applicationContext, WidgetEntryPoint::class.java
+            )
         }.getOrNull()
-        val userFacade = entry?.userFacade()
+        val userFacade        = entry?.userFacade()
         val measurementFacade = entry?.measurementFacade()
 
         provideContent {
             GlanceTheme {
-                // 1) Read per-instance Glance state
-                val prefs = currentState<Preferences>()
-                val selectedTypeId = prefs[WidgetPrefs.KEY_TYPE]
+                val prefs           = currentState<Preferences>()
+                val selectedTypeId  = prefs[WidgetPrefs.KEY_TYPE]
                 val selectedThemeIx = prefs[WidgetPrefs.KEY_THEME] ?: WidgetTheme.LIGHT.ordinal
-                val trigger = prefs[WidgetPrefs.KEY_TRIGGER]
+                val trigger         = prefs[WidgetPrefs.KEY_TRIGGER]
 
-                // Text colors based on selected Light/Dark theme
+                // Derive text colors from theme preference
                 val isDark = selectedThemeIx == WidgetTheme.DARK.ordinal
-                val textColor = if (isDark)
-                    ColorProvider(Color(0xFF111111))
-                else
-                    ColorProvider(Color(0xFFECECEC))
-                val subTextColor = if (isDark)
-                    ColorProvider(Color(0xFF111111))
-                else
-                    ColorProvider(Color(0xFFECECEC))
+                val baseColor = if (isDark) Color(0xFF111111) else Color(0xFFECECEC)
+                val textColor = ColorProvider(day = baseColor, night = baseColor)
+                val subTextColor = ColorProvider(day = baseColor, night = baseColor)
 
-                // 2) UI state
-                var uiPayload by remember { mutableStateOf<DisplayData?>(null) }
+                var uiPayload   by remember { mutableStateOf<DisplayData?>(null) }
                 var userMissing by remember { mutableStateOf(false) }
 
-                // 3) Reload when state changes
-                LaunchedEffect(trigger,selectedTypeId, selectedThemeIx) {
-                    uiPayload = null
+                // Reload data whenever trigger, type selection, or theme changes
+                LaunchedEffect(trigger, selectedTypeId, selectedThemeIx) {
+                    uiPayload   = null
                     userMissing = false
-
-                    withContext(Dispatchers.IO) {
-                        val userId: Int? = runCatching { userFacade?.observeSelectedUser()?.first()?.id }.getOrNull()
-                        if (userId == null || measurementFacade == null) {
-                            userMissing = (userId == null)
-                            return@withContext
-                        }
-
-                        val allTypes = measurementFacade.getAllMeasurementTypes().first()
-                        val all = measurementFacade.getMeasurementsForUser(userId).first()
-
-                        val targetType = selectedTypeId?.let { sel -> allTypes.firstOrNull { it.id == sel } }
-                            ?: allTypes.firstOrNull { it.key == MeasurementTypeKey.WEIGHT }
-                            ?: allTypes.firstOrNull { it.isEnabled && (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) }
-
-                        uiPayload = targetType?.let { t ->
-                            val valuesDesc = all.mapNotNull { mwv ->
-                                val v = mwv.values.firstOrNull { it.type.id == t.id } ?: return@mapNotNull null
-                                val num = v.value.floatValue ?: v.value.intValue?.toFloat() ?: return@mapNotNull null
-                                mwv.measurement.timestamp to num
-                            }.sortedByDescending { it.first }
-
-                            if (valuesDesc.isEmpty()) null else {
-                                val current = valuesDesc[0].second
-                                val previous = valuesDesc.getOrNull(1)?.second
-
-                                val df = DecimalFormat("#0.0")
-                                val dfSigned = DecimalFormat("+#0.0;-#0.0")
-
-                                val unitLabel = t.unit.displayName
-                                val valueWithUnit = buildString {
-                                    append(df.format(current))
-                                    if (unitLabel.isNotBlank()) append(" ").append(unitLabel)
-                                }
-
-                                val deltaArrow = previous?.let { prev ->
-                                    when {
-                                        current > prev + 1e-4 -> "↗"
-                                        current < prev - 1e-4 -> "↘"
-                                        else -> ""
-                                    }
-                                }
-                                val deltaText = previous?.let {
-                                    val signed = dfSigned.format(current - it)
-                                    listOfNotNull(deltaArrow?.takeIf { it.isNotBlank() }, signed).joinToString(" ") +
-                                            if (unitLabel.isNotBlank()) " $unitLabel" else ""
-                                } ?: ""
-
-                                val implausiblePercent = unitLabel == "%" && (current < 0f || current > 100f)
-                                val (symbol, evalState) = when {
-                                    implausiblePercent -> "!" to EvaluationState.UNDEFINED
-                                    previous == null   -> "●" to EvaluationState.UNDEFINED
-                                    current > previous + 1e-4 -> "▲" to EvaluationState.HIGH
-                                    current < previous - 1e-4 -> "▼" to EvaluationState.LOW
-                                    else -> "●" to EvaluationState.NORMAL
-                                }
-
-                                DisplayData(
-                                    label = t.getDisplayName(context),
-                                    icon = t.icon,
-                                    badgeColor = if (t.color != 0)
-                                        ColorProvider(Color(t.color)) else null,
-                                    symbol = symbol,
-                                    evaluationState = evalState,
-                                    valueWithUnit = valueWithUnit,
-                                    deltaText = deltaText
-                                )
-                            }
-                        }
+                    uiPayload   = withContext(Dispatchers.IO) {
+                        loadDisplayData(context, userFacade, measurementFacade, selectedTypeId)
+                            .also { if (it == null) userMissing = (userFacade == null) }
                     }
                 }
 
                 val themeColors = GlanceTheme.colors
-                val launch = Intent(context, MainActivity::class.java)
-
-                val size = LocalSize.current
-
-                val scaleFactor = minOf(
-                    size.width.value / 110f,
-                    size.height.value / 40f,
-                    4f
-                ).coerceAtLeast(0.5f)
+                val scaleFactor = with(LocalSize.current) {
+                    minOf(width.value / 110f, height.value / 40f, 4f).coerceAtLeast(0.5f)
+                }
 
                 Box(
-                    modifier = GlanceModifier
+                    modifier           = GlanceModifier
                         .fillMaxSize()
-                        .clickable(actionStartActivity(launch)),
-                    contentAlignment = Alignment.Center
+                        .clickable(actionStartActivity(Intent(context, MainActivity::class.java))),
+                    contentAlignment   = Alignment.Center,
                 ) {
                     when {
-                        userMissing -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        userMissing ->
                             Text(text = txtNoUser, style = TextStyle(color = textColor))
-                        }
+
                         uiPayload == null -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(text = txtNoMeas, style = TextStyle(color = textColor))
-                            Text(text = txtNA, style = TextStyle(color = subTextColor))
+                            Text(text = txtNA,     style = TextStyle(color = subTextColor))
                         }
-                        else -> ValueWithDeltaRow(
-                            icon = uiPayload!!.icon,
-                            iconContentDescription = context.getString(
-                                R.string.measurement_type_icon_desc, uiPayload!!.label
-                            ),
-                            label = uiPayload!!.label,
-                            symbol = uiPayload!!.symbol,
-                            evaluationState = uiPayload!!.evaluationState,
-                            valueWithUnit = uiPayload!!.valueWithUnit,
-                            deltaText = uiPayload!!.deltaText,
-                            circleColor = uiPayload!!.badgeColor ?: themeColors.secondary,
-                            textColor = textColor,
-                            subTextColor = subTextColor,
-                            symbolColor = ColorProvider(uiPayload!!.evaluationState.toColor()),
-                            scaleFactor = scaleFactor
-                        )
+
+                        else -> {
+                            val payload = uiPayload!!
+                            ValueWithDeltaRow(
+                                icon                   = payload.icon,
+                                iconContentDescription = context.getString(
+                                    R.string.measurement_type_icon_desc, payload.label
+                                ),
+                                label         = payload.label,
+                                symbolRes     = payload.symbolRes,
+                                symbolSize    = payload.symbolSize * scaleFactor,
+                                symbolColor   = payload.symbolColor,
+                                valueWithUnit = payload.valueWithUnit,
+                                deltaText     = payload.deltaText,
+                                deltaArrowRes = payload.deltaArrowRes,
+                                circleColor   = payload.badgeColor ?: themeColors.secondary,
+                                textColor     = textColor,
+                                subTextColor  = subTextColor,
+                                scaleFactor   = scaleFactor,
+                            )
+                        }
                     }
                 }
             }
@@ -255,62 +196,184 @@ class MeasurementWidget : GlanceAppWidget() {
     }
 }
 
-class MeasurementWidgetReceiver : GlanceAppWidgetReceiver() {
-    override val glanceAppWidget: GlanceAppWidget = MeasurementWidget()
+// ---------------------------------------------------------------------------
+// Data loading — pure IO, no Composable context needed
+// ---------------------------------------------------------------------------
+
+/**
+ * Loads and pre-computes all data needed to render the widget.
+ * Returns null if the user or measurement data is unavailable.
+ */
+private suspend fun loadDisplayData(
+    context: Context,
+    userFacade: UserFacade?,
+    measurementFacade: MeasurementFacade?,
+    selectedTypeId: Int?,
+): DisplayData? {
+    val userId = runCatching { userFacade?.observeSelectedUser()?.first()?.id }.getOrNull()
+        ?: return null
+    if (measurementFacade == null) return null
+
+    val userEvalContext = runCatching {
+        userFacade?.observeUserEvaluationContext()?.first()
+    }.getOrNull()
+
+    val allTypes   = measurementFacade.getAllMeasurementTypes().first()
+    val all        = measurementFacade.getMeasurementsForUser(userId).first()
+
+    // Resolve target type: explicit selection → weight → first enabled numeric
+    val targetType = selectedTypeId?.let { sel -> allTypes.firstOrNull { it.id == sel } }
+        ?: allTypes.firstOrNull { it.key == MeasurementTypeKey.WEIGHT }
+        ?: allTypes.firstOrNull { it.isEnabled && (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) }
+        ?: return null
+
+    // Extract numeric values for the target type, newest first
+    val valuesDesc = all.mapNotNull { mwv ->
+        val v   = mwv.values.firstOrNull { it.type.id == targetType.id } ?: return@mapNotNull null
+        val num = v.value.floatValue ?: v.value.intValue?.toFloat() ?: return@mapNotNull null
+        mwv.measurement.timestamp to num
+    }.sortedByDescending { it.first }
+
+    if (valuesDesc.isEmpty()) return null
+
+    val current   = valuesDesc[0].second
+    val previous  = valuesDesc.getOrNull(1)?.second
+    val timestamp = valuesDesc[0].first
+
+    val valueWithUnit = LocaleUtils.formatValueForDisplay(
+        value = current.toString(),
+        unit  = targetType.unit,
+    )
+
+    // Evaluate against clinical reference bands when context is available
+    val evalResult = if (userEvalContext != null) {
+        runCatching {
+            measurementFacade.evaluate(targetType, current, userEvalContext, timestamp)
+        }.getOrNull()
+    } else null
+
+    // Match Overview flagging logic exactly
+    val noAgeBand = evalResult?.let { it.lowLimit < 0f || it.highLimit < 0f } ?: false
+    val plausible = measurementFacade.plausiblePercentRangeFor(targetType.key)
+    val outOfPlausibleRange = plausible?.let { current < it.start || current > it.endInclusive }
+        ?: (targetType.unit == UnitType.PERCENT && (current < 0f || current > 100f))
+
+    val flagged   = noAgeBand || outOfPlausibleRange
+    val evalState = evalResult?.state ?: EvaluationState.UNDEFINED
+
+    // Match Overview icon/size/color logic exactly
+    val symbolRes: Int? = if (flagged) R.drawable.ic_widget_warning
+    else when (evalState) {
+        EvaluationState.LOW, EvaluationState.NORMAL, EvaluationState.HIGH -> R.drawable.ic_widget_circle
+        EvaluationState.UNDEFINED -> null
+    }
+    val symbolSize  = if (flagged) 10.dp else 6.dp
+    val sColor = if (flagged) Color(0xFFB00020) else evalState.toColor()
+    val symbolColor = ColorProvider(day = sColor, night = sColor)
+
+    // Delta arrow matches Overview trend arrow direction
+    val deltaArrowRes = previous?.let {
+        when {
+            current > it + 1e-4f -> R.drawable.ic_widget_arrow_up
+            current < it - 1e-4f -> R.drawable.ic_widget_arrow_down
+            else                 -> null
+        }
+    }
+    val deltaText = previous?.let {
+        LocaleUtils.formatValueForDisplay(
+            value        = (current - it).toString(),
+            unit         = targetType.unit,
+            includeSign  = true,
+        )
+    } ?: ""
+
+    return DisplayData(
+        label         = targetType.getDisplayName(context),
+        icon          = targetType.icon,
+        badgeColor = if (targetType.color != 0) {
+            ColorProvider(day = Color(targetType.color), night = Color(targetType.color))
+        } else null,
+        symbolRes     = symbolRes,
+        symbolSize    = symbolSize,
+        symbolColor   = symbolColor,
+        valueWithUnit = valueWithUnit,
+        deltaText     = deltaText,
+        deltaArrowRes = deltaArrowRes,
+    )
 }
 
-/* Hilt entry point */
-@EntryPoint
-@InstallIn(SingletonComponent::class)
-interface WidgetEntryPoint {
-    fun userFacade(): UserFacade
-    fun measurementFacade(): MeasurementFacade
-}
-
-/* Payload & UI */
-private data class DisplayData(
-    val label: String,
-    val icon: MeasurementTypeIcon,
-    val badgeColor: ColorProvider?,
-    val symbol: String,
-    val evaluationState: EvaluationState,
-    val valueWithUnit: String,
-    val deltaText: String
-)
+// ---------------------------------------------------------------------------
+// Composables
+// ---------------------------------------------------------------------------
 
 @Composable
 private fun ValueWithDeltaRow(
     icon: MeasurementTypeIcon,
     iconContentDescription: String,
     label: String,
-    symbol: String,
-    evaluationState: EvaluationState,
+    symbolRes: Int?,
+    symbolSize: Dp,
+    symbolColor: ColorProvider,
     valueWithUnit: String,
     deltaText: String,
+    deltaArrowRes: Int?,
     circleColor: ColorProvider,
     textColor: ColorProvider,
     subTextColor: ColorProvider,
-    symbolColor: ColorProvider,
-    scaleFactor : Float
+    scaleFactor: Float,
 ) {
+    val fontSize = 8.sp
     Row(verticalAlignment = Alignment.CenterVertically) {
-        val fontSize = 8.sp
-        GlanceRoundMeasurementIcon(icon, iconContentDescription, 21.dp * scaleFactor, circleColor, R.drawable.ic_weight)
+        GlanceRoundMeasurementIcon(
+            icon               = icon,
+            contentDescription = iconContentDescription,
+            size               = 21.dp * scaleFactor,
+            circleColor        = circleColor,
+            fallbackDrawable   = R.drawable.ic_widget_warning,
+        )
         Spacer(GlanceModifier.size(10.dp * scaleFactor))
         Column {
-            Text(text = label, style = TextStyle(fontSize = fontSize * scaleFactor, fontWeight = FontWeight.Medium, color = textColor))
+            Text(
+                text  = label,
+                style = TextStyle(fontSize = fontSize * scaleFactor, fontWeight = FontWeight.Medium, color = textColor),
+            )
+            // Value row with optional evaluation state icon
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = valueWithUnit, style = TextStyle(fontSize = fontSize * scaleFactor, color = textColor))
-                Spacer(GlanceModifier.size(6.dp*scaleFactor))
-                Text(text = symbol, style = TextStyle(fontSize = fontSize * scaleFactor, color = symbolColor))
+                Text(
+                    text  = valueWithUnit,
+                    style = TextStyle(fontSize = fontSize * scaleFactor, color = textColor),
+                )
+                if (symbolRes != null) {
+                    Spacer(GlanceModifier.size(4.dp * scaleFactor))
+                    Image(
+                        provider     = ImageProvider(symbolRes),
+                        contentDescription = null,
+                        modifier     = GlanceModifier.size(symbolSize),
+                        colorFilter  = ColorFilter.tint(symbolColor),
+                    )
+                }
             }
+            // Delta row with optional trend arrow — only shown when a previous value exists
             if (deltaText.isNotBlank()) {
-                Text(text = deltaText, style = TextStyle(fontSize = fontSize * scaleFactor, color = subTextColor))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (deltaArrowRes != null) {
+                        Image(
+                            provider           = ImageProvider(deltaArrowRes),
+                            contentDescription = null,
+                            modifier           = GlanceModifier.size(8.dp * scaleFactor),
+                            colorFilter        = ColorFilter.tint(subTextColor),
+                        )
+                        Spacer(GlanceModifier.size(3.dp * scaleFactor))
+                    }
+                    Text(
+                        text  = deltaText,
+                        style = TextStyle(fontSize = fontSize * scaleFactor, color = subTextColor),
+                    )
+                }
             }
         }
     }
 }
-
 
 @Composable
 private fun GlanceRoundMeasurementIcon(
@@ -318,23 +381,32 @@ private fun GlanceRoundMeasurementIcon(
     contentDescription: String,
     size: Dp,
     circleColor: ColorProvider,
-    @DrawableRes fallbackDrawable: Int
+    fallbackDrawable: Int,
 ) {
+    // VectorResource cannot be rendered in Glance — fall back to a static drawable
     val resId = when (val r = icon.resource) {
         is IconResource.PainterResource -> r.id
-        is IconResource.VectorResource -> fallbackDrawable
+        is IconResource.VectorResource  -> fallbackDrawable
     }
     Box(
-        modifier = GlanceModifier
+        modifier         = GlanceModifier
             .size(size + 24.dp)
             .cornerRadius((size + 18.dp) / 2f)
             .background(circleColor),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Image(
-            provider = ImageProvider(resId),
+            provider           = ImageProvider(resId),
             contentDescription = contentDescription,
-            modifier = GlanceModifier.size(size)
+            modifier           = GlanceModifier.size(size),
         )
     }
+}
+
+// ---------------------------------------------------------------------------
+// Receiver
+// ---------------------------------------------------------------------------
+
+class MeasurementWidgetReceiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = MeasurementWidget()
 }
