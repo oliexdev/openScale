@@ -443,10 +443,14 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                         .padding(8.dp)
                         .fillMaxWidth()
                 ) {
+                    val launcherIconRes = when (BuildConfig.BUILD_TYPE) {
+                        "beta", "oss" -> R.drawable.ic_launcher_beta_foreground
+                        "debug" -> R.drawable.ic_launcher_dev_foreground
+                        else -> R.drawable.ic_launcher_foreground
+                    }
+
                     Image(
-                        painter = if (BuildConfig.BUILD_TYPE == "beta" || BuildConfig.BUILD_TYPE == "oss") painterResource(
-                            id = R.drawable.ic_launcher_beta_foreground
-                        ) else painterResource(id = R.drawable.ic_launcher_foreground),
+                        painter = painterResource(id = launcherIconRes),
                         contentDescription = stringResource(R.string.app_logo_content_description),
                         modifier = Modifier.size(64.dp)
                     )
