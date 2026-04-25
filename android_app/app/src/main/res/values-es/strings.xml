@@ -687,4 +687,26 @@
     <string name="settings_appearance_title">Apariencia</string>
     <string name="settings_dynamic_color_label">Colores dinámicos</string>
     <string name="settings_high_contrast_label">Alto contraste</string>
+    <string name="route_title_insights">Análisis</string>
+    <string name="insights_confidence_low">Datos insuficientes</string>
+    <string name="insights_section_body_shift">Tu análisis de %1$s</string>
+    <string name="insights_label_recomposition">Recomposición corporal</string>
+    <string name="insights_label_bulking">Volumen</string>
+    <string name="insights_label_mixed_loss">Pérdida mixta</string>
+    <string name="insights_label_fat_gain">Aumento de grasa</string>
+    <string name="insights_placeholder_body_shift">Se necesitan al menos %1$d mediciones para analizar cómo ha cambiado tu cuerpo con el tiempo.</string>
+    <string name="insights_placeholder_weekday">Se necesitan al menos %1$d mediciones por día de la semana para detectar hábitos semanales.</string>
+    <string name="insights_placeholder_seasonal">Se necesitan al menos %1$d años de datos para detectar patrones estacionales.</string>
+    <string name="insights_placeholder_anomalies">Se necesitan al menos %1$d mediciones para detectar valores inusuales.</string>
+    <string name="insights_best_period_label">Mejor mes</string>
+    <string name="insights_trend_up">En aumento</string>
+    <string name="insights_trend_down">En descenso</string>
+    <string name="insights_trend_stable">Estable</string>
+    <string name="insights_rate_per_month">Ritmo / mes</string>
+    <string name="insights_volatility">Volatilidad</string>
+    <string name="insights_volatility_stable">Estable</string>
+    <string name="insights_volatility_moderate">Moderada</string>
+    <string name="insights_volatility_high">Alta</string>
+    <string name="insights_plateau_label">Período estable</string>
+    <string name="insights_plateau_days">%1$d días</string>
 </resources>
