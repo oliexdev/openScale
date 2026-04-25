@@ -497,9 +497,6 @@
     <string name="insights_label_bulking">Bulking</string>
     <string name="insights_label_mixed_loss">Mixed Loss</string>
     <string name="insights_label_fat_gain">Fat Gain</string>
-    <string name="insights_chip_now">Now</string>
-    <string name="insights_short_term_trend">Short-term trend (30d)</string>
-    <string name="insights_long_term_trend">Long-term trend</string>
     <string name="insights_placeholder_body_shift">At least %1$d measurements are needed to analyse how your body changed over time.</string>
     <string name="insights_placeholder_weekday">At least %1$d measurements per weekday are needed to detect weekly habits.</string>
     <string name="insights_placeholder_seasonal">At least %1$d years of data are needed to detect seasonal patterns.</string>
@@ -545,6 +542,16 @@
     <string name="insights_zone_tooltip_bulking">Both fat and muscle are increasing.</string>
     <string name="insights_zone_tooltip_mixed_loss">Both fat and muscle are decreasing. Weight is dropping, but muscle mass is also being lost.</string>
     <string name="insights_zone_tooltip_fat_gain">Fat is increasing while muscle is decreasing or stable — the least favourable outcome.</string>
+    <string name="insights_stat_start">Start</string>
+    <string name="insights_stat_now">Now</string>
+    <string name="insights_stat_rate_month">Rate / month</string>
+    <string name="insights_stat_on_average">on average</string>
+    <string name="insights_chip_volatility_stable">stable</string>
+    <string name="insights_chip_volatility_moderate">moderate</string>
+    <string name="insights_chip_volatility_high">volatile</string>
+    <string name="insights_chip_plateau_days">plateau %1$d days</string>
+    <string name="insights_short_term_trend">short-term</string>
+    <string name="insights_long_term_trend">long-term</string>
 
     <!-- Statistics Screen -->
     <string name="statistics_no_relevant_types">No relevant measurement types available or configured for statistics.</string>

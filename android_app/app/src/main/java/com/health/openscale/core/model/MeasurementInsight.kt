@@ -165,6 +165,7 @@ data class BodyCompositionShift(
     val firstMeasuredOn: LocalDate,
     val lastMeasuredOn: LocalDate,
     val confidence: InsightConfidence,
+    val valueHistory: List<Pair<Long, Float>> = emptyList(),
 )
 
 /**

@@ -317,6 +317,12 @@ class MeasurementInsightsUseCase @Inject constructor() {
                 }
         }
 
+        // Build timestamp-value pairs for sparkline — preserves original measurement timestamps
+        val valueHistory = sorted.mapNotNull { mwv ->
+            val value = numericValueFor(mwv, primaryType) ?: return@mapNotNull null
+            mwv.measurement.timestamp to value
+        }
+
         return BodyCompositionShift(
             type            = primaryType,
             firstValue      = firstValue,
@@ -338,6 +344,7 @@ class MeasurementInsightsUseCase @Inject constructor() {
             firstMeasuredOn = dataPoints.first().first,
             lastMeasuredOn  = dataPoints.last().first,
             confidence      = confidence,
+            valueHistory    = valueHistory,
         )
     }
 
