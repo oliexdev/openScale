@@ -104,13 +104,13 @@ import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.facade.SettingsPreferenceKeys.INSIGHTS_SCREEN_CONTEXT
 import com.health.openscale.core.model.BodyCompositionPattern
-import com.health.openscale.core.model.BodyCompositionShift
 import com.health.openscale.core.model.CompositionPatternType
 import com.health.openscale.core.model.InsightConfidence
+import com.health.openscale.core.model.MeasurementAnalysis
 import com.health.openscale.core.model.MeasurementAnomaly
 import com.health.openscale.core.model.MeasurementInsight
 import com.health.openscale.core.model.SeasonalPattern
-import com.health.openscale.core.model.ShiftTrend
+import com.health.openscale.core.model.TrendDirection
 import com.health.openscale.core.model.Volatility
 import com.health.openscale.core.model.WeekdayPattern
 import com.health.openscale.core.usecase.MeasurementInsightsUseCase
@@ -223,7 +223,7 @@ fun InsightsScreen(
             }
             is SharedViewModel.UiState.Success -> {
                 val insight     = state.data
-                val primaryType = insight.bodyCompositionShift?.type
+                val primaryType = insight.measurementAnalysis?.type
                     ?: insight.weekdayPattern?.type
                     ?: insight.seasonalPattern?.type
 
@@ -234,20 +234,20 @@ fun InsightsScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     item {
-                        val shift = insight.bodyCompositionShift
-                        if (shift != null && shift.confidence != InsightConfidence.INSUFFICIENT) {
-                            BodyCompositionShiftCard(shift)
+                        val analysis = insight.measurementAnalysis
+                        if (analysis != null && analysis.confidence != InsightConfidence.INSUFFICIENT) {
+                            MeasurementAnalysisCard(analysis)
                         } else {
                             InsightPlaceholderCard(
-                                title   = stringResource(R.string.insights_section_body_shift, primaryType?.getDisplayName(context) ?: ""),
-                                message = stringResource(R.string.insights_placeholder_body_shift, MeasurementInsightsUseCase.MIN_TOTAL_MEASUREMENTS),
+                                title   = stringResource(R.string.insights_section_measurement_analysis, primaryType?.getDisplayName(context) ?: ""),
+                                message = stringResource(R.string.insights_placeholder_measurement_analysis, MeasurementInsightsUseCase.MIN_TOTAL_MEASUREMENTS),
                             )
                         }
                     }
                     item {
                         val pattern = insight.bodyCompositionPattern
                         if (pattern != null && pattern.confidence != InsightConfidence.INSUFFICIENT) {
-                            BodyCompositionStatePlaneCard(pattern)
+                            BodyCompositionPlaneCard(pattern)
                         } else {
                             InsightPlaceholderCard(
                                 title   = stringResource(R.string.insights_section_body_pattern),
@@ -298,26 +298,26 @@ fun InsightsScreen(
 // ---------------------------------------------------------------------------
 
 /**
- * Displays a rich visual analysis of [BodyCompositionShift]:
+ * Displays a rich visual analysis of [MeasurementAnalysis]:
  * - 4 stat tiles: start, now, rate/month, best period
  * - Sparkline with glow markers for start/min/max/now and plateau zone
  * - Date axis labels
  * - Compact insight chips for trend and volatility
  */
 @Composable
-private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
+private fun MeasurementAnalysisCard(analysis: MeasurementAnalysis) {
     val locale  = Locale.getDefault()
     val context = LocalContext.current
 
-    fun fmt(v: Float)       = LocaleUtils.formatValueForDisplay(v.toString(), shift.type.unit)
-    fun fmtSigned(v: Float) = LocaleUtils.formatValueForDisplay(v.toString(), shift.type.unit, includeSign = true)
+    fun fmt(v: Float)       = LocaleUtils.formatValueForDisplay(v.toString(), analysis.type.unit)
+    fun fmtSigned(v: Float) = LocaleUtils.formatValueForDisplay(v.toString(), analysis.type.unit, includeSign = true)
 
     val dateFormatter  = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale) }
     val monthFormatter = remember { DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, "MMM yyyy"), locale) }
 
     InsightCard(
-        title      = stringResource(R.string.insights_section_body_shift, shift.type.getDisplayName(context)),
-        confidence = shift.confidence,
+        title      = stringResource(R.string.insights_section_measurement_analysis, analysis.type.getDisplayName(context)),
+        confidence = analysis.confidence,
     ) {
         Spacer(Modifier.height(8.dp))
 
@@ -329,32 +329,32 @@ private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
                 .padding(vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            ShiftStatTile(
+            AnalysisStatTile(
                 label    = stringResource(R.string.insights_stat_start),
-                value    = fmt(shift.firstValue),
-                sub      = shift.firstMeasuredOn.format(dateFormatter),
+                value    = fmt(analysis.firstValue),
+                sub      = analysis.firstMeasuredOn.format(dateFormatter),
                 subColor = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            ShiftStatTile(
+            AnalysisStatTile(
                 label    = stringResource(R.string.insights_stat_now),
-                value    = fmt(shift.lastValue),
-                sub      = fmtSigned(shift.deltaAbsolute),
+                value    = fmt(analysis.lastValue),
+                sub      = fmtSigned(analysis.deltaAbsolute),
                 subColor = when {
-                    shift.deltaAbsolute < 0f -> MaterialTheme.colorScheme.tertiary
-                    shift.deltaAbsolute > 0f -> MaterialTheme.colorScheme.error
+                    analysis.deltaAbsolute < 0f -> MaterialTheme.colorScheme.tertiary
+                    analysis.deltaAbsolute > 0f -> MaterialTheme.colorScheme.error
                     else                     -> MaterialTheme.colorScheme.onSurfaceVariant
                 },
             )
-            ShiftStatTile(
+            AnalysisStatTile(
                 label    = stringResource(R.string.insights_stat_rate_month),
-                value    = fmtSigned(shift.ratePerMonth),
+                value    = fmtSigned(analysis.ratePerMonth),
                 sub      = stringResource(R.string.insights_stat_on_average),
                 subColor = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            ShiftStatTile(
+            AnalysisStatTile(
                 label    = stringResource(R.string.insights_best_period_label),
-                value    = shift.bestPeriodStart?.format(monthFormatter) ?: "-",
-                sub      = shift.bestPeriodDelta?.let { fmtSigned(it) } ?: "",
+                value    = analysis.bestPeriodStart?.format(monthFormatter) ?: "-",
+                sub      = analysis.bestPeriodDelta?.let { fmtSigned(it) } ?: "",
                 subColor = MaterialTheme.colorScheme.tertiary,
             )
         }
@@ -362,9 +362,9 @@ private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
         Spacer(Modifier.height(8.dp))
 
         // ── Sparkline with timeline markers ───────────────────────────────
-        ShiftSparkline(
-            shift        = shift,
-            modifier     = Modifier
+        AnalysisSparkline(
+            analysis = analysis,
+            modifier = Modifier
                 .fillMaxWidth()
                 .height(150.dp),
         )
@@ -377,12 +377,12 @@ private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                text  = shift.firstMeasuredOn.format(monthFormatter),
+                text  = analysis.firstMeasuredOn.format(monthFormatter),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
             )
             Text(
-                text  = shift.lastMeasuredOn.format(monthFormatter),
+                text  = analysis.lastMeasuredOn.format(monthFormatter),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
             )
@@ -401,19 +401,19 @@ private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
             // Short-term Trend Chip
             InsightChip(
                 label = stringResource(R.string.insights_short_term_trend),
-                sentiment = shift.shortTermTrend.toSentiment(),
-                icon = shift.shortTermTrend.toIcon()
+                sentiment = analysis.shortTermTrend.toSentiment(),
+                icon = analysis.shortTermTrend.toIcon()
             )
 
             // Long-term Trend Chip
             InsightChip(
                 label = stringResource(R.string.insights_long_term_trend),
-                sentiment = shift.longTermTrend.toSentiment(),
-                icon = shift.longTermTrend.toIcon()
+                sentiment = analysis.longTermTrend.toSentiment(),
+                icon = analysis.longTermTrend.toIcon()
             )
 
             // Volatility Chip
-            val (volLabelRes, volSentiment) = when (shift.volatility) {
+            val (volLabelRes, volSentiment) = when (analysis.volatility) {
                 Volatility.STABLE -> R.string.insights_chip_volatility_stable to InsightChipSentiment.GOOD
                 Volatility.MODERATE -> R.string.insights_chip_volatility_moderate to InsightChipSentiment.WARN
                 Volatility.HIGH -> R.string.insights_chip_volatility_high to InsightChipSentiment.BAD
@@ -423,9 +423,9 @@ private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
                 sentiment = volSentiment)
 
             // Plateau Chip
-            if (shift.plateauDays != null && shift.plateauDays > 0) {
+            if (analysis.plateauDays != null && analysis.plateauDays > 0) {
                 InsightChip(
-                    label = stringResource(R.string.insights_chip_plateau_days, shift.plateauDays),
+                    label = stringResource(R.string.insights_chip_plateau_days, analysis.plateauDays),
                     sentiment = InsightChipSentiment.NEUTRAL)
             }
         }
@@ -434,21 +434,21 @@ private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
 
         // ── Summary ───────────────────────────────────────────────────
         val summary: String? = when {
-            shift.plateauDays != null &&
-                    shift.plateauDays > 14 &&
-                    java.time.temporal.ChronoUnit.DAYS.between(shift.lastMeasuredOn, LocalDate.now()) <= 7 ->
-                stringResource(R.string.insights_summary_plateau, shift.plateauDays)
+            analysis.plateauDays != null &&
+                    analysis.plateauDays > 14 &&
+                    java.time.temporal.ChronoUnit.DAYS.between(analysis.lastMeasuredOn, LocalDate.now()) <= 7 ->
+                stringResource(R.string.insights_summary_plateau, analysis.plateauDays)
 
-            shift.shortTermTrend != shift.longTermTrend && shift.longTermTrend != ShiftTrend.STABLE -> when (shift.shortTermTrend) {
-                ShiftTrend.DOWN   -> stringResource(R.string.insights_summary_trend_change_down)
-                ShiftTrend.UP     -> stringResource(R.string.insights_summary_trend_change_up)
-                ShiftTrend.STABLE -> null
+            analysis.shortTermTrend != analysis.longTermTrend && analysis.longTermTrend != TrendDirection.STABLE -> when (analysis.shortTermTrend) {
+                TrendDirection.DOWN   -> stringResource(R.string.insights_summary_trend_change_down)
+                TrendDirection.UP     -> stringResource(R.string.insights_summary_trend_change_up)
+                TrendDirection.STABLE -> null
             }
 
-            shift.volatility == Volatility.HIGH ->
+            analysis.volatility == Volatility.HIGH ->
                 stringResource(R.string.insights_summary_volatility_high)
 
-            shift.volatility == Volatility.STABLE ->
+            analysis.volatility == Volatility.STABLE ->
                 stringResource(R.string.insights_summary_volatility_stable)
 
             else -> null
@@ -464,7 +464,7 @@ private fun BodyCompositionShiftCard(shift: BodyCompositionShift) {
 
 /** Compact stat tile showing a label, primary value, and optional colored sub-text. */
 @Composable
-private fun ShiftStatTile(
+private fun AnalysisStatTile(
     modifier: Modifier = Modifier,
     label: String,
     value: String,
@@ -516,8 +516,8 @@ private fun ShiftStatTile(
  * markers near the bottom get labels above, to avoid overlap with the curve.
  */
 @Composable
-private fun ShiftSparkline(
-    shift: BodyCompositionShift,
+private fun AnalysisSparkline(
+    analysis: MeasurementAnalysis,
     modifier: Modifier = Modifier,
 ) {
     val labelStart = stringResource(R.string.insights_stat_start)
@@ -534,7 +534,7 @@ private fun ShiftSparkline(
 
     // Animate line draw from left to right on first composition
     val progress = remember { Animatable(0f) }
-    LaunchedEffect(shift) {
+    LaunchedEffect(analysis) {
         progress.snapTo(0f)
         progress.animateTo(1f, tween(900, easing = EaseOutCubic))
     }
@@ -543,7 +543,7 @@ private fun ShiftSparkline(
     Canvas(modifier = modifier.padding(horizontal = 10.dp)) {
         val w = size.width
         val h = size.height
-        val values = shift.valueHistory
+        val values = analysis.valueHistory
         if (values.size < 2) return@Canvas
 
         val minV = values.minOf { it.second }
@@ -562,8 +562,8 @@ private fun ShiftSparkline(
         fun yOf(v: Float) = padTop + (1f - (v - minV) / range) * drawH
 
         // ── Plateau background zone ───────────────────────────────────────
-        if (shift.plateauStartDate != null) {
-            val plateauMillis = shift.plateauStartDate
+        if (analysis.plateauStartDate != null) {
+            val plateauMillis = analysis.plateauStartDate
                 .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
             val plateauX = xOf(plateauMillis).coerceIn(0f, w)
             drawRoundRect(
@@ -605,51 +605,51 @@ private fun ShiftSparkline(
         val markers = mutableListOf(
             MarkerDef(
                 ts = values.first().first,
-                v = shift.firstValue,
+                v = analysis.firstValue,
                 label = LocaleUtils.formatValueForDisplay(
-                    shift.firstValue.toString(),
-                    shift.type.unit
+                    analysis.firstValue.toString(),
+                    analysis.type.unit
                 ),
                 sub = labelStart,
-                date = shift.firstMeasuredOn,
+                date = analysis.firstMeasuredOn,
                 color = neutralColor,
-                above = !isHigh(shift.firstValue),
+                above = !isHigh(analysis.firstValue),
             ),
             MarkerDef(
-                ts = tsOf(shift.maxValueDate),
-                v = shift.maxValue,
+                ts = tsOf(analysis.maxValueDate),
+                v = analysis.maxValue,
                 label = LocaleUtils.formatValueForDisplay(
-                    shift.maxValue.toString(),
-                    shift.type.unit
+                    analysis.maxValue.toString(),
+                    analysis.type.unit
                 ),
                 sub = labelMax,
-                date = shift.maxValueDate,
+                date = analysis.maxValueDate,
                 color = errorColor,
                 above = false,
             ),
             MarkerDef(
-                ts = tsOf(shift.minValueDate),
-                v = shift.minValue,
+                ts = tsOf(analysis.minValueDate),
+                v = analysis.minValue,
                 label = LocaleUtils.formatValueForDisplay(
-                    shift.minValue.toString(),
-                    shift.type.unit
+                    analysis.minValue.toString(),
+                    analysis.type.unit
                 ),
                 sub = labelMin,
-                date = shift.minValueDate,
+                date = analysis.minValueDate,
                 color = tertiaryColor,
                 above = true,
             ),
             MarkerDef(
                 ts = values.last().first,
-                v = shift.lastValue,
+                v = analysis.lastValue,
                 label = LocaleUtils.formatValueForDisplay(
-                    shift.lastValue.toString(),
-                    shift.type.unit
+                    analysis.lastValue.toString(),
+                    analysis.type.unit
                 ),
                 sub = labelNow,
-                date = shift.lastMeasuredOn,
+                date = analysis.lastMeasuredOn,
                 color = primaryColor,
-                above = !isHigh(shift.lastValue),
+                above = !isHigh(analysis.lastValue),
             ),
         ).sortedBy { it.ts }
 
@@ -708,7 +708,7 @@ private fun ShiftSparkline(
 // ---------------------------------------------------------------------------
 
 @Composable
-private fun BodyCompositionStatePlaneCard(pattern: BodyCompositionPattern) {
+private fun BodyCompositionPlaneCard(pattern: BodyCompositionPattern) {
     val history  = pattern.history
     val locale   = Locale.getDefault()
     val shortFmt = DateTimeFormatter.ofPattern("MMM yy", locale)
@@ -825,12 +825,12 @@ private fun BodyCompositionStatePlaneCard(pattern: BodyCompositionPattern) {
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    TrendLabel(stringResource(R.string.insights_label_recomposition), ShiftTrend.UP,   invertColor = true,  tooltipText = stringResource(R.string.insights_zone_tooltip_recomposition))
-                    TrendLabel(stringResource(R.string.insights_label_bulking),        ShiftTrend.UP,   invertColor = true,  tooltipText = stringResource(R.string.insights_zone_tooltip_bulking))
+                    TrendLabel(stringResource(R.string.insights_label_recomposition), TrendDirection.UP,   invertColor = true,  tooltipText = stringResource(R.string.insights_zone_tooltip_recomposition))
+                    TrendLabel(stringResource(R.string.insights_label_bulking),        TrendDirection.UP,   invertColor = true,  tooltipText = stringResource(R.string.insights_zone_tooltip_bulking))
                 }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    TrendLabel(stringResource(R.string.insights_label_mixed_loss),    ShiftTrend.DOWN, invertColor = true,  tooltipText = stringResource(R.string.insights_zone_tooltip_mixed_loss))
-                    TrendLabel(stringResource(R.string.insights_label_fat_gain),      ShiftTrend.UP,   invertColor = false, tooltipText = stringResource(R.string.insights_zone_tooltip_fat_gain))
+                    TrendLabel(stringResource(R.string.insights_label_mixed_loss),    TrendDirection.DOWN, invertColor = true,  tooltipText = stringResource(R.string.insights_zone_tooltip_mixed_loss))
+                    TrendLabel(stringResource(R.string.insights_label_fat_gain),      TrendDirection.UP,   invertColor = false, tooltipText = stringResource(R.string.insights_zone_tooltip_fat_gain))
                 }
             }
         }
@@ -1148,15 +1148,15 @@ private fun InsightSummaryText(text: String) {
 @Composable
 private fun TrendLabel(
     label: String,
-    trend: ShiftTrend,
+    trend: TrendDirection,
     invertColor: Boolean = false,
     tooltipText: String,
 ) {
     val icon  = trend.toIcon()
     val color = when (trend) {
-        ShiftTrend.UP     -> if (invertColor) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error
-        ShiftTrend.DOWN   -> if (invertColor) MaterialTheme.colorScheme.error    else MaterialTheme.colorScheme.tertiary
-        ShiftTrend.STABLE -> MaterialTheme.colorScheme.onSurfaceVariant
+        TrendDirection.UP     -> if (invertColor) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error
+        TrendDirection.DOWN   -> if (invertColor) MaterialTheme.colorScheme.error    else MaterialTheme.colorScheme.tertiary
+        TrendDirection.STABLE -> MaterialTheme.colorScheme.onSurfaceVariant
     }
     val tooltipState = rememberTooltipState(isPersistent = true)
     val scope        = rememberCoroutineScope()
@@ -1309,19 +1309,19 @@ fun DrawScope.drawMarkerLabels(
 // Extension helpers
 // ---------------------------------------------------------------------------
 
-/** Maps [ShiftTrend] to its corresponding icon vector. */
-private fun ShiftTrend.toIcon(): ImageVector = when (this) {
-    ShiftTrend.UP     -> Icons.AutoMirrored.Filled.TrendingUp
-    ShiftTrend.DOWN   -> Icons.AutoMirrored.Filled.TrendingDown
-    ShiftTrend.STABLE -> Icons.AutoMirrored.Filled.TrendingFlat
+/** Maps [TrendDirection] to its corresponding icon vector. */
+private fun TrendDirection.toIcon(): ImageVector = when (this) {
+    TrendDirection.UP     -> Icons.AutoMirrored.Filled.TrendingUp
+    TrendDirection.DOWN   -> Icons.AutoMirrored.Filled.TrendingDown
+    TrendDirection.STABLE -> Icons.AutoMirrored.Filled.TrendingFlat
 }
 
 /**
- * Maps [ShiftTrend] to [InsightChipSentiment] for weight/fat loss context.
+ * Maps [TrendDirection] to [InsightChipSentiment] for weight/fat loss context.
  * DOWN = good (losing weight), UP = bad, STABLE = neutral.
  */
-private fun ShiftTrend.toSentiment(): InsightChipSentiment = when (this) {
-    ShiftTrend.DOWN   -> InsightChipSentiment.GOOD
-    ShiftTrend.UP     -> InsightChipSentiment.BAD
-    ShiftTrend.STABLE -> InsightChipSentiment.NEUTRAL
+private fun TrendDirection.toSentiment(): InsightChipSentiment = when (this) {
+    TrendDirection.DOWN   -> InsightChipSentiment.GOOD
+    TrendDirection.UP     -> InsightChipSentiment.BAD
+    TrendDirection.STABLE -> InsightChipSentiment.NEUTRAL
 }

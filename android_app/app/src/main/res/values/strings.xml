@@ -492,12 +492,12 @@
 
     <!-- Insights Screen -->
     <string name="insights_confidence_low">Limited data</string>
-    <string name="insights_section_body_shift">Your %1$s Analysis</string>
+    <string name="insights_section_measurement_analysis">Your %1$s Analysis</string>
     <string name="insights_label_recomposition">Recomposition</string>
     <string name="insights_label_bulking">Bulking</string>
     <string name="insights_label_mixed_loss">Mixed Loss</string>
     <string name="insights_label_fat_gain">Fat Gain</string>
-    <string name="insights_placeholder_body_shift">At least %1$d measurements are needed to analyse how your body changed over time.</string>
+    <string name="insights_placeholder_measurement_analysis">At least %1$d measurements are needed to analyse how your body changed over time.</string>
     <string name="insights_placeholder_weekday">At least %1$d measurements per weekday are needed to detect weekly habits.</string>
     <string name="insights_placeholder_seasonal">At least %1$d years of data are needed to detect seasonal patterns.</string>
     <string name="insights_placeholder_anomalies">At least %1$d measurements are needed to detect unusual values.</string>
