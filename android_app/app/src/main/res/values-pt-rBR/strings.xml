@@ -695,8 +695,8 @@
     <string name="insights_label_mixed_loss">Perda Mista</string>
     <string name="insights_label_fat_gain">Ganho de Gordura</string>
     <string name="insights_chip_now">Agora</string>
-    <string name="insights_short_term_trend">Tendência recente (30 d)</string>
-    <string name="insights_long_term_trend">Tendência histórica</string>
+    <string name="insights_short_term_trend">curto prazo</string>
+    <string name="insights_long_term_trend">longo prazo</string>
     <string name="insights_placeholder_body_shift">São necessárias pelo menos %1$d medições para analisar como seu corpo mudou ao longo do tempo.</string>
     <string name="insights_placeholder_weekday">São necessárias ao menos %1$d medições por dia da semana para detectar hábitos semanais.</string>
     <string name="insights_placeholder_seasonal">São necessários ao menos %1$d anos de dados para detectar padrões sazonais.</string>
@@ -742,4 +742,14 @@
     <string name="insights_zone_tooltip_bulking">Tanto a gordura quanto o músculo estão aumentando.</string>
     <string name="insights_zone_tooltip_mixed_loss">Tanto a gordura quanto o músculo estão diminuindo. O peso está caindo, mas a massa muscular também está sendo perdida.</string>
     <string name="insights_zone_tooltip_fat_gain">A gordura está aumentando enquanto o músculo diminui ou está estável — o resultado menos favorável.</string>
+    <string name="insights_section_measurement_analysis">Análise de %1$s</string>
+    <string name="insights_placeholder_measurement_analysis">São necessárias pelo menos %1$d medições para analisar como seu corpo mudou ao longo do tempo.</string>
+    <string name="insights_stat_start">Inicial</string>
+    <string name="insights_stat_now">Atual</string>
+    <string name="insights_stat_rate_month">Ritmo / mês</string>
+    <string name="insights_stat_on_average">em média</string>
+    <string name="insights_chip_volatility_stable">estável</string>
+    <string name="insights_chip_volatility_moderate">moderada</string>
+    <string name="insights_chip_volatility_high">volátil</string>
+    <string name="insights_chip_plateau_days">estagnação: %1$d dias</string>
 </resources>
