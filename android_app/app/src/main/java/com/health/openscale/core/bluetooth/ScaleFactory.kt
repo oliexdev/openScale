@@ -30,7 +30,7 @@ import com.health.openscale.core.bluetooth.scales.DigooDGSO38HHandler
 import com.health.openscale.core.bluetooth.scales.ESCS20MHandler
 import com.health.openscale.core.bluetooth.scales.ExcelvanCF36xHandler
 import com.health.openscale.core.bluetooth.scales.ExingtechY1Handler
-import com.health.openscale.core.bluetooth.scales.EufyC20Hander
+import com.health.openscale.core.bluetooth.scales.EufyC20Handler
 import com.health.openscale.core.bluetooth.scales.EbelterBodyFatB2Handler
 import com.health.openscale.core.bluetooth.scales.EtekcityESF551Handler
 import com.health.openscale.core.bluetooth.scales.GattScaleAdapter
