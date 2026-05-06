@@ -663,11 +663,11 @@
 
     <!-- Webhook Export Settings -->
     <string name="settings_webhook_export_title">Export Webhook</string>
-    <string name="settings_webhook_export_enable_label">Activer l'export webhook</string>
-    <string name="settings_webhook_export_enabled_hint">POST JSON envoyé à l'URL à chaque nouvelle mesure</string>
+    <string name="settings_webhook_export_enable_label">Activer l\'export webhook</string>
+    <string name="settings_webhook_export_enabled_hint">POST JSON envoyé à l\'URL à chaque nouvelle mesure</string>
     <string name="settings_webhook_export_disabled_hint">Activer pour envoyer les mesures vers une URL personnalisée (InfluxDB, Supabase, etc.)</string>
     <string name="settings_webhook_export_url_label">URL du Webhook</string>
     <string name="settings_webhook_export_url_placeholder">https://votre-endpoint.exemple.com/data</string>
-    <string name="settings_webhook_export_save_url">Enregistrer l'URL</string>
+    <string name="settings_webhook_export_save_url">Enregistrer l\'URL</string>
     <string name="settings_webhook_export_test_button">Envoyer une requête de test</string>
 </resources>
