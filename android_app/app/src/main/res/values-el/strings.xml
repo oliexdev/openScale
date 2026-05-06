@@ -177,4 +177,81 @@
     <string name="user_detail_no_goals">Χωρίς στόχους</string>
     <string name="dialog_title_edit_goal">Επεξεργασία στόχου %1$s</string>
     <string name="dialog_title_add_goal">Επιλογή στόχου %1$s</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Webhook Export</string>
+    <string name="settings_webhook_export_enable_label">Ενεργοποίηση webhook export</string>
+    <string name="settings_webhook_export_enabled_hint">JSON POST αποστέλλεται στη διεύθυνση URL για κάθε νέα μέτρηση</string>
+    <string name="settings_webhook_export_disabled_hint">Ενεργοποιήστε για αποστολή μετρήσεων σε προσαρμοσμένο URL</string>
+    <string name="settings_webhook_export_url_label">Webhook URL</string>
+    <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
+    <string name="settings_webhook_export_save_url">Αποθήκευση URL</string>
+    <string name="settings_webhook_export_test_button">Αποστολή δοκιμαστικού αιτήματος</string>
+
+    <!-- Log Export -->
+    <string name="log_export_success">Log file exported successfully.</string>
+    <string name="log_export_error">Error exporting log file.</string>
+    <string name="log_export_no_file">No log file found to export.</string>
+    <string name="log_export_no_file_to_export">No log file available to export.</string>
+    <string name="log_export_cancelled">Export cancelled.</string>
+    <string name="log_export_no_app_error">No suitable app found to export the file.</string>
+    <string name="export_log_file_button">Export Log File</string>
+    <!-- Auto Backup Settings -->
+    <string name="settings_auto_backup_title">Automatic Backups</string>
+    <string name="settings_enable_auto_backups">Enable automatic backups</string>
+    <string name="content_desc_auto_backups_toggle">Toggle automatic backups</string>
+    <string name="settings_last_backup_status_label">Last backup status</string>
+    <string name="content_desc_backup_status_icon">Backup status information</string>
+    <string name="settings_backup_location_label">Backup location</string>
+    <string name="content_desc_backup_location_icon">Backup location setting</string>
+    <string name="content_desc_open_backup_location_icon">Open backup location</string>
+    <string name="content_desc_change_backup_location_icon">Change backup location</string>
+    <string name="settings_backup_interval_label">Backup interval</string>
+    <string name="content_desc_backup_interval_icon">Backup interval setting</string>
+    <string name="content_desc_change_interval_icon">Change backup interval</string>
+    <string name="settings_backup_behavior_label">Backup Behavior</string>
+    <string name="content_desc_backup_behavior_icon">Backup behavior setting</string>
+    <string name="settings_last_backup_status_placeholder">Last backup: %1$s</string>
+    <string name="settings_auto_backups_disabled">Automatic backups disabled</string>
+    <string name="settings_backup_behavior_new_file">Always create a new backup file</string>
+    <string name="settings_backup_behavior_overwrite">Overwrite existing backup file</string>
+    <string name="settings_backup_location_default">Default: App-specific folder</string>
+    <string name="settings_backup_location_not_configured">Backup location not configured</string>
+    <string name="settings_backup_location_not_configured_for_auto">Location not configured. Automatic backups paused.</string>
+    <string name="settings_backup_location_error_accessing">Error accessing backup location</string>
+    <string name="settings_backup_location_select_action">Select Backup Location</string>
+    <string name="settings_backup_location_selected_folder">Selected folder</string>
+    <string name="settings_backup_location_open_error_no_app">No application found to open the folder.</string>
+    <string name="settings_backup_location_open_error">Could not open backup location.</string>
+    <string name="settings_backup_location_selected_toast">Backup location set to: %1$s</string>
+    <string name="settings_backup_location_selection_cancelled">Folder selection cancelled. Automatic backup not enabled.</string>
+    <string name="settings_last_backup_status_successful">Last backup: %1$s</string>
+    <string name="settings_last_backup_status_never">Last backup: Never</string>
+    <string name="interval_daily">Daily</string>
+    <string name="interval_weekly">Weekly</string>
+    <string name="interval_monthly">Monthly</string>
+
+    <!-- InfluxDB Export Settings -->
+    <string name="settings_influxdb_export_title">InfluxDB Export</string>
+    <string name="settings_influxdb_export_enable_label">Ενεργοποίηση εξαγωγής InfluxDB</string>
+    <string name="settings_influxdb_export_enabled_hint">Το Line Protocol POST αποστέλλεται σε κάθε νέα μέτρηση</string>
+    <string name="settings_influxdb_export_disabled_hint">Ενεργοποιήστε για αποστολή μετρήσεων απευθείας στο InfluxDB</string>
+    <string name="settings_influxdb_version_label">Έκδοση InfluxDB</string>
+    <string name="settings_influxdb_host_label">URL κεντρικού υπολογιστή</string>
+    <string name="settings_influxdb_host_placeholder">http://192.168.1.100:8086</string>
+    <string name="settings_influxdb_database_label">Βάση δεδομένων (v1) / Bucket (v2)</string>
+    <string name="settings_influxdb_measurement_label">Όνομα μέτρησης</string>
+    <string name="settings_influxdb_username_label">Όνομα χρήστη (προαιρετικό)</string>
+    <string name="settings_influxdb_password_label">Κωδικός πρόσβασης (προαιρετικό)</string>
+    <string name="settings_influxdb_field_mapping_title">Αντιστοίχιση πεδίων</string>
+    <string name="settings_influxdb_field_mapping_hint">Προσαρμόστε τα ονόματα πεδίων InfluxDB για τα υπάρχοντα dashboards Grafana σας</string>
+    <string name="settings_influxdb_field_weight_label">Όνομα πεδίου βάρους</string>
+    <string name="settings_influxdb_field_body_fat_label">Όνομα πεδίου σωματικού λίπους</string>
+    <string name="settings_influxdb_field_water_label">Όνομα πεδίου νερού</string>
+    <string name="settings_influxdb_field_muscle_label">Όνομα πεδίου μυών</string>
+    <string name="settings_influxdb_field_lbm_label">Όνομα πεδίου άλιπης μάζας</string>
+    <string name="settings_influxdb_field_bone_label">Όνομα πεδίου οστικής μάζας</string>
+    <string name="settings_influxdb_field_visceral_fat_label">Όνομα πεδίου σπλαχνικού λίπους</string>
+    <string name="settings_influxdb_test_button">Αποστολή δοκιμαστικού σημείου</string>
+
 </resources>

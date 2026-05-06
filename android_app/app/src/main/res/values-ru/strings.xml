@@ -673,4 +673,38 @@
     <string name="s400_bind_key_description">Для расшифровки весов Xiaomi S400 требуется ключ привязки BLE. Извлеките этот ключ из Xiaomi Cloud с помощью инструмента Xiaomi Cloud Tokens Extractor.</string>
     <string name="s400_bind_key_error">Ключ привязки должен содержать ровно 32 шестнадцатеричных символа</string>
     <string name="bt_s400_missing_bind_key">S400: Ключ привязки не настроен. Перейдите в настройки Bluetooth, чтобы ввести свой ключ BLE.</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Экспорт Webhook</string>
+    <string name="settings_webhook_export_enable_label">Включить экспорт webhook</string>
+    <string name="settings_webhook_export_enabled_hint">JSON POST отправляется на URL при каждом новом измерении</string>
+    <string name="settings_webhook_export_disabled_hint">Включите для отправки измерений на пользовательский URL</string>
+    <string name="settings_webhook_export_url_label">URL Webhook</string>
+    <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
+    <string name="settings_webhook_export_save_url">Сохранить URL</string>
+    <string name="settings_webhook_export_test_button">Отправить тестовый запрос</string>
+
+    <!-- InfluxDB Export Settings -->
+    <string name="settings_influxdb_export_title">InfluxDB Export</string>
+    <string name="settings_influxdb_export_enable_label">Включить экспорт в InfluxDB</string>
+    <string name="settings_influxdb_export_enabled_hint">Line Protocol POST отправляется при каждом новом измерении</string>
+    <string name="settings_influxdb_export_disabled_hint">Включите для отправки измерений напрямую в InfluxDB</string>
+    <string name="settings_influxdb_version_label">Версия InfluxDB</string>
+    <string name="settings_influxdb_host_label">URL сервера</string>
+    <string name="settings_influxdb_host_placeholder">http://192.168.1.100:8086</string>
+    <string name="settings_influxdb_database_label">База данных (v1) / Bucket (v2)</string>
+    <string name="settings_influxdb_measurement_label">Название измерения</string>
+    <string name="settings_influxdb_username_label">Имя пользователя (необязательно)</string>
+    <string name="settings_influxdb_password_label">Пароль (необязательно)</string>
+    <string name="settings_influxdb_field_mapping_title">Сопоставление полей</string>
+    <string name="settings_influxdb_field_mapping_hint">Настройте имена полей InfluxDB для существующих дашбордов Grafana</string>
+    <string name="settings_influxdb_field_weight_label">Название поля веса</string>
+    <string name="settings_influxdb_field_body_fat_label">Название поля жира</string>
+    <string name="settings_influxdb_field_water_label">Название поля воды</string>
+    <string name="settings_influxdb_field_muscle_label">Название поля мышц</string>
+    <string name="settings_influxdb_field_lbm_label">Название поля сухой массы</string>
+    <string name="settings_influxdb_field_bone_label">Название поля костной массы</string>
+    <string name="settings_influxdb_field_visceral_fat_label">Название поля висцерального жира</string>
+    <string name="settings_influxdb_test_button">Отправить тестовую точку</string>
+
 </resources>

@@ -686,4 +686,38 @@
     <string name="settings_appearance_title">Aparência</string>
     <string name="settings_dynamic_color_label">Cores dinâmicas</string>
     <string name="settings_high_contrast_label">Alto contraste</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Exportação Webhook</string>
+    <string name="settings_webhook_export_enable_label">Ativar exportação webhook</string>
+    <string name="settings_webhook_export_enabled_hint">POST JSON enviado para a URL a cada nova medição</string>
+    <string name="settings_webhook_export_disabled_hint">Ativar para enviar medições para uma URL personalizada</string>
+    <string name="settings_webhook_export_url_label">URL do Webhook</string>
+    <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
+    <string name="settings_webhook_export_save_url">Salvar URL</string>
+    <string name="settings_webhook_export_test_button">Enviar solicitação de teste</string>
+
+    <!-- InfluxDB Export Settings -->
+    <string name="settings_influxdb_export_title">InfluxDB Export</string>
+    <string name="settings_influxdb_export_enable_label">Ativar exportação para InfluxDB</string>
+    <string name="settings_influxdb_export_enabled_hint">POST Line Protocol enviado a cada nova medição</string>
+    <string name="settings_influxdb_export_disabled_hint">Ative para enviar medições diretamente ao InfluxDB</string>
+    <string name="settings_influxdb_version_label">Versão do InfluxDB</string>
+    <string name="settings_influxdb_host_label">URL do servidor</string>
+    <string name="settings_influxdb_host_placeholder">http://192.168.1.100:8086</string>
+    <string name="settings_influxdb_database_label">Banco de dados (v1) / Bucket (v2)</string>
+    <string name="settings_influxdb_measurement_label">Nome da medição</string>
+    <string name="settings_influxdb_username_label">Usuário (opcional)</string>
+    <string name="settings_influxdb_password_label">Senha (opcional)</string>
+    <string name="settings_influxdb_field_mapping_title">Mapeamento de campos</string>
+    <string name="settings_influxdb_field_mapping_hint">Personalize os nomes de campos do InfluxDB para seus dashboards do Grafana</string>
+    <string name="settings_influxdb_field_weight_label">Nome do campo de peso</string>
+    <string name="settings_influxdb_field_body_fat_label">Nome do campo de gordura corporal</string>
+    <string name="settings_influxdb_field_water_label">Nome do campo de água</string>
+    <string name="settings_influxdb_field_muscle_label">Nome do campo de músculo</string>
+    <string name="settings_influxdb_field_lbm_label">Nome do campo de massa magra</string>
+    <string name="settings_influxdb_field_bone_label">Nome do campo de massa óssea</string>
+    <string name="settings_influxdb_field_visceral_fat_label">Nome do campo de gordura visceral</string>
+    <string name="settings_influxdb_test_button">Enviar ponto de teste</string>
+
 </resources>

@@ -144,6 +144,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
+    kotlin {
+        compilerOptions {
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+        }
+    }
+
     kapt {
         arguments {
             arg("room.schemaLocation", "$projectDir/schemas")
@@ -214,6 +220,9 @@ dependencies {
 
     // BouncyCastle for AES-CCM decryption (Xiaomi S400 scale)
     implementation(libs.bouncycastle)
+
+    // OkHttp for webhook export
+    implementation(libs.okhttp)
 
     // Test dependencies
     testImplementation(libs.junit)

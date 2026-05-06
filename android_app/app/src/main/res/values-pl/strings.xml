@@ -226,4 +226,81 @@
     <string name="formula_bf_deurenberg_1991">Deurenberg (1991)</string>
     <string name="formula_bf_deurenberg_1992">Deurenberg (1992)</string>
     <string name="formula_bf_eddy_1976">Eddy et al. (1976)</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Eksport Webhook</string>
+    <string name="settings_webhook_export_enable_label">Włącz eksport webhook</string>
+    <string name="settings_webhook_export_enabled_hint">POST JSON wysyłany na URL przy każdym nowym pomiarze</string>
+    <string name="settings_webhook_export_disabled_hint">Włącz, aby wysyłać pomiary na niestandardowy URL</string>
+    <string name="settings_webhook_export_url_label">URL webhooka</string>
+    <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
+    <string name="settings_webhook_export_save_url">Zapisz URL</string>
+    <string name="settings_webhook_export_test_button">Wyślij żądanie testowe</string>
+
+    <!-- Log Export -->
+    <string name="log_export_success">Log file exported successfully.</string>
+    <string name="log_export_error">Error exporting log file.</string>
+    <string name="log_export_no_file">No log file found to export.</string>
+    <string name="log_export_no_file_to_export">No log file available to export.</string>
+    <string name="log_export_cancelled">Export cancelled.</string>
+    <string name="log_export_no_app_error">No suitable app found to export the file.</string>
+    <string name="export_log_file_button">Export Log File</string>
+    <!-- Auto Backup Settings -->
+    <string name="settings_auto_backup_title">Automatic Backups</string>
+    <string name="settings_enable_auto_backups">Enable automatic backups</string>
+    <string name="content_desc_auto_backups_toggle">Toggle automatic backups</string>
+    <string name="settings_last_backup_status_label">Last backup status</string>
+    <string name="content_desc_backup_status_icon">Backup status information</string>
+    <string name="settings_backup_location_label">Backup location</string>
+    <string name="content_desc_backup_location_icon">Backup location setting</string>
+    <string name="content_desc_open_backup_location_icon">Open backup location</string>
+    <string name="content_desc_change_backup_location_icon">Change backup location</string>
+    <string name="settings_backup_interval_label">Backup interval</string>
+    <string name="content_desc_backup_interval_icon">Backup interval setting</string>
+    <string name="content_desc_change_interval_icon">Change backup interval</string>
+    <string name="settings_backup_behavior_label">Backup Behavior</string>
+    <string name="content_desc_backup_behavior_icon">Backup behavior setting</string>
+    <string name="settings_last_backup_status_placeholder">Last backup: %1$s</string>
+    <string name="settings_auto_backups_disabled">Automatic backups disabled</string>
+    <string name="settings_backup_behavior_new_file">Always create a new backup file</string>
+    <string name="settings_backup_behavior_overwrite">Overwrite existing backup file</string>
+    <string name="settings_backup_location_default">Default: App-specific folder</string>
+    <string name="settings_backup_location_not_configured">Backup location not configured</string>
+    <string name="settings_backup_location_not_configured_for_auto">Location not configured. Automatic backups paused.</string>
+    <string name="settings_backup_location_error_accessing">Error accessing backup location</string>
+    <string name="settings_backup_location_select_action">Select Backup Location</string>
+    <string name="settings_backup_location_selected_folder">Selected folder</string>
+    <string name="settings_backup_location_open_error_no_app">No application found to open the folder.</string>
+    <string name="settings_backup_location_open_error">Could not open backup location.</string>
+    <string name="settings_backup_location_selected_toast">Backup location set to: %1$s</string>
+    <string name="settings_backup_location_selection_cancelled">Folder selection cancelled. Automatic backup not enabled.</string>
+    <string name="settings_last_backup_status_successful">Last backup: %1$s</string>
+    <string name="settings_last_backup_status_never">Last backup: Never</string>
+    <string name="interval_daily">Daily</string>
+    <string name="interval_weekly">Weekly</string>
+    <string name="interval_monthly">Monthly</string>
+
+    <!-- InfluxDB Export Settings -->
+    <string name="settings_influxdb_export_title">InfluxDB Export</string>
+    <string name="settings_influxdb_export_enable_label">Włącz eksport do InfluxDB</string>
+    <string name="settings_influxdb_export_enabled_hint">POST Line Protocol wysyłany przy każdym nowym pomiarze</string>
+    <string name="settings_influxdb_export_disabled_hint">Włącz, aby wysyłać pomiary bezpośrednio do InfluxDB</string>
+    <string name="settings_influxdb_version_label">Wersja InfluxDB</string>
+    <string name="settings_influxdb_host_label">URL hosta</string>
+    <string name="settings_influxdb_host_placeholder">http://192.168.1.100:8086</string>
+    <string name="settings_influxdb_database_label">Baza danych (v1) / Bucket (v2)</string>
+    <string name="settings_influxdb_measurement_label">Nazwa pomiaru</string>
+    <string name="settings_influxdb_username_label">Nazwa użytkownika (opcjonalnie)</string>
+    <string name="settings_influxdb_password_label">Hasło (opcjonalnie)</string>
+    <string name="settings_influxdb_field_mapping_title">Mapowanie pól</string>
+    <string name="settings_influxdb_field_mapping_hint">Dostosuj nazwy pól InfluxDB do swoich dashboardów Grafana</string>
+    <string name="settings_influxdb_field_weight_label">Nazwa pola wagi</string>
+    <string name="settings_influxdb_field_body_fat_label">Nazwa pola tkanki tłuszczowej</string>
+    <string name="settings_influxdb_field_water_label">Nazwa pola wody</string>
+    <string name="settings_influxdb_field_muscle_label">Nazwa pola mięśni</string>
+    <string name="settings_influxdb_field_lbm_label">Nazwa pola beztłuszczowej masy ciała</string>
+    <string name="settings_influxdb_field_bone_label">Nazwa pola masy kostnej</string>
+    <string name="settings_influxdb_field_visceral_fat_label">Nazwa pola tłuszczu trzewnego</string>
+    <string name="settings_influxdb_test_button">Wyślij punkt testowy</string>
+
 </resources>

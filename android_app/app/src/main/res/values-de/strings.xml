@@ -830,4 +830,39 @@
     <string name="bt_sbf72_choice_slot_other_user">P%1$d: Verwendet von %2$s (Übernehmen?)</string>
     <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Belegt (Nicht verknüpft)</string>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d: \'%2$s\' hier erstellen</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Webhook-Export</string>
+    <string name="settings_webhook_export_enable_label">Webhook-Export aktivieren</string>
+    <string name="settings_webhook_export_enabled_hint">JSON POST wird bei jeder neuen Messung an die URL gesendet</string>
+    <string name="settings_webhook_export_disabled_hint">Aktivieren, um Messungen an eine benutzerdefinierte URL zu senden</string>
+    <string name="settings_webhook_export_url_label">Webhook-URL</string>
+    <string name="settings_webhook_export_url_placeholder">https://ihr-endpunkt.beispiel.de/daten</string>
+    <string name="settings_webhook_export_save_url">URL speichern</string>
+    <string name="settings_webhook_export_test_button">Testanfrage senden</string>
+
+    
+    <!-- InfluxDB Export Settings -->
+    <string name="settings_influxdb_export_title">InfluxDB Export</string>
+    <string name="settings_influxdb_export_enable_label">InfluxDB-Export aktivieren</string>
+    <string name="settings_influxdb_export_enabled_hint">Line Protocol POST wird bei jeder neuen Messung gesendet</string>
+    <string name="settings_influxdb_export_disabled_hint">Aktivieren, um Messungen direkt an InfluxDB zu senden</string>
+    <string name="settings_influxdb_version_label">InfluxDB Version</string>
+    <string name="settings_influxdb_host_label">Host-URL</string>
+    <string name="settings_influxdb_host_placeholder">http://192.168.1.100:8086</string>
+    <string name="settings_influxdb_database_label">Datenbank (v1) / Bucket (v2)</string>
+    <string name="settings_influxdb_measurement_label">Messungsname</string>
+    <string name="settings_influxdb_username_label">Benutzername (optional)</string>
+    <string name="settings_influxdb_password_label">Passwort (optional)</string>
+    <string name="settings_influxdb_field_mapping_title">Feld-Zuordnung</string>
+    <string name="settings_influxdb_field_mapping_hint">InfluxDB-Feldnamen anpassen, um vorhandene Grafana-Dashboards zu unterstützen</string>
+    <string name="settings_influxdb_field_weight_label">Feldname für Gewicht</string>
+    <string name="settings_influxdb_field_body_fat_label">Feldname für Körperfett</string>
+    <string name="settings_influxdb_field_water_label">Feldname für Wasser</string>
+    <string name="settings_influxdb_field_muscle_label">Feldname für Muskelmasse</string>
+    <string name="settings_influxdb_field_lbm_label">Feldname für Magermasse</string>
+    <string name="settings_influxdb_field_bone_label">Feldname für Knochenmasse</string>
+    <string name="settings_influxdb_field_visceral_fat_label">Feldname für viszerales Fett</string>
+    <string name="settings_influxdb_test_button">Testpunkt senden</string>
+
 </resources>

@@ -56,3 +56,8 @@ fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
 fastlane/README.md
+
+# VS Code local config (machine-specific, not for repo)
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/noop.js

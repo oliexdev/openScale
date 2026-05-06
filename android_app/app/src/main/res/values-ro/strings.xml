@@ -687,4 +687,38 @@
     <string name="bt_sbf72_choice_slot_other_user">P%1$d: Folosit de %2$s (Preiei controlul?)</string>
     <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Ocupat (nu e legat)</string>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d: Creează \'%2$s\' here</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Export Webhook</string>
+    <string name="settings_webhook_export_enable_label">Activează exportul webhook</string>
+    <string name="settings_webhook_export_enabled_hint">POST JSON trimis la URL la fiecare măsurătoare nouă</string>
+    <string name="settings_webhook_export_disabled_hint">Activează pentru a trimite măsurătorile la un URL personalizat</string>
+    <string name="settings_webhook_export_url_label">URL Webhook</string>
+    <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
+    <string name="settings_webhook_export_save_url">Salvează URL</string>
+    <string name="settings_webhook_export_test_button">Trimite cerere de test</string>
+
+    <!-- InfluxDB Export Settings -->
+    <string name="settings_influxdb_export_title">InfluxDB Export</string>
+    <string name="settings_influxdb_export_enable_label">Activează exportul InfluxDB</string>
+    <string name="settings_influxdb_export_enabled_hint">POST Line Protocol trimis la fiecare nouă măsurătoare</string>
+    <string name="settings_influxdb_export_disabled_hint">Activați pentru a trimite măsurătorile direct la InfluxDB</string>
+    <string name="settings_influxdb_version_label">Versiune InfluxDB</string>
+    <string name="settings_influxdb_host_label">URL gazdă</string>
+    <string name="settings_influxdb_host_placeholder">http://192.168.1.100:8086</string>
+    <string name="settings_influxdb_database_label">Bază de date (v1) / Bucket (v2)</string>
+    <string name="settings_influxdb_measurement_label">Numele măsurătorii</string>
+    <string name="settings_influxdb_username_label">Nume utilizator (opțional)</string>
+    <string name="settings_influxdb_password_label">Parolă (opțional)</string>
+    <string name="settings_influxdb_field_mapping_title">Maparea câmpurilor</string>
+    <string name="settings_influxdb_field_mapping_hint">Personalizați numele câmpurilor InfluxDB pentru dashboard-urile Grafana existente</string>
+    <string name="settings_influxdb_field_weight_label">Numele câmpului greutate</string>
+    <string name="settings_influxdb_field_body_fat_label">Numele câmpului grăsime corporală</string>
+    <string name="settings_influxdb_field_water_label">Numele câmpului apă</string>
+    <string name="settings_influxdb_field_muscle_label">Numele câmpului mușchi</string>
+    <string name="settings_influxdb_field_lbm_label">Numele câmpului masă slabă</string>
+    <string name="settings_influxdb_field_bone_label">Numele câmpului masă osoasă</string>
+    <string name="settings_influxdb_field_visceral_fat_label">Numele câmpului grăsime viscerală</string>
+    <string name="settings_influxdb_test_button">Trimite punct de test</string>
+
 </resources>

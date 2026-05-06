@@ -26,6 +26,7 @@ kotlinCsv = "1.10.0"
 blessedKotlin = "3.0.12"
 truth = "1.4.5"
 bouncycastle = "1.83"
+okhttp = "4.12.0"
 
 
 [libraries]
@@ -69,6 +70,7 @@ kotlin-csv-jvm = { group = "com.github.doyaaaaaken", name = "kotlin-csv-jvm", ve
 blessed-kotlin = { group = "com.github.weliem", name = "blessed-kotlin", version.ref = "blessedKotlin" }
 truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 bouncycastle = { group = "org.bouncycastle", name = "bcprov-jdk18on", version.ref = "bouncycastle" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 
 
 [plugins]

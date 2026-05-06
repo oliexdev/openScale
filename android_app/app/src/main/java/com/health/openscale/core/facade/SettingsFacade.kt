@@ -20,6 +20,8 @@ package com.health.openscale.core.facade
 import android.content.Context
 import android.util.Base64
 import android.util.SparseArray
+import androidx.core.util.isNotEmpty
+import androidx.core.util.size
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -45,25 +47,21 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import java.io.IOException
+import java.util.UUID
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import java.io.IOException
-import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
-import androidx.core.util.size
 import org.json.JSONObject
-import androidx.core.util.isNotEmpty
 
 // DataStore instance for user settings
 val Context.settingsDataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
-/**
- * Defines keys for user preferences stored in DataStore.
- */
+/** Defines keys for user preferences stored in DataStore. */
 object SettingsPreferenceKeys {
     // General App Settings
     val IS_FILE_LOGGING_ENABLED = booleanPreferencesKey("is_file_logging_enabled")
@@ -75,20 +73,28 @@ object SettingsPreferenceKeys {
     val USE_HIGH_CONTRAST = booleanPreferencesKey("use_high_contrast")
 
     // Settings for specific UI components
-    val SELECTED_TYPES_TABLE = stringSetPreferencesKey("selected_types_table") // IDs of measurement types selected for the data table
+    val SELECTED_TYPES_TABLE =
+            stringSetPreferencesKey(
+                    "selected_types_table"
+            ) // IDs of measurement types selected for the data table
     val MY_GOALS_EXPANDED_OVERVIEW = booleanPreferencesKey("my_goals_expanded")
 
     // Saved Bluetooth Scale
-    val SAVED_BLUETOOTH_DEVICE_ADDRESS        = stringPreferencesKey("saved_bluetooth_device_address")
-    val SAVED_BLUETOOTH_DEVICE_NAME           = stringPreferencesKey("saved_bluetooth_device_name")
-    val SAVED_BLUETOOTH_DEVICE_RSSI           = intPreferencesKey("saved_bluetooth_device_rssi")
-    val SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS  = stringSetPreferencesKey("saved_bluetooth_device_service_uuids")
-    val SAVED_BLUETOOTH_DEVICE_HANDLER_HINT   = stringPreferencesKey("saved_bluetooth_device_handler_hint")
-    val SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA   = stringPreferencesKey("saved_bluetooth_device_manufacturer_data")
+    val SAVED_BLUETOOTH_DEVICE_ADDRESS = stringPreferencesKey("saved_bluetooth_device_address")
+    val SAVED_BLUETOOTH_DEVICE_NAME = stringPreferencesKey("saved_bluetooth_device_name")
+    val SAVED_BLUETOOTH_DEVICE_RSSI = intPreferencesKey("saved_bluetooth_device_rssi")
+    val SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS =
+            stringSetPreferencesKey("saved_bluetooth_device_service_uuids")
+    val SAVED_BLUETOOTH_DEVICE_HANDLER_HINT =
+            stringPreferencesKey("saved_bluetooth_device_handler_hint")
+    val SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA =
+            stringPreferencesKey("saved_bluetooth_device_manufacturer_data")
     val SAVED_BLUETOOTH_TUNE_PROFILE = stringPreferencesKey("saved_bluetooth_tune_profile")
-    val SAVED_BLUETOOTH_SMART_ASSIGNMENT_ENABLED = booleanPreferencesKey("saved_bluetooth_smart_assignment_enabled")
+    val SAVED_BLUETOOTH_SMART_ASSIGNMENT_ENABLED =
+            booleanPreferencesKey("saved_bluetooth_smart_assignment_enabled")
     val SAVED_BLUETOOTH_TOLERANCE_PERCENT = intPreferencesKey("saved_bluetooth_tolerance_percent")
-    val SAVED_BLUETOOTH_IGNORE_OUTSIDE_TOLERANCE = booleanPreferencesKey("saved_bluetooth_ignore_outside_tolerance")
+    val SAVED_BLUETOOTH_IGNORE_OUTSIDE_TOLERANCE =
+            booleanPreferencesKey("saved_bluetooth_ignore_outside_tolerance")
     val SAVED_BLUETOOTH_AUTO_CONNECT = booleanPreferencesKey("saved_bluetooth_auto_connect")
 
     // Settings for chart
@@ -108,7 +114,8 @@ object SettingsPreferenceKeys {
     val AUTO_BACKUP_LOCATION_URI = stringPreferencesKey("auto_backup_location_uri")
     val AUTO_BACKUP_INTERVAL = stringPreferencesKey("auto_backup_interval")
     val AUTO_BACKUP_CREATE_NEW_FILE = booleanPreferencesKey("auto_backup_create_new_file")
-    val AUTO_BACKUP_LAST_SUCCESSFUL_TIMESTAMP = longPreferencesKey("auto_backup_last_successful_timestamp")
+    val AUTO_BACKUP_LAST_SUCCESSFUL_TIMESTAMP =
+            longPreferencesKey("auto_backup_last_successful_timestamp")
 
     // --- Reminder Settings ---
     val REMINDER_ENABLED = booleanPreferencesKey("reminder_enabled")
@@ -117,9 +124,22 @@ object SettingsPreferenceKeys {
     val REMINDER_MINUTE = intPreferencesKey("reminder_minute")
     val REMINDER_DAYS = stringSetPreferencesKey("reminder_days")
 
-    val BODY_FAT_FORMULA_OPTION   = stringPreferencesKey("body_fat_formula_option")
+    val BODY_FAT_FORMULA_OPTION = stringPreferencesKey("body_fat_formula_option")
     val BODY_WATER_FORMULA_OPTION = stringPreferencesKey("body_water_formula_option")
-    val LBM_FORMULA_OPTION        = stringPreferencesKey("lbm_formula_option")
+    val LBM_FORMULA_OPTION = stringPreferencesKey("lbm_formula_option")
+
+    // --- Webhook Export Settings ---
+    val WEBHOOK_EXPORT_ENABLED = booleanPreferencesKey("webhook_export_enabled")
+    val WEBHOOK_EXPORT_URL = stringPreferencesKey("webhook_export_url")
+
+    // --- InfluxDB Export Settings ---
+    val INFLUXDB_EXPORT_ENABLED = booleanPreferencesKey("influxdb_export_enabled")
+    val INFLUXDB_VERSION = stringPreferencesKey("influxdb_version")
+    val INFLUXDB_HOST = stringPreferencesKey("influxdb_host")
+    val INFLUXDB_DATABASE = stringPreferencesKey("influxdb_database")
+    val INFLUXDB_MEASUREMENT = stringPreferencesKey("influxdb_measurement")
+    val INFLUXDB_USERNAME = stringPreferencesKey("influxdb_username")
+    val INFLUXDB_PASSWORD = stringPreferencesKey("influxdb_password")
 
     // Context strings for screen-specific settings (can be used as prefixes for dynamic keys)
     const val OVERVIEW_SCREEN_CONTEXT = "overview_screen"
@@ -135,25 +155,18 @@ object SettingsProvidesModule {
 
     @Provides
     @Singleton
-    fun provideUserSettingsDataStore(
-        @ApplicationContext context: Context
-    ): DataStore<Preferences> = context.settingsDataStore
+    fun provideUserSettingsDataStore(@ApplicationContext context: Context): DataStore<Preferences> =
+            context.settingsDataStore
 }
 
 @Module
 @InstallIn(SingletonComponent::class)
 interface SettingsBindsModule {
 
-    @Binds
-    @Singleton
-    fun bindUserSettingsRepository(
-        impl: SettingsFacadeImpl
-    ): SettingsFacade
+    @Binds @Singleton fun bindUserSettingsRepository(impl: SettingsFacadeImpl): SettingsFacade
 }
 
-/**
- * Repository interface for accessing and managing user settings.
- */
+/** Repository interface for accessing and managing user settings. */
 interface SettingsFacade {
     // General app settings
     val isFileLoggingEnabled: Flow<Boolean>
@@ -185,7 +198,7 @@ interface SettingsFacade {
     suspend fun setMyGoalsExpandedOverview(isExpanded: Boolean)
 
     fun observeSplitterWeight(keyPrefix: String, defaultValue: Float): Flow<Float>
-    suspend fun setSplitterWeight(keyPrefix : String, weight: Float)
+    suspend fun setSplitterWeight(keyPrefix: String, weight: Float)
 
     // Bluetooth scale settings
     fun observeSavedDevice(): Flow<ScannedDeviceInfo?>
@@ -196,7 +209,7 @@ interface SettingsFacade {
     val savedBluetoothTuneProfile: Flow<String?>
     suspend fun saveBluetoothTuneProfile(name: String?)
 
-    val isSmartAssignmentEnabled : Flow<Boolean>
+    val isSmartAssignmentEnabled: Flow<Boolean>
     suspend fun setSmartAssignmentEnabled(enabled: Boolean)
 
     val smartAssignmentTolerancePercent: Flow<Int>
@@ -279,68 +292,94 @@ interface SettingsFacade {
     val autoConnectOnStartup: Flow<Boolean>
     suspend fun setAutoConnectOnStartup(enabled: Boolean)
 
+    // --- Webhook Export Settings ---
+    val webhookExportEnabled: Flow<Boolean>
+    suspend fun setWebhookExportEnabled(enabled: Boolean)
+
+    val webhookExportUrl: Flow<String?>
+    suspend fun setWebhookExportUrl(url: String?)
+
+    // --- InfluxDB Export Settings ---
+    val influxDbExportEnabled: Flow<Boolean>
+    suspend fun setInfluxDbExportEnabled(enabled: Boolean)
+    val influxDbVersion: Flow<String>
+    suspend fun setInfluxDbVersion(version: String)
+    val influxDbHost: Flow<String>
+    suspend fun setInfluxDbHost(host: String)
+    val influxDbDatabase: Flow<String>
+    suspend fun setInfluxDbDatabase(database: String)
+    val influxDbMeasurement: Flow<String>
+    suspend fun setInfluxDbMeasurement(measurement: String)
+    val influxDbUsername: Flow<String>
+    suspend fun setInfluxDbUsername(username: String)
+    val influxDbPassword: Flow<String>
+    suspend fun setInfluxDbPassword(password: String)
+
     // Generic Settings Accessors
     /**
-     * Observes a setting with the given key name and default value.
-     * The type T determines the preference key type.
+     * Observes a setting with the given key name and default value. The type T determines the
+     * preference key type.
      */
     fun <T> observeSetting(keyName: String, defaultValue: T): Flow<T>
 
     /**
-     * Saves a setting with the given key name and value.
-     * The type T determines the preference key type.
+     * Saves a setting with the given key name and value. The type T determines the preference key
+     * type.
      */
     suspend fun <T> saveSetting(keyName: String, value: T)
 }
 
-/**
- * Implementation of [SettingsFacade] using Jetpack DataStore.
- */
+/** Implementation of [SettingsFacade] using Jetpack DataStore. */
 @Singleton
-class SettingsFacadeImpl @Inject constructor(
-    private val dataStore: DataStore<Preferences>
-): SettingsFacade {
+class SettingsFacadeImpl @Inject constructor(private val dataStore: DataStore<Preferences>) :
+        SettingsFacade {
     private val TAG = "UserSettingsRepository" // Tag for logging
 
-    override val isFileLoggingEnabled: Flow<Boolean> = observeSetting(
-        SettingsPreferenceKeys.IS_FILE_LOGGING_ENABLED.name,
-        false
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing isFileLoggingEnabled", exception)
-        emit(false) // Fallback to default on error
-    }
+    override val isFileLoggingEnabled: Flow<Boolean> =
+            observeSetting(SettingsPreferenceKeys.IS_FILE_LOGGING_ENABLED.name, false).catch {
+                    exception ->
+                LogManager.e(TAG, "Error observing isFileLoggingEnabled", exception)
+                emit(false) // Fallback to default on error
+            }
 
     override suspend fun setFileLoggingEnabled(enabled: Boolean) {
         LogManager.d(TAG, "Setting file logging enabled to: $enabled")
         saveSetting(SettingsPreferenceKeys.IS_FILE_LOGGING_ENABLED.name, enabled)
     }
 
-    override val isFirstAppStart: Flow<Boolean> = observeSetting(
-        SettingsPreferenceKeys.IS_FIRST_APP_START.name,
-        true // Default to true, meaning it IS the first start until explicitly set otherwise
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing isFirstAppStart", exception)
-        emit(true) // Fallback to default on error
-    }
+    override val isFirstAppStart: Flow<Boolean> =
+            observeSetting(
+                            SettingsPreferenceKeys.IS_FIRST_APP_START.name,
+                            true // Default to true, meaning it IS the first start until explicitly
+                            // set otherwise
+                            )
+                    .catch { exception ->
+                        LogManager.e(TAG, "Error observing isFirstAppStart", exception)
+                        emit(true) // Fallback to default on error
+                    }
 
     override suspend fun setFirstAppStartCompleted(completed: Boolean) {
         LogManager.d(TAG, "Setting first app start completed to: $completed")
         saveSetting(SettingsPreferenceKeys.IS_FIRST_APP_START.name, completed)
     }
 
-    override val appLanguageCode: Flow<String?> = dataStore.data
-        .catch { exception ->
-            LogManager.e(TAG, "Error reading appLanguageCode from DataStore.", exception)
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }
-        .map { preferences ->
-            preferences[SettingsPreferenceKeys.APP_LANGUAGE_CODE]
-        }
-        .distinctUntilChanged()
+    override val appLanguageCode: Flow<String?> =
+            dataStore
+                    .data
+                    .catch { exception ->
+                        LogManager.e(
+                                TAG,
+                                "Error reading appLanguageCode from DataStore.",
+                                exception
+                        )
+                        if (exception is IOException) {
+                            emit(emptyPreferences())
+                        } else {
+                            throw exception
+                        }
+                    }
+                    .map { preferences -> preferences[SettingsPreferenceKeys.APP_LANGUAGE_CODE] }
+                    .distinctUntilChanged()
 
     override suspend fun setAppLanguageCode(languageCode: String?) {
         LogManager.d(TAG, "Setting app language code to: $languageCode")
@@ -353,50 +392,45 @@ class SettingsFacadeImpl @Inject constructor(
         }
     }
 
-    override val hapticOnMeasurement: Flow<Boolean> = observeSetting(
-        SettingsPreferenceKeys.HAPTIC_ON_MEASUREMENT.name,
-        false
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing hapticOnMeasurement", exception)
-        emit(false)
-    }
+    override val hapticOnMeasurement: Flow<Boolean> =
+            observeSetting(SettingsPreferenceKeys.HAPTIC_ON_MEASUREMENT.name, false).catch {
+                    exception ->
+                LogManager.e(TAG, "Error observing hapticOnMeasurement", exception)
+                emit(false)
+            }
 
     override suspend fun setHapticOnMeasurement(value: Boolean) {
         LogManager.d(TAG, "Setting hapticOnMeasurement to: $value")
         saveSetting(SettingsPreferenceKeys.HAPTIC_ON_MEASUREMENT.name, value)
     }
 
-    override val useDynamicColor: Flow<Boolean> = observeSetting(
-        SettingsPreferenceKeys.USE_DYNAMIC_COLOR.name,
-        false
-    )
+    override val useDynamicColor: Flow<Boolean> =
+            observeSetting(SettingsPreferenceKeys.USE_DYNAMIC_COLOR.name, false)
 
     override suspend fun setUseDynamicColor(enabled: Boolean) {
         saveSetting(SettingsPreferenceKeys.USE_DYNAMIC_COLOR.name, enabled)
     }
 
-    override val useHighContrast: Flow<Boolean> = observeSetting(
-        SettingsPreferenceKeys.USE_HIGH_CONTRAST.name,
-        false
-    )
+    override val useHighContrast: Flow<Boolean> =
+            observeSetting(SettingsPreferenceKeys.USE_HIGH_CONTRAST.name, false)
 
     override suspend fun setHighContrast(enabled: Boolean) {
         saveSetting(SettingsPreferenceKeys.USE_HIGH_CONTRAST.name, enabled)
     }
 
-    override val currentUserId: Flow<Int?> = dataStore.data
-        .catch { exception ->
-            LogManager.e(TAG, "Error reading currentUserId from DataStore.", exception)
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }
-        .map { preferences ->
-            preferences[SettingsPreferenceKeys.CURRENT_USER_ID]
-        }
-        .distinctUntilChanged()
+    override val currentUserId: Flow<Int?> =
+            dataStore
+                    .data
+                    .catch { exception ->
+                        LogManager.e(TAG, "Error reading currentUserId from DataStore.", exception)
+                        if (exception is IOException) {
+                            emit(emptyPreferences())
+                        } else {
+                            throw exception
+                        }
+                    }
+                    .map { preferences -> preferences[SettingsPreferenceKeys.CURRENT_USER_ID] }
+                    .distinctUntilChanged()
 
     override suspend fun setCurrentUserId(userId: Int?) {
         LogManager.d(TAG, "Setting current user ID to: $userId")
@@ -409,115 +443,141 @@ class SettingsFacadeImpl @Inject constructor(
         }
     }
 
-    override val selectedTableTypeIds: Flow<Set<String>> = observeSetting(
-        SettingsPreferenceKeys.SELECTED_TYPES_TABLE.name,
-        emptySet<String>()
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing selectedTableTypeIds", exception)
-        emit(emptySet()) // Fallback to default on error
-    }
+    override val selectedTableTypeIds: Flow<Set<String>> =
+            observeSetting(SettingsPreferenceKeys.SELECTED_TYPES_TABLE.name, emptySet<String>())
+                    .catch { exception ->
+                        LogManager.e(TAG, "Error observing selectedTableTypeIds", exception)
+                        emit(emptySet()) // Fallback to default on error
+                    }
 
     override suspend fun saveSelectedTableTypeIds(typeIds: Set<String>) {
         // LogManager.d(TAG, "Saving selected table type IDs: $typeIds")
         saveSetting(SettingsPreferenceKeys.SELECTED_TYPES_TABLE.name, typeIds)
     }
 
-    override val myGoalsExpandedOverview: Flow<Boolean> = observeSetting(
-        SettingsPreferenceKeys.MY_GOALS_EXPANDED_OVERVIEW.name,
-        true
-    ).catch { exception ->
-        emit(true)
-    }
+    override val myGoalsExpandedOverview: Flow<Boolean> =
+            observeSetting(SettingsPreferenceKeys.MY_GOALS_EXPANDED_OVERVIEW.name, true).catch {
+                    exception ->
+                emit(true)
+            }
 
     override suspend fun setMyGoalsExpandedOverview(isExpanded: Boolean) {
         saveSetting(SettingsPreferenceKeys.MY_GOALS_EXPANDED_OVERVIEW.name, isExpanded)
     }
 
-
     override fun observeSplitterWeight(keyPrefix: String, defaultValue: Float): Flow<Float> {
         val dynamicKey = floatPreferencesKey("${keyPrefix}_splitter_weight")
         return dataStore.data
-            .catch { exception ->
-                LogManager.e(TAG, "Error observing splitter weight for key $dynamicKey", exception)
-                emit(emptyPreferences())
-            }
-            .map { preferences ->
-                preferences[dynamicKey] ?: defaultValue
-            }
+                .catch { exception ->
+                    LogManager.e(
+                            TAG,
+                            "Error observing splitter weight for key $dynamicKey",
+                            exception
+                    )
+                    emit(emptyPreferences())
+                }
+                .map { preferences -> preferences[dynamicKey] ?: defaultValue }
     }
 
     override suspend fun setSplitterWeight(keyPrefix: String, weight: Float) {
         val dynamicKey = floatPreferencesKey("${keyPrefix}_splitter_weight")
-        dataStore.edit { preferences ->
-            preferences[dynamicKey] = weight
-        }
+        dataStore.edit { preferences -> preferences[dynamicKey] = weight }
     }
 
-
     override fun observeSavedDevice(): Flow<ScannedDeviceInfo?> {
-        val addrF  = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_ADDRESS.name,  null as String?)
-        val nameF  = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_NAME.name,     null as String?)
-        val rssiF  = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_RSSI.name,     0)
-        val uuidsF = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS.name, emptySet<String>())
-        val hintF  = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT.name,  null as String?)
-        val manDataF = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA.name, null as String?)
+        val addrF =
+                observeSetting(
+                        SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_ADDRESS.name,
+                        null as String?
+                )
+        val nameF =
+                observeSetting(
+                        SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_NAME.name,
+                        null as String?
+                )
+        val rssiF = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_RSSI.name, 0)
+        val uuidsF =
+                observeSetting(
+                        SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS.name,
+                        emptySet<String>()
+                )
+        val hintF =
+                observeSetting(
+                        SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT.name,
+                        null as String?
+                )
+        val manDataF =
+                observeSetting(
+                        SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA.name,
+                        null as String?
+                )
 
         return combine(addrF, nameF, rssiF, uuidsF, hintF, manDataF) { array ->
-            val addr        = array[0] as String?
-            val name        = array[1] as String?
-            val rssi        = array[2] as Int
-            val uuidStrSet = (array[3] as? Set<*>)?.filterIsInstance<String>() ?: emptySet()
-            val hint        = array[4] as String?
-            val manDataJson = array[5] as String?
+                    val addr = array[0] as String?
+                    val name = array[1] as String?
+                    val rssi = array[2] as Int
+                    val uuidStrSet = (array[3] as? Set<*>)?.filterIsInstance<String>() ?: emptySet()
+                    val hint = array[4] as String?
+                    val manDataJson = array[5] as String?
 
-            if (addr.isNullOrBlank() || name.isNullOrBlank()) {
-                null
-            } else {
-                // Convert to UUID list with stable ordering to keep distinctUntilChanged effective
-                val uuids = uuidStrSet
-                    .mapNotNull { runCatching { UUID.fromString(it) }.getOrNull() }
-                    .sortedBy { it.toString() }
+                    if (addr.isNullOrBlank() || name.isNullOrBlank()) {
+                        null
+                    } else {
+                        // Convert to UUID list with stable ordering to keep distinctUntilChanged
+                        // effective
+                        val uuids =
+                                uuidStrSet
+                                        .mapNotNull {
+                                            runCatching { UUID.fromString(it) }.getOrNull()
+                                        }
+                                        .sortedBy { it.toString() }
 
-                // ManufacturerData
-                val manData = SparseArray<ByteArray>()
-                manDataJson?.let { jsonStr ->
-                    runCatching {
-                        val jsonObj = JSONObject(jsonStr)
-                        jsonObj.keys().forEach { key ->
-                            val value = Base64.decode(jsonObj.getString(key), Base64.NO_WRAP)
-                            manData.put(key.toInt(), value)
+                        // ManufacturerData
+                        val manData = SparseArray<ByteArray>()
+                        manDataJson?.let { jsonStr ->
+                            runCatching {
+                                val jsonObj = JSONObject(jsonStr)
+                                jsonObj.keys().forEach { key ->
+                                    val value =
+                                            Base64.decode(jsonObj.getString(key), Base64.NO_WRAP)
+                                    manData.put(key.toInt(), value)
+                                }
+                            }
                         }
+
+                        ScannedDeviceInfo(
+                                name = name,
+                                address = addr,
+                                rssi = rssi,
+                                serviceUuids = uuids,
+                                manufacturerData = if (manData.isNotEmpty()) manData else null,
+                                isSupported = false,
+                                determinedHandlerDisplayName = hint
+                        )
                     }
                 }
-
-                ScannedDeviceInfo(
-                    name = name,
-                    address = addr,
-                    rssi = rssi,
-                    serviceUuids = uuids,
-                    manufacturerData = if (manData.isNotEmpty()) manData else null,
-                    isSupported = false,
-                    determinedHandlerDisplayName = hint
-                )
-            }
-        }
-            .catch { e ->
-                LogManager.e("UserSettingsRepository", "observeSavedDevice failed", e)
-                emit(null)
-            }
-            .distinctUntilChanged()
+                .catch { e ->
+                    LogManager.e("UserSettingsRepository", "observeSavedDevice failed", e)
+                    emit(null)
+                }
+                .distinctUntilChanged()
     }
 
     override suspend fun saveSavedDevice(device: ScannedDeviceInfo) {
-        LogManager.i(TAG, "Saving device snapshot: addr=${device.address}, name=${device.name}, uuids=${device.serviceUuids.size}, hint=${device.determinedHandlerDisplayName}")
+        LogManager.i(
+                TAG,
+                "Saving device snapshot: addr=${device.address}, name=${device.name}, uuids=${device.serviceUuids.size}, hint=${device.determinedHandlerDisplayName}"
+        )
         dataStore.edit { prefs ->
-            prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_ADDRESS]       = device.address
-            prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_NAME]          = device.name
-            prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_RSSI]          = device.rssi
-            prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS] = device.serviceUuids.map(UUID::toString).toSet()
+            prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_ADDRESS] = device.address
+            prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_NAME] = device.name
+            prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_RSSI] = device.rssi
+            prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS] =
+                    device.serviceUuids.map(UUID::toString).toSet()
             device.determinedHandlerDisplayName?.let {
                 prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT] = it
-            } ?: prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT)
+            }
+                    ?: prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT)
 
             val manData = JSONObject()
             device.manufacturerData?.let { sparse ->
@@ -527,7 +587,8 @@ class SettingsFacadeImpl @Inject constructor(
                     manData.put(key, value)
                 }
             }
-            prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA] = manData.toString()
+            prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA] =
+                    manData.toString()
         }
     }
 
@@ -555,19 +616,25 @@ class SettingsFacadeImpl @Inject constructor(
         }
     }
 
-    override val savedBluetoothTuneProfile: Flow<String?> = dataStore.data
-        .catch { exception ->
-            LogManager.e(TAG, "Error reading savedBluetoothTuneProfile from DataStore.", exception)
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }
-        .map { preferences ->
-            preferences[SettingsPreferenceKeys.SAVED_BLUETOOTH_TUNE_PROFILE]
-        }
-        .distinctUntilChanged()
+    override val savedBluetoothTuneProfile: Flow<String?> =
+            dataStore
+                    .data
+                    .catch { exception ->
+                        LogManager.e(
+                                TAG,
+                                "Error reading savedBluetoothTuneProfile from DataStore.",
+                                exception
+                        )
+                        if (exception is IOException) {
+                            emit(emptyPreferences())
+                        } else {
+                            throw exception
+                        }
+                    }
+                    .map { preferences ->
+                        preferences[SettingsPreferenceKeys.SAVED_BLUETOOTH_TUNE_PROFILE]
+                    }
+                    .distinctUntilChanged()
 
     override suspend fun saveBluetoothTuneProfile(name: String?) {
         LogManager.i(TAG, "Saving Bluetooth tune profile: Name=$name")
@@ -580,87 +647,95 @@ class SettingsFacadeImpl @Inject constructor(
         }
     }
 
-    override val autoConnectOnStartup: Flow<Boolean> = observeSetting(
-        SettingsPreferenceKeys.SAVED_BLUETOOTH_AUTO_CONNECT.name,
-        false
-    )
+    override val autoConnectOnStartup: Flow<Boolean> =
+            observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_AUTO_CONNECT.name, false)
 
     override suspend fun setAutoConnectOnStartup(enabled: Boolean) {
         saveSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_AUTO_CONNECT.name, enabled)
     }
 
-    override val isSmartAssignmentEnabled: Flow<Boolean> = observeSetting(
-        SettingsPreferenceKeys.SAVED_BLUETOOTH_SMART_ASSIGNMENT_ENABLED.name,
-        false
-    )
+    override val isSmartAssignmentEnabled: Flow<Boolean> =
+            observeSetting(
+                    SettingsPreferenceKeys.SAVED_BLUETOOTH_SMART_ASSIGNMENT_ENABLED.name,
+                    false
+            )
 
     override suspend fun setSmartAssignmentEnabled(enabled: Boolean) {
         saveSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_SMART_ASSIGNMENT_ENABLED.name, enabled)
     }
 
-    override val smartAssignmentTolerancePercent: Flow<Int> = observeSetting(
-        SettingsPreferenceKeys.SAVED_BLUETOOTH_TOLERANCE_PERCENT.name,
-        10
-    )
+    override val smartAssignmentTolerancePercent: Flow<Int> =
+            observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_TOLERANCE_PERCENT.name, 10)
 
     override suspend fun setSmartAssignmentTolerancePercent(tolerance: Int) {
         saveSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_TOLERANCE_PERCENT.name, tolerance)
     }
 
-    override val smartAssignmentIgnoreOutsideTolerance: Flow<Boolean> = observeSetting(
-        SettingsPreferenceKeys.SAVED_BLUETOOTH_IGNORE_OUTSIDE_TOLERANCE.name,
-        false
-    )
+    override val smartAssignmentIgnoreOutsideTolerance: Flow<Boolean> =
+            observeSetting(
+                    SettingsPreferenceKeys.SAVED_BLUETOOTH_IGNORE_OUTSIDE_TOLERANCE.name,
+                    false
+            )
 
     override suspend fun setSmartAssignmentIgnoreOutsideTolerance(ignore: Boolean) {
         saveSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_IGNORE_OUTSIDE_TOLERANCE.name, ignore)
     }
 
-    override val showChartDataPoints: Flow<Boolean> = observeSetting(
-        SettingsPreferenceKeys.CHART_SHOW_DATA_POINTS.name,
-        true
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing showChartDataPoints", exception)
-        emit(true)
-    }
+    override val showChartDataPoints: Flow<Boolean> =
+            observeSetting(SettingsPreferenceKeys.CHART_SHOW_DATA_POINTS.name, true).catch {
+                    exception ->
+                LogManager.e(TAG, "Error observing showChartDataPoints", exception)
+                emit(true)
+            }
 
     override suspend fun setShowChartDataPoints(show: Boolean) {
         LogManager.d(TAG, "Setting showChartDataPoints to: $show")
         saveSetting(SettingsPreferenceKeys.CHART_SHOW_DATA_POINTS.name, show)
     }
 
-    override val chartSmoothingAlgorithm: Flow<SmoothingAlgorithm> = dataStore.data
-        .catch { exception ->
-            LogManager.e(TAG, "Error reading chartSmoothingAlgorithm from DataStore.", exception)
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }
-        .map { preferences ->
-            val algorithmName = preferences[SettingsPreferenceKeys.CHART_SMOOTHING_ALGORITHM]
-            try {
-                algorithmName?.let { SmoothingAlgorithm.valueOf(it) } ?: SmoothingAlgorithm.NONE
-            } catch (e: IllegalArgumentException) {
-                LogManager.w(TAG, "Invalid smoothing algorithm name '$algorithmName' in DataStore. Defaulting to NONE.", e)
-                SmoothingAlgorithm.NONE
-            }
-        }
-        .distinctUntilChanged()
+    override val chartSmoothingAlgorithm: Flow<SmoothingAlgorithm> =
+            dataStore
+                    .data
+                    .catch { exception ->
+                        LogManager.e(
+                                TAG,
+                                "Error reading chartSmoothingAlgorithm from DataStore.",
+                                exception
+                        )
+                        if (exception is IOException) {
+                            emit(emptyPreferences())
+                        } else {
+                            throw exception
+                        }
+                    }
+                    .map { preferences ->
+                        val algorithmName =
+                                preferences[SettingsPreferenceKeys.CHART_SMOOTHING_ALGORITHM]
+                        try {
+                            algorithmName?.let { SmoothingAlgorithm.valueOf(it) }
+                                    ?: SmoothingAlgorithm.NONE
+                        } catch (e: IllegalArgumentException) {
+                            LogManager.w(
+                                    TAG,
+                                    "Invalid smoothing algorithm name '$algorithmName' in DataStore. Defaulting to NONE.",
+                                    e
+                            )
+                            SmoothingAlgorithm.NONE
+                        }
+                    }
+                    .distinctUntilChanged()
 
     override suspend fun setChartSmoothingAlgorithm(algorithm: SmoothingAlgorithm) {
         LogManager.d(TAG, "Setting chart smoothing algorithm to: ${algorithm.name}")
         saveSetting(SettingsPreferenceKeys.CHART_SMOOTHING_ALGORITHM.name, algorithm.name)
     }
 
-    override val chartSmoothingAlpha: Flow<Float> = observeSetting(
-        SettingsPreferenceKeys.CHART_SMOOTHING_ALPHA.name,
-        0.5f
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing chartSmoothingAlpha", exception)
-        emit(0.5f)
-    }
+    override val chartSmoothingAlpha: Flow<Float> =
+            observeSetting(SettingsPreferenceKeys.CHART_SMOOTHING_ALPHA.name, 0.5f).catch {
+                    exception ->
+                LogManager.e(TAG, "Error observing chartSmoothingAlpha", exception)
+                emit(0.5f)
+            }
 
     override suspend fun setChartSmoothingAlpha(alpha: Float) {
         val validAlpha = alpha.coerceIn(0.01f, 0.99f)
@@ -668,119 +743,139 @@ class SettingsFacadeImpl @Inject constructor(
         saveSetting(SettingsPreferenceKeys.CHART_SMOOTHING_ALPHA.name, validAlpha)
     }
 
-    override val chartSmoothingWindowSize: Flow<Int> = observeSetting(
-        SettingsPreferenceKeys.CHART_SMOOTHING_WINDOW_SIZE.name,
-        5
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing chartSmoothingWindowSize", exception)
-        emit(5)
-    }
+    override val chartSmoothingWindowSize: Flow<Int> =
+            observeSetting(SettingsPreferenceKeys.CHART_SMOOTHING_WINDOW_SIZE.name, 5).catch {
+                    exception ->
+                LogManager.e(TAG, "Error observing chartSmoothingWindowSize", exception)
+                emit(5)
+            }
 
     override suspend fun setChartSmoothingWindowSize(windowSize: Int) {
         val validWindowSize = windowSize.coerceIn(2, 50)
-        LogManager.d(TAG, "Setting chart smoothing window size to: $validWindowSize (raw input: $windowSize)")
+        LogManager.d(
+                TAG,
+                "Setting chart smoothing window size to: $validWindowSize (raw input: $windowSize)"
+        )
         saveSetting(SettingsPreferenceKeys.CHART_SMOOTHING_WINDOW_SIZE.name, validWindowSize)
     }
 
-    override val chartSmoothingMaxGapDays: Flow<Int> = observeSetting(
-        SettingsPreferenceKeys.CHART_SMOOTHING_MAX_GAP_DAYS.name,
-        7 // Default to 7 days
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing chartSmoothingMaxGapDays", exception)
-        emit(7) // Fallback to default on error
-    }
+    override val chartSmoothingMaxGapDays: Flow<Int> =
+            observeSetting(
+                            SettingsPreferenceKeys.CHART_SMOOTHING_MAX_GAP_DAYS.name,
+                            7 // Default to 7 days
+                    )
+                    .catch { exception ->
+                        LogManager.e(TAG, "Error observing chartSmoothingMaxGapDays", exception)
+                        emit(7) // Fallback to default on error
+                    }
 
     override suspend fun setChartSmoothingMaxGapDays(days: Int) {
         LogManager.d(TAG, "Setting chart smoothing max gap to: $days days")
         saveSetting(SettingsPreferenceKeys.CHART_SMOOTHING_MAX_GAP_DAYS.name, days)
     }
 
-    override val showChartGoalLines: Flow<Boolean> = observeSetting(
-        SettingsPreferenceKeys.CHART_SHOW_GOAL_LINES.name,
-        false
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing showChartGoalLines", exception)
-        emit(false)
-    }
+    override val showChartGoalLines: Flow<Boolean> =
+            observeSetting(SettingsPreferenceKeys.CHART_SHOW_GOAL_LINES.name, false).catch {
+                    exception ->
+                LogManager.e(TAG, "Error observing showChartGoalLines", exception)
+                emit(false)
+            }
 
     override suspend fun setShowChartGoalLines(show: Boolean) {
         saveSetting(SettingsPreferenceKeys.CHART_SHOW_GOAL_LINES.name, show)
     }
 
-    override val chartProjectionEnabled: Flow<Boolean> = observeSetting(
-        SettingsPreferenceKeys.CHART_PROJECTION_ENABLED.name,
-        false
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing chartProjectionEnabled", exception)
-        emit(false)
-    }
+    override val chartProjectionEnabled: Flow<Boolean> =
+            observeSetting(SettingsPreferenceKeys.CHART_PROJECTION_ENABLED.name, false).catch {
+                    exception ->
+                LogManager.e(TAG, "Error observing chartProjectionEnabled", exception)
+                emit(false)
+            }
 
     override suspend fun setChartProjectionEnabled(enabled: Boolean) {
         saveSetting(SettingsPreferenceKeys.CHART_PROJECTION_ENABLED.name, enabled)
     }
 
-    override val chartProjectionDaysInThePast: Flow<Int> = observeSetting(
-        SettingsPreferenceKeys.CHART_PROJECTION_DAYS_IN_THE_PAST.name,
-        30 // Default value
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing chartProjectionDaysInThePast", exception)
-        emit(30)
-    }
+    override val chartProjectionDaysInThePast: Flow<Int> =
+            observeSetting(
+                            SettingsPreferenceKeys.CHART_PROJECTION_DAYS_IN_THE_PAST.name,
+                            30 // Default value
+                    )
+                    .catch { exception ->
+                        LogManager.e(TAG, "Error observing chartProjectionDaysInThePast", exception)
+                        emit(30)
+                    }
 
     override suspend fun setChartProjectionDaysInThePast(days: Int) {
         saveSetting(SettingsPreferenceKeys.CHART_PROJECTION_DAYS_IN_THE_PAST.name, days)
     }
 
-    override val chartProjectionDaysToProject: Flow<Int> = observeSetting(
-        SettingsPreferenceKeys.CHART_PROJECTION_DAYS_TO_PROJECT.name,
-        14 // Default value
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing chartProjectionDaysToProject", exception)
-        emit(14)
-    }
+    override val chartProjectionDaysToProject: Flow<Int> =
+            observeSetting(
+                            SettingsPreferenceKeys.CHART_PROJECTION_DAYS_TO_PROJECT.name,
+                            14 // Default value
+                    )
+                    .catch { exception ->
+                        LogManager.e(TAG, "Error observing chartProjectionDaysToProject", exception)
+                        emit(14)
+                    }
 
     override suspend fun setChartProjectionDaysToProject(days: Int) {
         saveSetting(SettingsPreferenceKeys.CHART_PROJECTION_DAYS_TO_PROJECT.name, days)
     }
 
-    override val chartProjectionPolynomialDegree: Flow<Int> = observeSetting(
-        SettingsPreferenceKeys.CHART_PROJECTION_POLYNOMIAL_DEGREE.name,
-        1 // Default to linear
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing chartProjectionPolynomialDegree", exception)
-        emit(1)
-    }
+    override val chartProjectionPolynomialDegree: Flow<Int> =
+            observeSetting(
+                            SettingsPreferenceKeys.CHART_PROJECTION_POLYNOMIAL_DEGREE.name,
+                            1 // Default to linear
+                    )
+                    .catch { exception ->
+                        LogManager.e(
+                                TAG,
+                                "Error observing chartProjectionPolynomialDegree",
+                                exception
+                        )
+                        emit(1)
+                    }
 
     override suspend fun setChartProjectionPolynomialDegree(degree: Int) {
         saveSetting(SettingsPreferenceKeys.CHART_PROJECTION_POLYNOMIAL_DEGREE.name, degree)
     }
 
-    override val autoBackupEnabledGlobally: Flow<Boolean> = observeSetting(
-        SettingsPreferenceKeys.AUTO_BACKUP_ENABLED_GLOBALLY.name,
-        false // Standardmäßig deaktiviert
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing autoBackupEnabledGlobally", exception)
-        emit(false)
-    }
+    override val autoBackupEnabledGlobally: Flow<Boolean> =
+            observeSetting(
+                            SettingsPreferenceKeys.AUTO_BACKUP_ENABLED_GLOBALLY.name,
+                            false // Standardmäßig deaktiviert
+                    )
+                    .catch { exception ->
+                        LogManager.e(TAG, "Error observing autoBackupEnabledGlobally", exception)
+                        emit(false)
+                    }
 
     override suspend fun setAutoBackupEnabledGlobally(enabled: Boolean) {
         LogManager.d(TAG, "Setting autoBackupEnabledGlobally to: $enabled")
         saveSetting(SettingsPreferenceKeys.AUTO_BACKUP_ENABLED_GLOBALLY.name, enabled)
     }
 
-    override val autoBackupLocationUri: Flow<String?> = dataStore.data
-        .catch { exception ->
-            LogManager.e(TAG, "Error reading autoBackupLocationUri from DataStore.", exception)
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }
-        .map { preferences ->
-            preferences[SettingsPreferenceKeys.AUTO_BACKUP_LOCATION_URI]
-        }
-        .distinctUntilChanged()
+    override val autoBackupLocationUri: Flow<String?> =
+            dataStore
+                    .data
+                    .catch { exception ->
+                        LogManager.e(
+                                TAG,
+                                "Error reading autoBackupLocationUri from DataStore.",
+                                exception
+                        )
+                        if (exception is IOException) {
+                            emit(emptyPreferences())
+                        } else {
+                            throw exception
+                        }
+                    }
+                    .map { preferences ->
+                        preferences[SettingsPreferenceKeys.AUTO_BACKUP_LOCATION_URI]
+                    }
+                    .distinctUntilChanged()
 
     override suspend fun setAutoBackupLocationUri(uri: String?) {
         LogManager.d(TAG, "Setting autoBackupLocationUri to: $uri")
@@ -793,52 +888,64 @@ class SettingsFacadeImpl @Inject constructor(
         }
     }
 
-    override val autoBackupInterval: Flow<BackupInterval> = dataStore.data
-        .catch { exception ->
-            LogManager.e(TAG, "Error reading autoBackupInterval from DataStore.", exception)
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }
-        .map { preferences ->
-            val intervalName = preferences[SettingsPreferenceKeys.AUTO_BACKUP_INTERVAL]
-            try {
-                intervalName?.let { BackupInterval.valueOf(it) } ?: BackupInterval.WEEKLY
-            } catch (e: IllegalArgumentException) {
-                LogManager.w(TAG, "Invalid BackupInterval name '$intervalName' in DataStore. Defaulting to WEEKLY.", e)
-                BackupInterval.WEEKLY
-            }
-        }
-        .distinctUntilChanged()
+    override val autoBackupInterval: Flow<BackupInterval> =
+            dataStore
+                    .data
+                    .catch { exception ->
+                        LogManager.e(
+                                TAG,
+                                "Error reading autoBackupInterval from DataStore.",
+                                exception
+                        )
+                        if (exception is IOException) {
+                            emit(emptyPreferences())
+                        } else {
+                            throw exception
+                        }
+                    }
+                    .map { preferences ->
+                        val intervalName = preferences[SettingsPreferenceKeys.AUTO_BACKUP_INTERVAL]
+                        try {
+                            intervalName?.let { BackupInterval.valueOf(it) }
+                                    ?: BackupInterval.WEEKLY
+                        } catch (e: IllegalArgumentException) {
+                            LogManager.w(
+                                    TAG,
+                                    "Invalid BackupInterval name '$intervalName' in DataStore. Defaulting to WEEKLY.",
+                                    e
+                            )
+                            BackupInterval.WEEKLY
+                        }
+                    }
+                    .distinctUntilChanged()
 
     override suspend fun setAutoBackupInterval(interval: BackupInterval) {
         LogManager.d(TAG, "Setting autoBackupInterval to: ${interval.name}")
         saveSetting(SettingsPreferenceKeys.AUTO_BACKUP_INTERVAL.name, interval.name)
     }
 
-
-    override val autoBackupCreateNewFile: Flow<Boolean> = observeSetting(
-        SettingsPreferenceKeys.AUTO_BACKUP_CREATE_NEW_FILE.name,
-        false
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing autoBackupCreateNewFile", exception)
-        emit(false)
-    }
+    override val autoBackupCreateNewFile: Flow<Boolean> =
+            observeSetting(SettingsPreferenceKeys.AUTO_BACKUP_CREATE_NEW_FILE.name, false).catch {
+                    exception ->
+                LogManager.e(TAG, "Error observing autoBackupCreateNewFile", exception)
+                emit(false)
+            }
 
     override suspend fun setAutoBackupCreateNewFile(createNew: Boolean) {
         LogManager.d(TAG, "Setting autoBackupCreateNewFile to: $createNew")
         saveSetting(SettingsPreferenceKeys.AUTO_BACKUP_CREATE_NEW_FILE.name, createNew)
     }
 
-    override val autoBackupLastSuccessfulTimestamp: Flow<Long> = observeSetting(
-        SettingsPreferenceKeys.AUTO_BACKUP_LAST_SUCCESSFUL_TIMESTAMP.name,
-        0L
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing autoBackupLastSuccessfulTimestamp", exception)
-        emit(0L) // Fallback
-    }
+    override val autoBackupLastSuccessfulTimestamp: Flow<Long> =
+            observeSetting(SettingsPreferenceKeys.AUTO_BACKUP_LAST_SUCCESSFUL_TIMESTAMP.name, 0L)
+                    .catch { exception ->
+                        LogManager.e(
+                                TAG,
+                                "Error observing autoBackupLastSuccessfulTimestamp",
+                                exception
+                        )
+                        emit(0L) // Fallback
+                    }
 
     override suspend fun setAutoBackupLastSuccessfulTimestamp(timestamp: Long) {
         LogManager.d(TAG, "Setting autoBackupLastSuccessfulTimestamp to: $timestamp")
@@ -846,39 +953,33 @@ class SettingsFacadeImpl @Inject constructor(
     }
 
     // --- Reminder Settings ---
-    override val reminderEnabled: Flow<Boolean> = observeSetting(
-        SettingsPreferenceKeys.REMINDER_ENABLED.name,
-        false
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing reminderEnabled", exception)
-        emit(false)
-    }
+    override val reminderEnabled: Flow<Boolean> =
+            observeSetting(SettingsPreferenceKeys.REMINDER_ENABLED.name, false).catch { exception ->
+                LogManager.e(TAG, "Error observing reminderEnabled", exception)
+                emit(false)
+            }
 
     override suspend fun setReminderEnabled(enabled: Boolean) {
         LogManager.d(TAG, "Setting reminderEnabled to: $enabled")
         saveSetting(SettingsPreferenceKeys.REMINDER_ENABLED.name, enabled)
     }
 
-    override val reminderText: Flow<String> = observeSetting(
-        SettingsPreferenceKeys.REMINDER_TEXT.name,
-        ""
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing reminderText", exception)
-        emit("")
-    }
+    override val reminderText: Flow<String> =
+            observeSetting(SettingsPreferenceKeys.REMINDER_TEXT.name, "").catch { exception ->
+                LogManager.e(TAG, "Error observing reminderText", exception)
+                emit("")
+            }
 
     override suspend fun setReminderText(text: String) {
         LogManager.d(TAG, "Setting reminderText to: $text")
         saveSetting(SettingsPreferenceKeys.REMINDER_TEXT.name, text)
     }
 
-    override val reminderHour: Flow<Int> = observeSetting(
-        SettingsPreferenceKeys.REMINDER_HOUR.name,
-        9
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing reminderHour", exception)
-        emit(9)
-    }
+    override val reminderHour: Flow<Int> =
+            observeSetting(SettingsPreferenceKeys.REMINDER_HOUR.name, 9).catch { exception ->
+                LogManager.e(TAG, "Error observing reminderHour", exception)
+                emit(9)
+            }
 
     override suspend fun setReminderHour(hour: Int) {
         val h = hour.coerceIn(0, 23)
@@ -886,13 +987,11 @@ class SettingsFacadeImpl @Inject constructor(
         saveSetting(SettingsPreferenceKeys.REMINDER_HOUR.name, h)
     }
 
-    override val reminderMinute: Flow<Int> = observeSetting(
-        SettingsPreferenceKeys.REMINDER_MINUTE.name,
-        0
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing reminderMinute", exception)
-        emit(0)
-    }
+    override val reminderMinute: Flow<Int> =
+            observeSetting(SettingsPreferenceKeys.REMINDER_MINUTE.name, 0).catch { exception ->
+                LogManager.e(TAG, "Error observing reminderMinute", exception)
+                emit(0)
+            }
 
     override suspend fun setReminderMinute(minute: Int) {
         val m = minute.coerceIn(0, 59)
@@ -900,150 +999,218 @@ class SettingsFacadeImpl @Inject constructor(
         saveSetting(SettingsPreferenceKeys.REMINDER_MINUTE.name, m)
     }
 
-    override val reminderDays: Flow<Set<String>> = observeSetting(
-        SettingsPreferenceKeys.REMINDER_DAYS.name,
-        emptySet<String>()
-    ).catch { exception ->
-        LogManager.e(TAG, "Error observing reminderDays", exception)
-        emit(emptySet())
-    }
+    override val reminderDays: Flow<Set<String>> =
+            observeSetting(SettingsPreferenceKeys.REMINDER_DAYS.name, emptySet<String>()).catch {
+                    exception ->
+                LogManager.e(TAG, "Error observing reminderDays", exception)
+                emit(emptySet())
+            }
 
     override suspend fun setReminderDays(days: Set<String>) {
-        val safe = days.filter {
-            runCatching { java.time.DayOfWeek.valueOf(it) }.isSuccess
-        }.toSet()
+        val safe = days.filter { runCatching { java.time.DayOfWeek.valueOf(it) }.isSuccess }.toSet()
         LogManager.d(TAG, "Setting reminderDays to: $safe (raw: $days)")
         saveSetting(SettingsPreferenceKeys.REMINDER_DAYS.name, safe)
     }
 
-    override val selectedBodyFatFormula = dataStore.data
-        .catch { exception ->
-            LogManager.e(TAG, "Error reading BODY_FAT_FORMULA_OPTION", exception)
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }
-        .map { prefs ->
-            val raw = prefs[SettingsPreferenceKeys.BODY_FAT_FORMULA_OPTION] ?: BodyFatFormulaOption.OFF.name
-            runCatching { BodyFatFormulaOption.valueOf(raw) }.getOrDefault(BodyFatFormulaOption.OFF)
-        }
-        .distinctUntilChanged()
+    override val selectedBodyFatFormula =
+            dataStore
+                    .data
+                    .catch { exception ->
+                        LogManager.e(TAG, "Error reading BODY_FAT_FORMULA_OPTION", exception)
+                        if (exception is IOException) emit(emptyPreferences()) else throw exception
+                    }
+                    .map { prefs ->
+                        val raw =
+                                prefs[SettingsPreferenceKeys.BODY_FAT_FORMULA_OPTION]
+                                        ?: BodyFatFormulaOption.OFF.name
+                        runCatching { BodyFatFormulaOption.valueOf(raw) }
+                                .getOrDefault(BodyFatFormulaOption.OFF)
+                    }
+                    .distinctUntilChanged()
 
     override suspend fun setSelectedBodyFatFormula(option: BodyFatFormulaOption) {
         LogManager.d(TAG, "Setting BODY_FAT_FORMULA_OPTION to: ${option.name}")
         saveSetting(SettingsPreferenceKeys.BODY_FAT_FORMULA_OPTION.name, option.name)
     }
 
-    override val selectedBodyWaterFormula = dataStore.data
-        .catch { exception ->
-            LogManager.e(TAG, "Error reading BODY_WATER_FORMULA_OPTION", exception)
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }
-        .map { prefs ->
-            val raw = prefs[SettingsPreferenceKeys.BODY_WATER_FORMULA_OPTION] ?: BodyWaterFormulaOption.OFF.name
-            runCatching { BodyWaterFormulaOption.valueOf(raw) }.getOrDefault(BodyWaterFormulaOption.OFF)
-        }
-        .distinctUntilChanged()
+    override val selectedBodyWaterFormula =
+            dataStore
+                    .data
+                    .catch { exception ->
+                        LogManager.e(TAG, "Error reading BODY_WATER_FORMULA_OPTION", exception)
+                        if (exception is IOException) emit(emptyPreferences()) else throw exception
+                    }
+                    .map { prefs ->
+                        val raw =
+                                prefs[SettingsPreferenceKeys.BODY_WATER_FORMULA_OPTION]
+                                        ?: BodyWaterFormulaOption.OFF.name
+                        runCatching { BodyWaterFormulaOption.valueOf(raw) }
+                                .getOrDefault(BodyWaterFormulaOption.OFF)
+                    }
+                    .distinctUntilChanged()
 
     override suspend fun setSelectedBodyWaterFormula(option: BodyWaterFormulaOption) {
         LogManager.d(TAG, "Setting BODY_WATER_FORMULA_OPTION to: ${option.name}")
         saveSetting(SettingsPreferenceKeys.BODY_WATER_FORMULA_OPTION.name, option.name)
     }
 
-    override val selectedLbmFormula = dataStore.data
-        .catch { exception ->
-            LogManager.e(TAG, "Error reading LBM_FORMULA_OPTION", exception)
-            if (exception is IOException) emit(emptyPreferences()) else throw exception
-        }
-        .map { prefs ->
-            val raw = prefs[SettingsPreferenceKeys.LBM_FORMULA_OPTION] ?: LbmFormulaOption.OFF.name
-            runCatching { LbmFormulaOption.valueOf(raw) }.getOrDefault(LbmFormulaOption.OFF)
-        }
-        .distinctUntilChanged()
+    override val selectedLbmFormula =
+            dataStore
+                    .data
+                    .catch { exception ->
+                        LogManager.e(TAG, "Error reading LBM_FORMULA_OPTION", exception)
+                        if (exception is IOException) emit(emptyPreferences()) else throw exception
+                    }
+                    .map { prefs ->
+                        val raw =
+                                prefs[SettingsPreferenceKeys.LBM_FORMULA_OPTION]
+                                        ?: LbmFormulaOption.OFF.name
+                        runCatching { LbmFormulaOption.valueOf(raw) }
+                                .getOrDefault(LbmFormulaOption.OFF)
+                    }
+                    .distinctUntilChanged()
 
     override suspend fun setSelectedLbmFormula(option: LbmFormulaOption) {
         LogManager.d(TAG, "Setting LBM_FORMULA_OPTION to: ${option.name}")
         saveSetting(SettingsPreferenceKeys.LBM_FORMULA_OPTION.name, option.name)
     }
 
-    @Suppress("UNCHECKED_CAST")
+    // --- Webhook Export Settings ---
+    override val webhookExportEnabled: Flow<Boolean> =
+            observeSetting(SettingsPreferenceKeys.WEBHOOK_EXPORT_ENABLED.name, false)
+
+    override suspend fun setWebhookExportEnabled(enabled: Boolean) {
+        saveSetting(SettingsPreferenceKeys.WEBHOOK_EXPORT_ENABLED.name, enabled)
+    }
+
+    override val webhookExportUrl: Flow<String?> =
+            dataStore
+                    .data
+                    .catch { exception ->
+                        if (exception is IOException) emit(emptyPreferences()) else throw exception
+                    }
+                    .map { preferences -> preferences[SettingsPreferenceKeys.WEBHOOK_EXPORT_URL] }
+                    .distinctUntilChanged()
+
+    override suspend fun setWebhookExportUrl(url: String?) {
+        dataStore.edit { preferences ->
+            if (!url.isNullOrBlank()) preferences[SettingsPreferenceKeys.WEBHOOK_EXPORT_URL] = url
+            else preferences.remove(SettingsPreferenceKeys.WEBHOOK_EXPORT_URL)
+        }
+    }
+
+    // --- InfluxDB Export Settings ---
+    override val influxDbExportEnabled: Flow<Boolean> =
+            observeSetting(SettingsPreferenceKeys.INFLUXDB_EXPORT_ENABLED.name, false)
+    override suspend fun setInfluxDbExportEnabled(enabled: Boolean) =
+            saveSetting(SettingsPreferenceKeys.INFLUXDB_EXPORT_ENABLED.name, enabled)
+
+    override val influxDbVersion: Flow<String> =
+            observeSetting(SettingsPreferenceKeys.INFLUXDB_VERSION.name, "v1")
+    override suspend fun setInfluxDbVersion(version: String) =
+            saveSetting(SettingsPreferenceKeys.INFLUXDB_VERSION.name, version)
+
+    override val influxDbHost: Flow<String> =
+            observeSetting(SettingsPreferenceKeys.INFLUXDB_HOST.name, "")
+    override suspend fun setInfluxDbHost(host: String) =
+            saveSetting(SettingsPreferenceKeys.INFLUXDB_HOST.name, host)
+
+    override val influxDbDatabase: Flow<String> =
+            observeSetting(SettingsPreferenceKeys.INFLUXDB_DATABASE.name, "")
+    override suspend fun setInfluxDbDatabase(database: String) =
+            saveSetting(SettingsPreferenceKeys.INFLUXDB_DATABASE.name, database)
+
+    override val influxDbMeasurement: Flow<String> =
+            observeSetting(SettingsPreferenceKeys.INFLUXDB_MEASUREMENT.name, "koerpergewicht")
+    override suspend fun setInfluxDbMeasurement(measurement: String) =
+            saveSetting(SettingsPreferenceKeys.INFLUXDB_MEASUREMENT.name, measurement)
+
+    override val influxDbUsername: Flow<String> =
+            observeSetting(SettingsPreferenceKeys.INFLUXDB_USERNAME.name, "")
+    override suspend fun setInfluxDbUsername(username: String) =
+            saveSetting(SettingsPreferenceKeys.INFLUXDB_USERNAME.name, username)
+
+    override val influxDbPassword: Flow<String> =
+            observeSetting(SettingsPreferenceKeys.INFLUXDB_PASSWORD.name, "")
+    override suspend fun setInfluxDbPassword(password: String) =
+            saveSetting(SettingsPreferenceKeys.INFLUXDB_PASSWORD.name, password)
+
     override fun <T> observeSetting(keyName: String, defaultValue: T): Flow<T> {
-        //LogManager.v(
+        // LogManager.v(
         //    TAG,
-        //    "Observing setting: key='$keyName', type='${defaultValue?.let { it::class.simpleName } ?: "null"}'"
-        //)
+        //    "Observing setting: key='$keyName', type='${defaultValue?.let { it::class.simpleName }
+        // ?: "null"}'"
+        // )
 
-        return dataStore.data
-            .catch { exception ->
-                LogManager.e(TAG, "Error reading setting '$keyName' from DataStore.", exception)
-                if (exception is IOException) {
-                    emit(emptyPreferences())
-                } else {
-                    throw exception
+        return dataStore
+                .data
+                .catch { exception ->
+                    LogManager.e(TAG, "Error reading setting '$keyName' from DataStore.", exception)
+                    if (exception is IOException) {
+                        emit(emptyPreferences())
+                    } else {
+                        throw exception
+                    }
                 }
-            }
-            .map { preferences ->
-                when (defaultValue) {
-                    // Nullable String case (e.g., observeSetting(KEY, null as String?))
-                    null -> {
-                        val key = stringPreferencesKey(keyName)
-                        // May return null; that's intended for nullable String
-                        preferences[key] as T?
-                    }
-
-                    is Boolean -> {
-                        val key = booleanPreferencesKey(keyName)
-                        (preferences[key] ?: defaultValue) as T
-                    }
-
-                    is Int -> {
-                        val key = intPreferencesKey(keyName)
-                        (preferences[key] ?: defaultValue) as T
-                    }
-
-                    is Long -> {
-                        val key = longPreferencesKey(keyName)
-                        (preferences[key] ?: defaultValue) as T
-                    }
-
-                    is Float -> {
-                        val key = floatPreferencesKey(keyName)
-                        (preferences[key] ?: defaultValue) as T
-                    }
-
-                    is Double -> {
-                        val key = doublePreferencesKey(keyName)
-                        (preferences[key] ?: defaultValue) as T
-                    }
-
-                    is String -> {
-                        val key = stringPreferencesKey(keyName)
-                        (preferences[key] ?: defaultValue) as T
-                    }
-
-                    is Set<*> -> {
-                        // only Set<String> is supported by DataStore
-                        if (!defaultValue.all { it is String }) {
-                            val msg = "Unsupported Set type for preference: $keyName. Only Set<String> is supported."
+                .map { preferences ->
+                    when (defaultValue) {
+                        // Nullable String case (e.g., observeSetting(KEY, null as String?))
+                        null -> {
+                            val key = stringPreferencesKey(keyName)
+                            // May return null; that's intended for nullable String
+                            preferences[key] as T?
+                        }
+                        is Boolean -> {
+                            val key = booleanPreferencesKey(keyName)
+                            (preferences[key] ?: defaultValue) as T
+                        }
+                        is Int -> {
+                            val key = intPreferencesKey(keyName)
+                            (preferences[key] ?: defaultValue) as T
+                        }
+                        is Long -> {
+                            val key = longPreferencesKey(keyName)
+                            (preferences[key] ?: defaultValue) as T
+                        }
+                        is Float -> {
+                            val key = floatPreferencesKey(keyName)
+                            (preferences[key] ?: defaultValue) as T
+                        }
+                        is Double -> {
+                            val key = doublePreferencesKey(keyName)
+                            (preferences[key] ?: defaultValue) as T
+                        }
+                        is String -> {
+                            val key = stringPreferencesKey(keyName)
+                            (preferences[key] ?: defaultValue) as T
+                        }
+                        is Set<*> -> {
+                            // only Set<String> is supported by DataStore
+                            if (!defaultValue.all { it is String }) {
+                                val msg =
+                                        "Unsupported Set type for preference: $keyName. Only Set<String> is supported."
+                                LogManager.e(TAG, msg)
+                                throw IllegalArgumentException(msg)
+                            }
+                            val key = stringSetPreferencesKey(keyName)
+                            @Suppress("UNCHECKED_CAST")
+                            (preferences[key] ?: defaultValue as Set<String>) as T
+                        }
+                        else -> {
+                            val msg =
+                                    "Unsupported type for preference: $keyName (Type: ${defaultValue::class.java.name})"
                             LogManager.e(TAG, msg)
                             throw IllegalArgumentException(msg)
                         }
-                        val key = stringSetPreferencesKey(keyName)
-                        @Suppress("UNCHECKED_CAST")
-                        (preferences[key] ?: defaultValue as Set<String>) as T
-                    }
-
-                    else -> {
-                        val msg = "Unsupported type for preference: $keyName (Type: ${defaultValue::class.java.name})"
-                        LogManager.e(TAG, msg)
-                        throw IllegalArgumentException(msg)
                     }
                 }
-            }
-            .distinctUntilChanged() as Flow<T>
+                .distinctUntilChanged() as
+                Flow<T>
     }
 
-
     override suspend fun <T> saveSetting(keyName: String, value: T) {
-        //LogManager.v(TAG, "Saving setting: key='$keyName', value='$value', type='${value!!::class.simpleName}'")
+        // LogManager.v(TAG, "Saving setting: key='$keyName', value='$value',
+        // type='${value!!::class.simpleName}'")
         try {
             dataStore.edit { preferences ->
                 when (value) {
@@ -1058,22 +1225,29 @@ class SettingsFacadeImpl @Inject constructor(
                             @Suppress("UNCHECKED_CAST")
                             preferences[stringSetPreferencesKey(keyName)] = value as Set<String>
                         } else {
-                            val errorMsg = "Unsupported Set type for preference: $keyName. Only Set<String> is supported."
+                            val errorMsg =
+                                    "Unsupported Set type for preference: $keyName. Only Set<String> is supported."
                             LogManager.e(TAG, errorMsg)
-                            throw IllegalArgumentException(errorMsg) // This will be caught by the outer try-catch
+                            throw IllegalArgumentException(
+                                    errorMsg
+                            ) // This will be caught by the outer try-catch
                         }
                     }
                     else -> {
-                        val errorMsg = "Unsupported type for preference: $keyName (Type: ${value!!::class.java.name})"
+                        val errorMsg =
+                                "Unsupported type for preference: $keyName (Type: ${value!!::class.java.name})"
                         LogManager.e(TAG, errorMsg)
-                        throw IllegalArgumentException(errorMsg) // This will be caught by the outer try-catch
+                        throw IllegalArgumentException(
+                                errorMsg
+                        ) // This will be caught by the outer try-catch
                     }
                 }
             }
-           // LogManager.d(TAG, "Successfully saved setting: key='$keyName'")
+            // LogManager.d(TAG, "Successfully saved setting: key='$keyName'")
         } catch (e: Exception) {
             LogManager.e(TAG, "Failed to save setting: key='$keyName', value='$value'", e)
-            // Depending on the app's needs, you might want to rethrow or handle specific exceptions differently.
+            // Depending on the app's needs, you might want to rethrow or handle specific exceptions
+            // differently.
         }
     }
 }

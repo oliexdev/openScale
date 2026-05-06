@@ -616,4 +616,38 @@
     <string name="bt_sbf72_choice_slot_other_user">P%1$d: %2$s:n käytössä (Otatko haltuusi?)</string>
     <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Varattu (Ei linkitetty)</string>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d: Luo \'%2$s\' täällä</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Webhook-vienti</string>
+    <string name="settings_webhook_export_enable_label">Ota webhook-vienti käyttöön</string>
+    <string name="settings_webhook_export_enabled_hint">JSON POST lähetetään URL-osoitteeseen jokaisen uuden mittauksen yhteydessä</string>
+    <string name="settings_webhook_export_disabled_hint">Ota käyttöön lähettääksesi mittaukset mukautettuun URL-osoitteeseen</string>
+    <string name="settings_webhook_export_url_label">Webhook-URL</string>
+    <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
+    <string name="settings_webhook_export_save_url">Tallenna URL</string>
+    <string name="settings_webhook_export_test_button">Lähetä testipyyntö</string>
+
+   <!-- InfluxDB Export Settings -->
+    <string name="settings_influxdb_export_title">InfluxDB Export</string>
+    <string name="settings_influxdb_export_enable_label">Ota InfluxDB-vienti käyttöön</string>
+    <string name="settings_influxdb_export_enabled_hint">Line Protocol POST lähetetään jokaisen uuden mittauksen yhteydessä</string>
+    <string name="settings_influxdb_export_disabled_hint">Ota käyttöön lähettääksesi mittaukset suoraan InfluxDB:hen</string>
+    <string name="settings_influxdb_version_label">InfluxDB-versio</string>
+    <string name="settings_influxdb_host_label">Isäntä-URL</string>
+    <string name="settings_influxdb_host_placeholder">http://192.168.1.100:8086</string>
+    <string name="settings_influxdb_database_label">Tietokanta (v1) / Bucket (v2)</string>
+    <string name="settings_influxdb_measurement_label">Mittauksen nimi</string>
+    <string name="settings_influxdb_username_label">Käyttäjänimi (valinnainen)</string>
+    <string name="settings_influxdb_password_label">Salasana (valinnainen)</string>
+    <string name="settings_influxdb_field_mapping_title">Kenttien yhdistäminen</string>
+    <string name="settings_influxdb_field_mapping_hint">Mukauta InfluxDB-kenttien nimiä vastaamaan olemassa olevia Grafana-koontinäyttöjäsi</string>
+    <string name="settings_influxdb_field_weight_label">Painokentän nimi</string>
+    <string name="settings_influxdb_field_body_fat_label">Rasvaprosenttikentän nimi</string>
+    <string name="settings_influxdb_field_water_label">Vesikentän nimi</string>
+    <string name="settings_influxdb_field_muscle_label">Lihaskentän nimi</string>
+    <string name="settings_influxdb_field_lbm_label">Rasvattoman massan kentän nimi</string>
+    <string name="settings_influxdb_field_bone_label">Luumassakentän nimi</string>
+    <string name="settings_influxdb_field_visceral_fat_label">Viskeraalisen rasvan kentän nimi</string>
+    <string name="settings_influxdb_test_button">Lähetä testipiste</string>
+
 </resources>

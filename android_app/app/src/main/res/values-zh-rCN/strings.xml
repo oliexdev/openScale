@@ -682,4 +682,38 @@
     <string name="aggregation_level_week">周</string>
     <string name="aggregation_level_month">月</string>
     <string name="aggregation_level_year">年</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Webhook 导出</string>
+    <string name="settings_webhook_export_enable_label">启用 Webhook 导出</string>
+    <string name="settings_webhook_export_enabled_hint">每次新测量时向 URL 发送 JSON POST</string>
+    <string name="settings_webhook_export_disabled_hint">启用以将测量数据发送到自定义 URL</string>
+    <string name="settings_webhook_export_url_label">Webhook URL</string>
+    <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
+    <string name="settings_webhook_export_save_url">保存 URL</string>
+    <string name="settings_webhook_export_test_button">发送测试请求</string>
+
+    <!-- InfluxDB Export Settings -->
+    <string name="settings_influxdb_export_title">InfluxDB 导出</string>
+    <string name="settings_influxdb_export_enable_label">启用 InfluxDB 导出</string>
+    <string name="settings_influxdb_export_enabled_hint">每次新测量时发送 Line Protocol POST</string>
+    <string name="settings_influxdb_export_disabled_hint">启用后将测量数据直接发送到 InfluxDB</string>
+    <string name="settings_influxdb_version_label">InfluxDB 版本</string>
+    <string name="settings_influxdb_host_label">主机 URL</string>
+    <string name="settings_influxdb_host_placeholder">http://192.168.1.100:8086</string>
+    <string name="settings_influxdb_database_label">数据库 (v1) / Bucket (v2)</string>
+    <string name="settings_influxdb_measurement_label">测量名称</string>
+    <string name="settings_influxdb_username_label">用户名（可选）</string>
+    <string name="settings_influxdb_password_label">密码（可选）</string>
+    <string name="settings_influxdb_field_mapping_title">字段映射</string>
+    <string name="settings_influxdb_field_mapping_hint">自定义 InfluxDB 字段名称以匹配现有的 Grafana 仪表板</string>
+    <string name="settings_influxdb_field_weight_label">体重字段名称</string>
+    <string name="settings_influxdb_field_body_fat_label">体脂字段名称</string>
+    <string name="settings_influxdb_field_water_label">水分字段名称</string>
+    <string name="settings_influxdb_field_muscle_label">肌肉量字段名称</string>
+    <string name="settings_influxdb_field_lbm_label">去脂体重字段名称</string>
+    <string name="settings_influxdb_field_bone_label">骨量字段名称</string>
+    <string name="settings_influxdb_field_visceral_fat_label">内脏脂肪字段名称</string>
+    <string name="settings_influxdb_test_button">发送测试点</string>
+
 </resources>

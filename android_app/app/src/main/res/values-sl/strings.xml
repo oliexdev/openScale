@@ -673,4 +673,38 @@
     <string name="bt_warn_write_failed_status">Pisanje na %1$s spodletelo: %2$s</string>
     <string name="bt_warn_notify_state_failed_status">Obvestilo o stanju ni uspelo za %1$s: %2$s</string>
     <string name="bt_error_no_user_selected">Ni izbran noben uporabnik</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Izvoz Webhook</string>
+    <string name="settings_webhook_export_enable_label">Omogoči izvoz webhook</string>
+    <string name="settings_webhook_export_enabled_hint">JSON POST se pošlje na URL ob vsaki novi meritvi</string>
+    <string name="settings_webhook_export_disabled_hint">Omogoči za pošiljanje meritev na URL po meri</string>
+    <string name="settings_webhook_export_url_label">Webhook URL</string>
+    <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
+    <string name="settings_webhook_export_save_url">Shrani URL</string>
+    <string name="settings_webhook_export_test_button">Pošlji testno zahtevo</string>
+
+    <!-- InfluxDB Export Settings -->
+    <string name="settings_influxdb_export_title">InfluxDB izvoz</string>
+    <string name="settings_influxdb_export_enable_label">Omogoči izvoz InfluxDB</string>
+    <string name="settings_influxdb_export_enabled_hint">Line Protocol POST se pošlje ob vsaki novi meritvi</string>
+    <string name="settings_influxdb_export_disabled_hint">Omogočite za pošiljanje meritev neposredno v InfluxDB</string>
+    <string name="settings_influxdb_version_label">Različica InfluxDB</string>
+    <string name="settings_influxdb_host_label">URL gostitelja</string>
+    <string name="settings_influxdb_host_placeholder">http://192.168.1.100:8086</string>
+    <string name="settings_influxdb_database_label">Baza podatkov (v1) / Bucket (v2)</string>
+    <string name="settings_influxdb_measurement_label">Ime meritve</string>
+    <string name="settings_influxdb_username_label">Uporabniško ime (neobvezno)</string>
+    <string name="settings_influxdb_password_label">Geslo (neobvezno)</string>
+    <string name="settings_influxdb_field_mapping_title">Preslikava polj</string>
+    <string name="settings_influxdb_field_mapping_hint">Prilagodite imena polj InfluxDB za obstoječe Grafana nadzorne plošče</string>
+    <string name="settings_influxdb_field_weight_label">Ime polja za težo</string>
+    <string name="settings_influxdb_field_body_fat_label">Ime polja za telesno maščobo</string>
+    <string name="settings_influxdb_field_water_label">Ime polja za vodo</string>
+    <string name="settings_influxdb_field_muscle_label">Ime polja za mišice</string>
+    <string name="settings_influxdb_field_lbm_label">Ime polja za pusto maso</string>
+    <string name="settings_influxdb_field_bone_label">Ime polja za kostno maso</string>
+    <string name="settings_influxdb_field_visceral_fat_label">Ime polja za visceralno maščobo</string>
+    <string name="settings_influxdb_test_button">Pošlji testno točko</string>
+
 </resources>
