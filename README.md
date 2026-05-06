@@ -135,6 +135,79 @@ If you want to help to translate the app in your language please see [here](http
   </tr>
 </table>
 
+# Data Export & Integration :electric_plug:
+
+openScale supports pushing measurements to external services via **Webhook** and **InfluxDB** export, configurable under *Settings → Data Management*.
+
+## Webhook Export
+
+On every new measurement, openScale sends an HTTP POST with a JSON body to a configurable URL. This makes it easy to integrate with any service that accepts webhooks (e.g. Home Assistant, n8n, Supabase, custom APIs).
+
+**JSON payload schema:**
+
+```json
+{
+  "timestamp": 1778076662705,
+  "id": 4,
+  "userId": 1,
+  "weight": 66.5,
+  "body_fat": 13.04,
+  "water": 59.66,
+  "muscle": 44.74,
+  "visceral_fat": 5.00,
+  "bone": 2.58,
+  "lbm": 57.83
+}
+```
+
+The three base fields are always present. All measurement fields are **only included if the scale (or manual entry) provides them** — the exact set depends on what your scale supports.
+
+| Field | Type | Description |
+|---|---|---|
+| `timestamp` | `long` | Unix timestamp in milliseconds |
+| `id` | `int` | Measurement ID |
+| `userId` | `int` | App user ID |
+| `weight` | `float` | Weight in the user's configured unit (kg / lb / st) |
+| `bmi` | `float` | Body mass index |
+| `body_fat` | `float` | Body fat (% or kg/lb/st) |
+| `water` | `float` | Body water (% or kg/lb/st) |
+| `muscle` | `float` | Muscle mass (% or kg/lb/st) |
+| `lbm` | `float` | Lean body mass (kg/lb/st) |
+| `bone` | `float` | Bone mass (kg/lb) |
+| `waist` | `float` | Waist circumference (cm/in) |
+| `whr` | `float` | Waist-to-hip ratio |
+| `whtr` | `float` | Waist-to-height ratio |
+| `hips` | `float` | Hip circumference (cm/in) |
+| `visceral_fat` | `float` | Visceral fat level |
+| `chest` | `float` | Chest circumference (cm/in) |
+| `thigh` | `float` | Thigh circumference (cm/in) |
+| `biceps` | `float` | Biceps circumference (cm/in) |
+| `neck` | `float` | Neck circumference (cm/in) |
+| `caliper_1` / `caliper_2` / `caliper_3` | `float` | Body fat caliper measurements (cm/in) |
+| `caliper` | `float` | Calculated body fat from caliper (%) |
+| `bmr` | `float` | Basal metabolic rate (kcal) |
+| `tdee` | `float` | Total daily energy expenditure (kcal) |
+| `heart_rate` | `int` | Heart rate (bpm) |
+| `calories` | `float` | Calories (kcal) |
+| `comment` | `string` | Optional comment |
+| `custom_<id>` | `float / int / string` | Custom metric with its type ID |
+
+**Test your endpoint with [webhook.site](https://webhook.site)** — create a free temporary URL and paste it into the Webhook URL field to inspect live requests.
+
+## InfluxDB Export
+
+Measurements are sent as [InfluxDB Line Protocol](https://docs.influxdata.com/influxdb/v2/reference/syntax/line-protocol/) via HTTP POST on every new measurement. Both InfluxDB v1 and v2 are supported.
+
+Configure under *Settings → Data Management → InfluxDB Export*:
+- **Host URL** — e.g. `http://192.168.1.100:8086`
+- **Database / Bucket** — target database (v1) or bucket (v2)
+- **Measurement name** — InfluxDB measurement/table name
+- **Field mapping** — customize field names to match existing Grafana dashboards
+
+## Automatic Backups
+
+The app can automatically back up its database on a configurable interval (daily / weekly / monthly) to a folder of your choice. Configure under *Settings → Data Management → Automatic Backups*.
+
 # License :page_facing_up:
 
 openScale is licensed under the GPL v3, see LICENSE file for full notice.

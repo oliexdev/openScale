@@ -692,7 +692,7 @@
     <string name="settings_webhook_export_title">Webhook-export</string>
     <string name="settings_webhook_export_enable_label">Aktivera webhook-export</string>
     <string name="settings_webhook_export_enabled_hint">JSON POST skickas till URL vid varje ny mätning</string>
-    <string name="settings_webhook_export_disabled_hint">Aktivera för att skicka mätningar till en anpassad URL (InfluxDB, Supabase, etc.)</string>
+    <string name="settings_webhook_export_disabled_hint">Aktivera för att skicka mätningar till en anpassad URL</string>
     <string name="settings_webhook_export_url_label">Webhook-URL</string>
     <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
     <string name="settings_webhook_export_save_url">Spara URL</string>

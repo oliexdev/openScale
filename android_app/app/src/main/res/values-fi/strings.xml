@@ -621,7 +621,7 @@
     <string name="settings_webhook_export_title">Webhook-vienti</string>
     <string name="settings_webhook_export_enable_label">Ota webhook-vienti käyttöön</string>
     <string name="settings_webhook_export_enabled_hint">JSON POST lähetetään URL-osoitteeseen jokaisen uuden mittauksen yhteydessä</string>
-    <string name="settings_webhook_export_disabled_hint">Ota käyttöön lähettääksesi mittaukset mukautettuun URL-osoitteeseen (InfluxDB, Supabase jne.)</string>
+    <string name="settings_webhook_export_disabled_hint">Ota käyttöön lähettääksesi mittaukset mukautettuun URL-osoitteeseen</string>
     <string name="settings_webhook_export_url_label">Webhook-URL</string>
     <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
     <string name="settings_webhook_export_save_url">Tallenna URL</string>

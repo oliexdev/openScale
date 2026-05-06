@@ -678,7 +678,7 @@
     <string name="settings_webhook_export_title">Izvoz Webhook</string>
     <string name="settings_webhook_export_enable_label">Omogoči izvoz webhook</string>
     <string name="settings_webhook_export_enabled_hint">JSON POST se pošlje na URL ob vsaki novi meritvi</string>
-    <string name="settings_webhook_export_disabled_hint">Omogoči za pošiljanje meritev na URL po meri (InfluxDB, Supabase itd.)</string>
+    <string name="settings_webhook_export_disabled_hint">Omogoči za pošiljanje meritev na URL po meri</string>
     <string name="settings_webhook_export_url_label">Webhook URL</string>
     <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
     <string name="settings_webhook_export_save_url">Shrani URL</string>

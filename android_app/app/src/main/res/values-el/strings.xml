@@ -182,7 +182,7 @@
     <string name="settings_webhook_export_title">Webhook Export</string>
     <string name="settings_webhook_export_enable_label">Ενεργοποίηση webhook export</string>
     <string name="settings_webhook_export_enabled_hint">JSON POST αποστέλλεται στη διεύθυνση URL για κάθε νέα μέτρηση</string>
-    <string name="settings_webhook_export_disabled_hint">Ενεργοποιήστε για αποστολή μετρήσεων σε προσαρμοσμένο URL (InfluxDB, Supabase, κ.λπ.)</string>
+    <string name="settings_webhook_export_disabled_hint">Ενεργοποιήστε για αποστολή μετρήσεων σε προσαρμοσμένο URL</string>
     <string name="settings_webhook_export_url_label">Webhook URL</string>
     <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
     <string name="settings_webhook_export_save_url">Αποθήκευση URL</string>

@@ -835,7 +835,7 @@
     <string name="settings_webhook_export_title">Webhook-Export</string>
     <string name="settings_webhook_export_enable_label">Webhook-Export aktivieren</string>
     <string name="settings_webhook_export_enabled_hint">JSON POST wird bei jeder neuen Messung an die URL gesendet</string>
-    <string name="settings_webhook_export_disabled_hint">Aktivieren, um Messungen an eine benutzerdefinierte URL zu senden (InfluxDB, Supabase, usw.)</string>
+    <string name="settings_webhook_export_disabled_hint">Aktivieren, um Messungen an eine benutzerdefinierte URL zu senden</string>
     <string name="settings_webhook_export_url_label">Webhook-URL</string>
     <string name="settings_webhook_export_url_placeholder">https://ihr-endpunkt.beispiel.de/daten</string>
     <string name="settings_webhook_export_save_url">URL speichern</string>

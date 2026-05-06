@@ -678,7 +678,7 @@
     <string name="settings_webhook_export_title">Экспорт Webhook</string>
     <string name="settings_webhook_export_enable_label">Включить экспорт webhook</string>
     <string name="settings_webhook_export_enabled_hint">JSON POST отправляется на URL при каждом новом измерении</string>
-    <string name="settings_webhook_export_disabled_hint">Включите для отправки измерений на пользовательский URL (InfluxDB, Supabase и др.)</string>
+    <string name="settings_webhook_export_disabled_hint">Включите для отправки измерений на пользовательский URL</string>
     <string name="settings_webhook_export_url_label">URL Webhook</string>
     <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
     <string name="settings_webhook_export_save_url">Сохранить URL</string>

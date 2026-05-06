@@ -687,7 +687,7 @@
     <string name="settings_webhook_export_title">Webhook 导出</string>
     <string name="settings_webhook_export_enable_label">启用 Webhook 导出</string>
     <string name="settings_webhook_export_enabled_hint">每次新测量时向 URL 发送 JSON POST</string>
-    <string name="settings_webhook_export_disabled_hint">启用以将测量数据发送到自定义 URL（InfluxDB、Supabase 等）</string>
+    <string name="settings_webhook_export_disabled_hint">启用以将测量数据发送到自定义 URL</string>
     <string name="settings_webhook_export_url_label">Webhook URL</string>
     <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
     <string name="settings_webhook_export_save_url">保存 URL</string>

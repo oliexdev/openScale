@@ -692,7 +692,7 @@
     <string name="settings_webhook_export_title">Export Webhook</string>
     <string name="settings_webhook_export_enable_label">Activează exportul webhook</string>
     <string name="settings_webhook_export_enabled_hint">POST JSON trimis la URL la fiecare măsurătoare nouă</string>
-    <string name="settings_webhook_export_disabled_hint">Activează pentru a trimite măsurătorile la un URL personalizat (InfluxDB, Supabase, etc.)</string>
+    <string name="settings_webhook_export_disabled_hint">Activează pentru a trimite măsurătorile la un URL personalizat</string>
     <string name="settings_webhook_export_url_label">URL Webhook</string>
     <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
     <string name="settings_webhook_export_save_url">Salvează URL</string>

@@ -18,7 +18,7 @@
     <string name="settings_webhook_export_title">Webhook Esportazioa</string>
     <string name="settings_webhook_export_enable_label">Gaitu webhook esportazioa</string>
     <string name="settings_webhook_export_enabled_hint">JSON POST URL-ra bidaltzen da neurketa berri bakoitzean</string>
-    <string name="settings_webhook_export_disabled_hint">Gaitu neurketak URL pertsonalizatu batera bidaltzeko (InfluxDB, Supabase, etab.)</string>
+    <string name="settings_webhook_export_disabled_hint">Gaitu neurketak URL pertsonalizatu batera bidaltzeko</string>
     <string name="settings_webhook_export_url_label">Webhook URL</string>
     <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
     <string name="settings_webhook_export_save_url">Gorde URL</string>
