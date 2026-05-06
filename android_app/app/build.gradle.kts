@@ -144,6 +144,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
+    kotlin {
+        compilerOptions {
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+        }
+    }
+
     kapt {
         arguments {
             arg("room.schemaLocation", "$projectDir/schemas")
