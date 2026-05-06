@@ -700,25 +700,25 @@
 
     <!-- InfluxDB Export Settings -->
     <string name="settings_influxdb_export_title">InfluxDB Export</string>
-    <string name="settings_influxdb_export_enable_label">Enable InfluxDB export</string>
-    <string name="settings_influxdb_export_enabled_hint">Line Protocol POST sent on every new measurement</string>
-    <string name="settings_influxdb_export_disabled_hint">Enable to send measurements directly to InfluxDB</string>
-    <string name="settings_influxdb_version_label">InfluxDB Version</string>
-    <string name="settings_influxdb_host_label">Host URL</string>
+    <string name="settings_influxdb_export_enable_label">Activează exportul InfluxDB</string>
+    <string name="settings_influxdb_export_enabled_hint">POST Line Protocol trimis la fiecare nouă măsurătoare</string>
+    <string name="settings_influxdb_export_disabled_hint">Activați pentru a trimite măsurătorile direct la InfluxDB</string>
+    <string name="settings_influxdb_version_label">Versiune InfluxDB</string>
+    <string name="settings_influxdb_host_label">URL gazdă</string>
     <string name="settings_influxdb_host_placeholder">http://192.168.1.100:8086</string>
-    <string name="settings_influxdb_database_label">Database (v1) / Bucket (v2)</string>
-    <string name="settings_influxdb_measurement_label">Measurement name</string>
-    <string name="settings_influxdb_username_label">Username (optional)</string>
-    <string name="settings_influxdb_password_label">Password (optional)</string>
-    <string name="settings_influxdb_field_mapping_title">Field Mapping</string>
-    <string name="settings_influxdb_field_mapping_hint">Customize InfluxDB field names to match your existing Grafana dashboards</string>
-    <string name="settings_influxdb_field_weight_label">Weight field name</string>
-    <string name="settings_influxdb_field_body_fat_label">Body fat field name</string>
-    <string name="settings_influxdb_field_water_label">Water field name</string>
-    <string name="settings_influxdb_field_muscle_label">Muscle field name</string>
-    <string name="settings_influxdb_field_lbm_label">Lean body mass field name</string>
-    <string name="settings_influxdb_field_bone_label">Bone mass field name</string>
-    <string name="settings_influxdb_field_visceral_fat_label">Visceral fat field name</string>
-    <string name="settings_influxdb_test_button">Send Test Point</string>
+    <string name="settings_influxdb_database_label">Bază de date (v1) / Bucket (v2)</string>
+    <string name="settings_influxdb_measurement_label">Numele măsurătorii</string>
+    <string name="settings_influxdb_username_label">Nume utilizator (opțional)</string>
+    <string name="settings_influxdb_password_label">Parolă (opțional)</string>
+    <string name="settings_influxdb_field_mapping_title">Maparea câmpurilor</string>
+    <string name="settings_influxdb_field_mapping_hint">Personalizați numele câmpurilor InfluxDB pentru dashboard-urile Grafana existente</string>
+    <string name="settings_influxdb_field_weight_label">Numele câmpului greutate</string>
+    <string name="settings_influxdb_field_body_fat_label">Numele câmpului grăsime corporală</string>
+    <string name="settings_influxdb_field_water_label">Numele câmpului apă</string>
+    <string name="settings_influxdb_field_muscle_label">Numele câmpului mușchi</string>
+    <string name="settings_influxdb_field_lbm_label">Numele câmpului masă slabă</string>
+    <string name="settings_influxdb_field_bone_label">Numele câmpului masă osoasă</string>
+    <string name="settings_influxdb_field_visceral_fat_label">Numele câmpului grăsime viscerală</string>
+    <string name="settings_influxdb_test_button">Trimite punct de test</string>
 
 </resources>

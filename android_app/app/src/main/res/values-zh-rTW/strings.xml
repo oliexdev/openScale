@@ -111,26 +111,26 @@
     <string name="interval_monthly">Monthly</string>
 
     <!-- InfluxDB Export Settings -->
-    <string name="settings_influxdb_export_title">InfluxDB Export</string>
-    <string name="settings_influxdb_export_enable_label">Enable InfluxDB export</string>
-    <string name="settings_influxdb_export_enabled_hint">Line Protocol POST sent on every new measurement</string>
-    <string name="settings_influxdb_export_disabled_hint">Enable to send measurements directly to InfluxDB</string>
-    <string name="settings_influxdb_version_label">InfluxDB Version</string>
-    <string name="settings_influxdb_host_label">Host URL</string>
+    <string name="settings_influxdb_export_title">InfluxDB 匯出</string>
+    <string name="settings_influxdb_export_enable_label">啟用 InfluxDB 匯出</string>
+    <string name="settings_influxdb_export_enabled_hint">每次新測量時傳送 Line Protocol POST</string>
+    <string name="settings_influxdb_export_disabled_hint">啟用後將測量資料直接傳送至 InfluxDB</string>
+    <string name="settings_influxdb_version_label">InfluxDB 版本</string>
+    <string name="settings_influxdb_host_label">主機 URL</string>
     <string name="settings_influxdb_host_placeholder">http://192.168.1.100:8086</string>
-    <string name="settings_influxdb_database_label">Database (v1) / Bucket (v2)</string>
-    <string name="settings_influxdb_measurement_label">Measurement name</string>
-    <string name="settings_influxdb_username_label">Username (optional)</string>
-    <string name="settings_influxdb_password_label">Password (optional)</string>
-    <string name="settings_influxdb_field_mapping_title">Field Mapping</string>
-    <string name="settings_influxdb_field_mapping_hint">Customize InfluxDB field names to match your existing Grafana dashboards</string>
-    <string name="settings_influxdb_field_weight_label">Weight field name</string>
-    <string name="settings_influxdb_field_body_fat_label">Body fat field name</string>
-    <string name="settings_influxdb_field_water_label">Water field name</string>
-    <string name="settings_influxdb_field_muscle_label">Muscle field name</string>
-    <string name="settings_influxdb_field_lbm_label">Lean body mass field name</string>
-    <string name="settings_influxdb_field_bone_label">Bone mass field name</string>
-    <string name="settings_influxdb_field_visceral_fat_label">Visceral fat field name</string>
-    <string name="settings_influxdb_test_button">Send Test Point</string>
+    <string name="settings_influxdb_database_label">資料庫 (v1) / Bucket (v2)</string>
+    <string name="settings_influxdb_measurement_label">測量名稱</string>
+    <string name="settings_influxdb_username_label">使用者名稱（選填）</string>
+    <string name="settings_influxdb_password_label">密碼（選填）</string>
+    <string name="settings_influxdb_field_mapping_title">欄位對應</string>
+    <string name="settings_influxdb_field_mapping_hint">自訂 InfluxDB 欄位名稱以符合現有的 Grafana 儀表板</string>
+    <string name="settings_influxdb_field_weight_label">體重欄位名稱</string>
+    <string name="settings_influxdb_field_body_fat_label">體脂欄位名稱</string>
+    <string name="settings_influxdb_field_water_label">水分欄位名稱</string>
+    <string name="settings_influxdb_field_muscle_label">肌肉量欄位名稱</string>
+    <string name="settings_influxdb_field_lbm_label">去脂體重欄位名稱</string>
+    <string name="settings_influxdb_field_bone_label">骨量欄位名稱</string>
+    <string name="settings_influxdb_field_visceral_fat_label">內臟脂肪欄位名稱</string>
+    <string name="settings_influxdb_test_button">傳送測試點</string>
 
 </resources>
