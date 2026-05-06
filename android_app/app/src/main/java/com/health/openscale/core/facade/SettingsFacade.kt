@@ -132,6 +132,15 @@ object SettingsPreferenceKeys {
     val WEBHOOK_EXPORT_ENABLED = booleanPreferencesKey("webhook_export_enabled")
     val WEBHOOK_EXPORT_URL = stringPreferencesKey("webhook_export_url")
 
+    // --- InfluxDB Export Settings ---
+    val INFLUXDB_EXPORT_ENABLED = booleanPreferencesKey("influxdb_export_enabled")
+    val INFLUXDB_VERSION = stringPreferencesKey("influxdb_version")
+    val INFLUXDB_HOST = stringPreferencesKey("influxdb_host")
+    val INFLUXDB_DATABASE = stringPreferencesKey("influxdb_database")
+    val INFLUXDB_MEASUREMENT = stringPreferencesKey("influxdb_measurement")
+    val INFLUXDB_USERNAME = stringPreferencesKey("influxdb_username")
+    val INFLUXDB_PASSWORD = stringPreferencesKey("influxdb_password")
+
     // Context strings for screen-specific settings (can be used as prefixes for dynamic keys)
     const val OVERVIEW_SCREEN_CONTEXT = "overview_screen"
     const val GRAPH_SCREEN_CONTEXT = "graph_screen"
@@ -289,6 +298,22 @@ interface SettingsFacade {
 
     val webhookExportUrl: Flow<String?>
     suspend fun setWebhookExportUrl(url: String?)
+
+    // --- InfluxDB Export Settings ---
+    val influxDbExportEnabled: Flow<Boolean>
+    suspend fun setInfluxDbExportEnabled(enabled: Boolean)
+    val influxDbVersion: Flow<String>
+    suspend fun setInfluxDbVersion(version: String)
+    val influxDbHost: Flow<String>
+    suspend fun setInfluxDbHost(host: String)
+    val influxDbDatabase: Flow<String>
+    suspend fun setInfluxDbDatabase(database: String)
+    val influxDbMeasurement: Flow<String>
+    suspend fun setInfluxDbMeasurement(measurement: String)
+    val influxDbUsername: Flow<String>
+    suspend fun setInfluxDbUsername(username: String)
+    val influxDbPassword: Flow<String>
+    suspend fun setInfluxDbPassword(password: String)
 
     // Generic Settings Accessors
     /**
@@ -1073,6 +1098,43 @@ class SettingsFacadeImpl @Inject constructor(private val dataStore: DataStore<Pr
             else preferences.remove(SettingsPreferenceKeys.WEBHOOK_EXPORT_URL)
         }
     }
+
+    // --- InfluxDB Export Settings ---
+    override val influxDbExportEnabled: Flow<Boolean> =
+            observeSetting(SettingsPreferenceKeys.INFLUXDB_EXPORT_ENABLED.name, false)
+    override suspend fun setInfluxDbExportEnabled(enabled: Boolean) =
+            saveSetting(SettingsPreferenceKeys.INFLUXDB_EXPORT_ENABLED.name, enabled)
+
+    override val influxDbVersion: Flow<String> =
+            observeSetting(SettingsPreferenceKeys.INFLUXDB_VERSION.name, "v1")
+    override suspend fun setInfluxDbVersion(version: String) =
+            saveSetting(SettingsPreferenceKeys.INFLUXDB_VERSION.name, version)
+
+    override val influxDbHost: Flow<String> =
+            observeSetting(SettingsPreferenceKeys.INFLUXDB_HOST.name, "")
+    override suspend fun setInfluxDbHost(host: String) =
+            saveSetting(SettingsPreferenceKeys.INFLUXDB_HOST.name, host)
+
+    override val influxDbDatabase: Flow<String> =
+            observeSetting(SettingsPreferenceKeys.INFLUXDB_DATABASE.name, "")
+    override suspend fun setInfluxDbDatabase(database: String) =
+            saveSetting(SettingsPreferenceKeys.INFLUXDB_DATABASE.name, database)
+
+    override val influxDbMeasurement: Flow<String> =
+            observeSetting(SettingsPreferenceKeys.INFLUXDB_MEASUREMENT.name, "koerpergewicht")
+    override suspend fun setInfluxDbMeasurement(measurement: String) =
+            saveSetting(SettingsPreferenceKeys.INFLUXDB_MEASUREMENT.name, measurement)
+
+    override val influxDbUsername: Flow<String> =
+            observeSetting(SettingsPreferenceKeys.INFLUXDB_USERNAME.name, "")
+    override suspend fun setInfluxDbUsername(username: String) =
+            saveSetting(SettingsPreferenceKeys.INFLUXDB_USERNAME.name, username)
+
+    override val influxDbPassword: Flow<String> =
+            observeSetting(SettingsPreferenceKeys.INFLUXDB_PASSWORD.name, "")
+    override suspend fun setInfluxDbPassword(password: String) =
+            saveSetting(SettingsPreferenceKeys.INFLUXDB_PASSWORD.name, password)
+
     override fun <T> observeSetting(keyName: String, defaultValue: T): Flow<T> {
         // LogManager.v(
         //    TAG,

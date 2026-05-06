@@ -258,6 +258,22 @@ fun DataManagementSettingsScreen(
     var webhookUrlDraft by
             rememberSaveable(webhookExportUrl) { mutableStateOf(webhookExportUrl ?: "") }
 
+    // --- InfluxDB Export state ---
+    val influxDbEnabled by settingsViewModel.influxDbExportEnabled.collectAsState()
+    val influxDbVersion by settingsViewModel.influxDbVersion.collectAsState()
+    val influxDbHost by settingsViewModel.influxDbHost.collectAsState()
+    val influxDbDatabase by settingsViewModel.influxDbDatabase.collectAsState()
+    val influxDbMeasurement by settingsViewModel.influxDbMeasurement.collectAsState()
+    val influxDbUsername by settingsViewModel.influxDbUsername.collectAsState()
+    val influxDbPassword by settingsViewModel.influxDbPassword.collectAsState()
+    // Draft states for InfluxDB fields (auto-save on change)
+    var influxHostDraft by rememberSaveable(influxDbHost) { mutableStateOf(influxDbHost) }
+    var influxDatabaseDraft by rememberSaveable(influxDbDatabase) { mutableStateOf(influxDbDatabase) }
+    var influxMeasurementDraft by rememberSaveable(influxDbMeasurement) { mutableStateOf(influxDbMeasurement) }
+    var influxUsernameDraft by rememberSaveable(influxDbUsername) { mutableStateOf(influxDbUsername) }
+    var influxPasswordDraft by rememberSaveable(influxDbPassword) { mutableStateOf(influxDbPassword) }
+
+
     var activeSafActionUserId by remember { mutableStateOf<Int?>(null) }
 
     val exportCsvLauncher =
@@ -887,6 +903,156 @@ fun DataManagementSettingsScreen(
                 ) {
                     Icon(Icons.Filled.Send, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
                     Text(stringResource(R.string.settings_webhook_export_test_button))
+                }
+            }
+        }
+
+        // --- InfluxDB Export Section ---
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                stringResource(R.string.settings_influxdb_export_title),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        item {
+            SettingsCardItem(
+                label = stringResource(R.string.settings_influxdb_export_enable_label),
+                supportingText = stringResource(
+                    if (influxDbEnabled) R.string.settings_influxdb_export_enabled_hint
+                    else R.string.settings_influxdb_export_disabled_hint
+                ),
+                onClick = { settingsViewModel.setInfluxDbExportEnabled(!influxDbEnabled) },
+                customLeadingContent = {
+                    Icon(
+                        Icons.Filled.CloudUpload,
+                        contentDescription = null,
+                        tint = if (influxDbEnabled) MaterialTheme.colorScheme.primary
+                               else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                trailingContent = {
+                    Switch(
+                        checked = influxDbEnabled,
+                        onCheckedChange = { settingsViewModel.setInfluxDbExportEnabled(it) }
+                    )
+                }
+            )
+        }
+
+        if (influxDbEnabled) {
+            // Version picker
+            item {
+                Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            stringResource(R.string.settings_influxdb_version_label),
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Row(
+                            modifier = Modifier.selectableGroup().fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            listOf("v1", "v2").forEach { version ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .selectable(
+                                            selected = influxDbVersion == version,
+                                            onClick = { settingsViewModel.setInfluxDbVersion(version) }
+                                        )
+                                        .padding(end = 8.dp)
+                                ) {
+                                    RadioButton(
+                                        selected = influxDbVersion == version,
+                                        onClick = { settingsViewModel.setInfluxDbVersion(version) }
+                                    )
+                                    Text(version, modifier = Modifier.padding(start = 4.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Host
+            item {
+                OutlinedTextField(
+                    value = influxHostDraft,
+                    onValueChange = { influxHostDraft = it; settingsViewModel.setInfluxDbHost(it) },
+                    label = { Text(stringResource(R.string.settings_influxdb_host_label)) },
+                    placeholder = { Text(stringResource(R.string.settings_influxdb_host_placeholder)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Next),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                )
+            }
+
+            // Database / Bucket
+            item {
+                OutlinedTextField(
+                    value = influxDatabaseDraft,
+                    onValueChange = { influxDatabaseDraft = it; settingsViewModel.setInfluxDbDatabase(it) },
+                    label = { Text(stringResource(R.string.settings_influxdb_database_label)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                )
+            }
+
+            // Measurement name
+            item {
+                OutlinedTextField(
+                    value = influxMeasurementDraft,
+                    onValueChange = { influxMeasurementDraft = it; settingsViewModel.setInfluxDbMeasurement(it) },
+                    label = { Text(stringResource(R.string.settings_influxdb_measurement_label)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                )
+            }
+
+            // Username + Password in a row
+                        item {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = influxUsernameDraft,
+                        onValueChange = { influxUsernameDraft = it; settingsViewModel.setInfluxDbUsername(it) },
+                        label = { Text(stringResource(R.string.settings_influxdb_username_label)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                        modifier = Modifier.weight(1f).padding(vertical = 4.dp)
+                    )
+                    OutlinedTextField(
+                        value = influxPasswordDraft,
+                        onValueChange = { influxPasswordDraft = it; settingsViewModel.setInfluxDbPassword(it) },
+                        label = { Text(stringResource(R.string.settings_influxdb_password_label)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
+                        modifier = Modifier.weight(1f).padding(vertical = 4.dp)
+                    )
+                }
+            }
+
+            // Test button
+            item {
+                TextButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            val result = settingsViewModel.sendTestInfluxDbAndGetResult()
+                            Toast.makeText(context, result, Toast.LENGTH_LONG).show()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 8.dp)
+                ) {
+                    Icon(Icons.Filled.CloudUpload, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
+                    Text(stringResource(R.string.settings_influxdb_test_button))
                 }
             }
         }

@@ -31,6 +31,7 @@ import com.health.openscale.core.facade.DataManagementFacade
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
+import com.health.openscale.core.usecase.InfluxDbExportUseCases
 import com.health.openscale.core.usecase.WebhookExportUseCases
 import com.health.openscale.core.usecase.ImportReport
 import com.health.openscale.core.usecase.ReminderUseCase
@@ -66,7 +67,8 @@ constructor(
         private val measurementFacade: MeasurementFacade,
         private val reminderUseCase: ReminderUseCase,
         private val settingsFacade: SettingsFacade,
-        private val webhookExportUseCases: WebhookExportUseCases
+        private val webhookExportUseCases: WebhookExportUseCases,
+        private val influxDbExportUseCases: InfluxDbExportUseCases
 ) : ViewModel() {
 
     companion object {
@@ -246,6 +248,46 @@ constructor(
 
     suspend fun sendTestWebhookAndGetResult(url: String): String =
         webhookExportUseCases.sendTestRequest(url)
+
+    // --- InfluxDB Export ---
+    val influxDbExportEnabled = settingsFacade.influxDbExportEnabled.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+    val influxDbVersion = settingsFacade.influxDbVersion.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), "v1")
+    val influxDbHost = settingsFacade.influxDbHost.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), "")
+    val influxDbDatabase = settingsFacade.influxDbDatabase.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), "")
+    val influxDbMeasurement = settingsFacade.influxDbMeasurement.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), "koerpergewicht")
+    val influxDbUsername = settingsFacade.influxDbUsername.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), "")
+    val influxDbPassword = settingsFacade.influxDbPassword.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5_000), "")
+
+    fun setInfluxDbExportEnabled(enabled: Boolean) {
+        viewModelScope.launch { settingsFacade.setInfluxDbExportEnabled(enabled) }
+    }
+    fun setInfluxDbVersion(version: String) {
+        viewModelScope.launch { settingsFacade.setInfluxDbVersion(version) }
+    }
+    fun setInfluxDbHost(host: String) {
+        viewModelScope.launch { settingsFacade.setInfluxDbHost(host) }
+    }
+    fun setInfluxDbDatabase(database: String) {
+        viewModelScope.launch { settingsFacade.setInfluxDbDatabase(database) }
+    }
+    fun setInfluxDbMeasurement(measurement: String) {
+        viewModelScope.launch { settingsFacade.setInfluxDbMeasurement(measurement) }
+    }
+    fun setInfluxDbUsername(username: String) {
+        viewModelScope.launch { settingsFacade.setInfluxDbUsername(username) }
+    }
+    fun setInfluxDbPassword(password: String) {
+        viewModelScope.launch { settingsFacade.setInfluxDbPassword(password) }
+    }
+    suspend fun sendTestInfluxDbAndGetResult(): String = influxDbExportUseCases.sendTestRequest()
+
     fun startExportProcess() {
         viewModelScope.launch {
             val users = allUsers.value

@@ -48,6 +48,7 @@ constructor(
         private val settingsFacade: SettingsFacade,
         private val sync: SyncUseCases,
         private val webhookExport: WebhookExportUseCases,
+        private val influxDbExport: InfluxDbExportUseCases,
         private val transformation: MeasurementTransformationUseCase,
         private val databaseRepository: DatabaseRepository
 ) {
@@ -91,6 +92,7 @@ constructor(
                     "com.health.openscale.sync.debug"
             )
             webhookExport.exportOnInsert(measurementWithId, finalValues)
+            influxDbExport.exportOnInsert(measurementWithId, finalValues)
 
             MeasurementWidget.refreshAll(appContext)
 
