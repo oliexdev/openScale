@@ -673,4 +673,14 @@
     <string name="s400_bind_key_description">Xiaomi S400スケールの復号にはBLEバインドキーが必要です。Xiaomi Cloud Tokens Extractorツールを使用して、このキーをXiaomi Cloudから抽出してください。</string>
     <string name="s400_bind_key_error">バインドキーは32桁の16進文字でなければなりません</string>
     <string name="bt_s400_missing_bind_key">s400: バインドキーが設定されていません。Bluetooth設定に移動してBLEキーを入力してください。</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Webhookエクスポート</string>
+    <string name="settings_webhook_export_enable_label">Webhookエクスポートを有効にする</string>
+    <string name="settings_webhook_export_enabled_hint">新しい測定ごとにJSON POSTがURLに送信されます</string>
+    <string name="settings_webhook_export_disabled_hint">カスタムURL（InfluxDB、Supabaseなど）に測定値を送信するために有効にする</string>
+    <string name="settings_webhook_export_url_label">Webhook URL</string>
+    <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
+    <string name="settings_webhook_export_save_url">URLを保存</string>
+    <string name="settings_webhook_export_test_button">テストリクエストを送信</string>
 </resources>

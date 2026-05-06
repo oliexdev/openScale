@@ -616,4 +616,14 @@
     <string name="bt_sbf72_choice_slot_other_user">P%1$d: %2$s:n käytössä (Otatko haltuusi?)</string>
     <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Varattu (Ei linkitetty)</string>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d: Luo \'%2$s\' täällä</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Webhook-vienti</string>
+    <string name="settings_webhook_export_enable_label">Ota webhook-vienti käyttöön</string>
+    <string name="settings_webhook_export_enabled_hint">JSON POST lähetetään URL-osoitteeseen jokaisen uuden mittauksen yhteydessä</string>
+    <string name="settings_webhook_export_disabled_hint">Ota käyttöön lähettääksesi mittaukset mukautettuun URL-osoitteeseen (InfluxDB, Supabase jne.)</string>
+    <string name="settings_webhook_export_url_label">Webhook-URL</string>
+    <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
+    <string name="settings_webhook_export_save_url">Tallenna URL</string>
+    <string name="settings_webhook_export_test_button">Lähetä testipyyntö</string>
 </resources>

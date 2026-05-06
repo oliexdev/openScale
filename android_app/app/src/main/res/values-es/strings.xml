@@ -687,4 +687,14 @@
     <string name="settings_appearance_title">Apariencia</string>
     <string name="settings_dynamic_color_label">Colores dinámicos</string>
     <string name="settings_high_contrast_label">Alto contraste</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Exportación Webhook</string>
+    <string name="settings_webhook_export_enable_label">Activar exportación webhook</string>
+    <string name="settings_webhook_export_enabled_hint">POST JSON enviado a la URL en cada nueva medición</string>
+    <string name="settings_webhook_export_disabled_hint">Activar para enviar mediciones a una URL personalizada (InfluxDB, Supabase, etc.)</string>
+    <string name="settings_webhook_export_url_label">URL del Webhook</string>
+    <string name="settings_webhook_export_url_placeholder">https://su-endpoint.ejemplo.com/datos</string>
+    <string name="settings_webhook_export_save_url">Guardar URL</string>
+    <string name="settings_webhook_export_test_button">Enviar solicitud de prueba</string>
 </resources>

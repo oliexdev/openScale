@@ -29,7 +29,9 @@ import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.User
 import com.health.openscale.core.facade.DataManagementFacade
 import com.health.openscale.core.facade.MeasurementFacade
+import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
+import com.health.openscale.core.usecase.WebhookExportUseCases
 import com.health.openscale.core.usecase.ImportReport
 import com.health.openscale.core.usecase.ReminderUseCase
 import com.health.openscale.core.utils.LogManager
@@ -55,12 +57,16 @@ import kotlinx.coroutines.launch
  * - Measurement types: [MeasurementFacade]
  */
 @HiltViewModel
-class SettingsViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val userFacade: UserFacade,
-    private val dataManagementFacade: DataManagementFacade,
-    private val measurementFacade: MeasurementFacade,
-    private val reminderUseCase: ReminderUseCase
+class SettingsViewModel
+@Inject
+constructor(
+        @ApplicationContext private val context: Context,
+        private val userFacade: UserFacade,
+        private val dataManagementFacade: DataManagementFacade,
+        private val measurementFacade: MeasurementFacade,
+        private val reminderUseCase: ReminderUseCase,
+        private val settingsFacade: SettingsFacade,
+        private val webhookExportUseCases: WebhookExportUseCases
 ) : ViewModel() {
 
     companion object {
@@ -68,27 +74,32 @@ class SettingsViewModel @Inject constructor(
 
         const val ACTION_ID_EXPORT_USER_DATA = "export_user_data"
         const val ACTION_ID_IMPORT_USER_DATA = "import_user_data"
-        const val ACTION_ID_BACKUP_DB       = "backup_database"
-        const val ACTION_ID_RESTORE_DB      = "restore_database"
+        const val ACTION_ID_BACKUP_DB = "backup_database"
+        const val ACTION_ID_RESTORE_DB = "restore_database"
     }
 
     // --- Snackbar ---
-    private val _snackbarEvents = MutableSharedFlow<SnackbarEvent>(replay = 0, extraBufferCapacity = 1)
+    private val _snackbarEvents =
+            MutableSharedFlow<SnackbarEvent>(replay = 0, extraBufferCapacity = 1)
     val snackbarEvents = _snackbarEvents.asSharedFlow()
 
     private suspend fun showSnackbar(
-        resId: Int,
-        args: List<Any> = emptyList(),
-        duration: SnackbarDuration = SnackbarDuration.Short
+            resId: Int,
+            args: List<Any> = emptyList(),
+            duration: SnackbarDuration = SnackbarDuration.Short
     ) {
         _snackbarEvents.emit(
-            SnackbarEvent(messageResId = resId, messageFormatArgs = args, duration = duration)
+                SnackbarEvent(messageResId = resId, messageFormatArgs = args, duration = duration)
         )
     }
 
     // --- SAF events to the UI ---
     sealed class SafEvent {
-        data class RequestCreateFile(val suggestedName: String, val actionId: String, val userId: Int) : SafEvent()
+        data class RequestCreateFile(
+                val suggestedName: String,
+                val actionId: String,
+                val userId: Int
+        ) : SafEvent()
         data class RequestOpenFile(val actionId: String, val userId: Int) : SafEvent()
     }
     private val _safEvent = MutableSharedFlow<SafEvent>()
@@ -112,12 +123,14 @@ class SettingsViewModel @Inject constructor(
     val isLoadingDeletion: StateFlow<Boolean> = _isLoadingDeletion.asStateFlow()
 
     private val _isLoadingEntireDatabaseDeletion = MutableStateFlow(false)
-    val isLoadingEntireDatabaseDeletion: StateFlow<Boolean> = _isLoadingEntireDatabaseDeletion.asStateFlow()
+    val isLoadingEntireDatabaseDeletion: StateFlow<Boolean> =
+            _isLoadingEntireDatabaseDeletion.asStateFlow()
 
     // --- Users (UserFacade) ---
     val allUsers: StateFlow<List<User>> =
-        userFacade.observeAllUsers()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+            userFacade
+                    .observeAllUsers()
+                    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     suspend fun addUser(user: User): Long {
         return try {
@@ -152,19 +165,39 @@ class SettingsViewModel @Inject constructor(
 
     // --- Auto-backup (DataManagementFacade) ---
     val autoBackupEnabled =
-        dataManagementFacade.isAutoBackupEnabled.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+            dataManagementFacade.isAutoBackupEnabled.stateIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(5_000),
+                    false
+            )
 
     val autoBackupLocationUri =
-        dataManagementFacade.autoBackupTargetUri.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+            dataManagementFacade.autoBackupTargetUri.stateIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(5_000),
+                    null
+            )
 
     val autoBackupInterval =
-        dataManagementFacade.autoBackupInterval.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), BackupInterval.WEEKLY)
+            dataManagementFacade.autoBackupInterval.stateIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(5_000),
+                    BackupInterval.WEEKLY
+            )
 
     val autoBackupCreateNewFile =
-        dataManagementFacade.isAutoBackupNewFileMode.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
+            dataManagementFacade.isAutoBackupNewFileMode.stateIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(5_000),
+                    true
+            )
 
     val autoBackupLastSuccessfulTimestamp =
-        dataManagementFacade.autoBackupLastSuccessTimestamp.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0L)
+            dataManagementFacade.autoBackupLastSuccessTimestamp.stateIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(5_000),
+                    0L
+            )
 
     fun setAutoBackupEnabled(enabled: Boolean) {
         viewModelScope.launch { dataManagementFacade.setAutoBackupEnabled(enabled) }
@@ -182,7 +215,37 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { dataManagementFacade.setAutoBackupNewFileMode(createNew) }
     }
 
-    // --- CSV import/export ---
+    // --- Webhook Export ---
+    val webhookExportEnabled =
+            settingsFacade.webhookExportEnabled.stateIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(5_000),
+                    false
+            )
+
+    val webhookExportUrl =
+            settingsFacade.webhookExportUrl.stateIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(5_000),
+                    null
+            )
+
+    fun setWebhookExportEnabled(enabled: Boolean) {
+        viewModelScope.launch { settingsFacade.setWebhookExportEnabled(enabled) }
+    }
+
+    fun setWebhookExportUrl(url: String?) {
+        viewModelScope.launch { settingsFacade.setWebhookExportUrl(url) }
+    }
+
+    fun sendTestWebhook(url: String) {
+        viewModelScope.launch {
+            webhookExportUseCases.sendTestRequest(url)
+        }
+    }
+
+    suspend fun sendTestWebhookAndGetResult(url: String): String =
+        webhookExportUseCases.sendTestRequest(url)
     fun startExportProcess() {
         viewModelScope.launch {
             val users = allUsers.value
@@ -195,11 +258,11 @@ class SettingsViewModel @Inject constructor(
                     val safeName = user.name.replace("\\s+".toRegex(), "_").take(20)
                     val suggested = "openScale_export_${safeName}.csv"
                     _safEvent.emit(
-                        SafEvent.RequestCreateFile(
-                            suggested,
-                            ACTION_ID_EXPORT_USER_DATA,
-                            user.id
-                        )
+                            SafEvent.RequestCreateFile(
+                                    suggested,
+                                    ACTION_ID_EXPORT_USER_DATA,
+                                    user.id
+                            )
                     )
                 }
                 else -> {
@@ -213,12 +276,18 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoadingExport.value = true
             try {
-                val rows = dataManagementFacade.exportUserToCsv(userId, uri, contentResolver).getOrThrow()
+                val rows =
+                        dataManagementFacade
+                                .exportUserToCsv(userId, uri, contentResolver)
+                                .getOrThrow()
                 if (rows > 0) showSnackbar(R.string.export_successful)
                 else showSnackbar(R.string.export_error_no_exportable_values)
             } catch (e: Exception) {
                 LogManager.e(TAG, "CSV export error", e)
-                showSnackbar(R.string.export_error_generic, listOf(e.localizedMessage ?: "Unknown error"))
+                showSnackbar(
+                        R.string.export_error_generic,
+                        listOf(e.localizedMessage ?: "Unknown error")
+                )
             } finally {
                 _isLoadingExport.value = false
             }
@@ -234,12 +303,7 @@ class SettingsViewModel @Inject constructor(
                 }
                 1 -> {
                     val user = users.first()
-                    _safEvent.emit(
-                        SafEvent.RequestOpenFile(
-                            ACTION_ID_IMPORT_USER_DATA,
-                            user.id
-                        )
-                    )
+                    _safEvent.emit(SafEvent.RequestOpenFile(ACTION_ID_IMPORT_USER_DATA, user.id))
                 }
                 else -> {
                     _showUserSelectionDialogForImport.value = true
@@ -248,26 +312,53 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-
     fun performCsvImport(userId: Int, uri: Uri, contentResolver: ContentResolver) {
         viewModelScope.launch {
             _isLoadingImport.value = true
             try {
-                val report: ImportReport = dataManagementFacade.importUserFromCsv(userId, uri, contentResolver).getOrThrow()
+                val report: ImportReport =
+                        dataManagementFacade
+                                .importUserFromCsv(userId, uri, contentResolver)
+                                .getOrThrow()
                 val details = buildString {
                     val parts = mutableListOf<String>()
 
                     if (report.ignoredMeasurementsCount > 0) {
-                        parts.add(context.getString(R.string.import_summary_ignored_duplicated_timestamp, report.ignoredMeasurementsCount).removeSuffix("."))
+                        parts.add(
+                                context.getString(
+                                                R.string
+                                                        .import_summary_ignored_duplicated_timestamp,
+                                                report.ignoredMeasurementsCount
+                                        )
+                                        .removeSuffix(".")
+                        )
                     }
                     if (report.linesSkippedMissingDate > 0) {
-                        parts.add(context.getString(R.string.import_summary_skipped_missing_dates, report.linesSkippedMissingDate).removeSuffix("."))
+                        parts.add(
+                                context.getString(
+                                                R.string.import_summary_skipped_missing_dates,
+                                                report.linesSkippedMissingDate
+                                        )
+                                        .removeSuffix(".")
+                        )
                     }
                     if (report.linesSkippedDateParseError > 0) {
-                        parts.add(context.getString(R.string.import_summary_skipped_date_parse_errors, report.linesSkippedDateParseError).removeSuffix("."))
+                        parts.add(
+                                context.getString(
+                                                R.string.import_summary_skipped_date_parse_errors,
+                                                report.linesSkippedDateParseError
+                                        )
+                                        .removeSuffix(".")
+                        )
                     }
                     if (report.valuesSkippedParseError > 0) {
-                        parts.add(context.getString(R.string.import_summary_values_skipped_parse_errors, report.valuesSkippedParseError).removeSuffix("."))
+                        parts.add(
+                                context.getString(
+                                                R.string.import_summary_values_skipped_parse_errors,
+                                                report.valuesSkippedParseError
+                                        )
+                                        .removeSuffix(".")
+                        )
                     }
 
                     if (parts.isNotEmpty()) {
@@ -277,12 +368,21 @@ class SettingsViewModel @Inject constructor(
                     }
                 }
                 if (details.isNotEmpty())
-                    showSnackbar(R.string.import_successful_records_with_details, listOf(report.importedMeasurementsCount, details))
+                        showSnackbar(
+                                R.string.import_successful_records_with_details,
+                                listOf(report.importedMeasurementsCount, details)
+                        )
                 else
-                    showSnackbar(R.string.import_successful_records, listOf(report.importedMeasurementsCount))
+                        showSnackbar(
+                                R.string.import_successful_records,
+                                listOf(report.importedMeasurementsCount)
+                        )
             } catch (e: Exception) {
                 LogManager.e(TAG, "CSV import error", e)
-                showSnackbar(R.string.import_error_generic, listOf(e.localizedMessage ?: "Unknown error"))
+                showSnackbar(
+                        R.string.import_error_generic,
+                        listOf(e.localizedMessage ?: "Unknown error")
+                )
             } finally {
                 _isLoadingImport.value = false
             }
@@ -293,7 +393,9 @@ class SettingsViewModel @Inject constructor(
     fun startDatabaseBackup() {
         viewModelScope.launch {
             val suggestedName = "openscale_backup_${System.currentTimeMillis()}.zip"
-            _safEvent.emit(SafEvent.RequestCreateFile(suggestedName, ACTION_ID_BACKUP_DB, userId = 0))
+            _safEvent.emit(
+                    SafEvent.RequestCreateFile(suggestedName, ACTION_ID_BACKUP_DB, userId = 0)
+            )
         }
     }
 
@@ -305,7 +407,10 @@ class SettingsViewModel @Inject constructor(
                 showSnackbar(R.string.backup_successful)
             } catch (e: Exception) {
                 LogManager.e(TAG, "Backup error", e)
-                showSnackbar(R.string.backup_error_generic, listOf(e.localizedMessage ?: "Unknown error"))
+                showSnackbar(
+                        R.string.backup_error_generic,
+                        listOf(e.localizedMessage ?: "Unknown error")
+                )
             } finally {
                 _isLoadingBackup.value = false
             }
@@ -326,7 +431,10 @@ class SettingsViewModel @Inject constructor(
                 showSnackbar(R.string.restore_successful)
             } catch (e: Exception) {
                 LogManager.e(TAG, "Restore error", e)
-                showSnackbar(R.string.restore_error_generic, listOf(e.localizedMessage ?: "Unknown error"))
+                showSnackbar(
+                        R.string.restore_error_generic,
+                        listOf(e.localizedMessage ?: "Unknown error")
+                )
             } finally {
                 _isLoadingRestore.value = false
             }
@@ -338,76 +446,95 @@ class SettingsViewModel @Inject constructor(
     }
 
     // --- Measurement types (MeasurementFacade) ---
-    fun addMeasurementType(type: MeasurementType) = viewModelScope.launch {
-        try {
-            measurementFacade.addMeasurementType(type).getOrThrow()
-            showSnackbar(R.string.measurement_type_added_successfully, listOf(type.name.orEmpty()))
-        } catch (e: Exception) {
-            LogManager.e(TAG, "addMeasurementType failed", e)
-            showSnackbar(R.string.measurement_type_added_error, listOf(type.name.orEmpty()))
-        }
-    }
-
-    fun updateMeasurementType(type: MeasurementType, showSnackbar: Boolean = true) = viewModelScope.launch {
-        try {
-            measurementFacade.updateMeasurementType(type).getOrThrow()
-            if (showSnackbar) {
-                showSnackbar(
-                    R.string.measurement_type_updated_successfully,
-                    listOf(type.name.orEmpty())
-                )
-            }
-        } catch (e: Exception) {
-            LogManager.e(TAG, "updateMeasurementType failed", e)
-            showSnackbar(R.string.measurement_type_updated_error, listOf(type.name.orEmpty()))
-        }
-    }
-
-    fun deleteMeasurementType(type: MeasurementType) = viewModelScope.launch {
-        try {
-            measurementFacade.deleteMeasurementType(type).getOrThrow()
-            showSnackbar(R.string.measurement_type_deleted_successfully, listOf(type.name.orEmpty()))
-        } catch (e: Exception) {
-            LogManager.e(TAG, "deleteMeasurementType failed", e)
-            showSnackbar(R.string.measurement_type_deleted_error, listOf(type.name.orEmpty()))
-        }
-    }
-
-    fun updateMeasurementTypeWithConversion(
-        originalType: MeasurementType,
-        updatedType: MeasurementType
-    ) = viewModelScope.launch {
-        try {
-            val report = measurementFacade
-                .updateTypeWithUnitConversion(originalType, updatedType)
-                .getOrThrow()
-
-            if (report.attempted) {
-                if (report.updatedCount > 0) {
+    fun addMeasurementType(type: MeasurementType) =
+            viewModelScope.launch {
+                try {
+                    measurementFacade.addMeasurementType(type).getOrThrow()
                     showSnackbar(
-                        R.string.measurement_type_updated_and_values_converted_successfully,
-                        listOf(updatedType.name.orEmpty(), report.updatedCount)
+                            R.string.measurement_type_added_successfully,
+                            listOf(type.name.orEmpty())
                     )
-                } else {
+                } catch (e: Exception) {
+                    LogManager.e(TAG, "addMeasurementType failed", e)
+                    showSnackbar(R.string.measurement_type_added_error, listOf(type.name.orEmpty()))
+                }
+            }
+
+    fun updateMeasurementType(type: MeasurementType, showSnackbar: Boolean = true) =
+            viewModelScope.launch {
+                try {
+                    measurementFacade.updateMeasurementType(type).getOrThrow()
+                    if (showSnackbar) {
+                        showSnackbar(
+                                R.string.measurement_type_updated_successfully,
+                                listOf(type.name.orEmpty())
+                        )
+                    }
+                } catch (e: Exception) {
+                    LogManager.e(TAG, "updateMeasurementType failed", e)
                     showSnackbar(
-                        R.string.measurement_type_updated_unit_changed_no_values_converted,
-                        listOf(updatedType.name.orEmpty())
+                            R.string.measurement_type_updated_error,
+                            listOf(type.name.orEmpty())
                     )
                 }
-            } else {
-                showSnackbar(
-                    R.string.measurement_type_updated_successfully,
-                    listOf(updatedType.name.orEmpty())
-                )
             }
-        } catch (e: Exception) {
-            LogManager.e(TAG, "updateMeasurementTypeWithConversion failed", e)
-            showSnackbar(
-                R.string.measurement_type_update_error_conversion_failed,
-                listOf(updatedType.name.orEmpty())
-            )
-        }
-    }
+
+    fun deleteMeasurementType(type: MeasurementType) =
+            viewModelScope.launch {
+                try {
+                    measurementFacade.deleteMeasurementType(type).getOrThrow()
+                    showSnackbar(
+                            R.string.measurement_type_deleted_successfully,
+                            listOf(type.name.orEmpty())
+                    )
+                } catch (e: Exception) {
+                    LogManager.e(TAG, "deleteMeasurementType failed", e)
+                    showSnackbar(
+                            R.string.measurement_type_deleted_error,
+                            listOf(type.name.orEmpty())
+                    )
+                }
+            }
+
+    fun updateMeasurementTypeWithConversion(
+            originalType: MeasurementType,
+            updatedType: MeasurementType
+    ) =
+            viewModelScope.launch {
+                try {
+                    val report =
+                            measurementFacade
+                                    .updateTypeWithUnitConversion(originalType, updatedType)
+                                    .getOrThrow()
+
+                    if (report.attempted) {
+                        if (report.updatedCount > 0) {
+                            showSnackbar(
+                                    R.string
+                                            .measurement_type_updated_and_values_converted_successfully,
+                                    listOf(updatedType.name.orEmpty(), report.updatedCount)
+                            )
+                        } else {
+                            showSnackbar(
+                                    R.string
+                                            .measurement_type_updated_unit_changed_no_values_converted,
+                                    listOf(updatedType.name.orEmpty())
+                            )
+                        }
+                    } else {
+                        showSnackbar(
+                                R.string.measurement_type_updated_successfully,
+                                listOf(updatedType.name.orEmpty())
+                        )
+                    }
+                } catch (e: Exception) {
+                    LogManager.e(TAG, "updateMeasurementTypeWithConversion failed", e)
+                    showSnackbar(
+                            R.string.measurement_type_update_error_conversion_failed,
+                            listOf(updatedType.name.orEmpty())
+                    )
+                }
+            }
 
     fun togglePinnedState(typeIds: List<Int>) {
         viewModelScope.launch {
@@ -415,7 +542,8 @@ class SettingsViewModel @Inject constructor(
             val allTypes = measurementFacade.getAllMeasurementTypes().first()
             val typesToUpdate = allTypes.filter { it.id in typeIds }
 
-            // Decide the target state based on the majority. If 50% or more are already pinned, unpin all. Otherwise, pin all.
+            // Decide the target state based on the majority. If 50% or more are already pinned,
+            // unpin all. Otherwise, pin all.
             val shouldPin = typesToUpdate.count { it.isPinned } < (typesToUpdate.size / 2.0)
 
             typesToUpdate.forEach { type ->
@@ -426,8 +554,8 @@ class SettingsViewModel @Inject constructor(
             // Show a single snackbar after the batch operation.
             val statusRes = if (shouldPin) R.string.status_pinned else R.string.status_unpinned
             showSnackbar(
-                resId = R.string.batch_update_status_report,
-                args = listOf(typeIds.size, context.getString(statusRes))
+                    resId = R.string.batch_update_status_report,
+                    args = listOf(typeIds.size, context.getString(statusRes))
             )
         }
     }
@@ -448,8 +576,8 @@ class SettingsViewModel @Inject constructor(
             }
             val statusRes = if (shouldEnable) R.string.status_enabled else R.string.status_disabled
             showSnackbar(
-                resId = R.string.batch_update_status_report,
-                args = listOf(typeIds.size, context.getString(statusRes))
+                    resId = R.string.batch_update_status_report,
+                    args = listOf(typeIds.size, context.getString(statusRes))
             )
         }
     }
@@ -460,39 +588,43 @@ class SettingsViewModel @Inject constructor(
             val allTypes = measurementFacade.getAllMeasurementTypes().first()
             val typesToUpdate = allTypes.filter { it.id in typeIds }
 
-            // If 50% or more are already on the right axis, move all to the left. Otherwise, move all to the right.
+            // If 50% or more are already on the right axis, move all to the left. Otherwise, move
+            // all to the right.
             val shouldBeOnRightAxis =
-                typesToUpdate.count { it.isOnRightYAxis } < (typesToUpdate.size / 2.0)
+                    typesToUpdate.count { it.isOnRightYAxis } < (typesToUpdate.size / 2.0)
 
             typesToUpdate.forEach { type ->
                 if (type.isOnRightYAxis != shouldBeOnRightAxis) {
                     updateMeasurementType(
-                        type.copy(isOnRightYAxis = shouldBeOnRightAxis),
-                        showSnackbar = false
+                            type.copy(isOnRightYAxis = shouldBeOnRightAxis),
+                            showSnackbar = false
                     )
                 }
             }
             val statusRes =
-                if (shouldBeOnRightAxis) R.string.status_axis_right else R.string.status_axis_left
+                    if (shouldBeOnRightAxis) R.string.status_axis_right
+                    else R.string.status_axis_left
             showSnackbar(
-                resId = R.string.batch_update_status_report,
-                args = listOf(typeIds.size, context.getString(statusRes))
+                    resId = R.string.batch_update_status_report,
+                    args = listOf(typeIds.size, context.getString(statusRes))
             )
         }
     }
 
     private val _showUserSelectionDialogForDelete = MutableStateFlow(false)
-    val showUserSelectionDialogForDelete: StateFlow<Boolean> = _showUserSelectionDialogForDelete.asStateFlow()
+    val showUserSelectionDialogForDelete: StateFlow<Boolean> =
+            _showUserSelectionDialogForDelete.asStateFlow()
 
     private val _userPendingDeletion = MutableStateFlow<User?>(null)
     val userPendingDeletion: StateFlow<User?> = _userPendingDeletion.asStateFlow()
 
     private val _showDeleteConfirmationDialog = MutableStateFlow(false)
-    val showDeleteConfirmationDialog: StateFlow<Boolean> = _showDeleteConfirmationDialog.asStateFlow()
+    val showDeleteConfirmationDialog: StateFlow<Boolean> =
+            _showDeleteConfirmationDialog.asStateFlow()
 
     private val _showDeleteEntireDatabaseConfirmationDialog = MutableStateFlow(false)
     val showDeleteEntireDatabaseConfirmationDialog: StateFlow<Boolean> =
-        _showDeleteEntireDatabaseConfirmationDialog.asStateFlow()
+            _showDeleteEntireDatabaseConfirmationDialog.asStateFlow()
 
     // Flags
     private val _showUserSelectionDialogForExport = MutableStateFlow(false)
@@ -502,27 +634,41 @@ class SettingsViewModel @Inject constructor(
     val showUserSelectionDialogForImport = _showUserSelectionDialogForImport.asStateFlow()
 
     // Dialog abbrechen
-    fun cancelUserSelectionForExport() { _showUserSelectionDialogForExport.value = false }
-    fun cancelUserSelectionForImport() { _showUserSelectionDialogForImport.value = false }
+    fun cancelUserSelectionForExport() {
+        _showUserSelectionDialogForExport.value = false
+    }
+    fun cancelUserSelectionForImport() {
+        _showUserSelectionDialogForImport.value = false
+    }
 
     // Auswahl übernehmen
-    fun proceedWithExportForUser(userId: Int) = viewModelScope.launch {
-        _showUserSelectionDialogForExport.value = false
-        val user = allUsers.value.firstOrNull { it.id == userId } ?: run {
-            showSnackbar(R.string.export_no_users_available); return@launch
-        }
-        val safeName = user.name.replace("\\s+".toRegex(), "_").take(20)
-        val suggested = "openScale_export_${safeName}.csv"
-        _safEvent.emit(SafEvent.RequestCreateFile(suggested, ACTION_ID_EXPORT_USER_DATA, user.id))
-    }
+    fun proceedWithExportForUser(userId: Int) =
+            viewModelScope.launch {
+                _showUserSelectionDialogForExport.value = false
+                val user =
+                        allUsers.value.firstOrNull { it.id == userId }
+                                ?: run {
+                                    showSnackbar(R.string.export_no_users_available)
+                                    return@launch
+                                }
+                val safeName = user.name.replace("\\s+".toRegex(), "_").take(20)
+                val suggested = "openScale_export_${safeName}.csv"
+                _safEvent.emit(
+                        SafEvent.RequestCreateFile(suggested, ACTION_ID_EXPORT_USER_DATA, user.id)
+                )
+            }
 
-    fun proceedWithImportForUser(userId: Int) = viewModelScope.launch {
-        _showUserSelectionDialogForImport.value = false
-        val user = allUsers.value.firstOrNull { it.id == userId } ?: run {
-            showSnackbar(R.string.import_no_users_available); return@launch
-        }
-        _safEvent.emit(SafEvent.RequestOpenFile(ACTION_ID_IMPORT_USER_DATA, user.id))
-    }
+    fun proceedWithImportForUser(userId: Int) =
+            viewModelScope.launch {
+                _showUserSelectionDialogForImport.value = false
+                val user =
+                        allUsers.value.firstOrNull { it.id == userId }
+                                ?: run {
+                                    showSnackbar(R.string.import_no_users_available)
+                                    return@launch
+                                }
+                _safEvent.emit(SafEvent.RequestOpenFile(ACTION_ID_IMPORT_USER_DATA, user.id))
+            }
 
     // --- User data delete flow ---
     fun initiateDeleteAllUserDataProcess() {
@@ -558,29 +704,32 @@ class SettingsViewModel @Inject constructor(
         _userPendingDeletion.value = null
     }
 
-    fun confirmActualDeletion() = viewModelScope.launch {
-        val user = _userPendingDeletion.value ?: run {
-            showSnackbar(R.string.delete_data_error_no_user_selected)
-            return@launch
-        }
+    fun confirmActualDeletion() =
+            viewModelScope.launch {
+                val user =
+                        _userPendingDeletion.value
+                                ?: run {
+                                    showSnackbar(R.string.delete_data_error_no_user_selected)
+                                    return@launch
+                                }
 
-        _isLoadingDeletion.value = true
-        try {
-            val deletedCount = userFacade.deleteAllMeasurementsForUser(user.id).getOrThrow()
-            if (deletedCount > 0) {
-                showSnackbar(R.string.delete_data_user_successful, listOf(user.name))
-            } else {
-                showSnackbar(R.string.delete_data_user_no_data_found, listOf(user.name))
+                _isLoadingDeletion.value = true
+                try {
+                    val deletedCount = userFacade.deleteAllMeasurementsForUser(user.id).getOrThrow()
+                    if (deletedCount > 0) {
+                        showSnackbar(R.string.delete_data_user_successful, listOf(user.name))
+                    } else {
+                        showSnackbar(R.string.delete_data_user_no_data_found, listOf(user.name))
+                    }
+                } catch (e: Exception) {
+                    LogManager.e(TAG, "Delete all data for user failed", e)
+                    showSnackbar(R.string.delete_data_user_error, listOf(user.name))
+                } finally {
+                    _isLoadingDeletion.value = false
+                    _showDeleteConfirmationDialog.value = false
+                    _userPendingDeletion.value = null
+                }
             }
-        } catch (e: Exception) {
-            LogManager.e(TAG, "Delete all data for user failed", e)
-            showSnackbar(R.string.delete_data_user_error, listOf(user.name))
-        } finally {
-            _isLoadingDeletion.value = false
-            _showDeleteConfirmationDialog.value = false
-            _userPendingDeletion.value = null
-        }
-    }
 
     // --- Whole database delete flow ---
     fun initiateDeleteEntireDatabaseProcess() {
@@ -591,18 +740,19 @@ class SettingsViewModel @Inject constructor(
         _showDeleteEntireDatabaseConfirmationDialog.value = false
     }
 
-    fun confirmDeleteEntireDatabase() = viewModelScope.launch {
-        _isLoadingEntireDatabaseDeletion.value = true
-        try {
-            dataManagementFacade.wipeDatabase().getOrThrow()
+    fun confirmDeleteEntireDatabase() =
+            viewModelScope.launch {
+                _isLoadingEntireDatabaseDeletion.value = true
+                try {
+                    dataManagementFacade.wipeDatabase().getOrThrow()
 
-            showSnackbar(R.string.delete_db_successful, duration = SnackbarDuration.Long)
-        } catch (e: Exception) {
-            LogManager.e(TAG, "Wipe database failed", e)
-            showSnackbar(R.string.delete_db_error, duration = SnackbarDuration.Long)
-        } finally {
-            _isLoadingEntireDatabaseDeletion.value = false
-            _showDeleteEntireDatabaseConfirmationDialog.value = false
-        }
-    }
+                    showSnackbar(R.string.delete_db_successful, duration = SnackbarDuration.Long)
+                } catch (e: Exception) {
+                    LogManager.e(TAG, "Wipe database failed", e)
+                    showSnackbar(R.string.delete_db_error, duration = SnackbarDuration.Long)
+                } finally {
+                    _isLoadingEntireDatabaseDeletion.value = false
+                    _showDeleteEntireDatabaseConfirmationDialog.value = false
+                }
+            }
 }

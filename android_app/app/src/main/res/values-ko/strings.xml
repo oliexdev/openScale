@@ -1,3 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Webhook 내보내기</string>
+    <string name="settings_webhook_export_enable_label">Webhook 내보내기 활성화</string>
+    <string name="settings_webhook_export_enabled_hint">새 측정값마다 URL로 JSON POST가 전송됩니다</string>
+    <string name="settings_webhook_export_disabled_hint">사용자 지정 URL로 측정값을 전송하려면 활성화하세요 (InfluxDB, Supabase 등)</string>
+    <string name="settings_webhook_export_url_label">Webhook URL</string>
+    <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
+    <string name="settings_webhook_export_save_url">URL 저장</string>
+    <string name="settings_webhook_export_test_button">테스트 요청 보내기</string>
 </resources>

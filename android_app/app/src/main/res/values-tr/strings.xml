@@ -154,4 +154,14 @@
     <string name="setting_smoothing_alpha">Alfa</string>
     <string name="setting_smoothing_window_size">Pencere boyutu</string>
     <string name="dialog_message_restore_database_confirmation">Mevcut veritabanının üzerine yedek dosya yazmak istediğinizden emin misiniz? Kaydedilmemiş tüm mevcut veriler kaybolacaktır. Geri yükleme işleminden sonra uygulamanın yeniden başlatılması gerekebilir.</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Webhook Dışa Aktarma</string>
+    <string name="settings_webhook_export_enable_label">Webhook dışa aktarmayı etkinleştir</string>
+    <string name="settings_webhook_export_enabled_hint">Her yeni ölçümde URL'ye JSON POST gönderilir</string>
+    <string name="settings_webhook_export_disabled_hint">Ölçümleri özel bir URL'ye göndermek için etkinleştirin (InfluxDB, Supabase, vb.)</string>
+    <string name="settings_webhook_export_url_label">Webhook URL</string>
+    <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
+    <string name="settings_webhook_export_save_url">URL'yi Kaydet</string>
+    <string name="settings_webhook_export_test_button">Test isteği gönder</string>
 </resources>

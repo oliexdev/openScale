@@ -27,28 +27,30 @@ import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.ui.widget.MeasurementWidget
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withContext
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.first
 
 /**
  * Bundles CRUD-related use cases for measurements.
  *
  * Contains:
  * - [saveMeasurement]: insert or update a measurement and reconcile its values.
- * - [deleteMeasurement]: delete a measurement (and rely on DB constraints to cascade values if configured).
+ * - [deleteMeasurement]: delete a measurement (and rely on DB constraints to cascade values if
+ * configured).
  */
 @Singleton
-class MeasurementCrudUseCases @Inject constructor(
-    @ApplicationContext private val appContext: Context,
-    private val settingsFacade: SettingsFacade,
-    private val sync: SyncUseCases,
-    private val transformation: MeasurementTransformationUseCase,
-    private val databaseRepository: DatabaseRepository
-    ) {
+class MeasurementCrudUseCases
+@Inject
+constructor(
+        @ApplicationContext private val appContext: Context,
+        private val settingsFacade: SettingsFacade,
+        private val sync: SyncUseCases,
+        private val webhookExport: WebhookExportUseCases,
+        private val transformation: MeasurementTransformationUseCase,
+        private val databaseRepository: DatabaseRepository
+) {
     private var lastVibrateTime = 0L
 
     /**
@@ -57,19 +59,20 @@ class MeasurementCrudUseCases @Inject constructor(
      * Rules:
      * - If `measurement.id == 0`: insert measurement, then insert all values for the new id.
      * - If `measurement.id != 0`: update measurement, then
-     *   - delete values that no longer exist in [values],
-     *   - update values that exist (by id),
-     *   - insert values that are new (id == 0).
+     * - delete values that no longer exist in [values],
+     * - update values that exist (by id),
+     * - insert values that are new (id == 0).
      *
-     * @return [Result.success] with the final measurement id (new or existing) on success,
-     * or [Result.failure] on error.
+     * @return [Result.success] with the final measurement id (new or existing) on success, or
+     * [Result.failure] on error.
      */
     suspend fun saveMeasurement(
-        measurement: Measurement,
-        values: List<MeasurementValue>
+            measurement: Measurement,
+            values: List<MeasurementValue>
     ): Result<Int> = runCatching {
         val correctedValues = transformation.applyAmputationCorrection(measurement, values)
-        val finalValues : List<MeasurementValue> = transformation.applySelectedFormulasForMeasurement(measurement, correctedValues)
+        val finalValues: List<MeasurementValue> =
+                transformation.applySelectedFormulasForMeasurement(measurement, correctedValues)
 
         if (measurement.id == 0) {
             // Insert path
@@ -80,9 +83,14 @@ class MeasurementCrudUseCases @Inject constructor(
                 databaseRepository.insertMeasurementValue(v.copy(measurementId = newId))
             }
 
-            sync.triggerSyncInsert(measurementWithId, finalValues,"com.health.openscale.sync")
-            sync.triggerSyncInsert(measurementWithId, finalValues,"com.health.openscale.sync.oss")
-            sync.triggerSyncInsert(measurementWithId, finalValues,"com.health.openscale.sync.debug")
+            sync.triggerSyncInsert(measurementWithId, finalValues, "com.health.openscale.sync")
+            sync.triggerSyncInsert(measurementWithId, finalValues, "com.health.openscale.sync.oss")
+            sync.triggerSyncInsert(
+                    measurementWithId,
+                    finalValues,
+                    "com.health.openscale.sync.debug"
+            )
+            webhookExport.exportOnInsert(measurementWithId, finalValues)
 
             MeasurementWidget.refreshAll(appContext)
 
@@ -105,15 +113,19 @@ class MeasurementCrudUseCases @Inject constructor(
             finalValues.forEach { v ->
                 val exists = existing.any { it.id == v.id && v.id != 0 }
                 if (exists) {
-                    databaseRepository.updateMeasurementValue(v.copy(measurementId = measurement.id))
+                    databaseRepository.updateMeasurementValue(
+                            v.copy(measurementId = measurement.id)
+                    )
                 } else {
-                    databaseRepository.insertMeasurementValue(v.copy(measurementId = measurement.id))
+                    databaseRepository.insertMeasurementValue(
+                            v.copy(measurementId = measurement.id)
+                    )
                 }
             }
 
             sync.triggerSyncUpdate(measurement, finalValues, "com.health.openscale.sync")
-            sync.triggerSyncUpdate(measurement, finalValues,"com.health.openscale.sync.oss")
-            sync.triggerSyncUpdate(measurement, finalValues,"com.health.openscale.sync.debug")
+            sync.triggerSyncUpdate(measurement, finalValues, "com.health.openscale.sync.oss")
+            sync.triggerSyncUpdate(measurement, finalValues, "com.health.openscale.sync.debug")
 
             MeasurementWidget.refreshAll(appContext)
 
@@ -124,14 +136,12 @@ class MeasurementCrudUseCases @Inject constructor(
     /**
      * Deletes the given [measurement].
      *
-     * Note: If value rows aren't configured to cascade-delete in the schema,
-     * the repository is expected to handle value cleanup as needed.
+     * Note: If value rows aren't configured to cascade-delete in the schema, the repository is
+     * expected to handle value cleanup as needed.
      *
      * @return [Result.success] on success or [Result.failure] on error.
      */
-    suspend fun deleteMeasurement(
-        measurement: Measurement
-    ): Result<Unit> = runCatching {
+    suspend fun deleteMeasurement(measurement: Measurement): Result<Unit> = runCatching {
         databaseRepository.deleteMeasurement(measurement)
         sync.triggerSyncDelete(Date(measurement.timestamp), "com.health.openscale.sync")
         sync.triggerSyncDelete(Date(measurement.timestamp), "com.health.openscale.sync.oss")
@@ -158,10 +168,7 @@ class MeasurementCrudUseCases @Inject constructor(
         val vibrator: Vibrator = vm.defaultVibrator
         if (!vibrator.hasVibrator()) return
 
-        val effect = VibrationEffect.createOneShot(
-            500L,
-            255
-        )
+        val effect = VibrationEffect.createOneShot(500L, 255)
         vibrator.vibrate(effect)
     }
 }

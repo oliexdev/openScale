@@ -687,4 +687,14 @@
     <string name="settings_appearance_title">Utseende</string>
     <string name="settings_dynamic_color_label">Dynamiska färger</string>
     <string name="auto_connect_on_startup_title">automatisk anslutning vid uppstart</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Webhook-export</string>
+    <string name="settings_webhook_export_enable_label">Aktivera webhook-export</string>
+    <string name="settings_webhook_export_enabled_hint">JSON POST skickas till URL vid varje ny mätning</string>
+    <string name="settings_webhook_export_disabled_hint">Aktivera för att skicka mätningar till en anpassad URL (InfluxDB, Supabase, etc.)</string>
+    <string name="settings_webhook_export_url_label">Webhook-URL</string>
+    <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
+    <string name="settings_webhook_export_save_url">Spara URL</string>
+    <string name="settings_webhook_export_test_button">Skicka testförfrågan</string>
 </resources>

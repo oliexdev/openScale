@@ -135,4 +135,14 @@
     <string name="measurement_type_hips">ירכיים</string>
     <string name="measurement_type_visceral_fat">שומן בטני</string>
     <string name="measurement_type_chest">חזה</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">ייצוא Webhook</string>
+    <string name="settings_webhook_export_enable_label">הפעל ייצוא webhook</string>
+    <string name="settings_webhook_export_enabled_hint">POST JSON נשלח לכתובת ה-URL בכל מדידה חדשה</string>
+    <string name="settings_webhook_export_disabled_hint">הפעל לשליחת מדידות לכתובת URL מותאמת אישית (InfluxDB, Supabase וכו')</string>
+    <string name="settings_webhook_export_url_label">כתובת URL של Webhook</string>
+    <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
+    <string name="settings_webhook_export_save_url">שמור URL</string>
+    <string name="settings_webhook_export_test_button">שלח בקשת בדיקה</string>
 </resources>

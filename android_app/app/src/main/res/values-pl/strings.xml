@@ -226,4 +226,14 @@
     <string name="formula_bf_deurenberg_1991">Deurenberg (1991)</string>
     <string name="formula_bf_deurenberg_1992">Deurenberg (1992)</string>
     <string name="formula_bf_eddy_1976">Eddy et al. (1976)</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Eksport Webhook</string>
+    <string name="settings_webhook_export_enable_label">Włącz eksport webhook</string>
+    <string name="settings_webhook_export_enabled_hint">POST JSON wysyłany na URL przy każdym nowym pomiarze</string>
+    <string name="settings_webhook_export_disabled_hint">Włącz, aby wysyłać pomiary na niestandardowy URL (InfluxDB, Supabase itp.)</string>
+    <string name="settings_webhook_export_url_label">URL webhooka</string>
+    <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
+    <string name="settings_webhook_export_save_url">Zapisz URL</string>
+    <string name="settings_webhook_export_test_button">Wyślij żądanie testowe</string>
 </resources>

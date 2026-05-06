@@ -221,6 +221,9 @@ dependencies {
     // BouncyCastle for AES-CCM decryption (Xiaomi S400 scale)
     implementation(libs.bouncycastle)
 
+    // OkHttp for webhook export
+    implementation(libs.okhttp)
+
     // Test dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

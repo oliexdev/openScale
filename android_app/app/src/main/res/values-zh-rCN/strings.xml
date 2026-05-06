@@ -682,4 +682,14 @@
     <string name="aggregation_level_week">周</string>
     <string name="aggregation_level_month">月</string>
     <string name="aggregation_level_year">年</string>
+
+    <!-- Webhook Export Settings -->
+    <string name="settings_webhook_export_title">Webhook 导出</string>
+    <string name="settings_webhook_export_enable_label">启用 Webhook 导出</string>
+    <string name="settings_webhook_export_enabled_hint">每次新测量时向 URL 发送 JSON POST</string>
+    <string name="settings_webhook_export_disabled_hint">启用以将测量数据发送到自定义 URL（InfluxDB、Supabase 等）</string>
+    <string name="settings_webhook_export_url_label">Webhook URL</string>
+    <string name="settings_webhook_export_url_placeholder">https://your-endpoint.example.com/data</string>
+    <string name="settings_webhook_export_save_url">保存 URL</string>
+    <string name="settings_webhook_export_test_button">发送测试请求</string>
 </resources>
