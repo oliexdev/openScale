@@ -470,7 +470,7 @@ class SettingsFacadeImpl @Inject constructor(
             val hint        = array[4] as String?
             val manDataJson = array[5] as String?
 
-            if (addr.isNullOrBlank() || name.isNullOrBlank()) {
+            if (addr.isNullOrBlank()) {
                 null
             } else {
                 // Convert to UUID list with stable ordering to keep distinctUntilChanged effective
@@ -491,7 +491,7 @@ class SettingsFacadeImpl @Inject constructor(
                 }
 
                 ScannedDeviceInfo(
-                    name = name,
+                    name = name ?: "",
                     address = addr,
                     rssi = rssi,
                     serviceUuids = uuids,
