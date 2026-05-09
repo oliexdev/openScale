@@ -54,6 +54,7 @@ import com.health.openscale.core.bluetooth.scales.RealmeSmartScaleHandler
 import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
 import com.health.openscale.core.bluetooth.scales.RenphoHandler
 import com.health.openscale.core.bluetooth.scales.RunstarR5Handler
+import com.health.openscale.core.bluetooth.scales.RyFitHandler
 import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler
 import com.health.openscale.core.bluetooth.scales.SenssunHandler
 import com.health.openscale.core.bluetooth.scales.SinocareHandler
@@ -91,6 +92,7 @@ class ScaleFactory @Inject constructor(
 
     // List of modern Kotlin-based device handlers.
     private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
+        RyFitHandler(), // RyFit (云悦) Smart Scale
         RealmeSmartScaleHandler(), // Added Realme handler here
         YunmaiHandler(isMini = false),
         YunmaiHandler(isMini = true),
@@ -199,7 +201,7 @@ class ScaleFactory @Inject constructor(
      * @return A [ScaleCommunicator] instance if a suitable handler or adapter is found, otherwise null.
      */
     fun createCommunicator(deviceInfo: ScannedDeviceInfo): ScaleCommunicator? {
-        val primaryIdentifier = deviceInfo.name ?: "UnknownDevice"
+        val primaryIdentifier = deviceInfo.name ?: "UnknownDevice"  // name 可能已实现为可空
         LogManager.d(TAG, "createCommunicator: Searching for communicator for '${primaryIdentifier}' (${deviceInfo.address}). Handler hint: '${deviceInfo.determinedHandlerDisplayName}'")
 
         // 1. Check if a modern Kotlin handler explicitly supports the device.
