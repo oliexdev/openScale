@@ -17,6 +17,8 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
+import android.os.Handler
+import android.os.Looper
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
@@ -42,6 +44,9 @@ class QNHandler : ScaleDeviceHandler() {
     companion object {
         // Vendor “epoch”: seconds since 2000-01-01 00:00:00 UTC
         private const val SCALE_UNIX_TIMESTAMP_OFFSET = 946_702_800L
+        private const val MAX_STORED_DATA_QUERY_ATTEMPTS = 10
+        private const val STORED_DATA_RETRY_DELAY_MS = 5_000L
+        private const val MAX_STORED_RECORD_AGE_BEFORE_SESSION_SECONDS = 90L
     }
 
     // ---- Services / Characteristics (16-bit UUIDs) ---------------------------
@@ -77,6 +82,12 @@ class QNHandler : ScaleDeviceHandler() {
 
     /** Store the current user to access later when sending configuration. */
     private var currentUser: ScaleUser? = null
+
+    /** Retries the history query if the scale initially reports an empty stored slot. */
+    private val historyRetryHandler = Handler(Looper.getMainLooper())
+    private var historyQueryAttempts = 0
+    private var isConnected = false
+    private var sessionStartedScaleSeconds = 0L
 
     // ---- Capability discovery --------------------------------------------------
 
@@ -117,6 +128,10 @@ class QNHandler : ScaleDeviceHandler() {
         weightScaleFactor = 100.0f
         seenProtocolType = 0x00.toByte()
         hasReceivedProtocolType = false
+        historyQueryAttempts = 0
+        isConnected = true
+        sessionStartedScaleSeconds = (System.currentTimeMillis() / 1000L) - SCALE_UNIX_TIMESTAMP_OFFSET
+        historyRetryHandler.removeCallbacksAndMessages(null)
         currentUser = user
 
         // Generic Access: Device Name
@@ -238,25 +253,10 @@ class QNHandler : ScaleDeviceHandler() {
                     writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, msg2, true)
                 }
 
-                // After 0xA0 responses, send 0x22 query for stored data
-                val queryMsg = byteArrayOf(
-                    0x22, // Opcode
-                    0x06, // Length
-                    seenProtocolType,
-                    0x00, 0x03,
-                    0x00  // Checksum placeholder
-                )
-                queryMsg[queryMsg.lastIndex] = checksum(queryMsg, 0, queryMsg.lastIndex - 1)
-
-                if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
-                    writeTo(SVC_T2, CHR_T2_WRITE_SHARED, queryMsg, true)
-                } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
-                    writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, queryMsg, true)
-                }
+                sendStoredDataQuery("initial 0x21 handshake")
             }
             0x23 -> {
-                // Historical record frame - user data from scale memory
-                logD("QN: received user data frame (0x23)")
+                handleStoredMeasurementFrame(data, user)
             }
             0xA1 -> {
                 // Acknowledgment from scale
@@ -321,29 +321,107 @@ class QNHandler : ScaleDeviceHandler() {
         logD( "QN: weight=$weightKg kg, r1=$r1, r2=$r2 (weight scale factor is = $weightScaleFactor)")
 
         if (weightKg > 0f) {
-            val m = ScaleMeasurement().apply {
-                userId = user.id
-                weight = weightKg
-            }
-
-            // QN body-comp derivation via TrisaBodyAnalyzeLib (vendor-approx model).
-            // Empirical conversion from raw resistance to an “impedance-like” value used by lib.
-            val impedance = if (r1 < 410f) 3.0f else 0.3f * (r1 - 400f)
-
-            val trisa = TrisaBodyAnalyzeLib(
-                if (user.gender.isMale()) 1 else 0,
-                user.age,
-                user.bodyHeight
-            )
-
-            m.fat    = trisa.getFat(weightKg, impedance)
-            m.water  = trisa.getWater(weightKg, impedance)
-            m.muscle = trisa.getMuscle(weightKg, impedance)
-            m.bone   = trisa.getBone(weightKg, impedance)
-
-            publish(snapshot(m))
+            publishQnMeasurement(user, weightKg, r1, "live")
             hasPublishedForThisSession = true
         }
+    }
+
+    /**
+     * 0x23 frame: stored measurement record returned after the 0x22 history query.
+     *
+     * ESCS20MA2 / Renpho-Scale captures show this layout:
+     * - bytes[10,11] = weight, big-endian, /100 kg
+     * - bytes[13,14] = primary resistance, little-endian
+     * - bytes[15,16] = secondary resistance, little-endian
+     *
+     * Bytes[6..9] contain the device timestamp in QN epoch seconds and are used
+     * to avoid importing stale measurements saved before this session.
+     */
+    private fun handleStoredMeasurementFrame(data: ByteArray, user: ScaleUser) {
+        logD("QN: received stored measurement frame (0x23): ${data.toHexPreview(24)}")
+
+        if (hasPublishedForThisSession) {
+            logD("QN: stored frame ignored because a measurement was already published this session")
+            return
+        }
+        if (data.size < 17) {
+            logD("QN: stored frame too short (${data.size}); ignored")
+            scheduleStoredDataRetry("stored frame too short")
+            return
+        }
+
+        val rawWeight = u16be(data[10], data[11])
+        val weightKg = rawWeight / 100.0f
+        val recordScaleSeconds = u32le(data[6], data[7], data[8], data[9])
+        val r1 = u16le(data[13], data[14])
+        val r2 = u16le(data[15], data[16])
+
+        logD("QN: stored candidate weight=$weightKg kg raw=$rawWeight r1=$r1 r2=$r2 recordScaleSeconds=$recordScaleSeconds sessionStartedScaleSeconds=$sessionStartedScaleSeconds")
+
+        if (weightKg <= 5f || weightKg >= 300f) {
+            logD("QN: stored frame rejected: weight out of range")
+            scheduleStoredDataRetry("weight out of range")
+            return
+        }
+        if (recordScaleSeconds + MAX_STORED_RECORD_AGE_BEFORE_SESSION_SECONDS < sessionStartedScaleSeconds) {
+            logD("QN: stored frame rejected: stale record")
+            scheduleStoredDataRetry("stale stored record")
+            return
+        }
+
+        publishQnMeasurement(user, weightKg, r1, "stored")
+        hasPublishedForThisSession = true
+    }
+
+    private fun sendStoredDataQuery(reason: String) {
+        if (!isConnected || hasPublishedForThisSession) {
+            logD("QN: stored data query skipped after $reason; connected=$isConnected published=$hasPublishedForThisSession")
+            return
+        }
+        if (historyQueryAttempts >= MAX_STORED_DATA_QUERY_ATTEMPTS) {
+            logD("QN: stored data query limit reached after $reason")
+            return
+        }
+
+        historyQueryAttempts += 1
+
+        val queryMsg = byteArrayOf(
+            0x22, // Opcode
+            0x06, // Length
+            seenProtocolType,
+            0x00, 0x03,
+            0x00  // Checksum placeholder
+        )
+        queryMsg[queryMsg.lastIndex] = checksum(queryMsg, 0, queryMsg.lastIndex - 1)
+
+        logD("QN: sending stored data query attempt $historyQueryAttempts/$MAX_STORED_DATA_QUERY_ATTEMPTS after $reason: ${queryMsg.toHexPreview(24)}")
+        if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
+            writeTo(SVC_T2, CHR_T2_WRITE_SHARED, queryMsg, true)
+        } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
+            writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, queryMsg, true)
+        } else {
+            logD("QN: stored data query not sent; no known write characteristic is available")
+        }
+    }
+
+    private fun scheduleStoredDataRetry(reason: String) {
+        if (!isConnected || hasPublishedForThisSession) return
+        if (historyQueryAttempts >= MAX_STORED_DATA_QUERY_ATTEMPTS) {
+            logD("QN: not retrying stored data query after $reason; attempt limit reached")
+            return
+        }
+
+        logD("QN: scheduling stored data retry after $reason in ${STORED_DATA_RETRY_DELAY_MS}ms")
+        historyRetryHandler.removeCallbacksAndMessages(null)
+        historyRetryHandler.postDelayed({
+            sendStoredDataQuery("retry after $reason")
+        }, STORED_DATA_RETRY_DELAY_MS)
+    }
+
+    override fun onDisconnected() {
+        isConnected = false
+        currentUser = null
+        historyRetryHandler.removeCallbacksAndMessages(null)
     }
 
     /**
@@ -426,6 +504,38 @@ class QNHandler : ScaleDeviceHandler() {
 
     private fun u16be(a: Byte, b: Byte): Float =
         (((a.toInt() and 0xFF) shl 8) or (b.toInt() and 0xFF)).toFloat()
+
+    private fun u16le(a: Byte, b: Byte): Float =
+        ((a.toInt() and 0xFF) or ((b.toInt() and 0xFF) shl 8)).toFloat()
+
+    private fun u32le(a: Byte, b: Byte, c: Byte, d: Byte): Long =
+        (a.toLong() and 0xFFL) or
+        ((b.toLong() and 0xFFL) shl 8) or
+        ((c.toLong() and 0xFFL) shl 16) or
+        ((d.toLong() and 0xFFL) shl 24)
+
+    private fun publishQnMeasurement(user: ScaleUser, weightKg: Float, r1: Float, source: String) {
+        val m = ScaleMeasurement().apply {
+            userId = user.id
+            weight = weightKg
+        }
+
+        val impedance = if (r1 < 410f) 3.0f else 0.3f * (r1 - 400f)
+
+        val trisa = TrisaBodyAnalyzeLib(
+            if (user.gender.isMale()) 1 else 0,
+            user.age,
+            user.bodyHeight
+        )
+
+        m.fat = trisa.getFat(weightKg, impedance)
+        m.water = trisa.getWater(weightKg, impedance)
+        m.muscle = trisa.getMuscle(weightKg, impedance)
+        m.bone = trisa.getBone(weightKg, impedance)
+
+        logD("QN: publishing $source measurement weight=$weightKg kg r1=$r1 impedance=$impedance")
+        publish(snapshot(m))
+    }
 
     /** Make a defensive snapshot so later mutations don’t affect published data. */
     private fun snapshot(m: ScaleMeasurement) = ScaleMeasurement().also {
