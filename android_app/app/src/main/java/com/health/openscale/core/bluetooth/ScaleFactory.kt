@@ -92,7 +92,7 @@ class ScaleFactory @Inject constructor(
 
     // List of modern Kotlin-based device handlers.
     private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
-        RyFitHandler(), // RyFit (云悦) Smart Scale
+        RyFitHandler(),
         RealmeSmartScaleHandler(), // Added Realme handler here
         YunmaiHandler(isMini = false),
         YunmaiHandler(isMini = true),
@@ -201,7 +201,7 @@ class ScaleFactory @Inject constructor(
      * @return A [ScaleCommunicator] instance if a suitable handler or adapter is found, otherwise null.
      */
     fun createCommunicator(deviceInfo: ScannedDeviceInfo): ScaleCommunicator? {
-        val primaryIdentifier = deviceInfo.name ?: "UnknownDevice"  // name 可能已实现为可空
+        val primaryIdentifier = deviceInfo.name ?: "UnknownDevice"
         LogManager.d(TAG, "createCommunicator: Searching for communicator for '${primaryIdentifier}' (${deviceInfo.address}). Handler hint: '${deviceInfo.determinedHandlerDisplayName}'")
 
         // 1. Check if a modern Kotlin handler explicitly supports the device.
