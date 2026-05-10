@@ -253,8 +253,7 @@ private suspend fun loadDisplayData(
     } else null
 
     // Match Overview flagging logic exactly
-    // 修复：原判断会误伤 lowLimit 为负数的正常评估（如内脏脂肪），改为基于 UNDEFINED 状态判断
-    val noAgeBand = evalResult?.state == EvaluationState.UNDEFINED
+    val noAgeBand = evalResult?.let { it.lowLimit < 0f || it.highLimit < 0f } ?: false
     val plausible = measurementFacade.plausiblePercentRangeFor(targetType.key)
     val outOfPlausibleRange = plausible?.let { current < it.start || current > it.endInclusive }
         ?: (targetType.unit == UnitType.PERCENT && (current < 0f || current > 100f))
