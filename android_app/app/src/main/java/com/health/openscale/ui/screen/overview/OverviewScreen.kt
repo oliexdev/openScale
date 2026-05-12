@@ -1129,8 +1129,7 @@ fun MeasurementRowExpandable(
         )
     }
 
-    // 修复：原判断会误伤 lowLimit 为负数的正常评估（如内脏脂肪），改为基于 UNDEFINED 状态判断
-    val noAgeBand = evalResult?.state == EvaluationState.UNDEFINED
+    val noAgeBand           = evalResult?.let { it.lowLimit < 0f || it.highLimit < 0f } ?: false
     val unitName            = type.unit.displayName
     val plausible           = sharedViewModel.getPlausiblePercentRange(type.key)
     val outOfPlausibleRange = if (numeric == null) false
