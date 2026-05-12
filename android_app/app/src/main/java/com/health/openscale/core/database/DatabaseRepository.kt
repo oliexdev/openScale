@@ -434,15 +434,21 @@ class DatabaseRepository @Inject constructor(
         processBmiCalculation(weightKg, userHeightCm).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.BMI) }
         processWhrCalculation(waistCm, hipsCm).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.WHR) }
         processWhtrCalculation(waistCm, userHeightCm).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.WHTR) }
-        processBmrCalculation(
+        // BMR: when the source device already supplied one (e.g. S400 BIA-based BMR
+        // via FFM), keep it. Mifflin-St Jeor is an anthropometric fallback used
+        // only when no BMR landed on the row. TDEE always derives from whichever
+        // BMR is actually persisted.
+        val bmrTypeId = allGlobalTypes.find { it.key == MeasurementTypeKey.BMR }?.id
+        val existingBmr = bmrTypeId?.let { id ->
+            currentMeasurementValues.find { it.typeId == id }?.floatValue
+        }
+        val bmr = existingBmr ?: processBmrCalculation(
             weightKg = weightKg,
             heightCm = user.heightCm,
             ageYears = ageAtMeasurementYears,
             gender = user.gender
-        ).also { bmr ->
-            saveOrUpdateDerivedValue(bmr, MeasurementTypeKey.BMR)
-            processTDEECalculation(bmr, user.activityLevel).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.TDEE) }
-        }
+        )?.also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.BMR) }
+        processTDEECalculation(bmr, user.activityLevel).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.TDEE) }
 
         processFatCaliperCalculation(
             caliper1Cm = caliper1Cm,
