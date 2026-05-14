@@ -55,6 +55,7 @@ import com.health.openscale.core.bluetooth.scales.RealmeSmartScaleHandler
 import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
 import com.health.openscale.core.bluetooth.scales.RenphoHandler
 import com.health.openscale.core.bluetooth.scales.RunstarR5Handler
+import com.health.openscale.core.bluetooth.scales.RyFitHandler
 import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler
 import com.health.openscale.core.bluetooth.scales.SenssunHandler
 import com.health.openscale.core.bluetooth.scales.SinocareHandler
@@ -92,8 +93,9 @@ class ScaleFactory @Inject constructor(
 
     // List of modern Kotlin-based device handlers.
     private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
+        RyFitHandler(),
         CultSmartScaleProHandler(),
-        RealmeSmartScaleHandler(), // Added Realme handler here
+        RealmeSmartScaleHandler(),
         YunmaiHandler(isMini = false),
         YunmaiHandler(isMini = true),
         TrisaBodyAnalyzeHandler(),
