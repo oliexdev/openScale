@@ -97,8 +97,9 @@ fun AboutScreen(
     val projectHomepageUrl = "https://github.com/oliexdev/openScale"
     val licenseUrl = "https://www.gnu.org/licenses/gpl-3.0.html"
 
-    LaunchedEffect(Unit) {
-        sharedViewModel.setTopBarTitle(context.getString(R.string.about_screen_title))
+    val topBarTitle = stringResource(id = R.string.about_screen_title)
+    LaunchedEffect(key1 = Unit) {
+        sharedViewModel.setTopBarTitle(topBarTitle)
     }
 
     val scrollState = rememberScrollState()
