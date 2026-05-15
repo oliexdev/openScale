@@ -25,6 +25,7 @@
     <application
         android:name=".OpenScaleApp"
         android:allowBackup="true"
+        android:launchMode="singleTask"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="${appIcon}"
