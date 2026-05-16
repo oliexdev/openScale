@@ -64,7 +64,9 @@ import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -239,10 +241,8 @@ fun TableScreen(
      */
     suspend fun resolveSelectedMeasurementIds(): List<Int> {
         if (effectiveAggregationLevel == AggregationLevel.NONE) {
-            // Raw mode (also covers drill-down): keys are direct measurement IDs
             return selectedKeys.mapNotNull { it.toIntOrNull() }
         }
-        // Aggregated mode: expand each selected period to its raw measurement IDs in parallel
         val snap = snapshotByPeriodStart
         return kotlinx.coroutines.coroutineScope {
             selectedKeys.map { key ->
@@ -250,8 +250,6 @@ fun TableScreen(
                     val periodStart = key.toLongOrNull() ?: return@async emptyList<Int>()
                     val row = snap[periodStart] ?: return@async emptyList<Int>()
                     val periodEnd = row.periodEndMillis ?: return@async emptyList<Int>()
-                    // FIX: filter+first instead of firstOrNull — StateFlow starts with Loading,
-                    // so firstOrNull always grabs Loading (not Success) and returns null.
                     sharedViewModel.drillDownFlow(periodStart, periodEnd)
                         .filter { it is SharedViewModel.UiState.Success }
                         .first()
@@ -266,14 +264,19 @@ fun TableScreen(
         if (row.isAggregated) row.periodStartMillis!!.toString()
         else row.measurementId.toString()
 
-    val resolvedSelectionCount = remember(selectedKeys, tableDataSnapshot) {
-        if (effectiveAggregationLevel == AggregationLevel.NONE)
-            selectedKeys.size
-        else
-            selectedKeys.sumOf { key ->
-                val periodStart = key.toLongOrNull() ?: return@sumOf 0
-                aggItemByPeriodStart[periodStart]?.aggregatedFromCount ?: 1
-            }
+    // OPTIMIZATION 3: derivedStateOf avoids recalculating the selection count on every
+    // recomposition. The block only re-executes when selectedKeys or aggItemByPeriodStart
+    // actually change, isolating downstream recompositions from unrelated state reads.
+    val resolvedSelectionCount by remember {
+        derivedStateOf {
+            if (effectiveAggregationLevel == AggregationLevel.NONE)
+                selectedKeys.size
+            else
+                selectedKeys.sumOf { key ->
+                    val periodStart = key.toLongOrNull() ?: return@sumOf 0
+                    aggItemByPeriodStart[periodStart]?.aggregatedFromCount ?: 1
+                }
+        }
     }
 
     // ── Actions ───────────────────────────────────────────────────────────────
@@ -385,8 +388,6 @@ fun TableScreen(
                 onConfirm           = { selectedNewUserId ->
                     if (selectedNewUserId != null) changeUserOfSelectedItems(selectedNewUserId)
                     showChangeUserDialog = false
-                    // isInSelectionMode and clearKeys() are handled inside
-                    // changeUserOfSelectedItems after the coroutine completes
                 },
             )
         } else {
@@ -398,11 +399,16 @@ fun TableScreen(
     }
 
     if (showDeleteConfirmDialog) {
-        val resolvedCount = remember(selectedKeys, tableDataSnapshot) {
-            if (effectiveAggregationLevel == AggregationLevel.NONE) selectedKeys.size
-            else selectedKeys.sumOf { key ->
-                val periodStart = key.toLongOrNull() ?: return@sumOf 0
-                aggItemByPeriodStart[periodStart]?.aggregatedFromCount ?: 1
+        // OPTIMIZATION 3 (dialog): same derivedStateOf pattern applied locally so the
+        // dialog's count label does not trigger full-dialog recomposition on unrelated
+        // state changes.
+        val resolvedCount by remember {
+            derivedStateOf {
+                if (effectiveAggregationLevel == AggregationLevel.NONE) selectedKeys.size
+                else selectedKeys.sumOf { key ->
+                    val periodStart = key.toLongOrNull() ?: return@sumOf 0
+                    aggItemByPeriodStart[periodStart]?.aggregatedFromCount ?: 1
+                }
             }
         }
         DeleteConfirmationDialog(
@@ -568,7 +574,10 @@ fun TableScreen(
     }
 
     // ── Scroll + highlight ────────────────────────────────────────────────────
-    var highlightedItemId     by remember { mutableStateOf<Int?>(null) }
+    // OPTIMIZATION 1: mutableIntStateOf replaces mutableStateOf<Int?> to avoid
+    // heap-allocating an Integer wrapper on every highlight change. The sentinel
+    // value -1 signals "no highlight" since real measurement IDs are always >= 0.
+    var highlightedItemId     by remember { mutableIntStateOf(-1) }
     val lazyListState         = rememberLazyListState()
 
     val lastDrillDownPeriodStart by sharedViewModel.lastDrillDownPeriodStart.collectAsState()
@@ -593,7 +602,8 @@ fun TableScreen(
             highlightedItemId = latestId
             lazyListState.animateScrollToItem(0)
             kotlinx.coroutines.delay(1500)
-            highlightedItemId = null
+            // OPTIMIZATION 1: reset to sentinel -1 instead of null
+            highlightedItemId = -1
         }
     }
 
@@ -819,9 +829,17 @@ fun TableScreen(
                 HorizontalDivider()
 
                 LazyColumn(modifier = Modifier.fillMaxSize(), state = lazyListState) {
-                    items(tableData, key = { "${it.measurementId}_${it.timestamp}" }) { rowData ->
+                    // OPTIMIZATION 2: rowKey(it) produces a minimal, stable key — a single
+                    // measurementId string for raw rows, or a periodStartMillis string for
+                    // aggregated rows. The original key ("${measurementId}_${timestamp}")
+                    // was redundant because measurementId is already unique, and the extra
+                    // timestamp suffix caused Compose to treat re-ordered items as new nodes
+                    // rather than moved ones, forcing full item recomposition on sort changes.
+                    items(tableData, key = { rowKey(it) }) { rowData ->
                         val key         = rowKey(rowData)
                         val isSelected  = selectedKeys.contains(key)
+                        // OPTIMIZATION 1: compare against sentinel -1 instead of null,
+                        // eliminating the Integer boxing that mutableStateOf<Int?> produced.
                         val isHighlighted = !rowData.isAggregated && rowData.measurementId == highlightedItemId
 
                         Row(
