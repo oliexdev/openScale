@@ -419,6 +419,15 @@ enum class MeasurementTypeKey(
     PROTEIN(33, R.string.measurement_type_protein, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     BCM(34, R.string.measurement_type_bcm, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     CUSTOM(99, R.string.measurement_type_custom_default_name, UnitType.entries.toList(), listOf(InputFieldType.FLOAT, InputFieldType.INT, InputFieldType.TEXT, InputFieldType.DATE, InputFieldType.TIME));
+
+    /**
+     * Raw inputs that are persisted for diagnostics or future re-derivation but
+     * have no meaning to end users (e.g. raw BIA impedance bands). Hidden from
+     * the type list in Settings, the widget config picker and bulk-enable
+     * operations. Still written to the DB so processors can re-run with newer
+     * formulas later.
+     */
+    fun isInternal(): Boolean = this == IMPEDANCE || this == IMPEDANCE_LOW
 }
 
 
