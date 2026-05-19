@@ -18,13 +18,18 @@
 package com.health.openscale.core.bluetooth.scales
 
 /**
- * Huawei AH100 body-fat scale.
+ * Huawei CH100 body-fat scale.
  *
- * Same hardware as the [HuaweiCH100Handler]; the two products only differ
- * in the BLE advertisement name. All wire-protocol logic lives in
- * [HuaweiAhCh100ScaleHandler] and is exercised by `HuaweiAhCh100ProtocolTest`.
+ * Same Chipsea CST34M97-based hardware as the [HuaweiAH100Handler]; the two
+ * products only differ in the BLE advertisement name. All wire-protocol
+ * logic lives in [HuaweiAhCh100ScaleHandler].
+ *
+ * This handler restores the v2.5.4 measurement-decoding behaviour after the
+ * 3.x rewrite regressed it (see issues #1206, #1276, #1280). Tests in
+ * `HuaweiAhCh100ProtocolTest` lock the protocol so the regression cannot
+ * recur silently.
  */
-class HuaweiAH100Handler : HuaweiAhCh100ScaleHandler() {
-    override val supportedAdvertName: String = "AH100"
-    override val displayName: String = "Huawei AH100"
+class HuaweiCH100Handler : HuaweiAhCh100ScaleHandler() {
+    override val supportedAdvertName: String = "CH100"
+    override val displayName: String = "Huawei CH100"
 }

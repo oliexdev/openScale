@@ -38,6 +38,7 @@ import com.health.openscale.core.bluetooth.scales.GattScaleAdapter
 import com.health.openscale.core.bluetooth.scales.HesleyHandler
 import com.health.openscale.core.bluetooth.scales.HoffenBbs8107Handler
 import com.health.openscale.core.bluetooth.scales.HuaweiAH100Handler
+import com.health.openscale.core.bluetooth.scales.HuaweiCH100Handler
 import com.health.openscale.core.bluetooth.scales.HuaweiCH100SHandler
 import com.health.openscale.core.bluetooth.scales.IHealthHS3Handler
 import com.health.openscale.core.bluetooth.scales.InlifeHandler
@@ -118,6 +119,7 @@ class ScaleFactory @Inject constructor(
         InlifeHandler(),
         IHealthHS3Handler(),
         HuaweiAH100Handler(),
+        HuaweiCH100Handler(),
         HuaweiCH100SHandler(),
         HoffenBbs8107Handler(),
         HesleyHandler(),
