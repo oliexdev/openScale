@@ -29,7 +29,7 @@ import org.junit.Test
 class S400DecryptorTest {
 
     companion object {
-        // --- Decryption tests using vectors from mi-scale-exporter ---
+        // Test configuration from mi-scale-exporter test suite
         private const val TEST_MAC = "84:46:93:64:A5:E6"
         private const val TEST_BIND_KEY = "58305740b64e4b425e518aa1f4e51339"
 
@@ -83,7 +83,7 @@ class S400DecryptorTest {
         assertThat(S400Decryptor.isValidMacAddress("")).isFalse()
     }
 
-    // --- Decryption tests using captured payloads with known weights ---
+    // --- Decryption tests using vectors from mi-scale-exporter ---
 
     @Test
     fun decrypt_24ByteData_returnsCorrectWeight() {
@@ -135,43 +135,7 @@ class S400DecryptorTest {
 
         assertThat(result).isNotNull()
         assertThat(result!!.weightKg).isGreaterThan(0f)
-        assertThat(result.impedanceHigh).isNull()
-        assertThat(result.impedanceLow).isNull()
-    }
-
-    // --- Dual-impedance vectors: high-frequency (A) and low-frequency (B) packets ---
-    // The two hex payloads exercise the disambiguation rule in parseDecryptedData.
-
-    @Test
-    fun decrypt_highFrequencyPacket_returnsHighImpedance() {
-        val data = hexToByteArray("4859d53b0abc078ff2348c844138e930220000009e538599")
-        val mac = "8C:D0:B2:F6:BE:EF"
-        val key = "0728974d657a4b60964c1b1677f35f7c"
-
-        val result = S400Decryptor.decrypt(data, mac, key)
-
-        assertThat(result).isNotNull()
-        assertThat(result!!.weightKg).isWithin(0.05f).of(69.9f)
-        assertThat(result.impedanceHigh).isNotNull()
-        assertThat(result.impedanceHigh!!).isWithin(0.05f).of(543.2f)
-        assertThat(result.impedanceLow).isNull()
-        assertThat(result.heartRate).isEqualTo(92)
-    }
-
-    @Test
-    fun decrypt_lowFrequencyPacket_returnsLowImpedance() {
-        val data = hexToByteArray("4859d53b0bd6ef0b25db72785e7e2f46d6000000d8642df6")
-        val mac = "8C:D0:B2:F6:BE:EF"
-        val key = "0728974d657a4b60964c1b1677f35f7c"
-
-        val result = S400Decryptor.decrypt(data, mac, key)
-
-        assertThat(result).isNotNull()
-        assertThat(result!!.weightKg).isEqualTo(0f)
-        assertThat(result.impedanceHigh).isNull()
-        assertThat(result.impedanceLow).isNotNull()
-        assertThat(result.impedanceLow!!).isWithin(0.05f).of(497.6f)
-        assertThat(result.heartRate).isNull()
+        assertThat(result.impedance).isNull()
     }
 
     @Test
@@ -228,10 +192,7 @@ class S400DecryptorTest {
         assertThat(result!!.weightKg).isGreaterThan(0f)
         assertThat(result.weightKg).isLessThan(300f)
         // Impedance if present should be reasonable (typically 300-1000 ohms for body)
-        result.impedanceHigh?.let { imp ->
-            assertThat(imp).isGreaterThan(0f)
-        }
-        result.impedanceLow?.let { imp ->
+        result.impedance?.let { imp ->
             assertThat(imp).isGreaterThan(0f)
         }
     }
