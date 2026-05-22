@@ -24,13 +24,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,12 +42,8 @@ import androidx.compose.ui.unit.dp
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
-import com.health.openscale.core.bluetooth.libs.BmrFormula
-import com.health.openscale.core.bluetooth.libs.BoneFormula
-import com.health.openscale.core.bluetooth.libs.S400Aggregator
-import com.health.openscale.core.bluetooth.libs.S400BodyComposition
+import com.health.openscale.core.bluetooth.libs.MiScaleLib
 import com.health.openscale.core.bluetooth.libs.S400Decryptor
-import com.health.openscale.core.bluetooth.libs.S400Inputs
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
@@ -81,8 +75,6 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
         // Settings keys for S400 configuration
         private const val SETTINGS_KEY_BIND_KEY = "s400_bind_key"
         private const val SETTINGS_KEY_MAC_ADDRESS = "s400_mac_address"
-        private const val SETTINGS_KEY_BONE_FORMULA = "s400_bone_formula"
-        private const val SETTINGS_KEY_BMR_FORMULA = "s400_bmr_formula"
 
         // Known S400 device name patterns
         // The S400 may advertise with various names depending on firmware/region
@@ -99,9 +91,6 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
 
     // Track if we've warned about missing configuration
     private var warnedMissingConfig = false
-
-    // Holds per-device session state until both impedance packets land.
-    private val aggregator = S400Aggregator()
 
 
     @Composable
@@ -170,67 +159,6 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
                     }
                 }
             )
-
-            FormulaPicker(
-                titleRes = R.string.s400_bone_formula_label,
-                key = SETTINGS_KEY_BONE_FORMULA,
-                options = listOf(
-                    BoneFormula.MI_LEGACY.name to R.string.s400_bone_formula_mi_legacy,
-                    BoneFormula.HEYMSFIELD.name to R.string.s400_bone_formula_heymsfield,
-                ),
-                defaultValue = BoneFormula.MI_LEGACY.name,
-            )
-
-            FormulaPicker(
-                titleRes = R.string.s400_bmr_formula_label,
-                key = SETTINGS_KEY_BMR_FORMULA,
-                options = listOf(
-                    BmrFormula.CUNNINGHAM_1991.name to R.string.s400_bmr_formula_cun91,
-                    BmrFormula.CUNNINGHAM_1980.name to R.string.s400_bmr_formula_cun80,
-                ),
-                defaultValue = BmrFormula.CUNNINGHAM_1991.name,
-            )
-        }
-    }
-
-    @Composable
-    private fun FormulaPicker(
-        @androidx.annotation.StringRes titleRes: Int,
-        key: String,
-        options: List<Pair<String, Int>>,
-        defaultValue: String,
-    ) {
-        val persisted = settingsGetString(key) ?: defaultValue
-        var selected by remember(persisted) { mutableStateOf(persisted) }
-
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-                text = stringResource(titleRes),
-                style = MaterialTheme.typography.titleSmall,
-            )
-            options.forEach { (value, labelRes) ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .selectable(
-                            selected = selected == value,
-                            onClick = {
-                                selected = value
-                                settingsPutString(key, value)
-                            },
-                        ),
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                ) {
-                    RadioButton(
-                        selected = selected == value,
-                        onClick = {
-                            selected = value
-                            settingsPutString(key, value)
-                        },
-                    )
-                    Text(stringResource(labelRes))
-                }
-            }
         }
     }
 
@@ -310,80 +238,36 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
             return BroadcastAction.IGNORED
         }
 
-        logD(
-            "S400 packet: weight=${measurement.weightKg}kg, " +
-                "impedanceHigh=${measurement.impedanceHigh}, " +
-                "impedanceLow=${measurement.impedanceLow}, " +
-                "hr=${measurement.heartRate}"
-        )
+        logI("S400 measurement: weight=${measurement.weightKg}kg, impedance=${measurement.impedance}, hr=${measurement.heartRate}")
 
-        val finalized = when (val outcome = aggregator.ingest(deviceMac, measurement, System.currentTimeMillis())) {
-            is S400Aggregator.Outcome.Pending -> return BroadcastAction.CONSUMED_KEEP_SCANNING
-            is S400Aggregator.Outcome.Duplicate -> return BroadcastAction.CONSUMED_KEEP_SCANNING
-            is S400Aggregator.Outcome.Finalized -> outcome
-        }
-
-        logI(
-            "S400 finalized: weight=${finalized.weightKg}kg, " +
-                "impedanceHigh=${finalized.impedanceHigh}, " +
-                "impedanceLow=${finalized.impedanceLow}, " +
-                "hr=${finalized.heartRate}, timedOut=${finalized.timedOut}"
-        )
-
-        val boneFormula = readBoneFormula()
-        val bmrFormula = readBmrFormula()
-
-        val composition = S400BodyComposition.compute(
-            S400Inputs(
-                age = user.age,
-                sexMale = user.gender == GenderType.MALE,
-                heightCm = user.bodyHeight,
-                weightKg = finalized.weightKg,
-                rHighRaw = finalized.impedanceHigh,
-                // Single-band fallback when Packet B never arrives (older firmware path).
-                rLowRaw = finalized.impedanceLow ?: finalized.impedanceHigh,
-            ),
-            boneFormula = boneFormula,
-            bmrFormula = bmrFormula,
-        )
-
+        // Build scale measurement
         val scaleMeasurement = ScaleMeasurement().apply {
             dateTime = Date()
-            weight = finalized.weightKg
+            weight = measurement.weightKg
             userId = user.id
-            heartRate = finalized.heartRate ?: 0
-            impedance = finalized.impedanceHigh.toDouble()
-            finalized.impedanceLow?.let { impedanceLow = it.toDouble() }
+            heartRate = measurement.heartRate ?: 0
 
-            fat = composition.bfPct ?: 0f
-            water = composition.tbwPct ?: 0f
-            muscle = composition.smmPct ?: 0f
-            bone = composition.boneKg ?: 0f
-            lbm = composition.ffmKg ?: 0f
-            visceralFat = composition.vfi ?: 0f
-            bmr = composition.bmrKcal ?: 0f
-            ecw = composition.ecwPct ?: 0f
-            icw = composition.icwPct ?: 0f
-            protein = composition.proteinPct ?: 0f
-            bcm = composition.bcmKg ?: 0f
+            // Calculate body composition if we have impedance
+            measurement.impedance?.let { imp ->
+                if (imp > 0) {
+                    val sex = if (user.gender == GenderType.MALE) 1 else 0
+                    val lib = MiScaleLib(sex, user.age, user.bodyHeight)
+
+                    fat = lib.getBodyFat(weight, imp)
+                    water = lib.getWater(weight, imp)
+                    muscle = lib.getMuscle(weight, imp)
+                    bone = lib.getBoneMass(weight, imp)
+                    lbm = lib.getLBM(weight, imp)
+                    visceralFat = lib.getVisceralFat(weight)
+                }
+            }
         }
 
         publish(scaleMeasurement)
 
+        // S400 sends a single final measurement, so we're done
         return BroadcastAction.CONSUMED_STOP
     }
-
-    private fun readBoneFormula(): BoneFormula =
-        when (settingsGetString(SETTINGS_KEY_BONE_FORMULA)) {
-            BoneFormula.HEYMSFIELD.name -> BoneFormula.HEYMSFIELD
-            else -> BoneFormula.MI_LEGACY
-        }
-
-    private fun readBmrFormula(): BmrFormula =
-        when (settingsGetString(SETTINGS_KEY_BMR_FORMULA)) {
-            BmrFormula.CUNNINGHAM_1980.name -> BmrFormula.CUNNINGHAM_1980
-            else -> BmrFormula.CUNNINGHAM_1991
-        }
 
     /**
      * Extract service data from the BLE scan result.

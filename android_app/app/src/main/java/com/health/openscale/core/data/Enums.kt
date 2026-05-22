@@ -412,22 +412,7 @@ enum class MeasurementTypeKey(
     TIME(26, R.string.measurement_type_time, listOf(UnitType.NONE), listOf(InputFieldType.TIME)),
     COMMENT(27, R.string.measurement_type_comment, listOf(UnitType.NONE), listOf(InputFieldType.TEXT)),
     USER(28, R.string.measurement_type_user, listOf(UnitType.NONE), listOf(InputFieldType.USER)),
-    IMPEDANCE(29, R.string.measurement_type_impedance, listOf(UnitType.OHM), listOf(InputFieldType.FLOAT)),
-    IMPEDANCE_LOW(30, R.string.measurement_type_impedance_low, listOf(UnitType.OHM), listOf(InputFieldType.FLOAT)),
-    ECW(31, R.string.measurement_type_ecw, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    ICW(32, R.string.measurement_type_icw, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    PROTEIN(33, R.string.measurement_type_protein, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    BCM(34, R.string.measurement_type_bcm, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     CUSTOM(99, R.string.measurement_type_custom_default_name, UnitType.entries.toList(), listOf(InputFieldType.FLOAT, InputFieldType.INT, InputFieldType.TEXT, InputFieldType.DATE, InputFieldType.TIME));
-
-    /**
-     * Raw inputs that are persisted for diagnostics or future re-derivation but
-     * have no meaning to end users (e.g. raw BIA impedance bands). Hidden from
-     * the type list in Settings, the widget config picker and bulk-enable
-     * operations. Still written to the DB so processors can re-run with newer
-     * formulas later.
-     */
-    fun isInternal(): Boolean = this == IMPEDANCE || this == IMPEDANCE_LOW
 }
 
 
@@ -440,7 +425,6 @@ enum class UnitType(val displayName: String) {
     INCH("in"),
     KCAL("kcal"),
     BPM("bpm"),
-    OHM("Ω"),
     NONE("");
 
     fun isWeightUnit(): Boolean {

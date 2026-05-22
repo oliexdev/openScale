@@ -483,14 +483,7 @@ class BleConnector(
                 MeasurementTypeKey.VISCERAL_FAT to UnitType.PERCENT,
                 MeasurementTypeKey.BONE         to UnitType.KG,
                 MeasurementTypeKey.LBM          to UnitType.KG,
-                MeasurementTypeKey.HEART_RATE   to UnitType.BPM,
-                MeasurementTypeKey.IMPEDANCE    to UnitType.OHM,
-                MeasurementTypeKey.IMPEDANCE_LOW to UnitType.OHM,
-                MeasurementTypeKey.ECW          to UnitType.PERCENT,
-                MeasurementTypeKey.ICW          to UnitType.PERCENT,
-                MeasurementTypeKey.PROTEIN      to UnitType.PERCENT,
-                MeasurementTypeKey.BCM          to UnitType.KG,
-                MeasurementTypeKey.BMR          to UnitType.KCAL
+                MeasurementTypeKey.HEART_RATE   to UnitType.BPM
             )
 
             val values = mutableListOf<MeasurementValue>()
@@ -548,12 +541,6 @@ class BleConnector(
                 }
             }
 
-            // BMR goes in first so its presence guards the per-value recalc that
-            // runs after WEIGHT lands; otherwise DerivedValuesProcess would write
-            // its Mifflin-St Jeor BMR before the device's BIA-based BMR arrives,
-            // leaving two rows for the same typeId.
-            addConvertedIfValid(measurementData.bmr,                    MeasurementTypeKey.BMR)
-
             // Collect all supported values from ScaleMeasurement, converting as needed.
             addConvertedIfValid(measurementData.weight,       MeasurementTypeKey.WEIGHT)
             addConvertedIfValid(measurementData.fat,          MeasurementTypeKey.BODY_FAT)
@@ -563,12 +550,6 @@ class BleConnector(
             addConvertedIfValid(measurementData.bone,         MeasurementTypeKey.BONE)
             addConvertedIfValid(measurementData.lbm,          MeasurementTypeKey.LBM)
             addConvertedIfValid(measurementData.heartRate, MeasurementTypeKey.HEART_RATE)
-            addConvertedIfValid(measurementData.impedance.toFloat(),    MeasurementTypeKey.IMPEDANCE)
-            addConvertedIfValid(measurementData.impedanceLow.toFloat(), MeasurementTypeKey.IMPEDANCE_LOW)
-            addConvertedIfValid(measurementData.ecw,                    MeasurementTypeKey.ECW)
-            addConvertedIfValid(measurementData.icw,                    MeasurementTypeKey.ICW)
-            addConvertedIfValid(measurementData.protein,                MeasurementTypeKey.PROTEIN)
-            addConvertedIfValid(measurementData.bcm,                    MeasurementTypeKey.BCM)
 
             if (values.isEmpty()) {
                 LogManager.w(TAG, "No valid values from measurement of $deviceName to save.")
