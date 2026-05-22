@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.health.openscale.core.bluetooth.libs
+package com.health.openscale.core.bluetooth.scales
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -23,7 +23,7 @@ import java.util.Calendar
 import java.util.TimeZone
 
 /**
- * Unit tests for [HuaweiAhCh100Protocol] — the wire-protocol primitives
+ * Unit tests for [HuaweiAhCh100Handler] — the wire-protocol primitives
  * shared by the Huawei AH100 and CH100 body-fat scales.
  *
  * The fixtures encode three realistic measurements and were generated
@@ -36,7 +36,7 @@ import java.util.TimeZone
  * the user in issue #1280 — the same scenario that the broken 3.x master
  * parser turned into 138 kg / 180 % / year 3084.
  */
-class HuaweiAhCh100ProtocolTest {
+class HuaweiAhCh100HandlerTest {
 
     companion object {
         private const val TEST_MAC = "5C:CA:D3:08:7B:4F"
@@ -61,10 +61,10 @@ class HuaweiAhCh100ProtocolTest {
 
     @Test
     fun `obfuscate is self-inverse`() {
-        val mac = HuaweiAhCh100Protocol.macStringToBytes(TEST_MAC)
+        val mac = HuaweiAhCh100Handler.macStringToBytes(TEST_MAC)
         val data = hex("DEADBEEFCAFEBABE0102030405060708")
-        val once = HuaweiAhCh100Protocol.obfuscate(data, mac)
-        val twice = HuaweiAhCh100Protocol.obfuscate(once, mac)
+        val once = HuaweiAhCh100Handler.obfuscate(data, mac)
+        val twice = HuaweiAhCh100Handler.obfuscate(once, mac)
         assertThat(once).isNotEqualTo(data)
         assertThat(twice).isEqualTo(data)
     }
@@ -72,21 +72,21 @@ class HuaweiAhCh100ProtocolTest {
     @Test
     fun `obfuscate with empty MAC is identity`() {
         val data = hex("DEADBEEF")
-        assertThat(HuaweiAhCh100Protocol.obfuscate(data, ByteArray(0))).isEqualTo(data)
+        assertThat(HuaweiAhCh100Handler.obfuscate(data, ByteArray(0))).isEqualTo(data)
     }
 
     @Test
     fun `xorChecksum returns parity byte`() {
         val buf = hex("DEADBEEFCAFE")
         val expected = (0xDE xor 0xAD xor 0xBE xor 0xEF xor 0xCA xor 0xFE).toByte()
-        assertThat(HuaweiAhCh100Protocol.xorChecksum(buf)).isEqualTo(expected)
+        assertThat(HuaweiAhCh100Handler.xorChecksum(buf)).isEqualTo(expected)
     }
 
     @Test
     fun `buildAuthToken array XORs to zero`() {
-        val tok = HuaweiAhCh100Protocol.buildAuthToken(TEST_USER_ID)
+        val tok = HuaweiAhCh100Handler.buildAuthToken(TEST_USER_ID)
         assertThat(tok).hasLength(7)
-        assertThat(HuaweiAhCh100Protocol.xorChecksum(tok)).isEqualTo(0.toByte())
+        assertThat(HuaweiAhCh100Handler.xorChecksum(tok)).isEqualTo(0.toByte())
         // First 5 bytes are constants, last byte is the userId.
         assertThat(tok.copyOfRange(0, 5)).isEqualTo(hex("1122334455"))
         assertThat(tok[6].toInt() and 0xFF).isEqualTo(TEST_USER_ID)
@@ -94,30 +94,30 @@ class HuaweiAhCh100ProtocolTest {
 
     @Test
     fun `buildAuthToken matches reference fixture for userId=1`() {
-        val tok = HuaweiAhCh100Protocol.buildAuthToken(TEST_USER_ID)
+        val tok = HuaweiAhCh100Handler.buildAuthToken(TEST_USER_ID)
         assertThat(toHex(tok)).isEqualTo(EXPECTED_AUTH_TOKEN)
     }
 
     @Test
     fun `deriveMagicKey produces 16 bytes matching v2 5 4 layout`() {
-        val tok = HuaweiAhCh100Protocol.buildAuthToken(TEST_USER_ID)
-        val mac = HuaweiAhCh100Protocol.macStringToBytes(TEST_MAC)
-        val mk = HuaweiAhCh100Protocol.deriveMagicKey(tok, mac)
+        val tok = HuaweiAhCh100Handler.buildAuthToken(TEST_USER_ID)
+        val mac = HuaweiAhCh100Handler.macStringToBytes(TEST_MAC)
+        val mk = HuaweiAhCh100Handler.deriveMagicKey(tok, mac)
         assertThat(mk).hasLength(16)
         // First 7 bytes = obfuscate(authToken, MAC).
-        assertThat(mk.copyOfRange(0, 7)).isEqualTo(HuaweiAhCh100Protocol.obfuscate(tok, mac))
+        assertThat(mk.copyOfRange(0, 7)).isEqualTo(HuaweiAhCh100Handler.obfuscate(tok, mac))
         // Last 9 bytes = INITIAL_KEY[7..15].
         assertThat(mk.copyOfRange(7, 16))
-            .isEqualTo(HuaweiAhCh100Protocol.INITIAL_KEY.copyOfRange(7, 16))
+            .isEqualTo(HuaweiAhCh100Handler.INITIAL_KEY.copyOfRange(7, 16))
         assertThat(toHex(mk)).isEqualTo(EXPECTED_MAGIC_KEY)
     }
 
     @Test
     fun `aesCtr is symmetric`() {
-        val key = HuaweiAhCh100Protocol.hexToBytes(EXPECTED_MAGIC_KEY)
+        val key = HuaweiAhCh100Handler.hexToBytes(EXPECTED_MAGIC_KEY)
         val pt = hex("01ca031801ea070513080c21021c02")
-        val ct = HuaweiAhCh100Protocol.aesCtr(pt, key, HuaweiAhCh100Protocol.INITIAL_IV)
-        val rt = HuaweiAhCh100Protocol.aesCtr(ct, key, HuaweiAhCh100Protocol.INITIAL_IV)
+        val ct = HuaweiAhCh100Handler.aesCtr(pt, key, HuaweiAhCh100Handler.INITIAL_IV)
+        val rt = HuaweiAhCh100Handler.aesCtr(ct, key, HuaweiAhCh100Handler.INITIAL_IV)
         assertThat(ct).isNotEqualTo(pt)
         assertThat(rt).isEqualTo(pt)
     }
@@ -126,19 +126,19 @@ class HuaweiAhCh100ProtocolTest {
 
     @Test
     fun `buildPlainCommand writes len plus 1 in the header byte`() {
-        val mac = HuaweiAhCh100Protocol.macStringToBytes(TEST_MAC)
+        val mac = HuaweiAhCh100Handler.macStringToBytes(TEST_MAC)
         val payload = hex("11223344")
-        val frame = HuaweiAhCh100Protocol.buildPlainCommand(
-            cmd = HuaweiAhCh100Protocol.CMD_AUTH,
+        val frame = HuaweiAhCh100Handler.buildPlainCommand(
+            cmd = HuaweiAhCh100Handler.CMD_AUTH,
             payload = payload,
             mac = mac
         )
         // Wire layout: [0xDB, lengthByte, cmd, ...obfuscated payload...]
-        assertThat(frame[0]).isEqualTo(HuaweiAhCh100Protocol.FRAME_PLAIN)
+        assertThat(frame[0]).isEqualTo(HuaweiAhCh100Handler.FRAME_PLAIN)
         assertThat(frame[1].toInt() and 0xFF).isEqualTo(payload.size + 1)
-        assertThat(frame[2]).isEqualTo(HuaweiAhCh100Protocol.CMD_AUTH)
+        assertThat(frame[2]).isEqualTo(HuaweiAhCh100Handler.CMD_AUTH)
         assertThat(frame.copyOfRange(3, frame.size))
-            .isEqualTo(HuaweiAhCh100Protocol.obfuscate(payload, mac))
+            .isEqualTo(HuaweiAhCh100Handler.obfuscate(payload, mac))
     }
 
     @Test
@@ -146,10 +146,10 @@ class HuaweiAhCh100ProtocolTest {
         // openScale v2.5.4 sent GET_RECORD with payload of 8 bytes and a wire
         // lengthByte of 0x07 (it called AHsendCommand(_, _, 0x07-1) which then
         // added 1 in the header).
-        val mac = HuaweiAhCh100Protocol.macStringToBytes(TEST_MAC)
+        val mac = HuaweiAhCh100Handler.macStringToBytes(TEST_MAC)
         val payload = hex("1122334455667788")
-        val frame = HuaweiAhCh100Protocol.buildPlainCommand(
-            cmd = HuaweiAhCh100Protocol.CMD_GET_RECORD,
+        val frame = HuaweiAhCh100Handler.buildPlainCommand(
+            cmd = HuaweiAhCh100Handler.CMD_GET_RECORD,
             payload = payload,
             mac = mac,
             explicitLen = 0x07
@@ -160,21 +160,21 @@ class HuaweiAhCh100ProtocolTest {
 
     @Test
     fun `buildEncryptedCommand uses payload size as length and AES-CTR encrypts`() {
-        val mac = HuaweiAhCh100Protocol.macStringToBytes(TEST_MAC)
-        val mk = HuaweiAhCh100Protocol.hexToBytes(EXPECTED_MAGIC_KEY)
+        val mac = HuaweiAhCh100Handler.macStringToBytes(TEST_MAC)
+        val mk = HuaweiAhCh100Handler.hexToBytes(EXPECTED_MAGIC_KEY)
         val payload = hex("1122334455667788")
-        val frame = HuaweiAhCh100Protocol.buildEncryptedCommand(
-            cmd = HuaweiAhCh100Protocol.CMD_USER_INFO,
+        val frame = HuaweiAhCh100Handler.buildEncryptedCommand(
+            cmd = HuaweiAhCh100Handler.CMD_USER_INFO,
             payload = payload,
             magicKey = mk,
             mac = mac
         )
-        assertThat(frame[0]).isEqualTo(HuaweiAhCh100Protocol.FRAME_ENCRYPTED)
+        assertThat(frame[0]).isEqualTo(HuaweiAhCh100Handler.FRAME_ENCRYPTED)
         assertThat(frame[1].toInt() and 0xFF).isEqualTo(payload.size)
-        assertThat(frame[2]).isEqualTo(HuaweiAhCh100Protocol.CMD_USER_INFO)
+        assertThat(frame[2]).isEqualTo(HuaweiAhCh100Handler.CMD_USER_INFO)
         // Recover plaintext: deobfuscate then AES-CTR.
-        val deobf = HuaweiAhCh100Protocol.obfuscate(frame.copyOfRange(3, frame.size), mac)
-        val pt = HuaweiAhCh100Protocol.aesCtr(deobf, mk, HuaweiAhCh100Protocol.INITIAL_IV)
+        val deobf = HuaweiAhCh100Handler.obfuscate(frame.copyOfRange(3, frame.size), mac)
+        val pt = HuaweiAhCh100Handler.aesCtr(deobf, mk, HuaweiAhCh100Handler.INITIAL_IV)
         assertThat(pt).isEqualTo(payload)
     }
 
@@ -182,7 +182,7 @@ class HuaweiAhCh100ProtocolTest {
 
     @Test
     fun `parseMeasurement decodes user fixture (97 kg, 28 percent)`() {
-        val m = HuaweiAhCh100Protocol.parseMeasurement(hex(FIXTURE_USER_PLAINTEXT))
+        val m = HuaweiAhCh100Handler.parseMeasurement(hex(FIXTURE_USER_PLAINTEXT))
         assertThat(m.userId).isEqualTo(TEST_USER_ID)
         assertThat(m.weightKg).isWithin(1e-4f).of(97.0f)
         assertThat(m.fatPct).isWithin(1e-4f).of(28.0f)
@@ -192,7 +192,7 @@ class HuaweiAhCh100ProtocolTest {
 
     @Test
     fun `parseMeasurement decodes light fixture`() {
-        val m = HuaweiAhCh100Protocol.parseMeasurement(hex(FIXTURE_LIGHT_PLAINTEXT))
+        val m = HuaweiAhCh100Handler.parseMeasurement(hex(FIXTURE_LIGHT_PLAINTEXT))
         assertThat(m.userId).isEqualTo(TEST_USER_ID)
         assertThat(m.weightKg).isWithin(1e-4f).of(55.2f)
         assertThat(m.fatPct).isWithin(1e-4f).of(18.8f)
@@ -202,7 +202,7 @@ class HuaweiAhCh100ProtocolTest {
 
     @Test
     fun `parseMeasurement decodes heavy fixture`() {
-        val m = HuaweiAhCh100Protocol.parseMeasurement(hex(FIXTURE_HEAVY_PLAINTEXT))
+        val m = HuaweiAhCh100Handler.parseMeasurement(hex(FIXTURE_HEAVY_PLAINTEXT))
         assertThat(m.userId).isEqualTo(TEST_USER_ID)
         assertThat(m.weightKg).isWithin(1e-4f).of(128.4f)
         assertThat(m.fatPct).isWithin(1e-4f).of(35.2f)
@@ -213,7 +213,7 @@ class HuaweiAhCh100ProtocolTest {
     @Test
     fun `parseMeasurement throws on too-short input`() {
         try {
-            HuaweiAhCh100Protocol.parseMeasurement(hex("00112233"))
+            HuaweiAhCh100Handler.parseMeasurement(hex("00112233"))
             assertThat(false).isTrue() // not reached
         } catch (e: IllegalArgumentException) {
             assertThat(e.message).contains("at least 15 bytes")
@@ -257,9 +257,9 @@ class HuaweiAhCh100ProtocolTest {
         // This test pins down the regression we are fixing: the broken 3.x
         // master parser would compute (1457 - byte[1]) / 10 on the raw
         // deobfuscated buffer, which deliberately *does not* equal 97.0.
-        val mac = HuaweiAhCh100Protocol.macStringToBytes(TEST_MAC)
+        val mac = HuaweiAhCh100Handler.macStringToBytes(TEST_MAC)
         val frame = hex(FIXTURE_USER_FRAME)
-        val deobfTail = HuaweiAhCh100Protocol.deobfuscateTail(frame, mac)
+        val deobfTail = HuaweiAhCh100Handler.deobfuscateTail(frame, mac)
         val brokenWeight = (1457 - (deobfTail[1].toInt() and 0xFF)) / 10.0f
         assertThat(brokenWeight).isNotWithin(1e-4f).of(97.0f)
     }
@@ -272,9 +272,9 @@ class HuaweiAhCh100ProtocolTest {
         expectedFat: Float,
         expectedImpedance: Int,
     ) {
-        val mac = HuaweiAhCh100Protocol.macStringToBytes(TEST_MAC)
-        val mk = HuaweiAhCh100Protocol.hexToBytes(EXPECTED_MAGIC_KEY)
-        val m = HuaweiAhCh100Protocol.decodeFirstHalf(hex(frameHex), mk, mac)
+        val mac = HuaweiAhCh100Handler.macStringToBytes(TEST_MAC)
+        val mk = HuaweiAhCh100Handler.hexToBytes(EXPECTED_MAGIC_KEY)
+        val m = HuaweiAhCh100Handler.decodeFirstHalf(hex(frameHex), mk, mac)
         assertThat(m.weightKg).isWithin(1e-4f).of(expectedWeight)
         assertThat(m.fatPct).isWithin(1e-4f).of(expectedFat)
         assertThat(m.impedanceOhm).isEqualTo(expectedImpedance)
@@ -282,7 +282,7 @@ class HuaweiAhCh100ProtocolTest {
     }
 
     private fun assertCalendar(
-        m: HuaweiAhCh100Protocol.Measurement,
+        m: HuaweiAhCh100Handler.Measurement,
         year: Int, monthZeroBased: Int, day: Int, hour: Int, minute: Int, second: Int
     ) {
         val dt = m.dateTime
@@ -299,6 +299,6 @@ class HuaweiAhCh100ProtocolTest {
         assertThat(cal.get(Calendar.SECOND)).isEqualTo(second)
     }
 
-    private fun hex(s: String): ByteArray = HuaweiAhCh100Protocol.hexToBytes(s)
+    private fun hex(s: String): ByteArray = HuaweiAhCh100Handler.hexToBytes(s)
     private fun toHex(b: ByteArray): String = b.joinToString("") { "%02x".format(it.toInt() and 0xFF) }
 }
