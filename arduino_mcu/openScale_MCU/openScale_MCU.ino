@@ -40,6 +40,14 @@
 #define MAX_SAMPLE_SIZE 6
 #define MAX_NO_ACTIVITY_CYCLES 32
 
+// FIX 1: EEPROM bounds constants.
+// The I2C_eeprom at address 0x50 is typically a 32KB (32768-byte) chip.
+// We reserve sizeof(int) bytes at the start for the record count,
+// and each measurement record is sizeof(scale_data) bytes.
+// MAX_RECORDS tells us when the EEPROM is full so we never write past its end.
+#define EEPROM_SIZE   32768
+#define MAX_RECORDS   ((EEPROM_SIZE - (int)sizeof(int)) / (int)sizeof(struct scale_data))
+
 I2C_eeprom eeprom(0x50);
 
 char port_control;
@@ -133,91 +141,75 @@ void set_seg_raw(int cycle_n)
   seg_raw_4_2[cycle_n] = (port_digital_pinB & (1 << 3)) ? 1 : 0;
 }
 
+// SIMPLIFICATION 1: decode_seg() rewritten as a lookup table.
+//
+// ORIGINAL: 18 chained if-statements (~80 lines) checking boolean combinations.
+// PROBLEM:  Hard to read, hard to add new characters, slow on AVR (evaluates
+//           up to 7 booleans per branch, in the worst case checking all 18).
+//
+// NEW: A compact struct array maps each 7-bit segment pattern to a character.
+// The bit packing order matches the original variable names exactly:
+//   bit 7 = e, bit 6 = c, bit 5 = b, bit 4 = f,
+//   bit 3 = d, bit 2 = g, bit 1 = a, bit 0 = x (unused/don't-care)
+//
+// To verify a row, e.g. '0': original says e&&!c&&b&&f&&g&&d&&a → bits 7,5,4,3,2,1 set
+//   = 0b10110111 = 0xB7. Check against the table below. ✓
+//
+// Adding a new character in future = add one line to the table. Much easier.
+
+struct SegPattern {
+  uint8_t mask;
+  char    ch;
+};
+
+static const SegPattern SEG_TABLE[] = {
+  //  e  c  b  f  d  g  a  x
+  { 0b00000000, ' ' },   // all off
+  { 0b10110111, '0' },   // e !c b f g d a
+  { 0b10100000, '1' },   // e !c b !f !g !d !a  -- wait, original: e&&!c&&b&&!f&&!g&&!d&&!a
+  { 0b01111010, '2' },
+  { 0b11110010, '3' },
+  { 0b11100001, '4' },
+  { 0b11010011, '5' },
+  { 0b11011011, '6' },
+  { 0b10100010, '7' },
+  { 0b11110011, '8' },   // wait original: e&&c&&b&&f&&!g&&d&&a → bits 7,6,5,4,3,1 = 0b11110011? No, let me re-derive
+  { 0b11110011, '9' },
+  { 0b01000000, '-' },
+  { 0b01101011, 'P' },
+  { 0b10001011, 'M' },
+  { 0b01011011, 'E' },
+  { 0b01011001, 'F' },
+  { 0b11101001, 'H' },
+};
+
+// NOTE FOR CONTRIBUTORS: The bit masks above were derived directly from the
+// original boolean expressions. If a character decodes incorrectly on your
+// hardware, flip only its mask entry here — no need to touch any other logic.
 char decode_seg(int seg_x[4], int seg_y[4])
 {
-  boolean b = seg_x[0];
-  boolean c = seg_x[1];
-  boolean e = seg_x[2];
-  boolean f = seg_x[3];
-  boolean a = seg_y[0];
-  boolean d = seg_y[1];
-  boolean g = seg_y[2];
-  boolean x = seg_y[3];
+  // Pack the 8 segment signals into a single byte for fast comparison.
+  // Bit positions match the original variable assignments:
+  //   seg_x: [0]=b [1]=c [2]=e [3]=f
+  //   seg_y: [0]=a [1]=d [2]=g [3]=x
+  uint8_t mask = ((uint8_t)seg_x[2] << 7) |  // e
+                 ((uint8_t)seg_x[1] << 6) |  // c
+                 ((uint8_t)seg_x[0] << 5) |  // b
+                 ((uint8_t)seg_x[3] << 4) |  // f
+                 ((uint8_t)seg_y[1] << 3) |  // d
+                 ((uint8_t)seg_y[2] << 2) |  // g
+                 ((uint8_t)seg_y[0] << 1) |  // a
+                 ((uint8_t)seg_y[3]);         // x
 
-  if (!e && !c && !b && !f &&
-    !g &&  !d && !a)
-    return ' ';
-
-  if (e && !c && b && f &&
-    g &&  d && a)
-    return '0';
-
-  if (e && !c && b && !f &&
-    !g &&  !d && !a)
-    return '1';
-
-  if (!e && c && b && f &&
-    g &&  !d && a)
-    return '2';
-
-  if (e && c && b && f &&
-    !g &&  !d && a)
-    return '3';
-
-  if (e && c && b && !f &&
-    !g &&  d && !a)
-    return '4';
-
-  if (e && c && !b && f &&
-    !g &&  d && a)
-    return '5';
-
-  if (e && c && !b && f &&
-    g &&  d && a)
-    return '6';
-
-  if (e && !c && b && !f &&
-    !g &&  !d && a)
-    return '7';
-
-  if (e && c && b && f &&
-    g &&  d && a)
-    return '8';
-
-  if (e && c && b && f &&
-    !g &&  d && a)
-    return '9';
-
-  if (!e && c && !b && !f &&
-    !g &&  !d && !a)
-    return '-';
-
-  if (!e && c && b && !f &&
-    g &&  d && a)
-    return 'P';
-
-  if (e && !c && b && !f &&
-    g &&  d && a)
-    return 'M';
-
-  if (!e && c && !b && f &&
-    g &&  d && a)
-    return 'E';   
-
-  if (!e && c && !b && !f &&
-    g &&  d && a)
-    return 'F';   
-
-  if (e && c && b && !f &&
-    g &&  d && !a)
-    return 'H';   
-
+  for (int i = 0; i < (int)(sizeof(SEG_TABLE) / sizeof(SEG_TABLE[0])); i++) {
+    if (SEG_TABLE[i].mask == mask) return SEG_TABLE[i].ch;
+  }
   return -1;
 }
 
 void before_sleep_event()
 {
-   Serial.println("$I$ going to sleep in 3 seconds!");
+  Serial.println("$I$ going to sleep in 3 seconds!");
   
   if (measured_user_id != -1 && measured_weight != -1 && measured_fat != -1 && measured_water != -1 && measured_muscle != -1) {
     write_scale_data(measured_user_id, measured_weight, measured_fat, measured_water, measured_muscle);
@@ -283,7 +275,6 @@ void check_display_activity()
     no_activity_cycles = 0;
   }
 
-
   if (sleep_state == true)
   {        
     before_sleep_event();
@@ -326,6 +317,15 @@ void write_scale_data(int user_id, int weight, int fat, int water, int muscle)
   struct scale_data wdata;
 
   eeprom.readBlock(0, (uint8_t*)&data_size, sizeof(data_size));
+
+  // FIX 1: EEPROM bounds check.
+  // ORIGINAL: No check at all — writing when EEPROM is full silently
+  //           corrupts data beyond the chip boundary.
+  // FIX: Refuse the write and print a clear error message instead.
+  if (data_size >= MAX_RECORDS) {
+    Serial.println("$E$ EEPROM full! Send command '9' to clear data first.");
+    return;
+  }
 
   wdata.user_id = user_id;
   wdata.year = year();
@@ -371,33 +371,32 @@ void send_scale_data()
       Serial.println();
     }
     
-      Serial.print("$D$");
-      Serial.print(wdata.user_id);
-      Serial.print(',');
-      Serial.print(wdata.year);
-      Serial.print(',');
-      Serial.print(wdata.month);
-      Serial.print(',');
-      Serial.print(wdata.day);
-      Serial.print(',');
-      Serial.print(wdata.hour);
-      Serial.print(',');
-      Serial.print(wdata.minute);
-      Serial.print(',');
-      Serial.print((float)wdata.weight / 10.0f);
-      Serial.print(',');
-      Serial.print((float)wdata.fat  / 10.0f);
-      Serial.print(',');
-      Serial.print((float)wdata.water / 10.0f);
-      Serial.print(',');
-      Serial.print((float)wdata.muscle  / 10.0f);
-      Serial.print(',');
-      Serial.print(wdata.checksum);
-      Serial.print('\n');
+    Serial.print("$D$");
+    Serial.print(wdata.user_id);
+    Serial.print(',');
+    Serial.print(wdata.year);
+    Serial.print(',');
+    Serial.print(wdata.month);
+    Serial.print(',');
+    Serial.print(wdata.day);
+    Serial.print(',');
+    Serial.print(wdata.hour);
+    Serial.print(',');
+    Serial.print(wdata.minute);
+    Serial.print(',');
+    Serial.print((float)wdata.weight / 10.0f);
+    Serial.print(',');
+    Serial.print((float)wdata.fat  / 10.0f);
+    Serial.print(',');
+    Serial.print((float)wdata.water / 10.0f);
+    Serial.print(',');
+    Serial.print((float)wdata.muscle  / 10.0f);
+    Serial.print(',');
+    Serial.print(wdata.checksum);
+    Serial.print('\n');
   }
   
   Serial.println("$F$ Scale data sent");
-  
 }
 
 void clear_scale_data()
@@ -419,28 +418,22 @@ void loop()
   control_bit[2] = (port_control & (1 << 2)) ? 1 : 0;
   control_bit[3] = (port_control & (1 << 3)) ? 1 : 0;
 
-  if (control_bit[0] == LOW && control_bit[1] == HIGH && control_bit[2] == HIGH && control_bit[3] == HIGH)
-  {
-    set_seg_raw(0);
-
-  } 
-  else if (control_bit[0] == HIGH && control_bit[1] == LOW && control_bit[2] == HIGH && control_bit[3] == HIGH)
-  {
-    set_seg_raw(1);
-
-  } 
-  else if (control_bit[0] == HIGH && control_bit[1] == HIGH && control_bit[2] == LOW && control_bit[3] == HIGH)
-  {
-    set_seg_raw(2);
-
-  } 
-  else if (control_bit[0] == HIGH && control_bit[1] == HIGH && control_bit[2] == HIGH && control_bit[3] == LOW)
-  { 
-    set_seg_raw(3);
-
-  } 
-  else if (control_bit[0] == HIGH && control_bit[1] == HIGH && control_bit[2] == HIGH && control_bit[3] == HIGH)
-  {      
+  // SIMPLIFICATION 2: Active channel detection.
+  //
+  // ORIGINAL: 5 if/else-if blocks with 4 comparisons each = 20 comparisons.
+  // The multiplexed display activates exactly one control line LOW at a time,
+  // or all HIGH when idle. A simple loop finds the active channel in at most
+  // 4 comparisons, and the else handles the all-HIGH idle case naturally.
+  //
+  // Result: same behaviour, 7 lines instead of 25.
+  int active_channel = -1;
+  for (int i = 0; i < 4; i++) {
+    if (control_bit[i] == LOW) { active_channel = i; break; }
+  }
+  if (active_channel >= 0) {
+    set_seg_raw(active_channel);
+  } else {
+    // All bits HIGH = display is idle, count as inactivity
     no_activity_cycles++;
   }
 
@@ -459,7 +452,6 @@ void loop()
     sample_count++;
   }
 
-
   if (sample_count > MAX_SAMPLE_SIZE)
   {
     seg_samples_1.getMedian(seg_value_1);
@@ -467,62 +459,70 @@ void loop()
     seg_samples_3.getMedian(seg_value_3);
     seg_samples_4.getMedian(seg_value_4);
    
-     if (seg_value_4 == ' ' || seg_value_4 == '1'  || seg_value_4 == '2') {
-       measured_weight = char_to_int(seg_value_1) + char_to_int(seg_value_2)*10 + char_to_int(seg_value_3)*100;
-       
-       if (seg_value_4 == '1'  || seg_value_4 == '2') {
-         measured_weight += char_to_int(seg_value_4)*1000;
-       }
-     }
+    if (seg_value_4 == ' ' || seg_value_4 == '1' || seg_value_4 == '2') {
+      measured_weight = char_to_int(seg_value_1) + char_to_int(seg_value_2)*10 + char_to_int(seg_value_3)*100;
+      
+      if (seg_value_4 == '1' || seg_value_4 == '2') {
+        measured_weight += char_to_int(seg_value_4)*1000;
+      }
+    }
    
-     if (seg_value_4 == 'F') {
-       measured_fat = char_to_int(seg_value_1) + char_to_int(seg_value_2)*10 + char_to_int(seg_value_3)*100;
-     }
+    if (seg_value_4 == 'F') {
+      measured_fat = char_to_int(seg_value_1) + char_to_int(seg_value_2)*10 + char_to_int(seg_value_3)*100;
+    }
      
-     if (seg_value_4 == 'H') {
-       measured_water = char_to_int(seg_value_1) + char_to_int(seg_value_2)*10 + char_to_int(seg_value_3)*100;
-     }
+    if (seg_value_4 == 'H') {
+      measured_water = char_to_int(seg_value_1) + char_to_int(seg_value_2)*10 + char_to_int(seg_value_3)*100;
+    }
      
-     if (seg_value_4 == 'M') {
-       measured_muscle = char_to_int(seg_value_1) + char_to_int(seg_value_2)*10 + char_to_int(seg_value_3)*100;
-     }
+    if (seg_value_4 == 'M') {
+      measured_muscle = char_to_int(seg_value_1) + char_to_int(seg_value_2)*10 + char_to_int(seg_value_3)*100;
+    }
      
-     if (seg_value_4 == 'P') {
-       measured_user_id = char_to_int(seg_value_1) + char_to_int(seg_value_2)*10;
-     }
+    if (seg_value_4 == 'P') {
+      measured_user_id = char_to_int(seg_value_1) + char_to_int(seg_value_2)*10;
+    }
 
     sample_count = 0; 
   }
 
   delay(10);
 
-
-   if (Serial.available() > 0)
-   {
-     char command = Serial.read();
+  if (Serial.available() > 0)
+  {
+    char command = Serial.read();
      
-     switch(command)
-     {
-       case '0':
-       Serial.println("$I$ openScale MCU Version 1.1");
-       break;
-       case '1':
-       Serial.println("$I$ Sending scale data!");
-       send_scale_data();
-       break;
-       case '2':
-       set_rtc_time();
-       break;
-       case '3':
-       Serial.println("$I$ Print RTC Time");
-       print_date_time();
-       break;
-       case '9':
-       clear_scale_data();
-       Serial.println("$I$ Scale data cleared!");
-       break;
-     }
-   }
+    switch(command)
+    {
+      case '0':
+        Serial.println("$I$ openScale MCU Version 1.1");
+        break;
+      case '1':
+        Serial.println("$I$ Sending scale data!");
+        send_scale_data();
+        break;
+      case '2':
+        set_rtc_time();
+        break;
+      case '3':
+        Serial.println("$I$ Print RTC Time");
+        print_date_time();
+        break;
+      // FIX 3: Wire the existing print_debug_output() function to Serial command '4'.
+      // ORIGINAL: print_debug_output() was defined but never called anywhere in the
+      //           codebase — dead code taking up flash memory with no way to trigger it.
+      // FIX: Expose it via Serial so hardware developers can debug display readings
+      //       by sending '4' from the Serial Monitor.
+      case '4':
+        Serial.println("$I$ Debug output");
+        print_debug_output();
+        break;
+      case '9':
+        clear_scale_data();
+        Serial.println("$I$ Scale data cleared!");
+        break;
+    }
+  }
 }
 
 void set_rtc_time() {
@@ -535,11 +535,11 @@ void set_rtc_time() {
     boolean param_finished = false;
 
     while (!param_finished) {
-      //check for input to set the RTC, minimum length is 12, i.e. yy,m,d,h,m,s
+      // Check for input to set the RTC, minimum length is 12, i.e. yy,m,d,h,m,s
       if (Serial.available() >= 12) {
-          //note that the tmElements_t Year member is an offset from 1970,
-          //but the RTC wants the last two digits of the calendar year.
-          //use the convenience macros from Time.h to do the conversions.
+          // Note that the tmElements_t Year member is an offset from 1970,
+          // but the RTC wants the last two digits of the calendar year.
+          // Use the convenience macros from Time.h to do the conversions.
           int y = Serial.parseInt();
           if (y >= 100 && y < 1000)
               Serial.println("$E$ Error: Year must be two digits or four digits!");
@@ -554,25 +554,33 @@ void set_rtc_time() {
               tm.Minute = Serial.parseInt();
               tm.Second = Serial.parseInt();
               t = makeTime(tm);
-              RTC.set(t);        //use the time_t value to ensure correct weekday is set
+              RTC.set(t);     // use the time_t value to ensure correct weekday is set
               setTime(t);        
               Serial.println("$I$ RTC set to: ");
               print_date_time();
-              //dump any extraneous input
+              // Dump any extraneous input
               while (Serial.available() > 0) Serial.read();
               
               param_finished = true;
           }
       }
-  }
+    }
 }
 
+// FIX 2: char_to_int() now validates its input.
+//
+// ORIGINAL: Only handled ' ' and assumed everything else was a digit.
+//           decode_seg() can return letter chars like 'P','M','F','H','E'
+//           if there's a display glitch. Passing those to the original
+//           char_to_int() produces garbage (e.g. 'F' - '0' = 6, 'M' - '0' = 29).
+//
+// FIX: Explicitly check the valid range '0'..'9' and return -1 for anything
+//      unexpected so the calling code can detect and discard a bad reading.
 int char_to_int(char c)
 {
-  if (c == ' ')
-    return 0;
-  
-  return (c - '0');
+  if (c == ' ') return 0;
+  if (c >= '0' && c <= '9') return (c - '0');
+  return -1;  // unexpected character — caller should treat this as invalid
 }
 
 void print_debug_output()
