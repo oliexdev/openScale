@@ -12,7 +12,7 @@
         android:name="${applicationId}.READ_WRITE_DATA"
         android:description="@string/permission_read_write_data_description"
         android:label="@string/permission_read_write_data_label"
-        android:protectionLevel="dangerous" />
+        android:protectionLevel="signature" />
 
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
 
