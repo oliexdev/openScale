@@ -140,7 +140,7 @@ fun BluetoothScreen(
     DisposableEffect(Unit) {
         onDispose {
             pendingScan = false
-            bluetoothViewModel.requestStopDeviceScan()
+
         }
     }
 
