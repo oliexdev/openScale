@@ -194,7 +194,7 @@ object EvaluationReferenceTables {
     val whrFemale = AgeBandStrategy(listOf(AgeBand(18, 90, 0.7f, 0.8f)))
 
     // Visceral Fat (index)
-    val visceralFat = AgeBandStrategy(listOf(AgeBand(18, 90, -1f, 12f)))
+    val visceralFat = AgeBandStrategy(listOf(AgeBand(18, 90, 1f, 12f)))
 
     // Lean Body Mass (kg) – Italian reference P25–P75 (DOI: 10.26355/eurrev_201811_16415)
     val lbmMale = AgeBandStrategy(
