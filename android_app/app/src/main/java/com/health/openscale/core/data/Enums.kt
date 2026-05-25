@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Bloodtype
+import androidx.compose.material.icons.filled.BubbleChart
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.ChildCare
@@ -49,6 +50,7 @@ import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Grain
 import androidx.compose.material.icons.filled.Height
+import androidx.compose.material.icons.filled.Hive
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalDining
 import androidx.compose.material.icons.filled.LocalDrink
@@ -71,6 +73,7 @@ import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.SquareFoot
 import androidx.compose.material.icons.filled.StackedLineChart
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -375,7 +378,10 @@ enum class MeasurementTypeIcon(val resource: IconResource) {
     IC_M_MEDICATION(IconResource.VectorResource(Icons.Filled.Medication)),
     IC_M_LIST(IconResource.VectorResource(Icons.AutoMirrored.Filled.List)),
     IC_M_LABEL(IconResource.VectorResource(Icons.AutoMirrored.Filled.Label)),
-    IC_M_PERSON(IconResource.VectorResource(Icons.Filled.Person));
+    IC_M_PERSON(IconResource.VectorResource(Icons.Filled.Person)),
+    IC_M_WATER_DROP(IconResource.VectorResource(Icons.Filled.WaterDrop)),
+    IC_M_BUBBLE_CHART(IconResource.VectorResource(Icons.Filled.BubbleChart)),
+    IC_M_HIVE(IconResource.VectorResource(Icons.Filled.Hive));
 }
 
 enum class MeasurementTypeKey(
@@ -419,15 +425,6 @@ enum class MeasurementTypeKey(
     PROTEIN(33, R.string.measurement_type_protein, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     BCM(34, R.string.measurement_type_bcm, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     CUSTOM(99, R.string.measurement_type_custom_default_name, UnitType.entries.toList(), listOf(InputFieldType.FLOAT, InputFieldType.INT, InputFieldType.TEXT, InputFieldType.DATE, InputFieldType.TIME));
-
-    /**
-     * Raw inputs that are persisted for diagnostics or future re-derivation but
-     * have no meaning to end users (e.g. raw BIA impedance bands). Hidden from
-     * the type list in Settings, the widget config picker and bulk-enable
-     * operations. Still written to the DB so processors can re-run with newer
-     * formulas later.
-     */
-    fun isInternal(): Boolean = this == IMPEDANCE || this == IMPEDANCE_LOW
 }
 
 

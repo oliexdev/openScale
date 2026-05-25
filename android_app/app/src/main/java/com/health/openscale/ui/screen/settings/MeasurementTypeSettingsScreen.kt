@@ -131,7 +131,7 @@ fun MeasurementTypeSettingsScreen(
     var list by remember(measurementTypes) {
         mutableStateOf(
             measurementTypes
-                .filter { !it.key.isInternal() }
+                .filter { !it.isInternal }
                 .sortedBy { it.displayOrder }
         )
     }

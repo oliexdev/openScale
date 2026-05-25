@@ -388,6 +388,14 @@ val MIGRATION_13_14 = object : Migration(13, 14) {
 
 val MIGRATION_14_15 = object : Migration(14, 15) {
     override fun migrate(db: SupportSQLiteDatabase) {
+        // Add the `isInternal` column used to hide raw inputs (e.g. BIA
+        // impedance bands) from end-user UI while keeping them in the DB for
+        // re-derivation when formulas change.
+        db.execSQL(
+            "ALTER TABLE MeasurementType " +
+            "ADD COLUMN isInternal INTEGER NOT NULL DEFAULT 0"
+        )
+
         // Seed the six new MeasurementTypes introduced for S400 dual-frequency
         // body composition: IMPEDANCE, IMPEDANCE_LOW (raw band readings) and
         // ECW, ICW, PROTEIN, BCM (derived). All disabled by default; new
@@ -406,8 +414,8 @@ val MIGRATION_14_15 = object : Migration(14, 15) {
                 """
                 INSERT OR IGNORE INTO MeasurementType
                     (`key`, `name`, `color`, `icon`, `unit`, `inputType`, `displayOrder`,
-                     `isDerived`, `isEnabled`, `isPinned`, `isOnRightYAxis`)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     `isDerived`, `isEnabled`, `isPinned`, `isOnRightYAxis`, `isInternal`)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """.trimIndent(),
                 arrayOf<Any?>(
                     type.key.name,
@@ -420,7 +428,8 @@ val MIGRATION_14_15 = object : Migration(14, 15) {
                     if (type.isDerived) 1 else 0,
                     if (type.isEnabled) 1 else 0,
                     if (type.isPinned) 1 else 0,
-                    if (type.isOnRightYAxis) 1 else 0
+                    if (type.isOnRightYAxis) 1 else 0,
+                    if (type.isInternal) 1 else 0
                 )
             )
         }

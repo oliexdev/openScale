@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 15,
-    "identityHash": "2c6d48ddefaa85707983de54030ef0e6",
+    "identityHash": "394cbd60aafb83b8d4beeb00b58404ea",
     "entities": [
       {
         "tableName": "User",
@@ -310,7 +310,7 @@
       },
       {
         "tableName": "MeasurementType",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `key` TEXT NOT NULL, `name` TEXT, `color` INTEGER NOT NULL, `icon` TEXT NOT NULL, `unit` TEXT NOT NULL, `inputType` TEXT NOT NULL, `displayOrder` INTEGER NOT NULL, `isDerived` INTEGER NOT NULL, `isEnabled` INTEGER NOT NULL, `isPinned` INTEGER NOT NULL, `isOnRightYAxis` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `key` TEXT NOT NULL, `name` TEXT, `color` INTEGER NOT NULL, `icon` TEXT NOT NULL, `unit` TEXT NOT NULL, `inputType` TEXT NOT NULL, `displayOrder` INTEGER NOT NULL, `isDerived` INTEGER NOT NULL, `isEnabled` INTEGER NOT NULL, `isPinned` INTEGER NOT NULL, `isOnRightYAxis` INTEGER NOT NULL, `isInternal` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -382,6 +382,12 @@
             "columnName": "isOnRightYAxis",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "isInternal",
+            "columnName": "isInternal",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -405,7 +411,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2c6d48ddefaa85707983de54030ef0e6')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '394cbd60aafb83b8d4beeb00b58404ea')"
     ]
   }
 }
