@@ -32,7 +32,7 @@ import java.util.UUID
  *
  * Service 0xFFB0:
  *   0xFFB1 – command write (App → Scale, 20 bytes)
- *   0xFFB2 – live weight NOTIFY  (byte[1]=0x07, byte[3]=0xA2; weight BE uint16÷1000 at [7-8])
+ *   0xFFB2 – live weight NOTIFY  (byte[1]=0x07, byte[3]=0xA2; weight BE 24-bit gram÷1000 at [6-8])
  *   0xFFB3 – result INDICATE     (byte[1]=0x18 setup; byte[1]=0x23 measurement)
  *
  * Startup sequence (state machine):
@@ -42,7 +42,7 @@ import java.util.UUID
  *   3. Write user profile to FFB1 (3 packets: pktA init, B0 demographics, B1 app-id).
  *
  * Measurement frames (byte[1]=0x23, keyed by byte[2]):
- *   0x00 – validity at byte[14] (0x01=ok), weight BE uint16÷1000 at [10-11],
+ *   0x00 – validity at byte[14] (0x01=ok), weight BE 24-bit gram÷1000 at [9-11],
  *            whole-body impedance channels A/B at [15-16] and [17-18] (LE uint16÷10=Ω, ~400-500Ω)
  *   0x01 – 8 segmental impedances at bytes[3-18], LE uint16÷10=Ω (Z1-Z8 in order):
  *            Z3[7-8]=Trunk, Z4[9-10]=Right Leg, Z5[11-12]=Left Leg (foot-to-foot path = Z3+Z4+Z5)
@@ -166,7 +166,8 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
         if (d[3].toUByte().toInt() != 0xA2) return
         // byte[4]: 0x00=taring/live, 0x01=stabilising, 0x03=locked (blink = stable)
         val stability = d[4].toUByte().toInt()
-        val kg = readBE16(d, 7) / 1000.0f
+        // Weight is a 3-byte BE gram value at [6-8]; readBE16 at [7-8] overflows for >65.5 kg.
+        val kg = readBE24(d, 6) / 1000.0f
         if (kg > 0f && stability == 0x03) {
             pendingWeightKg = kg
         } else if (kg < 2.0f && savedWeightKg > 0f && !bodyCompPublished) {
@@ -186,7 +187,8 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
             0x00 -> {
                 pkt0Valid = d[14].toUByte().toInt() == 0x01
                 if (!pkt0Valid) return
-                val kg = readBE16(d, 10) / 1000.0f
+                // Same 3-byte gram encoding as the live weight frame.
+                val kg = readBE24(d, 9) / 1000.0f
                 if (kg > 0f) pendingWeightKg = kg
             }
             0x01 -> {
@@ -355,6 +357,9 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
 
     private fun readBE16(d: ByteArray, off: Int) =
         (d[off].toUByte().toInt() shl 8) or d[off + 1].toUByte().toInt()
+
+    private fun readBE24(d: ByteArray, off: Int) =
+        (d[off].toUByte().toInt() shl 16) or (d[off + 1].toUByte().toInt() shl 8) or d[off + 2].toUByte().toInt()
 
     private fun readLE16(d: ByteArray, off: Int) =
         d[off].toUByte().toInt() or (d[off + 1].toUByte().toInt() shl 8)
