@@ -211,6 +211,8 @@ fun OverviewScreen(
         remember { mutableStateOf(emptyList<UserGoals>()) }
     }
     val isGoalsSectionExpanded by sharedViewModel.myGoalsExpandedOverview.collectAsState(initial = true)
+    val showOverviewChart by sharedViewModel.showOverviewChart.collectAsState(initial = true)
+    val overviewChartScrollable by sharedViewModel.overviewChartScrollable.collectAsState(initial = false)
     val userEvalContext        by sharedViewModel.userEvaluationContext.collectAsState()
     val currentSelectedUser   by sharedViewModel.selectedUser.collectAsState()
 
@@ -355,85 +357,94 @@ fun OverviewScreen(
                                 }
                             }
 
-                            // ── Chart + divider + goals (hidden in drill-down) ────────
-                            if (!isDrillDown) {
-                                Box(modifier = Modifier.weight(localSplitterWeight)) {
-                                    MeasurementChart(
-                                        sharedViewModel   = sharedViewModel,
-                                        screenContextName = SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
-                                        showFilterControls = true,
-                                        modifier          = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                                        showYAxis         = false,
-                                        onPointSelected   = { selectedTs ->
-                                            if (isAggregated) {
-                                                // AggregatedMeasurement carries pre-computed period bounds —
-                                                // no need to call periodBoundsFor().
-                                                val idx = aggregatedItems.indexOfFirst { item ->
-                                                    selectedTs in item.periodStartMillis until item.periodEndMillis
-                                                }
-                                                if (idx >= 0) {
-                                                    val itemTs = aggregatedItems[idx]
-                                                        .enriched.measurementWithValues.measurement.timestamp
-                                                    scope.launch {
-                                                        listState.smartScrollTo(idx)
-                                                        highlightedMeasurementId =
-                                                            aggregatedItems[idx].enriched.measurementWithValues.measurement.id
-                                                        currentSelectedAggregatedTs = itemTs
-                                                        delay(600)
-                                                        highlightedMeasurementId = null
-                                                    }
-                                                }
-                                            } else {
-                                                val listForFind = aggregatedItems.map {
-                                                    it.enriched.measurementWithValues
-                                                }
-                                                sharedViewModel
-                                                    .findClosestMeasurement(selectedTs, listForFind)
-                                                    ?.let { (targetIndex, mwv) ->
-                                                        val targetId = mwv.measurement.id
-                                                        scope.launch {
-                                                            listState.smartScrollTo(targetIndex)
-                                                            highlightedMeasurementId          = targetId
-                                                            currentSelectedMeasurementId      = targetId
-                                                            delay(600)
-                                                            if (highlightedMeasurementId == targetId)
-                                                                highlightedMeasurementId = null
-                                                        }
-                                                    }
-                                            }
-                                        },
-                                    )
-                                }
+                            // Chart offset: when chart is inside LazyColumn as item 0, measurements shift by 1.
+                            val chartScrollOffset = if (showOverviewChart && !isDrillDown && overviewChartScrollable) 1 else 0
 
-                                // Draggable divider
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .pointerInput(Unit) {
-                                            detectDragGestures(
-                                                onDrag    = { change, dragAmount ->
-                                                    change.consume()
-                                                    localSplitterWeight =
-                                                        (localSplitterWeight + dragAmount.y / 2000f)
-                                                            .coerceIn(0.01f, 0.8f)
-                                                },
-                                                onDragEnd = {
-                                                    scope.launch {
-                                                        sharedViewModel.setSplitterWeight(
-                                                            SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
-                                                            localSplitterWeight,
-                                                        )
-                                                    }
-                                                },
-                                            )
-                                        },
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    HorizontalDivider(
-                                        thickness = 1.dp,
-                                        color     = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                                    )
+                            // Shared point-selection handler used by both fixed and scrollable chart.
+                            val onChartPointSelected: (Long) -> Unit = { selectedTs ->
+                                if (isAggregated) {
+                                    // AggregatedMeasurement carries pre-computed period bounds —
+                                    // no need to call periodBoundsFor().
+                                    val idx = aggregatedItems.indexOfFirst { item ->
+                                        selectedTs in item.periodStartMillis until item.periodEndMillis
+                                    }
+                                    if (idx >= 0) {
+                                        val itemTs = aggregatedItems[idx]
+                                            .enriched.measurementWithValues.measurement.timestamp
+                                        scope.launch {
+                                            listState.smartScrollTo(idx + chartScrollOffset)
+                                            highlightedMeasurementId =
+                                                aggregatedItems[idx].enriched.measurementWithValues.measurement.id
+                                            currentSelectedAggregatedTs = itemTs
+                                            delay(600)
+                                            highlightedMeasurementId = null
+                                        }
+                                    }
+                                } else {
+                                    val listForFind = aggregatedItems.map {
+                                        it.enriched.measurementWithValues
+                                    }
+                                    sharedViewModel
+                                        .findClosestMeasurement(selectedTs, listForFind)
+                                        ?.let { (targetIndex, mwv) ->
+                                            val targetId = mwv.measurement.id
+                                            scope.launch {
+                                                listState.smartScrollTo(targetIndex + chartScrollOffset)
+                                                highlightedMeasurementId          = targetId
+                                                currentSelectedMeasurementId      = targetId
+                                                delay(600)
+                                                if (highlightedMeasurementId == targetId)
+                                                    highlightedMeasurementId = null
+                                            }
+                                        }
                                 }
+                            }
+
+                            // ── Chart + divider + goals (hidden in drill-down or when toggled off) ──
+                            if (!isDrillDown && showOverviewChart) {
+                                // Fixed chart with draggable splitter (hidden when scrollable mode is on)
+                                if (!overviewChartScrollable) {
+                                    Box(modifier = Modifier.weight(localSplitterWeight)) {
+                                        MeasurementChart(
+                                            sharedViewModel    = sharedViewModel,
+                                            screenContextName  = SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
+                                            showFilterControls = true,
+                                            modifier           = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                            showYAxis          = false,
+                                            onPointSelected    = onChartPointSelected,
+                                        )
+                                    }
+
+                                    // Draggable divider
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .pointerInput(Unit) {
+                                                detectDragGestures(
+                                                    onDrag    = { change, dragAmount ->
+                                                        change.consume()
+                                                        localSplitterWeight =
+                                                            (localSplitterWeight + dragAmount.y / 2000f)
+                                                                .coerceIn(0.01f, 0.8f)
+                                                    },
+                                                    onDragEnd = {
+                                                        scope.launch {
+                                                            sharedViewModel.setSplitterWeight(
+                                                                SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
+                                                                localSplitterWeight,
+                                                            )
+                                                        }
+                                                    },
+                                                )
+                                            },
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        HorizontalDivider(
+                                            thickness = 1.dp,
+                                            color     = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                                        )
+                                    }
+                                } // end fixed chart + divider block
 
                                 // Goals section
                                 if (userGoals.isNotEmpty()) {
@@ -553,11 +564,30 @@ fun OverviewScreen(
                             LazyColumn(
                                 state                 = listState,
                                 modifier              = Modifier
-                                    .weight(if (isDrillDown) 1f else 1f - localSplitterWeight)
+                                    .weight(if (isDrillDown || !showOverviewChart || overviewChartScrollable) 1f else 1f - localSplitterWeight)
                                     .fillMaxSize()
                                     .padding(horizontal = 16.dp, vertical = 8.dp),
                                 verticalArrangement   = Arrangement.spacedBy(12.dp),
                             ) {
+                                // Scrollable chart as the first list item.
+                                // Needs an explicit height because LazyColumn has unbounded height
+                                // and MeasurementChart uses weight() modifiers internally.
+                                if (!isDrillDown && showOverviewChart && overviewChartScrollable) {
+                                    item(key = "overview_chart") {
+                                        MeasurementChart(
+                                            sharedViewModel    = sharedViewModel,
+                                            screenContextName  = SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
+                                            showFilterControls = true,
+                                            modifier           = Modifier
+                                                .fillMaxWidth()
+                                                .height(260.dp)
+                                                .padding(bottom = 8.dp),
+                                            showYAxis          = false,
+                                            onPointSelected    = onChartPointSelected,
+                                        )
+                                    }
+                                }
+
                                 itemsIndexed(
                                     items = aggregatedItems,
                                     key   = { _, item ->
@@ -566,7 +596,7 @@ fun OverviewScreen(
                                         else
                                             item.enriched.measurementWithValues.measurement.id
                                     },
-                                ) { _, aggItem ->
+                                ) { index, aggItem ->
                                     val enrichedItem = aggItem.enriched
                                     val ts           = enrichedItem.measurementWithValues.measurement.timestamp
 
@@ -620,6 +650,7 @@ fun OverviewScreen(
                                             onDelete                  = { measurementToDelete = aggItem },
                                             isHighlighted             = (highlightedMeasurementId ==
                                                     enrichedItem.measurementWithValues.measurement.id),
+                                            initiallyExpanded         = index == 0,
                                         )
                                     }
                                 }
@@ -738,6 +769,7 @@ fun MeasurementCard(
     isAggregated: Boolean = false,
     rawCount: Int = 1,
     aggregatedPeriodLabel: String = "",
+    initiallyExpanded: Boolean = false,
 ) {
     val surfaceAtElevation = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
     val isLightSurface     = surfaceAtElevation.luminance() > 0.5f
@@ -759,7 +791,7 @@ fun MeasurementCard(
         }
     }
 
-    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    var isExpanded by rememberSaveable { mutableStateOf(initiallyExpanded) }
 
     val pinnedValues = remember(processedValuesForDisplay) {
         processedValuesForDisplay.filter { it.currentValue.type.isPinned && it.currentValue.type.isEnabled }
@@ -820,7 +852,7 @@ fun MeasurementCard(
                             tint               = actionIconColor,
                         )
                     }
-                    if (nonPinnedValues.isNotEmpty() && pinnedValues.isEmpty()) {
+                    if (allActiveProcessedValues.isNotEmpty()) {
                         IconButton(
                             onClick  = { isExpanded = !isExpanded },
                             modifier = Modifier.size(iconButtonSize),
@@ -836,71 +868,41 @@ fun MeasurementCard(
                 }
             }
 
-            Column(
-                modifier = Modifier.padding(
-                    start   = 16.dp,
-                    end     = 16.dp,
-                    top     = if (pinnedValues.isNotEmpty()) 8.dp else 0.dp,
-                    bottom  = 0.dp,
-                ),
-            ) {
-                if (pinnedValues.isNotEmpty()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
-                        pinnedValues.forEach { valueWithTrend ->
-                            MeasurementRowExpandable(
-                                sharedViewModel       = sharedViewModel,
-                                valueWithTrend        = valueWithTrend,
-                                userEvaluationContext = userEvaluationContext,
-                                measuredAtMillis      = measuredAtMillis,
-                                expandedTypeIds       = expandedTypeIds,
-                                valuePrefix           = if (isAggregated && rawCount > 1) "⌀ " else "",
-                            )
-                        }
+            // All values hidden when collapsed; toggled by the header icon and the bottom button.
+            AnimatedVisibility(visible = isExpanded) {
+                Column(
+                    modifier = Modifier.padding(
+                        start   = 16.dp,
+                        end     = 16.dp,
+                        top     = 8.dp,
+                        bottom  = 0.dp,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(0.dp),
+                ) {
+                    (pinnedValues + nonPinnedValues).forEach { valueWithTrend ->
+                        MeasurementRowExpandable(
+                            sharedViewModel       = sharedViewModel,
+                            valueWithTrend        = valueWithTrend,
+                            userEvaluationContext = userEvaluationContext,
+                            measuredAtMillis      = measuredAtMillis,
+                            expandedTypeIds       = expandedTypeIds,
+                            valuePrefix           = if (isAggregated && rawCount > 1) "⌀ " else "",
+                        )
                     }
                 }
             }
 
-            if (nonPinnedValues.isNotEmpty()) {
-                AnimatedVisibility(visible = isExpanded || pinnedValues.isEmpty()) {
-                    Column(
-                        modifier            = Modifier.padding(start = 16.dp, end = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(0.dp),
-                    ) {
-                        nonPinnedValues.forEach { valueWithTrend ->
-                            MeasurementRowExpandable(
-                                sharedViewModel       = sharedViewModel,
-                                valueWithTrend        = valueWithTrend,
-                                userEvaluationContext = userEvaluationContext,
-                                measuredAtMillis      = measuredAtMillis,
-                                expandedTypeIds       = expandedTypeIds,
-                                valuePrefix           = if (isAggregated && rawCount > 1) "⌀ " else "",
-                            )
-                        }
-                    }
-                }
-            }
-
-            if (nonPinnedValues.isNotEmpty() && (pinnedValues.isNotEmpty() || !isExpanded)) {
-                if (isExpanded || pinnedValues.isNotEmpty()) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(
-                            top    = if (isExpanded && nonPinnedValues.isNotEmpty()) 4.dp
-                            else if (pinnedValues.isNotEmpty()) 8.dp else 0.dp,
-                            bottom = 0.dp,
-                        ),
-                    )
-                }
+            if (allActiveProcessedValues.isNotEmpty() && isExpanded) {
+                HorizontalDivider(modifier = Modifier.padding(top = 4.dp))
                 TextButton(
                     onClick   = { isExpanded = !isExpanded },
                     modifier  = Modifier.fillMaxWidth().height(48.dp),
                     shape     = MaterialTheme.shapes.extraSmall,
                 ) {
                     Icon(
-                        imageVector        = if (isExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                        imageVector        = Icons.Filled.ExpandLess,
                         tint               = MaterialTheme.colorScheme.secondary,
-                        contentDescription = stringResource(
-                            if (isExpanded) R.string.action_show_less_desc else R.string.action_show_more_desc
-                        ),
+                        contentDescription = stringResource(R.string.action_show_less_desc),
                     )
                 }
             }

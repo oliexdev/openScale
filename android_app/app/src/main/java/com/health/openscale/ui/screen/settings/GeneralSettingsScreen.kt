@@ -46,6 +46,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Info
@@ -128,6 +129,8 @@ fun GeneralSettingsScreen(
     val hapticsEnabled by sharedViewModel.hapticOnMeasurement.collectAsState(initial = false)
     val useDynamicColor by sharedViewModel.useDynamicColor.collectAsState(initial = false)
     val useHighContrast by sharedViewModel.useHighContrast.collectAsState(initial = false)
+    val showOverviewChart by sharedViewModel.showOverviewChart.collectAsState(initial = true)
+    val overviewChartScrollable by sharedViewModel.overviewChartScrollable.collectAsState(initial = false)
 
     val selectedLanguage: SupportedLanguage = remember(currentLanguageCode, supportedLanguagesEnumEntries) {
         val systemDefault = SupportedLanguage.getDefault().code
@@ -388,6 +391,38 @@ fun GeneralSettingsScreen(
                 scope.launch { sharedViewModel.setHighContrast(enabled) }
             }
         )
+
+        SettingsGroup(
+            leadingIcon = {
+                Icon(
+                    imageVector        = Icons.Filled.Assessment,
+                    contentDescription = null,
+                    tint               = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            },
+            title           = stringResource(R.string.settings_show_overview_chart),
+            checked         = showOverviewChart,
+            onCheckedChange = { show ->
+                scope.launch { sharedViewModel.setShowOverviewChart(show) }
+            }
+        )
+
+        if (showOverviewChart) {
+            SettingsGroup(
+                leadingIcon = {
+                    Icon(
+                        imageVector        = Icons.Filled.Assessment,
+                        contentDescription = null,
+                        tint               = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                },
+                title           = stringResource(R.string.settings_chart_scrollable),
+                checked         = overviewChartScrollable,
+                onCheckedChange = { scrollable ->
+                    scope.launch { sharedViewModel.setOverviewChartScrollable(scrollable) }
+                }
+            )
+        }
 
         // ---- Haptic section ----
         SettingsSectionTitle(text = stringResource(R.string.settings_feedback_title))

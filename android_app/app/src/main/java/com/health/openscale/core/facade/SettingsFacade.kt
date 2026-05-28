@@ -77,6 +77,8 @@ object SettingsPreferenceKeys {
     // Settings for specific UI components
     val SELECTED_TYPES_TABLE = stringSetPreferencesKey("selected_types_table") // IDs of measurement types selected for the data table
     val MY_GOALS_EXPANDED_OVERVIEW = booleanPreferencesKey("my_goals_expanded")
+    val SHOW_OVERVIEW_CHART = booleanPreferencesKey("show_overview_chart")
+    val OVERVIEW_CHART_SCROLLABLE = booleanPreferencesKey("overview_chart_scrollable")
 
     // Saved Bluetooth Scale
     val SAVED_BLUETOOTH_DEVICE_ADDRESS        = stringPreferencesKey("saved_bluetooth_device_address")
@@ -183,6 +185,12 @@ interface SettingsFacade {
 
     val myGoalsExpandedOverview: Flow<Boolean>
     suspend fun setMyGoalsExpandedOverview(isExpanded: Boolean)
+
+    val showOverviewChart: Flow<Boolean>
+    suspend fun setShowOverviewChart(show: Boolean)
+
+    val overviewChartScrollable: Flow<Boolean>
+    suspend fun setOverviewChartScrollable(scrollable: Boolean)
 
     fun observeSplitterWeight(keyPrefix: String, defaultValue: Float): Flow<Float>
     suspend fun setSplitterWeight(keyPrefix : String, weight: Float)
@@ -364,6 +372,24 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun setHapticOnMeasurement(value: Boolean) {
         LogManager.d(TAG, "Setting hapticOnMeasurement to: $value")
         saveSetting(SettingsPreferenceKeys.HAPTIC_ON_MEASUREMENT.name, value)
+    }
+
+    override val showOverviewChart: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.SHOW_OVERVIEW_CHART.name,
+        true
+    )
+
+    override suspend fun setShowOverviewChart(show: Boolean) {
+        saveSetting(SettingsPreferenceKeys.SHOW_OVERVIEW_CHART.name, show)
+    }
+
+    override val overviewChartScrollable: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.OVERVIEW_CHART_SCROLLABLE.name,
+        false
+    )
+
+    override suspend fun setOverviewChartScrollable(scrollable: Boolean) {
+        saveSetting(SettingsPreferenceKeys.OVERVIEW_CHART_SCROLLABLE.name, scrollable)
     }
 
     override val useDynamicColor: Flow<Boolean> = observeSetting(
