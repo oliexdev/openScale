@@ -61,6 +61,7 @@ import com.health.openscale.core.bluetooth.scales.SenssunHandler
 import com.health.openscale.core.bluetooth.scales.SinocareHandler
 import com.health.openscale.core.bluetooth.scales.SoehnleHandler
 import com.health.openscale.core.bluetooth.scales.SppScaleAdapter
+import com.health.openscale.core.bluetooth.scales.DrTrustSSW532Handler
 import com.health.openscale.core.bluetooth.scales.StandardBeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.TrisaBodyAnalyzeHandler
 import com.health.openscale.core.bluetooth.scales.TuningProfile
@@ -134,6 +135,7 @@ class ScaleFactory @Inject constructor(
         BeurerSanitasHandler(),
         AAAxHandler(),
         ActiveEraBF06Handler(),
+        DrTrustSSW532Handler(),
     )
 
     /**
