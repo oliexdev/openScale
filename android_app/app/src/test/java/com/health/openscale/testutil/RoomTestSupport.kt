@@ -220,4 +220,13 @@ object RoomTestSupport {
     /** [ReminderUseCase] is constructed (SettingsViewModel needs it) but its scheduling is not exercised. */
     fun reminderUseCaseFor(app: Application, repo: DatabaseRepository, settings: SettingsFacade): ReminderUseCase =
         ReminderUseCase(app, settings, MeasurementQueryUseCases(repo), Clock.systemUTC())
+
+    /** Wires the real [MeasurementCrudUseCases] graph (same constructors as production) over [repo]. */
+    fun measurementCrudFor(app: Application, repo: DatabaseRepository, settings: SettingsFacade): MeasurementCrudUseCases {
+        val sync = SyncUseCases(app, MeasurementTypeCrudUseCases(repo))
+        val userUseCases = UserUseCases(repo, settings, sync)
+        val query = MeasurementQueryUseCases(repo)
+        val transformation = MeasurementTransformationUseCase(settings, userUseCases, query)
+        return MeasurementCrudUseCases(app, settings, sync, transformation, repo)
+    }
 }
