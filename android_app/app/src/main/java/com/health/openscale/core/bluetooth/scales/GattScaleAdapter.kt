@@ -192,7 +192,7 @@ class GattScaleAdapter(
                 handlerNamespace = handler::class.simpleName ?: "Handler"
             )
 
-            handler.attach(transport, appCallbacks, driverSettings, dataProvider)
+            handler.attach(transport, appCallbacks, driverSettings, dataProvider, scope)
             handler.handleConnected(user)
         }
 

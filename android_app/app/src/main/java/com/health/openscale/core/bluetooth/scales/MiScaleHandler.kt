@@ -24,8 +24,6 @@ import com.health.openscale.core.bluetooth.libs.MiScaleLib
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.ConverterUtils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -81,7 +79,6 @@ class MiScaleHandler : ScaleDeviceHandler() {
     private var warnedHistoryStatusBits = false
 
     // Timers
-    private val scope = CoroutineScope(Dispatchers.Main)
     private var historyFallbackJob: Job? = null
 
     // ----- Capability & detection -----

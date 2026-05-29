@@ -146,7 +146,7 @@ class BroadcastScaleAdapter(
             scope = scope,
             handlerNamespace = handler::class.simpleName ?: "Handler"
         )
-        handler.attach(noopTransport, appCallbacks, driverSettings, dataProvider)
+        handler.attach(noopTransport, appCallbacks, driverSettings, dataProvider, scope)
         broadcastAttached = true
         _events.tryEmit(BluetoothEvent.Listening(address))
     }

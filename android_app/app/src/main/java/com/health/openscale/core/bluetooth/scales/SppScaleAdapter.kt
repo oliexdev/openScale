@@ -164,7 +164,7 @@ class SppScaleAdapter(
                         scope = scope,
                         handlerNamespace = handler::class.simpleName ?: "Handler"
                     )
-                    handler.attach(sppTransport, appCallbacks, driverSettings, dataProvider)
+                    handler.attach(sppTransport, appCallbacks, driverSettings, dataProvider, scope)
                     handler.handleConnected(selectedUser)
 
                     // Reader loop (idle-timeout via available()+delay)

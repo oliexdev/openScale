@@ -21,8 +21,6 @@ class RyFitHandler : ScaleDeviceHandler() {
         private const val GUEST_SLOT = 9
     }
 
-    private val scope = CoroutineScope(Dispatchers.Main)
-
     private var heightCm = 170
     private var age = 30
     private var gender = "男"

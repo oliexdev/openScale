@@ -23,8 +23,6 @@ import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.service.ScannedDeviceInfo
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -85,7 +83,6 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
     private var isLiveWeightLocked = false
     private var isLiveMeasurement = false
 
-    private val scope = CoroutineScope(Dispatchers.Main)
     private var fallbackJob: Job? = null
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {

@@ -44,6 +44,7 @@ import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.LogManager
 import com.welie.blessed.BluetoothPeripheral
+import kotlinx.coroutines.CoroutineScope
 import java.util.UUID
 import kotlin.math.min
 
@@ -147,11 +148,12 @@ abstract class ScaleDeviceHandler {
         this.settings = settings
     }
 
-    internal fun attach(transport: Transport, callbacks: Callbacks, settings: DriverSettings, data: DataProvider) {
+    internal fun attach(transport: Transport, callbacks: Callbacks, settings: DriverSettings, data: DataProvider, scope: CoroutineScope) {
         this.transport = transport
         this.callbacks = callbacks
         this.settings = settings
         this.data = data
+        this._scope = scope
         logD("attach()")
     }
 
@@ -325,6 +327,15 @@ abstract class ScaleDeviceHandler {
     private var callbacks: Callbacks? = null
     private lateinit var settings: DriverSettings
     private lateinit var data: DataProvider
+    private var _scope: CoroutineScope? = null
+
+    /**
+     * Lifecycle-bound coroutine scope provided by the adapter (cancelled when the communicator
+     * is closed). Handlers that need timeout/fallback coroutines should use this instead of
+     * creating their own scope. Valid after [attach] — i.e. inside onConnected/onNotification.
+     */
+    protected val scope: CoroutineScope
+        get() = _scope ?: error("ScaleDeviceHandler.scope accessed before attach()")
     /**
      * BLE transport the adapter provides. No threading/queueing implied here—
      * the adapter already serializes and paces I/O.
