@@ -49,6 +49,11 @@ captures/
 .idea/libraries
 .idea/caches
 
+# Claude Code
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+
 # fastlane
 fastlane/report.xml
 fastlane/Preview.html
