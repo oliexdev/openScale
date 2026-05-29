@@ -17,39 +17,27 @@
  */
 package com.health.openscale.ui.navigation
 
-import kotlin.Pair
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.HowToReg
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -63,15 +51,12 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -79,11 +64,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -92,48 +75,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.health.openscale.BuildConfig
 import com.health.openscale.R
-import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
 import com.health.openscale.core.data.IconResource
-import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.User
-import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.navigation.Routes.getIconForRoute
-import com.health.openscale.ui.screen.dialog.UserInputDialog
 import com.health.openscale.ui.shared.SharedViewModel
+import com.health.openscale.ui.screen.dialog.AssistedWeighingDialog
+import com.health.openscale.ui.screen.dialog.BluetoothUserInteractionDialog
 import com.health.openscale.ui.screen.settings.BluetoothViewModel
-import com.health.openscale.ui.screen.graph.GraphScreen
-import com.health.openscale.ui.screen.insights.InsightsScreen
-import com.health.openscale.ui.screen.overview.MeasurementDetailScreen
-import com.health.openscale.ui.screen.overview.OverviewScreen
-import com.health.openscale.ui.screen.settings.AboutScreen
-import com.health.openscale.ui.screen.settings.BluetoothDetailScreen
-import com.health.openscale.ui.screen.settings.BluetoothScreen
-import com.health.openscale.ui.screen.settings.ChartSettingsScreen
-import com.health.openscale.ui.screen.settings.DataManagementSettingsScreen
-import com.health.openscale.ui.screen.settings.GeneralSettingsScreen
-import com.health.openscale.ui.screen.settings.MeasurementTypeDetailScreen
-import com.health.openscale.ui.screen.settings.MeasurementTypeSettingsScreen
-import com.health.openscale.ui.screen.settings.SettingsScreen
 import com.health.openscale.ui.screen.settings.SettingsViewModel
-import com.health.openscale.ui.screen.settings.UserDetailScreen
-import com.health.openscale.ui.screen.settings.UserSettingsScreen
-import com.health.openscale.ui.screen.statistics.StatisticsScreen
-import com.health.openscale.ui.screen.table.TableScreen
 import com.health.openscale.ui.theme.AppBrandBlue
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -229,206 +190,17 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
         }
     }
 
-// --- Global Bluetooth Dialogs ---
+    // --- Global dialogs shown above the navigation host ---
+    AssistedWeighingDialog(
+        sharedViewModel = sharedViewModel,
+        bluetoothViewModel = bluetoothViewModel,
+        allUsers = allUsers
+    )
 
-// --- Global Reference User Selection (Assisted Weighing) ---
-    val pendingAssistedUser by sharedViewModel.pendingAssistedWeighingUser.collectAsState()
-
-    pendingAssistedUser?.let { currentTargetUser ->
-        // Filter users who can serve as a reference (not the user himself, and not someone also using assisted weighing)
-        val availableReferenceUsers = allUsers.filter { user ->
-            user.id != currentTargetUser.id && !user.useAssistedWeighing
-        }
-
-        if (availableReferenceUsers.isEmpty()) {
-            // No one else is there to be a reference
-            LaunchedEffect(currentTargetUser) {
-                sharedViewModel.showSnackbar(messageResId = R.string.error_no_reference_users_available)
-                sharedViewModel.setPendingAssistedWeighingUser(null)
-                sharedViewModel.setPendingReferenceUserForBle(null)
-            }
-        } else {
-            UserInputDialog(
-                title = stringResource(R.string.dialog_title_select_reference_user_for, currentTargetUser.name),
-                users = availableReferenceUsers,
-                initialSelectedId = availableReferenceUsers.firstOrNull()?.id,
-                measurementIcon = MeasurementTypeIcon.IC_USER,
-                iconBackgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                onDismiss = {
-                    sharedViewModel.setPendingAssistedWeighingUser(null)
-                    sharedViewModel.setPendingReferenceUserForBle(null)
-                },
-                onConfirm = { selectedUserId ->
-                    val selectedReferenceUser = availableReferenceUsers.find { it.id == selectedUserId }
-                    if (selectedReferenceUser != null) {
-                        // 1. Set the reference user in the logic
-                        sharedViewModel.setPendingReferenceUserForBle(selectedReferenceUser)
-
-                        // 2. Trigger connection
-                        bluetoothViewModel.connectToSavedDevice()
-                    } else {
-                        sharedViewModel.setPendingReferenceUserForBle(null)
-                    }
-                    // Close the dialog
-                    sharedViewModel.setPendingAssistedWeighingUser(null)
-                }
-            )
-        }
-    }
-
-    val pendingInteractionEvent by bluetoothViewModel.pendingUserInteractionEvent.collectAsState()
-
-    pendingInteractionEvent?.let { interactionEvent ->
-        val dialogTitle: String
-        val dialogIcon: @Composable (() -> Unit)
-
-        var consentCodeInput by rememberSaveable(interactionEvent.interactionType) { mutableStateOf("") }
-        var selectedUserIndexState by rememberSaveable(interactionEvent.interactionType) { mutableIntStateOf(Int.MIN_VALUE) }
-
-        when (interactionEvent.interactionType) {
-            UserInteractionType.CHOOSE_USER -> {
-                dialogTitle = stringResource(R.string.dialog_bt_interaction_title_choose_user)
-                dialogIcon = { Icon(Icons.Filled.People, contentDescription = stringResource(R.string.dialog_bt_icon_desc_choose_user)) }
-            }
-            UserInteractionType.ENTER_CONSENT -> {
-                dialogTitle = stringResource(R.string.dialog_bt_interaction_title_enter_consent)
-                dialogIcon = { Icon(Icons.Filled.HowToReg, contentDescription = stringResource(R.string.dialog_bt_icon_desc_enter_consent)) }
-            }
-            // else -> { /* Handle unknown types or provide defaults */ } // Optional
-        }
-
-        val isConsentInputValid = remember(consentCodeInput) { // Recalculate only when consentCodeInput changes
-            consentCodeInput.isNotEmpty() && consentCodeInput.all { it.isDigit() }
-        }
-
-        AlertDialog(
-            onDismissRequest = {
-                bluetoothViewModel.clearPendingUserInteraction()
-            },
-            icon = dialogIcon,
-            title = { Text(text = dialogTitle) },
-            text = {
-                Column {
-                    Text(
-                        text = stringResource(
-                            if (interactionEvent.interactionType == UserInteractionType.CHOOSE_USER)
-                                R.string.dialog_bt_interaction_desc_choose_user_default
-                            else
-                                R.string.dialog_bt_interaction_desc_enter_consent_default
-                        )
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    when (interactionEvent.interactionType) {
-                        UserInteractionType.CHOOSE_USER -> {
-                            val choicesData = interactionEvent.data
-                            LogManager.d(TAG, "CHOOSE_USER interaction received. Data: $choicesData")
-
-                            // Expecting Pair<Array<String>, IntArray> or Pair<Array<CharSequence>, IntArray>
-                            if (choicesData is Pair<*, *> && choicesData.first is Array<*> && choicesData.second is IntArray) {
-                                @Suppress("UNCHECKED_CAST")
-                                val choices = choicesData as Pair<Array<CharSequence>, IntArray>
-                                val choiceDisplayNames = choices.first
-                                val choiceIndices = choices.second
-
-                                LogManager.d(TAG, "CHOOSE_USER: DisplayNames (length ${choiceDisplayNames.size}): ${choiceDisplayNames.joinToString { "'$it'" }}")
-                                LogManager.d(TAG, "CHOOSE_USER: Indices (length ${choiceIndices.size}): ${choiceIndices.joinToString()}")
-
-                                if (choiceDisplayNames.isNotEmpty() && choiceDisplayNames.size == choiceIndices.size) {
-                                    LazyColumn(modifier = Modifier.padding(top = 8.dp)) {
-                                        itemsIndexed(choiceDisplayNames) { itemIndex, choiceName ->
-                                            Row(
-                                                Modifier
-                                                    .fillMaxWidth()
-                                                    .selectable(
-                                                        selected = (choiceIndices[itemIndex] == selectedUserIndexState),
-                                                        onClick = {
-                                                            selectedUserIndexState =
-                                                                choiceIndices[itemIndex]
-                                                        }
-                                                    )
-                                                    .padding(vertical = 8.dp),
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                RadioButton(
-                                                    selected = (choiceIndices[itemIndex] == selectedUserIndexState),
-                                                    onClick = { selectedUserIndexState = choiceIndices[itemIndex] }
-                                                )
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                Text(text = choiceName.toString())
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    Text(stringResource(R.string.dialog_bt_error_loading_user_list_empty))
-                                }
-                            } else {
-                                Text(stringResource(R.string.dialog_bt_error_loading_user_list_format))
-                            }
-                        }
-                        UserInteractionType.ENTER_CONSENT -> {
-                            OutlinedTextField(
-                                value = consentCodeInput,
-                                onValueChange = { consentCodeInput = it.filter { char -> char.isDigit() } },
-                                label = { Text(stringResource(R.string.dialog_bt_label_consent_code)) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                        // else -> { /* Handle unknown types or provide defaults */ } // Optional
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val interactionType = interactionEvent.interactionType
-                        var feedbackData: Any? = null // Any, da der Typ variieren kann
-
-                        when (interactionType) {
-                            UserInteractionType.CHOOSE_USER -> {
-                                if (selectedUserIndexState != Int.MIN_VALUE) {
-                                    feedbackData = selectedUserIndexState // Ist ein Int
-                                } else {
-                                    sharedViewModel.showSnackbar(messageResId = R.string.dialog_bt_select_user_prompt)
-                                }
-                            }
-                            UserInteractionType.ENTER_CONSENT -> {
-                                if (isConsentInputValid) {
-                                    feedbackData = consentCodeInput.toInt()
-                                } else {
-                                    sharedViewModel.showSnackbar(messageResId = R.string.dialog_bt_enter_valid_code_prompt)
-                                }
-                            }
-                            // else -> { /* Handle unknown types or provide defaults */ } // Optional
-                        }
-
-                        feedbackData?.let { data ->
-                            bluetoothViewModel.provideUserInteractionFeedback(interactionType, data)
-                        }
-                    },
-                    enabled = when (interactionEvent.interactionType) {
-                        UserInteractionType.CHOOSE_USER -> selectedUserIndexState != Int.MIN_VALUE
-                        UserInteractionType.ENTER_CONSENT -> isConsentInputValid
-                    }
-                ) {
-                    Text(stringResource(R.string.confirm_button))
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        bluetoothViewModel.clearPendingUserInteraction()
-                    }
-                ) {
-                    Text(stringResource(R.string.cancel_button))
-                }
-            }
-        )
-    }
-
-
+    BluetoothUserInteractionDialog(
+        bluetoothViewModel = bluetoothViewModel,
+        sharedViewModel = sharedViewModel
+    )
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -611,212 +383,13 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                 )
             }
         ) { innerPadding ->
-            Column(modifier = Modifier.fillMaxSize()) {
-                NavHost(
-                    navController = navController,
-                    startDestination = Routes.OVERVIEW,
-                    modifier = Modifier
-                        .padding(innerPadding) // Apply padding from Scaffold.
-                        .weight(1f)      // NavHost takes the remaining space in the Column.
-                ) {
-                    // Define all composable screens for navigation routes.
-                    composable(Routes.OVERVIEW) {
-                        OverviewScreen(
-                            navController = navController,
-                            sharedViewModel = sharedViewModel,
-                            bluetoothViewModel = bluetoothViewModel
-                        )
-                    }
-                    composable(
-                        route = Routes.OVERVIEW_DRILLDOWN,
-                        arguments = listOf(
-                            navArgument("start") { type = NavType.LongType },
-                            navArgument("end")   { type = NavType.LongType }
-                        )
-                    ) { backStackEntry ->
-                        OverviewScreen(
-                            navController = navController,
-                            sharedViewModel = sharedViewModel,
-                            bluetoothViewModel = bluetoothViewModel,
-                            drillDownStartMillis = backStackEntry.arguments?.getLong("start"),
-                            drillDownEndMillis   = backStackEntry.arguments?.getLong("end"),
-                        )
-                    }
-                    composable(Routes.GRAPH) {
-                        GraphScreen(
-                            navController = navController,
-                            sharedViewModel = sharedViewModel,
-                            bluetoothViewModel = bluetoothViewModel
-                        )
-                    }
-                    composable(Routes.TABLE) {
-                        TableScreen(
-                            navController = navController,
-                            sharedViewModel = sharedViewModel,
-                            bluetoothViewModel = bluetoothViewModel
-                        )
-                    }
-                    composable(
-                        route = Routes.TABLE_DRILLDOWN,
-                        arguments = listOf(
-                            navArgument("start") { type = NavType.LongType },
-                            navArgument("end")   { type = NavType.LongType }
-                        )
-                    ) { backStackEntry ->
-                        TableScreen(
-                            navController = navController,
-                            sharedViewModel = sharedViewModel,
-                            bluetoothViewModel = bluetoothViewModel,
-                            drillDownStartMillis = backStackEntry.arguments?.getLong("start"),
-                            drillDownEndMillis   = backStackEntry.arguments?.getLong("end"),
-                        )
-                    }
-                    composable(Routes.STATISTICS) {
-                        StatisticsScreen(
-                            navController = navController,
-                            sharedViewModel = sharedViewModel,
-                            bluetoothViewModel = bluetoothViewModel
-                        )
-                    }
-                    composable(Routes.INSIGHTS) {
-                        InsightsScreen(
-                            navController = navController,
-                            sharedViewModel = sharedViewModel,
-                            bluetoothViewModel = bluetoothViewModel,
-                        )
-                    }
-                    composable(Routes.SETTINGS) {
-                        SettingsScreen(
-                            navController = navController,
-                            sharedViewModel = sharedViewModel,
-                            settingsViewModel = settingsViewModel
-                        )
-                    }
-                    composable(Routes.GENERAL_SETTINGS) {
-                        GeneralSettingsScreen(
-                            navController = navController,
-                            sharedViewModel = sharedViewModel,
-                            settingsViewModel = settingsViewModel
-                        )
-                    }
-                    composable(Routes.USER_SETTINGS) {
-                        UserSettingsScreen(
-                            sharedViewModel = sharedViewModel,
-                            settingsViewModel = settingsViewModel,
-                            onEditUser = { userId ->
-                                navController.navigate(Routes.userDetail(userId))
-                            }
-                        )
-                    }
-                    composable(
-                        route = "${Routes.USER_DETAIL}?id={id}", // Argument in route pattern
-                        arguments = listOf(navArgument("id") {
-                            type = NavType.IntType
-                            defaultValue = -1 // Indicates a new user if ID is -1 (or not passed)
-                        })
-                    ) { backStackEntry ->
-                        val userId = backStackEntry.arguments?.getInt("id") ?: -1
-                        UserDetailScreen(
-                            navController = navController,
-                            userId = userId,
-                            sharedViewModel = sharedViewModel,
-                            settingsViewModel = settingsViewModel
-                        )
-                    }
-                    composable(Routes.MEASUREMENT_TYPES) {
-                        MeasurementTypeSettingsScreen(
-                            sharedViewModel = sharedViewModel,
-                            settingsViewModel = settingsViewModel,
-                            onEditType = { typeId ->
-                                navController.navigate(Routes.measurementTypeDetail(typeId))
-                            }
-                        )
-                    }
-                    composable(
-                        route = "${Routes.MEASUREMENT_DETAIL}?measurementId={measurementId}&userId={userId}",
-                        arguments = listOf(
-                            navArgument("measurementId") {
-                                type = NavType.IntType
-                                defaultValue = -1 // Default if not provided
-                            },
-                            navArgument("userId") {
-                                type = NavType.IntType
-                                defaultValue = -1 // Default if not provided, might also fetch from selectedUser if appropriate
-                            }
-                        )
-                    ) { backStackEntry ->
-                        val measurementId = backStackEntry.arguments?.getInt("measurementId") ?: -1
-                        val userId = backStackEntry.arguments?.getInt("userId") ?: -1
-                        MeasurementDetailScreen(
-                            navController = navController,
-                            measurementId = measurementId,
-                            userId = userId,
-                            sharedViewModel = sharedViewModel
-                        )
-                    }
-                    composable(
-                        route = "${Routes.MEASUREMENT_TYPE_DETAIL}?id={id}",
-                        arguments = listOf(navArgument("id") {
-                            type = NavType.IntType
-                            defaultValue = -1 // Indicates a new type if ID is -1
-                        })
-                    ) { backStackEntry ->
-                        val typeId = backStackEntry.arguments?.getInt("id") ?: -1
-                        MeasurementTypeDetailScreen(
-                            navController = navController,
-                            typeId = typeId,
-                            sharedViewModel = sharedViewModel,
-                            settingsViewModel = settingsViewModel
-                        )
-                    }
-                    composable(Routes.BLUETOOTH_SETTINGS) {
-                        BluetoothScreen(
-                            navController = navController,
-                            sharedViewModel = sharedViewModel,
-                            bluetoothViewModel = bluetoothViewModel
-                        )
-                    }
-                    composable(Routes.BLUETOOTH_DETAIL) {
-                        BluetoothDetailScreen(
-                            navController = navController,
-                            sharedViewModel = sharedViewModel,
-                            bluetoothViewModel = bluetoothViewModel
-                        )
-                    }
-                    composable(Routes.CHART_SETTINGS) {
-                        ChartSettingsScreen(
-                            navController = navController,
-                            sharedViewModel = sharedViewModel,
-                            settingsViewModel = settingsViewModel
-                        )
-                    }
-                    composable(Routes.DATA_MANAGEMENT_SETTINGS) {
-                        DataManagementSettingsScreen(
-                            navController = navController,
-                            settingsViewModel = settingsViewModel
-                        )
-                    }
-                    composable(Routes.ABOUT_SETTINGS) {
-                        AboutScreen(
-                            navController = navController,
-                            sharedViewModel = sharedViewModel
-                        )
-                    }
-                }
-                // Box to fill the space behind the system navigation bar, if visible.
-                // This prevents UI elements from being drawn under a translucent navigation bar,
-                // ensuring consistent background color.
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(
-                            WindowInsets.navigationBars // Get insets for the system navigation bar.
-                                .asPaddingValues()
-                                .calculateBottomPadding() // Calculate its height.
-                        )
-                        .background(MaterialTheme.colorScheme.surfaceContainer) // Match TopAppBar color or general theme background.
-                )
-            }
+            AppNavHost(
+                navController = navController,
+                innerPadding = innerPadding,
+                sharedViewModel = sharedViewModel,
+                settingsViewModel = settingsViewModel,
+                bluetoothViewModel = bluetoothViewModel
+            )
         }
     }
 }
