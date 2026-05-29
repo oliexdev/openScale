@@ -415,4 +415,13 @@ class GattScaleAdapter(
         currentPeripheral?.let { runCatching { central.cancelConnection(it) } }
         currentPeripheral = null
     }
+
+    override fun close() {
+        // Stop accepting new BLE operations and release the Blessed central
+        // (its broadcast receivers) before the base cancels the coroutine scope,
+        // which terminates the busy-waiting op-queue worker.
+        runCatching { opQueue.close() }
+        runCatching { if (::central.isInitialized) central.close() }
+        super.close()
+    }
 }

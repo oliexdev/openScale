@@ -45,6 +45,7 @@ import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -251,7 +252,7 @@ abstract class ModernScaleAdapter(
     protected val measurementFacade: MeasurementFacade,
     protected val userFacade: UserFacade,
     protected val handler: ScaleDeviceHandler
-) : ScaleCommunicator {
+) : ScaleCommunicator, AutoCloseable {
 
     protected val TAG = this::class.simpleName ?: "ModernScaleAdapter"
 
@@ -450,6 +451,10 @@ abstract class ModernScaleAdapter(
         _isConnected.value = false
         _isConnecting.value = false
         // keep targetAddress to allow higher layer to retry if wanted
+    }
+
+    override fun close() {
+        runCatching { scope.cancel() }
     }
 
     // ---- mapping helpers (core -> legacy DTOs used by handlers) --------------------------------
