@@ -17,8 +17,10 @@
  */
 package com.health.openscale.testutil
 
+import android.app.Application
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
@@ -33,8 +35,34 @@ import com.health.openscale.core.database.MIGRATION_6_7
 import com.health.openscale.core.database.MIGRATION_7_8
 import com.health.openscale.core.database.MIGRATION_8_9
 import com.health.openscale.core.database.MIGRATION_9_10
+import com.health.openscale.core.facade.DataManagementFacade
+import com.health.openscale.core.facade.MeasurementFacade
+import com.health.openscale.core.facade.SettingsFacade
+import com.health.openscale.core.facade.SettingsFacadeImpl
+import com.health.openscale.core.facade.UserFacade
 import com.health.openscale.core.service.DerivedValuesCalculator
+import com.health.openscale.core.service.MeasurementEnricher
+import com.health.openscale.core.service.TrendCalculator
+import com.health.openscale.core.usecase.AutoBackupUseCases
+import com.health.openscale.core.usecase.BackupRestoreUseCases
+import com.health.openscale.core.usecase.ImportExportUseCases
+import com.health.openscale.core.usecase.MeasurementAggregationUseCase
+import com.health.openscale.core.usecase.MeasurementCrudUseCases
+import com.health.openscale.core.usecase.MeasurementDemoUseCase
+import com.health.openscale.core.usecase.MeasurementEvaluationUseCases
+import com.health.openscale.core.usecase.MeasurementFilterUseCases
+import com.health.openscale.core.usecase.MeasurementInsightsUseCase
+import com.health.openscale.core.usecase.MeasurementQueryUseCases
+import com.health.openscale.core.usecase.MeasurementSmoothingUseCases
+import com.health.openscale.core.usecase.MeasurementTransformationUseCase
+import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
+import com.health.openscale.core.usecase.ReminderUseCase
+import com.health.openscale.core.usecase.SyncUseCases
+import com.health.openscale.core.usecase.UserGoalsUseCases
+import com.health.openscale.core.usecase.UserUseCases
+import kotlinx.coroutines.CoroutineScope
 import java.io.File
+import java.time.Clock
 
 /**
  * Shared Room scaffolding for JVM (Robolectric) DB tests: builds databases with the full
@@ -144,4 +172,52 @@ object RoomTestSupport {
             database.close()
         }
     }
+
+    // --- Facade builders (wire the real production object graph against in-memory Room) ---
+
+    /** Real [SettingsFacadeImpl] backed by an isolated test DataStore file (avoids process-singleton cross-talk). */
+    fun settingsFacadeFor(scope: CoroutineScope, file: File): SettingsFacadeImpl =
+        SettingsFacadeImpl(PreferenceDataStoreFactory.create(scope = scope, produceFile = { file }))
+
+    /** The three facades the ViewModels consume, assembled from the real use cases over [repo]/[settings]. */
+    class Facades(
+        val userFacade: UserFacade,
+        val measurementFacade: MeasurementFacade,
+        val dataManagementFacade: DataManagementFacade,
+    )
+
+    fun facadesFor(app: Application, repo: DatabaseRepository, settings: SettingsFacade): Facades {
+        val typeCrud = MeasurementTypeCrudUseCases(repo)
+        val sync = SyncUseCases(app, typeCrud)
+        val userUseCases = UserUseCases(repo, settings, sync)
+        val userFacade = UserFacade(userUseCases, UserGoalsUseCases(repo))
+
+        val query = MeasurementQueryUseCases(repo)
+        val transformation = MeasurementTransformationUseCase(settings, userUseCases, query)
+        val crud = MeasurementCrudUseCases(app, settings, sync, transformation, repo)
+        val measurementFacade = MeasurementFacade(
+            query = query,
+            filter = MeasurementFilterUseCases(),
+            smooth = MeasurementSmoothingUseCases(),
+            transformation = transformation,
+            crud = crud,
+            typeCrud = typeCrud,
+            enricher = MeasurementEnricher(settings, TrendCalculator()),
+            evaluationUseCases = MeasurementEvaluationUseCases(),
+            aggregation = MeasurementAggregationUseCase(),
+            insights = MeasurementInsightsUseCase(),
+            demoUseCase = MeasurementDemoUseCase(query, crud),
+        )
+
+        val dataManagementFacade = DataManagementFacade(
+            AutoBackupUseCases(app, settings),
+            BackupRestoreUseCases(app, repo, settings),
+            ImportExportUseCases(repo),
+        )
+        return Facades(userFacade, measurementFacade, dataManagementFacade)
+    }
+
+    /** [ReminderUseCase] is constructed (SettingsViewModel needs it) but its scheduling is not exercised. */
+    fun reminderUseCaseFor(app: Application, repo: DatabaseRepository, settings: SettingsFacade): ReminderUseCase =
+        ReminderUseCase(app, settings, MeasurementQueryUseCases(repo), Clock.systemUTC())
 }
