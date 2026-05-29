@@ -10,11 +10,15 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
-    id("kotlin-kapt")
+    alias(libs.plugins.ksp)
 }
 
 hilt {
     enableAggregatingTask = false
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 android {
@@ -145,13 +149,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
-    kapt {
-        arguments {
-            arg("room.schemaLocation", "$projectDir/schemas")
-        }
-        correctErrorTypes = true
-    }
-
     buildFeatures {
         compose = true
         buildConfig = true
@@ -185,16 +182,16 @@ dependencies {
     // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
 
     implementation(libs.datastore.preferences)
 
     // Hilt
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.hilt.work)
-    kapt(libs.hilt.androidx.compiler)
+    ksp(libs.hilt.androidx.compiler)
 
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
