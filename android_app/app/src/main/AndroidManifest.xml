@@ -24,9 +24,7 @@
 
     <application
         android:name=".OpenScaleApp"
-        android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
+        android:allowBackup="false"
         android:icon="${appIcon}"
         android:label="${appName}"
         android:roundIcon="${appRoundIcon}"
