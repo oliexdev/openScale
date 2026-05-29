@@ -47,7 +47,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext ctx: Context): AppDatabase =
         Room.databaseBuilder(ctx, AppDatabase::class.java, AppDatabase.Companion.DATABASE_NAME)
-            .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14)
+            .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15)
             .build()
 
     @Provides
@@ -74,7 +74,7 @@ object DatabaseModule {
         MeasurementValue::class,
         MeasurementType::class,
     ],
-    version = 14,
+    version = 15,
     exportSchema = true
 )
 @TypeConverters(DatabaseConverters::class)
@@ -377,6 +377,72 @@ val MIGRATION_13_14 = object : Migration(13, 14) {
                 db.execSQL(
                     "UPDATE MeasurementType SET displayOrder = ? WHERE `key` = ?",
                     arrayOf<Any?>(displayOrder, measurementType.key.name)
+                )
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+}
+
+val MIGRATION_14_15 = object : Migration(14, 15) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Add the `isInternal` column used to hide raw inputs (e.g. BIA
+        // impedance bands) from end-user UI while keeping them in the DB for
+        // re-derivation when formulas change.
+        db.execSQL(
+            "ALTER TABLE MeasurementType " +
+            "ADD COLUMN isInternal INTEGER NOT NULL DEFAULT 0"
+        )
+
+        // Seed the six new MeasurementTypes introduced for S400 dual-frequency
+        // body composition: IMPEDANCE, IMPEDANCE_LOW (raw band readings) and
+        // ECW, ICW, PROTEIN, BCM (derived). All disabled by default; new
+        // installs receive them via getDefaultMeasurementTypes().
+        val newKeys = setOf(
+            MeasurementTypeKey.IMPEDANCE,
+            MeasurementTypeKey.IMPEDANCE_LOW,
+            MeasurementTypeKey.ECW,
+            MeasurementTypeKey.ICW,
+            MeasurementTypeKey.PROTEIN,
+            MeasurementTypeKey.BCM,
+        )
+        val newTypes = getDefaultMeasurementTypes().filter { it.key in newKeys }
+        newTypes.forEach { type ->
+            db.execSQL(
+                """
+                INSERT OR IGNORE INTO MeasurementType
+                    (`key`, `name`, `color`, `icon`, `unit`, `inputType`, `displayOrder`,
+                     `isDerived`, `isEnabled`, `isPinned`, `isOnRightYAxis`, `isInternal`)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """.trimIndent(),
+                arrayOf<Any?>(
+                    type.key.name,
+                    null,
+                    type.color,
+                    type.icon.name,
+                    type.unit.name,
+                    type.inputType.name,
+                    -1,
+                    if (type.isDerived) 1 else 0,
+                    if (type.isEnabled) 1 else 0,
+                    if (type.isPinned) 1 else 0,
+                    if (type.isOnRightYAxis) 1 else 0,
+                    if (type.isInternal) 1 else 0
+                )
+            )
+        }
+
+        // Re-apply displayOrder to keep new + existing types aligned with the
+        // canonical order from getDefaultMeasurementTypes().
+        val defaultTypesInOrder = getDefaultMeasurementTypes()
+        db.beginTransaction()
+        try {
+            defaultTypesInOrder.forEachIndexed { index, measurementType ->
+                db.execSQL(
+                    "UPDATE MeasurementType SET displayOrder = ? WHERE `key` = ?",
+                    arrayOf<Any?>(index + 1, measurementType.key.name)
                 )
             }
             db.setTransactionSuccessful()

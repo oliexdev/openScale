@@ -126,8 +126,14 @@ fun MeasurementTypeSettingsScreen(
     }
 
     // Remember and sort the list based on displayOrder. This list is used by the reorderable component.
+    // Internal types (raw BIA bands) are hidden — they exist in the DB for re-derivation
+    // but have no meaning to end users.
     var list by remember(measurementTypes) {
-        mutableStateOf(measurementTypes.sortedBy { it.displayOrder })
+        mutableStateOf(
+            measurementTypes
+                .filter { !it.isInternal }
+                .sortedBy { it.displayOrder }
+        )
     }
 
     val lazyListState = rememberLazyListState()

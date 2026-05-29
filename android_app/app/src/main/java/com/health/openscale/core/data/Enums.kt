@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Bloodtype
+import androidx.compose.material.icons.filled.BubbleChart
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.ChildCare
@@ -49,6 +50,7 @@ import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Grain
 import androidx.compose.material.icons.filled.Height
+import androidx.compose.material.icons.filled.Hive
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalDining
 import androidx.compose.material.icons.filled.LocalDrink
@@ -71,6 +73,7 @@ import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.SquareFoot
 import androidx.compose.material.icons.filled.StackedLineChart
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -375,7 +378,10 @@ enum class MeasurementTypeIcon(val resource: IconResource) {
     IC_M_MEDICATION(IconResource.VectorResource(Icons.Filled.Medication)),
     IC_M_LIST(IconResource.VectorResource(Icons.AutoMirrored.Filled.List)),
     IC_M_LABEL(IconResource.VectorResource(Icons.AutoMirrored.Filled.Label)),
-    IC_M_PERSON(IconResource.VectorResource(Icons.Filled.Person));
+    IC_M_PERSON(IconResource.VectorResource(Icons.Filled.Person)),
+    IC_M_WATER_DROP(IconResource.VectorResource(Icons.Filled.WaterDrop)),
+    IC_M_BUBBLE_CHART(IconResource.VectorResource(Icons.Filled.BubbleChart)),
+    IC_M_HIVE(IconResource.VectorResource(Icons.Filled.Hive));
 }
 
 enum class MeasurementTypeKey(
@@ -412,6 +418,12 @@ enum class MeasurementTypeKey(
     TIME(26, R.string.measurement_type_time, listOf(UnitType.NONE), listOf(InputFieldType.TIME)),
     COMMENT(27, R.string.measurement_type_comment, listOf(UnitType.NONE), listOf(InputFieldType.TEXT)),
     USER(28, R.string.measurement_type_user, listOf(UnitType.NONE), listOf(InputFieldType.USER)),
+    IMPEDANCE(29, R.string.measurement_type_impedance, listOf(UnitType.OHM), listOf(InputFieldType.FLOAT)),
+    IMPEDANCE_LOW(30, R.string.measurement_type_impedance_low, listOf(UnitType.OHM), listOf(InputFieldType.FLOAT)),
+    ECW(31, R.string.measurement_type_ecw, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
+    ICW(32, R.string.measurement_type_icw, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
+    PROTEIN(33, R.string.measurement_type_protein, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
+    BCM(34, R.string.measurement_type_bcm, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     CUSTOM(99, R.string.measurement_type_custom_default_name, UnitType.entries.toList(), listOf(InputFieldType.FLOAT, InputFieldType.INT, InputFieldType.TEXT, InputFieldType.DATE, InputFieldType.TIME));
 }
 
@@ -425,6 +437,7 @@ enum class UnitType(val displayName: String) {
     INCH("in"),
     KCAL("kcal"),
     BPM("bpm"),
+    OHM("Ω"),
     NONE("");
 
     fun isWeightUnit(): Boolean {
