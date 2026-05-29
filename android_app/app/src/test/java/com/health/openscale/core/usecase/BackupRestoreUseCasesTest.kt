@@ -7,14 +7,15 @@ import android.net.Uri
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.core.app.ApplicationProvider
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.User
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacadeImpl
+import com.health.openscale.core.service.DerivedValuesCalculator
+import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -27,12 +28,15 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import java.io.File
 import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
-@RunWith(AndroidJUnit4::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
 class BackupRestoreUseCasesTest {
     private lateinit var baseContext: Context
     private lateinit var sandboxRoot: File
@@ -44,7 +48,7 @@ class BackupRestoreUseCasesTest {
 
     @Before
     fun setUp() = runBlocking {
-        baseContext = InstrumentationRegistry.getInstrumentation().targetContext
+        baseContext = ApplicationProvider.getApplicationContext()
         sandboxRoot = File(baseContext.cacheDir, "backup-restore-test-${System.nanoTime()}").apply {
             mkdirs()
         }
@@ -61,13 +65,21 @@ class BackupRestoreUseCasesTest {
 
         database = buildDatabase(sandboxContext)
 
+        val derivedValuesCalculator = DerivedValuesCalculator(
+            userDao = database.userDao(),
+            measurementDao = database.measurementDao(),
+            measurementTypeDao = database.measurementTypeDao(),
+            measurementValueDao = database.measurementValueDao()
+        )
+
         repository = DatabaseRepository(
             database = database,
             userDao = database.userDao(),
             userGoalsDao = database.userGoalsDao(),
             measurementDao = database.measurementDao(),
             measurementTypeDao = database.measurementTypeDao(),
-            measurementValueDao = database.measurementValueDao()
+            measurementValueDao = database.measurementValueDao(),
+            derivedValuesCalculator = derivedValuesCalculator
         )
 
         val dataStore = PreferenceDataStoreFactory.create(
@@ -124,7 +136,13 @@ class BackupRestoreUseCasesTest {
                 userGoalsDao = reopened.userGoalsDao(),
                 measurementDao = reopened.measurementDao(),
                 measurementTypeDao = reopened.measurementTypeDao(),
-                measurementValueDao = reopened.measurementValueDao()
+                measurementValueDao = reopened.measurementValueDao(),
+                derivedValuesCalculator = DerivedValuesCalculator(
+                    userDao = reopened.userDao(),
+                    measurementDao = reopened.measurementDao(),
+                    measurementTypeDao = reopened.measurementTypeDao(),
+                    measurementValueDao = reopened.measurementValueDao()
+                )
             )
 
             assertEquals(
@@ -162,7 +180,13 @@ class BackupRestoreUseCasesTest {
                 userGoalsDao = reopened.userGoalsDao(),
                 measurementDao = reopened.measurementDao(),
                 measurementTypeDao = reopened.measurementTypeDao(),
-                measurementValueDao = reopened.measurementValueDao()
+                measurementValueDao = reopened.measurementValueDao(),
+                derivedValuesCalculator = DerivedValuesCalculator(
+                    userDao = reopened.userDao(),
+                    measurementDao = reopened.measurementDao(),
+                    measurementTypeDao = reopened.measurementTypeDao(),
+                    measurementValueDao = reopened.measurementValueDao()
+                )
             )
 
             assertEquals(
@@ -191,7 +215,13 @@ class BackupRestoreUseCasesTest {
                 userGoalsDao = reopened.userGoalsDao(),
                 measurementDao = reopened.measurementDao(),
                 measurementTypeDao = reopened.measurementTypeDao(),
-                measurementValueDao = reopened.measurementValueDao()
+                measurementValueDao = reopened.measurementValueDao(),
+                derivedValuesCalculator = DerivedValuesCalculator(
+                    userDao = reopened.userDao(),
+                    measurementDao = reopened.measurementDao(),
+                    measurementTypeDao = reopened.measurementTypeDao(),
+                    measurementValueDao = reopened.measurementValueDao()
+                )
             )
 
             val users = reopenedRepo.getAllUsers().first()
@@ -230,7 +260,13 @@ class BackupRestoreUseCasesTest {
                 userGoalsDao = reopened.userGoalsDao(),
                 measurementDao = reopened.measurementDao(),
                 measurementTypeDao = reopened.measurementTypeDao(),
-                measurementValueDao = reopened.measurementValueDao()
+                measurementValueDao = reopened.measurementValueDao(),
+                derivedValuesCalculator = DerivedValuesCalculator(
+                    userDao = reopened.userDao(),
+                    measurementDao = reopened.measurementDao(),
+                    measurementTypeDao = reopened.measurementTypeDao(),
+                    measurementValueDao = reopened.measurementValueDao()
+                )
             )
 
             val users = reopenedRepo.getAllUsers().first()
@@ -241,83 +277,7 @@ class BackupRestoreUseCasesTest {
         }
     }
 
-    private fun buildDatabase(context: Context): AppDatabase =
-        Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            AppDatabase.DATABASE_NAME
-        )
-            .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
-            .addMigrations(
-                com.health.openscale.core.database.MIGRATION_6_7,
-                com.health.openscale.core.database.MIGRATION_7_8,
-                com.health.openscale.core.database.MIGRATION_8_9,
-                com.health.openscale.core.database.MIGRATION_9_10,
-                com.health.openscale.core.database.MIGRATION_10_11,
-                com.health.openscale.core.database.MIGRATION_11_12,
-                com.health.openscale.core.database.MIGRATION_12_13,
-                com.health.openscale.core.database.MIGRATION_13_14
-            )
-            .build()
+    private fun buildDatabase(context: Context): AppDatabase = RoomTestSupport.onDisk(context)
 
-    private fun createLegacyDatabase(file: File) {
-        val database = SQLiteDatabase.openOrCreateDatabase(file, null)
-        try {
-            database.execSQL(
-                """
-                    CREATE TABLE scaleUsers (
-                        id INTEGER PRIMARY KEY,
-                        username TEXT NOT NULL,
-                        birthday INTEGER NOT NULL,
-                        gender INTEGER NOT NULL,
-                        bodyHeight REAL NOT NULL,
-                        activityLevel INTEGER NOT NULL
-                    )
-                """.trimIndent()
-            )
-            database.execSQL(
-                """
-                    CREATE TABLE scaleMeasurements (
-                        id INTEGER PRIMARY KEY,
-                        userId INTEGER NOT NULL,
-                        datetime INTEGER,
-                        enabled INTEGER NOT NULL,
-                        weight REAL,
-                        fat REAL,
-                        water REAL,
-                        muscle REAL,
-                        visceralFat REAL,
-                        lbm REAL,
-                        waist REAL,
-                        hip REAL,
-                        bone REAL,
-                        chest REAL,
-                        thigh REAL,
-                        biceps REAL,
-                        neck REAL,
-                        caliper1 REAL,
-                        caliper2 REAL,
-                        caliper3 REAL,
-                        calories REAL,
-                        comment TEXT
-                    )
-                """.trimIndent()
-            )
-            database.execSQL(
-                """
-                    INSERT INTO scaleUsers (id, username, birthday, gender, bodyHeight, activityLevel)
-                    VALUES (1, 'legacy-user', 946684800000, 1, 168.0, 2)
-                """.trimIndent()
-            )
-            database.execSQL(
-                """
-                    INSERT INTO scaleMeasurements (id, userId, datetime, enabled, weight, comment)
-                    VALUES (1, 1, 1712325600000, 1, 72.5, 'legacy measurement')
-                """.trimIndent()
-            )
-            database.execSQL("PRAGMA user_version = 6")
-        } finally {
-            database.close()
-        }
-    }
+    private fun createLegacyDatabase(file: File) = RoomTestSupport.writeLegacyV6Database(file)
 }

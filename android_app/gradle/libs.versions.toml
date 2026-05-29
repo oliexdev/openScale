@@ -26,6 +26,9 @@ kotlinCsv = "1.10.0"
 blessedKotlin = "3.0.12"
 truth = "1.4.5"
 bouncycastle = "1.83"
+robolectric = "4.14.1"
+coroutinesTest = "1.10.2"
+androidxTestCore = "1.7.0"
 
 
 [libraries]
@@ -69,6 +72,11 @@ kotlin-csv-jvm = { group = "com.github.doyaaaaaken", name = "kotlin-csv-jvm", ve
 blessed-kotlin = { group = "com.github.weliem", name = "blessed-kotlin", version.ref = "blessedKotlin" }
 truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 bouncycastle = { group = "org.bouncycastle", name = "bcprov-jdk18on", version.ref = "bouncycastle" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "room" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
+androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
+androidx-work-testing = { group = "androidx.work", name = "work-testing", version.ref = "worker" }
 
 
 [plugins]

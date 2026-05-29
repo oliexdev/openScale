@@ -19,6 +19,7 @@ package com.health.openscale.core.usecase
 
 import android.content.Context
 import android.text.format.DateUtils
+import androidx.annotation.VisibleForTesting
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -122,33 +123,35 @@ class ReminderUseCase @Inject constructor(
         )
     }
 
-    /**
-     * Compute the next ZonedDateTime at which the reminder should trigger.
-     * @param selectedDayNames Set of DayOfWeek.name strings (e.g., "MONDAY").
-     */
-    private fun computeNext(
-        from: ZonedDateTime,
-        selectedDayNames: Set<String>,
-        hour: Int,
-        minute: Int
-    ): ZonedDateTime {
-        val days: Set<DayOfWeek> = selectedDayNames.mapNotNull { name ->
-            runCatching { DayOfWeek.valueOf(name) }.getOrNull()
-        }.toSet()
-
-        var candidate = from.withHour(hour).withMinute(minute).withSecond(0).withNano(0)
-
-        // If today not allowed or time already passed, move forward day-by-day until allowed
-        if (candidate.isBefore(from) || candidate.dayOfWeek !in days) {
-            repeat(7) {
-                candidate = candidate.plusDays(1)
-                if (candidate.dayOfWeek in days) return candidate
-            }
-        }
-        return candidate
-    }
-
     companion object {
         const val WORK_NAME = "daily_reminder_work"
+
+        /**
+         * Compute the next ZonedDateTime at which the reminder should trigger.
+         * Pure (no clock / IO): [from] is the reference time; [selectedDayNames] are
+         * DayOfWeek.name strings (e.g., "MONDAY"). Extracted here so it is unit-testable.
+         */
+        @VisibleForTesting
+        internal fun computeNext(
+            from: ZonedDateTime,
+            selectedDayNames: Set<String>,
+            hour: Int,
+            minute: Int
+        ): ZonedDateTime {
+            val days: Set<DayOfWeek> = selectedDayNames.mapNotNull { name ->
+                runCatching { DayOfWeek.valueOf(name) }.getOrNull()
+            }.toSet()
+
+            var candidate = from.withHour(hour).withMinute(minute).withSecond(0).withNano(0)
+
+            // If today not allowed or time already passed, move forward day-by-day until allowed
+            if (candidate.isBefore(from) || candidate.dayOfWeek !in days) {
+                repeat(7) {
+                    candidate = candidate.plusDays(1)
+                    if (candidate.dayOfWeek in days) return candidate
+                }
+            }
+            return candidate
+        }
     }
 }

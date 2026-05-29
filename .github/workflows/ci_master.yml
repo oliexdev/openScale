@@ -33,6 +33,10 @@ jobs:
         with:
           distribution: "zulu" # See 'Supported distributions' for available options
           java-version: "21"
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest
+      - name: Compile instrumented tests
+        run: ./gradlew compileDebugAndroidTestKotlin
       - name: Build APK
         run: ./gradlew assembleDebug
       - uses: "marvinpinto/action-automatic-releases@latest"

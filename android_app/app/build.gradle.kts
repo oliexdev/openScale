@@ -156,6 +156,12 @@ android {
         compose = true
         buildConfig = true
     }
+
+    testOptions {
+        // JVM unit tests touch android.util.Log (via LogManager); return defaults
+        // instead of throwing "not mocked" so pure-logic tests can run on the JVM.
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {
@@ -224,6 +230,12 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     testImplementation(libs.junit)
     testImplementation(libs.truth)
+    // JVM-runnable Android/Room tests (no emulator needed)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.room.testing)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.work.testing)
 }
 
 fun safeExec(vararg cmd: String): String = try {

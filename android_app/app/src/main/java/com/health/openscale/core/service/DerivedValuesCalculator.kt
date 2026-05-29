@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.service
 
+import androidx.annotation.VisibleForTesting
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.MeasureUnit
@@ -242,10 +243,12 @@ class DerivedValuesCalculator @Inject constructor(
         val durationMillis = (endTime - startTime) / 1_000_000
         LogManager.i(DERIVED_VALUES_TAG, "Finished recalculation of derived values for measurementId: $measurementId. Took $durationMillis ms.")    }
 
-    // --- Private Calculation Helper Functions ---
-    private val CALC_PROCESS_TAG = "DerivedValuesProcess"
+    // --- Calculation helper functions (pure; in companion object, @VisibleForTesting for unit tests) ---
+    companion object {
+    private const val CALC_PROCESS_TAG = "DerivedValuesProcess"
 
-    private fun processBmiCalculation(weightKg: Float?, heightCm: Float?): Float? {
+    @VisibleForTesting
+    internal fun processBmiCalculation(weightKg: Float?, heightCm: Float?): Float? {
         //LogManager.v(CALC_PROCESS_TAG, "Processing BMI: weight=$weightKg kg, height=$heightCm cm")
         return if (weightKg != null && weightKg > 0f && heightCm != null && heightCm > 0f) {
             val heightM = heightCm / 100f
@@ -256,7 +259,8 @@ class DerivedValuesCalculator @Inject constructor(
         }
     }
 
-    private fun processWhrCalculation(waistCm: Float?, hipsCm: Float?): Float? {
+    @VisibleForTesting
+    internal fun processWhrCalculation(waistCm: Float?, hipsCm: Float?): Float? {
        // LogManager.v(CALC_PROCESS_TAG, "Processing WHR: waist=$waistCm cm, hips=$hipsCm cm")
         return if (waistCm != null && waistCm > 0f && hipsCm != null && hipsCm > 0f) {
             waistCm / hipsCm
@@ -266,7 +270,8 @@ class DerivedValuesCalculator @Inject constructor(
         }
     }
 
-    private fun processWhtrCalculation(waistCm: Float?, bodyHeightCm: Float?): Float? {
+    @VisibleForTesting
+    internal fun processWhtrCalculation(waistCm: Float?, bodyHeightCm: Float?): Float? {
        // LogManager.v(CALC_PROCESS_TAG, "Processing WHTR: waist=$waistCm cm, bodyHeight=$bodyHeightCm cm")
         return if (waistCm != null && waistCm > 0f && bodyHeightCm != null && bodyHeightCm > 0f) {
             waistCm / bodyHeightCm
@@ -276,7 +281,8 @@ class DerivedValuesCalculator @Inject constructor(
         }
     }
 
-    private fun processBmrCalculation(
+    @VisibleForTesting
+    internal fun processBmrCalculation(
         weightKg: Float?,
         heightCm: Float?,
         ageYears: Int,
@@ -298,7 +304,8 @@ class DerivedValuesCalculator @Inject constructor(
         }
     }
 
-    private fun processTDEECalculation(bmr: Float?, activityLevel: ActivityLevel?): Float? {
+    @VisibleForTesting
+    internal fun processTDEECalculation(bmr: Float?, activityLevel: ActivityLevel?): Float? {
        // LogManager.v(CALC_PROCESS_TAG, "Processing TDEE: BMR=$bmr, ActivityLevel=$activityLevel")
         if (bmr == null || bmr <= 0f || activityLevel == null) {
             LogManager.d(CALC_PROCESS_TAG, "TDEE calculation skipped: Missing or invalid BMR or activity level.")
@@ -316,7 +323,8 @@ class DerivedValuesCalculator @Inject constructor(
     }
 
 
-    private fun processFatCaliperCalculation(
+    @VisibleForTesting
+    internal fun processFatCaliperCalculation(
         caliper1Cm: Float?,
         caliper2Cm: Float?,
         caliper3Cm: Float?,
@@ -379,5 +387,6 @@ class DerivedValuesCalculator @Inject constructor(
             //LogManager.w(CALC_PROCESS_TAG, "Calculated Fat Percentage ($fatPercentage%) is outside the expected physiological range (1–70%).")
             fatPercentage
         }
+    }
     }
 }
