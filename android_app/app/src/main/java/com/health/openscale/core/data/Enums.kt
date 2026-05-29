@@ -63,6 +63,7 @@ import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.RemoveCircleOutline
+import androidx.compose.material.icons.filled.ScatterPlot
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.SentimentSatisfied
 import androidx.compose.material.icons.filled.SentimentSatisfiedAlt
@@ -380,6 +381,7 @@ enum class MeasurementTypeIcon(val resource: IconResource) {
     IC_M_LABEL(IconResource.VectorResource(Icons.AutoMirrored.Filled.Label)),
     IC_M_PERSON(IconResource.VectorResource(Icons.Filled.Person)),
     IC_M_WATER_DROP(IconResource.VectorResource(Icons.Filled.WaterDrop)),
+    IC_M_SCATTER_PLOT(IconResource.VectorResource(Icons.Filled.ScatterPlot)),
     IC_M_BUBBLE_CHART(IconResource.VectorResource(Icons.Filled.BubbleChart)),
     IC_M_HIVE(IconResource.VectorResource(Icons.Filled.Hive));
 }
