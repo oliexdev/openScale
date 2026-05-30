@@ -36,4 +36,4 @@ jobs:
           prerelease: true
           title: "openScale 3.0 beta build"
           files: |
-            android_app/app/build/outputs/apk/beta/openScale-beta.apk
+            android_app/app/build/outputs/apk/beta/openScale-*-beta.apk

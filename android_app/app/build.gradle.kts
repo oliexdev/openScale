@@ -1,3 +1,4 @@
+import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.text.SimpleDateFormat
@@ -29,8 +30,8 @@ android {
         applicationId = "com.health.openscale"
         minSdk = 31
         targetSdk = 36
-        versionCode = 74
-        versionName = "3.1.0"
+        versionCode = 75
+        versionName = "3.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders["appName"] = "openScale"
@@ -136,10 +137,37 @@ android {
 
     applicationVariants.all {
         val variant = this
+        val buildType = variant.buildType.name
+        // Include the version number for every build type except debug.
+        val baseName = if (buildType == "debug") {
+            "openScale-$buildType"
+        } else {
+            "openScale-${defaultConfig.versionName}-$buildType"
+        }
+
+        // APK naming.
         outputs.all {
             val output = this
             if (output is com.android.build.gradle.internal.api.BaseVariantOutputImpl) {
-                output.outputFileName = "openScale-${variant.buildType.name}.apk"
+                output.outputFileName = "$baseName.apk"
+            }
+        }
+
+        // AAB naming: the outputs API above only covers APKs, so rename the
+        // bundle output once the bundle<Variant> task has produced it.
+        val bundleTaskName = "bundle${variant.name.replaceFirstChar { it.uppercase() }}"
+        tasks.matching { it.name == bundleTaskName }.configureEach {
+            doLast {
+                val bundleDir = layout.buildDirectory
+                    .dir("outputs/bundle/${variant.name}").get().asFile
+                bundleDir.listFiles { _, name -> name.endsWith(".aab") }
+                    ?.forEach { aab ->
+                        val target = File(bundleDir, "$baseName.aab")
+                        if (aab != target) {
+                            target.delete()
+                            aab.renameTo(target)
+                        }
+                    }
             }
         }
     }
