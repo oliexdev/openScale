@@ -260,7 +260,9 @@ class ImportExportUseCases @Inject constructor(
                                             (t.name?.equals(colName, ignoreCase = true) == true)
                                 }
                             }
-                            if (matched != null && matched.isEnabled) {
+                            // Internal raw inputs (e.g. impedance bands) are disabled by
+                            // default but must still be importable for re-derivation.
+                            if (matched != null && (matched.isEnabled || matched.isInternal)) {
                                 valueColumnMap[colIdx] = matched
                                 LogManager.d(TAG, "Header map: '$colName' -> ${matched.key} (id=${matched.id})")
                             }

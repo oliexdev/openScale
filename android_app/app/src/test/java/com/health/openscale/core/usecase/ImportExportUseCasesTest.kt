@@ -191,6 +191,63 @@ class ImportExportUseCasesTest {
     }
 
     @Test
+    fun import_internalImpedanceColumn_isImportedDespiteDisabledType() = runBlocking {
+        val impedanceType = repo.getAllMeasurementTypes().first()
+            .first { it.key == MeasurementTypeKey.IMPEDANCE }
+        // Impedance is a raw input: internal and disabled by default, yet still importable.
+        assertThat(impedanceType.isInternal).isTrue()
+        assertThat(impedanceType.isEnabled).isFalse()
+
+        val report = useCases.importUserFromCsv(
+            userId, csvUri("DATE,IMPEDANCE\n2025-04-11,480\n"), context.contentResolver
+        ).getOrThrow()
+        assertThat(report.importedMeasurementsCount).isEqualTo(1)
+
+        val value = repo.getMeasurementsWithValuesForUser(userId).first()
+            .flatMap { it.values }
+            .firstOrNull { it.value.typeId == impedanceType.id }
+        assertThat(value).isNotNull()
+        assertThat(value!!.value.floatValue).isWithin(1e-3f).of(480f)
+    }
+
+    @Test
+    fun csvRoundTrip_internalImpedance_isExportedAndReimported() = runBlocking {
+        val types = repo.getAllMeasurementTypes().first()
+        val weightId = types.first { it.key == MeasurementTypeKey.WEIGHT }.id
+        val impedanceId = types.first { it.key == MeasurementTypeKey.IMPEDANCE }.id
+
+        // Add a measurement carrying a raw impedance value.
+        val mId = db.measurementDao().insert(Measurement(userId = userId, timestamp = 3_000L)).toInt()
+        db.measurementValueDao().insert(
+            MeasurementValue(measurementId = mId, typeId = weightId, floatValue = 80f)
+        )
+        db.measurementValueDao().insert(
+            MeasurementValue(measurementId = mId, typeId = impedanceId, floatValue = 500f)
+        )
+
+        val file = File(context.cacheDir, "imp-${System.nanoTime()}.csv")
+        val cr = context.contentResolver
+
+        useCases.exportUserToCsv(userId, Uri.fromFile(file), cr).getOrThrow()
+
+        // The internal impedance column and value must be present in the CSV.
+        val csv = file.readText()
+        assertThat(csv).contains(MeasurementTypeKey.IMPEDANCE.name)
+        assertThat(csv).contains("500.0")
+
+        repo.deleteAllMeasurementsForUser(userId)
+
+        useCases.importUserFromCsv(userId, Uri.fromFile(file), cr).getOrThrow()
+
+        // The raw impedance value survives the round-trip despite the type being disabled.
+        val reimported = repo.getMeasurementsWithValuesForUser(userId).first()
+            .flatMap { it.values }
+            .firstOrNull { it.value.typeId == impedanceId }
+        assertThat(reimported).isNotNull()
+        assertThat(reimported!!.value.floatValue).isWithin(1e-3f).of(500f)
+    }
+
+    @Test
     fun import_customTypeMappedByName() = runBlocking {
         val customTypeId = db.measurementTypeDao().insert(
             MeasurementType(
