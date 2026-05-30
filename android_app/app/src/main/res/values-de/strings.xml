@@ -475,15 +475,12 @@
 
     <!-- Insights Screen -->
     <string name="insights_confidence_low">Begrenzte Datenbasis</string>
-    <string name="insights_section_body_shift">Deine %1$s Analyse</string>
     <string name="insights_label_recomposition">Rekomposition</string>
     <string name="insights_label_bulking">Aufbauphase</string>
     <string name="insights_label_mixed_loss">Gemischter Verlust</string>
     <string name="insights_label_fat_gain">Fettzunahme</string>
-    <string name="insights_chip_now">Jetzt</string>
     <string name="insights_short_term_trend">Kurzfristiger Trend (30T)</string>
     <string name="insights_long_term_trend">Langfristiger Trend</string>
-    <string name="insights_placeholder_body_shift">Mindestens %1$d Messungen sind erforderlich, um zu analysieren, wie sich dein Körper über die Zeit verändert hat.</string>
     <string name="insights_placeholder_weekday">Mindestens %1$d Messungen pro Wochentag sind erforderlich, um wöchentliche Gewohnheiten zu erkennen.</string>
     <string name="insights_placeholder_seasonal">Mindestens %1$d Jahre an Daten sind erforderlich, um saisonale Muster zu erkennen.</string>
     <string name="insights_placeholder_anomalies">Mindestens %1$d Messungen sind erforderlich, um ungewöhnliche Werte zu erkennen.</string>
