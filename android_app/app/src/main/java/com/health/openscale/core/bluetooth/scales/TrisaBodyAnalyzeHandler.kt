@@ -207,6 +207,8 @@ class TrisaBodyAnalyzeHandler : ScaleDeviceHandler() {
             measurement.water = lib.getWater(weightKg, impedance)
             measurement.muscle = lib.getMuscle(weightKg, impedance)
             measurement.bone = lib.getBone(weightKg, impedance)
+            // Store the raw resistance so body composition can be recomputed later.
+            measurement.impedance = resistance2.toDouble()
         }
         return measurement
     }

@@ -124,8 +124,13 @@ class OkOkHandler : ScaleDeviceHandler() {
         val m = result.scanRecord?.manufacturerSpecificData ?: return BroadcastAction.IGNORED
 
         // Try strict formats first
-        parseV20(m)?.let { kg ->
-            publish(ScaleMeasurement().apply { userId = user.id; weight = kg })
+        parseV20(m)?.let { (kg, imp) ->
+            publish(ScaleMeasurement().apply {
+                userId = user.id
+                weight = kg
+                // Store the raw impedance so body composition can be computed/recomputed later.
+                if (imp > 0f) impedance = imp.toDouble()
+            })
             return BroadcastAction.CONSUMED_STOP
         }
         parseV11(m)?.let { kg ->
@@ -148,7 +153,8 @@ class OkOkHandler : ScaleDeviceHandler() {
 
     // --- Parsers --------------------------------------------------------------
 
-    private fun parseV20(m: SparseArray<ByteArray>): Float? {
+    /** @return (weightKg, impedanceOhm) on a valid final V20 frame, else null. */
+    private fun parseV20(m: SparseArray<ByteArray>): Pair<Float, Float>? {
         val data = getManuf(m, MANUF_V20) ?: return null
         if (data.size != 19) return null
 
@@ -164,10 +170,9 @@ class OkOkHandler : ScaleDeviceHandler() {
         val divider = if ((data[IDX_V20_FINAL].toInt() and 0x04) != 0) 100.0f else 10.0f
         val weightRaw = u16be(data[IDX_V20_WEIGHT_MSB], data[IDX_V20_WEIGHT_LSB])
 
-        // If needed later:
-        // val imp = u16be(data[IDX_V20_IMPEDANCE_MSB], data[IDX_V20_IMPEDANCE_LSB]) / 10.0f
+        val imp = u16be(data[IDX_V20_IMPEDANCE_MSB], data[IDX_V20_IMPEDANCE_LSB]) / 10.0f
 
-        return weightRaw / divider
+        return (weightRaw / divider) to imp
     }
 
     private fun parseV11(m: SparseArray<ByteArray>): Float? {

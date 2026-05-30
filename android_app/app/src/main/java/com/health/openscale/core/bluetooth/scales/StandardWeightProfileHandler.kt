@@ -458,6 +458,8 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         if (impedancePresent) {
             val z = u16le(value, offset) * 0.1f; offset += 2
             logD("Impedance=$z Ω")
+            // Store the raw impedance so body composition can be recomputed later.
+            if (z > 0f) m.impedance = z.toDouble()
         }
 
         if (weightPresent) {

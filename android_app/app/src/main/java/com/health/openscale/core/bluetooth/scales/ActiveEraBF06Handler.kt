@@ -292,6 +292,8 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
             ensurePending().apply {
                 lbm = ffm.toFloat()
                 fat = fatPct.toFloat()
+                // Store the raw impedance so body composition can be recomputed later.
+                impedance = impedanceOhm
                 // Optional: rough water/muscle estimates could be added if desired
             }
         }

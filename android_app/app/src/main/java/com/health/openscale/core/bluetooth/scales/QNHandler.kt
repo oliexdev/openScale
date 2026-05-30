@@ -518,6 +518,8 @@ class QNHandler : ScaleDeviceHandler() {
         val m = ScaleMeasurement().apply {
             userId = user.id
             weight = weightKg
+            // Store the raw resistance so body composition can be recomputed later.
+            impedance = r1.toDouble()
         }
 
         val impedance = if (r1 < 410f) 3.0f else 0.3f * (r1 - 400f)
@@ -548,5 +550,6 @@ class QNHandler : ScaleDeviceHandler() {
         it.bone        = m.bone
         it.lbm         = m.lbm
         it.visceralFat = m.visceralFat
+        it.impedance   = m.impedance
     }
 }

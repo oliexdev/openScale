@@ -213,6 +213,8 @@ class OneByoneHandler : ScaleDeviceHandler() {
             userId = user.id
             dateTime = if (hasTimestamp) whenCal.time else Calendar.getInstance().time
             weight = weightKg
+            // Store the raw impedance so body composition can be recomputed later.
+            impedance = impedanceOhm.toDouble()
         }
 
         try {

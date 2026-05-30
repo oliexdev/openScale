@@ -348,6 +348,8 @@ class MiScaleHandler : ScaleDeviceHandler() {
         if (hasImp) {
             val imp = ((d[10].toInt() and 0xFF) shl 8) or (d[9].toInt() and 0xFF)
             if (imp > 0) {
+                // Store the raw impedance so body composition can be recomputed later.
+                m.impedance = imp.toDouble()
                 val sex = if (user.gender == GenderType.MALE) 1 else 0
                 val lib = MiScaleLib(sex, user.age, user.bodyHeight)
                 m.water       = lib.getWater(m.weight, imp.toFloat())

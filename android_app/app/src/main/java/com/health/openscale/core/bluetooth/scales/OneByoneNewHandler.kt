@@ -130,6 +130,8 @@ class OneByoneNewHandler : ScaleDeviceHandler() {
                 logD("Impedance: $imp Ω")
 
                 populateBodyComp(m, imp, currentAppUser())
+                // Store the raw impedance so body composition can be recomputed later.
+                m.impedance = imp.toDouble()
                 publish(m)
                 pending = null
 
@@ -159,6 +161,8 @@ class OneByoneNewHandler : ScaleDeviceHandler() {
                     weight = weightKg
                 }
                 populateBodyComp(hist, imp, currentAppUser())
+                // Store the raw impedance so body composition can be recomputed later.
+                hist.impedance = imp.toDouble()
                 publish(hist)
             }
 

@@ -205,8 +205,12 @@ class InlifeHandler : ScaleDeviceHandler() {
         val weight = u16Be(d, 2) / 10.0f
         val impedance = u32Be(d, 4).toLong()
         logD("Result (new): weight=%.2f kg, impedance=%d".format(weight, impedance))
-        // Legacy left this as TODO; to keep behavior, publish at least weight.
-        publish(ScaleMeasurement().apply { this.weight = weight })
+        // Legacy left BIA as TODO; publish weight plus the raw impedance so body
+        // composition can be computed/recomputed later.
+        publish(ScaleMeasurement().apply {
+            this.weight = weight
+            if (impedance > 0) this.impedance = impedance.toDouble()
+        })
         // (Optional) Hook a BIA library here if available later.
         sendCommand(CMD_FINISH)
     }

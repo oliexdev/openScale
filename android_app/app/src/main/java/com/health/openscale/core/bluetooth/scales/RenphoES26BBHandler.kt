@@ -168,8 +168,9 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
         val m = ScaleMeasurement().apply {
             weight = weightX100 / 100f
             if (timestampMs != null) dateTime = Date(timestampMs)
-            // Resistance is available but no BIA library hooked here;
-            // leave composition fields empty for now.
+            // No BIA library is hooked here, but store the raw resistance so
+            // body composition can be computed/recomputed later.
+            if (resistance > 0) impedance = resistance.toDouble()
         }
         publish(m)
     }

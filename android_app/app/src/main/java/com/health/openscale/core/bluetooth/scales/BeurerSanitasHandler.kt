@@ -662,7 +662,7 @@ class BeurerSanitasHandler : ScaleDeviceHandler() {
     private fun addMeasurement(buf: ByteArray, userId: Int) {
         val timestampMs = ConverterUtils.fromUnsignedInt32Be(buf, 0) * 1000L
         val weight = getKiloGram(buf, 4)
-        val impedance = ConverterUtils.fromUnsignedInt16Be(buf, 6) // FYI
+        val impedance = ConverterUtils.fromUnsignedInt16Be(buf, 6)
         val fat = getPercent(buf, 8)
         val water = getPercent(buf, 10)
         val muscle = getPercent(buf, 12)
@@ -677,6 +677,8 @@ class BeurerSanitasHandler : ScaleDeviceHandler() {
             this.water = water
             this.muscle = muscle
             this.bone = bone
+            // Store the raw impedance so body composition can be recomputed later.
+            if (impedance > 0) this.impedance = impedance.toDouble()
         }
         publish(m)
     }
