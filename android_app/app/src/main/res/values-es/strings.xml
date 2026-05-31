@@ -751,4 +751,16 @@
     <string name="insights_long_term_trend">largo plazo</string>
     <string name="insights_section_measurement_analysis">Tu análisis de %1$s</string>
     <string name="insights_placeholder_measurement_analysis">Se necesitan al menos %1$d mediciones para analizar cómo ha cambiado tu cuerpo con el tiempo.</string>
+    <string name="measurement_type_impedance">Impedancia (alta)</string>
+    <string name="measurement_type_impedance_low">Impedancia (baja)</string>
+    <string name="measurement_type_ecw">Agua extracelular</string>
+    <string name="measurement_type_icw">Agua intracelular</string>
+    <string name="measurement_type_protein">Proteína</string>
+    <string name="measurement_type_bcm">Masa celular corporal</string>
+    <string name="s400_bone_formula_label">Fórmula ósea</string>
+    <string name="s400_bone_formula_mi_legacy">Regresión basada en impedancia (heredado)</string>
+    <string name="s400_bone_formula_heymsfield">Heymsfield (antropométrica)</string>
+    <string name="s400_bmr_formula_label">Fórmula de BMR</string>
+    <string name="s400_bmr_formula_cun91">Cunningham 1991</string>
+    <string name="s400_bmr_formula_cun80">Cunningham 1980</string>
 </resources>
