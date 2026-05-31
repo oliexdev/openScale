@@ -489,7 +489,11 @@ fun OverviewScreen(
                                                         userGoals,
                                                         key = { goal -> "${goal.userId}_${goal.measurementTypeId}" },
                                                     ) { goal ->
-                                                        if (goal.userId == currentSelectedUser!!.id) {
+                                                        // Local copy: currentSelectedUser comes from a separate
+                                                        // flow than userGoals and may still be null while the user
+                                                        // is being switched — avoid the !! NPE.
+                                                        val selectedUser = currentSelectedUser
+                                                        if (selectedUser != null && goal.userId == selectedUser.id) {
                                                             val measurementType = typeById[goal.measurementTypeId]
                                                             if (measurementType != null) {
                                                                 UserGoalChip(
@@ -497,8 +501,9 @@ fun OverviewScreen(
                                                                     measurementType      = measurementType,
                                                                     referenceMeasurement = goalReferenceMeasurement,
                                                                     onClick              = {
-                                                                        if (currentSelectedUser!!.id != 0 &&
-                                                                            goal.userId == currentSelectedUser!!.id
+                                                                        val user = currentSelectedUser
+                                                                        if (user != null && user.id != 0 &&
+                                                                            goal.userId == user.id
                                                                         ) {
                                                                             sharedViewModel.showUserGoalDialogWithContext(
                                                                                 type         = measurementType,
@@ -610,12 +615,14 @@ fun OverviewScreen(
                                                     enrichedItem.measurementWithValues.measurement.id
                                             },
                                             onEdit                    = {
-                                                navController.navigate(
-                                                    Routes.measurementDetail(
-                                                        enrichedItem.measurementWithValues.measurement.id,
-                                                        selectedUserId!!,
+                                                selectedUserId?.let { userId ->
+                                                    navController.navigate(
+                                                        Routes.measurementDetail(
+                                                            enrichedItem.measurementWithValues.measurement.id,
+                                                            userId,
+                                                        )
                                                     )
-                                                )
+                                                }
                                             },
                                             onDelete                  = { measurementToDelete = aggItem },
                                             isHighlighted             = (highlightedMeasurementId ==

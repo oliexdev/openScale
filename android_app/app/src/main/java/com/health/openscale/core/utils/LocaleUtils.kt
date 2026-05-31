@@ -94,6 +94,15 @@ object LocaleUtils {
      * This is the fallback method for older API versions or when LocaleManager is not available.
      */
     private fun applyConfigurationToActivity(activity: ComponentActivity, newLocale: Locale, newLocaleList: LocaleList) {
+        // The locale change is triggered asynchronously from a coroutine; the activity may
+        // already be finishing/destroyed, in which case applyOverrideConfiguration throws
+        // IllegalStateException. Skip in that case — the new locale is persisted elsewhere
+        // and applies on the next launch.
+        if (activity.isFinishing || activity.isDestroyed) {
+            LogManager.w(TAG, "Activity is finishing or destroyed, skipping locale override.")
+            return
+        }
+
         val currentActivityConfiguration = activity.resources.configuration
         val currentActivityLocale = currentActivityConfiguration.locales.get(0)
 
@@ -106,8 +115,12 @@ object LocaleUtils {
             newConfiguration.setLocale(newLocale)
             newConfiguration.setLocales(newLocaleList) // Important for a consistent locale list
 
-            activity.applyOverrideConfiguration(newConfiguration)
-            LogManager.i(TAG, "Applied override configuration to activity for locale: ${newLocale.toLanguageTag()}.")
+            try {
+                activity.applyOverrideConfiguration(newConfiguration)
+                LogManager.i(TAG, "Applied override configuration to activity for locale: ${newLocale.toLanguageTag()}.")
+            } catch (e: IllegalStateException) {
+                LogManager.e(TAG, "applyOverrideConfiguration failed (activity in invalid state).", e)
+            }
         } else {
             LogManager.d(TAG, "Activity locale is already set to: ${newLocale.toLanguageTag()}. No configuration override needed.")
         }
