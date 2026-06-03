@@ -752,4 +752,16 @@
     <string name="insights_chip_volatility_moderate">moderada</string>
     <string name="insights_chip_volatility_high">volátil</string>
     <string name="insights_chip_plateau_days">estagnação: %1$d dias</string>
+    <string name="measurement_type_impedance">Impedância (alta)</string>
+    <string name="measurement_type_impedance_low">Impedância (baixa)</string>
+    <string name="measurement_type_ecw">Água extracelular</string>
+    <string name="measurement_type_icw">Água intracelular</string>
+    <string name="measurement_type_protein">Proteína</string>
+    <string name="measurement_type_bcm">Massa celular corporal</string>
+    <string name="s400_bone_formula_label">Fórmula de massa óssea</string>
+    <string name="s400_bone_formula_mi_legacy">Regressão baseada em impedância (Legado)</string>
+    <string name="s400_bone_formula_heymsfield">Heymsfield (antropométrica)</string>
+    <string name="s400_bmr_formula_label">Fórmula de TMB</string>
+    <string name="s400_bmr_formula_cun91">Cunningham 1991</string>
+    <string name="s400_bmr_formula_cun80">Cunningham 1980</string>
 </resources>
