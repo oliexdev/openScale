@@ -154,8 +154,13 @@ class SettingsViewModelTest {
             originalGoals = original,
         )
 
+        // Wait for the FINAL reconciled state (removed gone AND kept updated to 75), not an
+        // intermediate emission between the delete and the update.
         val after = withTimeout(5_000) {
-            repo.getAllGoalsForUser(uid).first { goals -> goals.none { it.measurementTypeId == removedType } }
+            repo.getAllGoalsForUser(uid).first { goals ->
+                goals.none { it.measurementTypeId == removedType } &&
+                    goals.any { it.measurementTypeId == keptType && it.goalValue == 75f }
+            }
         }
         assertThat(after.map { it.measurementTypeId }).containsExactly(keptType)
         assertThat(after.first { it.measurementTypeId == keptType }.goalValue).isEqualTo(75f)

@@ -120,6 +120,7 @@ import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.components.LinearGauge
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.navigation.Routes
+import com.health.openscale.ui.screen.components.ChartSplitterHandle
 import com.health.openscale.ui.screen.components.MeasurementChart
 import com.health.openscale.ui.screen.components.UserGoalChip
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
@@ -166,7 +167,12 @@ fun OverviewScreen(
         sharedViewModel.observeSplitterWeight(SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT, 0.3f)
     }.collectAsState(initial = 0.3f)
     var localSplitterWeight by remember { mutableStateOf(splitterWeight) }
-    LaunchedEffect(splitterWeight) { localSplitterWeight = splitterWeight }
+    // Last non-collapsed weight, restored when the user taps the handle to show the chart again.
+    var lastExpandedWeight by remember { mutableStateOf(splitterWeight.takeIf { it > 0f } ?: 0.3f) }
+    LaunchedEffect(splitterWeight) {
+        localSplitterWeight = splitterWeight
+        if (splitterWeight > 0f) lastExpandedWeight = splitterWeight
+    }
 
     // ── Aggregation ───────────────────────────────────────────────────────────
     val activeAggregationLevel by rememberResolvedAggregationLevel(
@@ -356,12 +362,12 @@ fun OverviewScreen(
 
                             // ── Chart + divider + goals (hidden in drill-down) ────────
                             if (!isDrillDown) {
-                                Box(modifier = Modifier.weight(localSplitterWeight)) {
+                                if (localSplitterWeight > 0f) Box(modifier = Modifier.weight(localSplitterWeight)) {
                                     MeasurementChart(
                                         sharedViewModel   = sharedViewModel,
                                         screenContextName = SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
                                         showFilterControls = true,
-                                        modifier          = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                        modifier          = Modifier.fillMaxWidth(),
                                         showYAxis         = false,
                                         onPointSelected   = { selectedTs ->
                                             if (isAggregated) {
@@ -404,35 +410,40 @@ fun OverviewScreen(
                                     )
                                 }
 
-                                // Draggable divider
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .pointerInput(Unit) {
-                                            detectDragGestures(
-                                                onDrag    = { change, dragAmount ->
-                                                    change.consume()
-                                                    localSplitterWeight =
-                                                        (localSplitterWeight + dragAmount.y / 2000f)
-                                                            .coerceIn(0.01f, 0.8f)
-                                                },
-                                                onDragEnd = {
-                                                    scope.launch {
-                                                        sharedViewModel.setSplitterWeight(
-                                                            SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
-                                                            localSplitterWeight,
-                                                        )
-                                                    }
-                                                },
+                                // Draggable + tappable splitter handle (drag = resize, tap = collapse/show).
+                                // Top padding lives on the handle (not the chart) so the spacing is
+                                // kept even when the chart is collapsed and not rendered. The bottom
+                                // gap comes from the goals/list top padding.
+                                ChartSplitterHandle(
+                                    modifier  = Modifier.padding(top = 8.dp),
+                                    collapsed = localSplitterWeight <= 0f,
+                                    onDrag = { dy ->
+                                        localSplitterWeight =
+                                            (localSplitterWeight + dy / 2000f).coerceIn(0f, 0.8f)
+                                    },
+                                    onDragEnd = {
+                                        scope.launch {
+                                            sharedViewModel.setSplitterWeight(
+                                                SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
+                                                localSplitterWeight,
                                             )
-                                        },
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    HorizontalDivider(
-                                        thickness = 1.dp,
-                                        color     = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                                    )
-                                }
+                                        }
+                                    },
+                                    onToggleCollapse = {
+                                        localSplitterWeight = if (localSplitterWeight > 0f) {
+                                            lastExpandedWeight = localSplitterWeight
+                                            0f
+                                        } else {
+                                            lastExpandedWeight.takeIf { it > 0f } ?: 0.3f
+                                        }
+                                        scope.launch {
+                                            sharedViewModel.setSplitterWeight(
+                                                SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
+                                                localSplitterWeight,
+                                            )
+                                        }
+                                    },
+                                )
 
                                 // Goals section
                                 if (userGoals.isNotEmpty()) {
@@ -791,7 +802,7 @@ fun MeasurementCard(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier          = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 8.dp),
+                    .padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 4.dp),
             ) {
                 Text(
                     text     = headerLabel,
@@ -846,7 +857,7 @@ fun MeasurementCard(
                 modifier = Modifier.padding(
                     start   = 16.dp,
                     end     = 16.dp,
-                    top     = if (pinnedValues.isNotEmpty()) 8.dp else 0.dp,
+                    top     = if (pinnedValues.isNotEmpty()) 4.dp else 0.dp,
                     bottom  = 0.dp,
                 ),
             ) {
@@ -921,7 +932,7 @@ fun MeasurementCard(
                 )
             }
             if (pinnedValues.isNotEmpty() && nonPinnedValues.isEmpty() && allActiveProcessedValues.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
     }
@@ -1012,7 +1023,7 @@ fun MeasurementValueRow(
                     maxLines = 1,
                 )
                 if (difference != null && trend != Trend.NOT_APPLICABLE) {
-                    Spacer(modifier = Modifier.height(1.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         val trendIconVector = when (trend) {
                             Trend.UP   -> Icons.Filled.ArrowUpward
@@ -1201,7 +1212,7 @@ fun MeasurementRowExpandable(
                             )
                         }
                     }
-                    Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 2.dp)) {
+                    Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp)) {
                         LinearGauge(
                             value         = displayValue,
                             lowLimit      = displayLow,

@@ -111,6 +111,8 @@
     <string name="success_measurement_deleted">Measurement deleted (%1$s)</string> <!-- %1$s is date/time -->
     <string name="error_deleting_measurement">Couldn\'t delete measurement. Please try again.</string>
     <string name="action_undo">Undo</string>
+    <string name="cd_chart_handle_resize">Drag to resize the chart, or tap to collapse it</string>
+    <string name="cd_chart_handle_show">Tap to show the chart</string>
     <string name="dialog_title_discard_changes">Discard changes?</string>
     <string name="dialog_message_discard_changes">Your changes haven\'t been saved and will be lost.</string>
     <string name="action_discard">Discard</string>

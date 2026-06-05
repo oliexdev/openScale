@@ -174,9 +174,12 @@ fun PeriodChart(
         }
     )
 
-    // Chart host that handles pointer interactions (tap to select/deselect)
+    // Chart host that handles pointer interactions (tap to select/deselect).
+    // Forward the caller's modifier so the bars fill the available height (and thus grow with the
+    // splitter) instead of rendering at Vico's intrinsic default height.
     CartesianChartHost(
         chart = chart,
-        modelProducer = modelProducer
+        modelProducer = modelProducer,
+        modifier = modifier,
     )
 }

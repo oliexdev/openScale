@@ -18,7 +18,9 @@
 package com.health.openscale.ui.screen.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,8 +29,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -44,10 +49,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -159,7 +167,12 @@ fun MeasurementChart(
         sharedViewModel.observeSplitterWeight(SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT, 0.25f)
     }.collectAsState(initial = 0.25f)
     var localSplitterWeight by remember { mutableStateOf(splitterWeight) }
-    LaunchedEffect(splitterWeight) { localSplitterWeight = splitterWeight }
+    // Last non-collapsed weight, restored when the user taps the handle to show the period chart again.
+    var lastExpandedWeight by remember { mutableStateOf(splitterWeight.takeIf { it > 0f } ?: 0.25f) }
+    LaunchedEffect(splitterWeight) {
+        localSplitterWeight = splitterWeight
+        if (splitterWeight > 0f) lastExpandedWeight = splitterWeight
+    }
 
     // ── Chart settings ────────────────────────────────────────────────────────
     val showDataPointsSetting by sharedViewModel.showChartDataPoints
@@ -358,14 +371,14 @@ fun MeasurementChart(
         }
 
         if (showPeriodChart && periodChartData.isNotEmpty()) {
-            Box(
+            if (localSplitterWeight > 0f) Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(localSplitterWeight)
                     .padding(horizontal = 8.dp),
             ) {
                 PeriodChart(
-                    modifier       = Modifier.fillMaxHeight(),
+                    modifier       = Modifier.fillMaxSize(),
                     data           = periodChartData,
                     selectedPeriod = selectedPeriod,
                     onPeriodClick  = { clicked ->
@@ -373,38 +386,45 @@ fun MeasurementChart(
                     },
                 )
             }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(16.dp)
-                    .pointerInput(Unit) {
-                        detectDragGestures(
-                            onDrag    = { change, dragAmount ->
-                                change.consume()
-                                localSplitterWeight =
-                                    (localSplitterWeight + dragAmount.y / 2000f).coerceIn(0.01f, 0.8f)
-                            },
-                            onDragEnd = {
-                                scope.launch {
-                                    sharedViewModel.setSplitterWeight(
-                                        SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT,
-                                        localSplitterWeight,
-                                    )
-                                }
-                            },
+            // Draggable + tappable splitter handle (drag = resize, tap = collapse/show period chart).
+            ChartSplitterHandle(
+                // Match the Overview's breathing room: there the chart (bottom) and list/goals (top)
+                // each add 8dp around the handle; here the neighbours add none, so add it explicitly.
+                modifier  = Modifier.padding(vertical = 8.dp),
+                collapsed = localSplitterWeight <= 0f,
+                onDrag = { dy ->
+                    // Allow the period (bar) chart to be dragged all the way down (no upper cap),
+                    // collapsing the main chart entirely.
+                    localSplitterWeight = (localSplitterWeight + dy / 2000f).coerceIn(0f, 1f)
+                },
+                onDragEnd = {
+                    scope.launch {
+                        sharedViewModel.setSplitterWeight(
+                            SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT,
+                            localSplitterWeight,
                         )
-                    },
-                contentAlignment = Alignment.Center,
-            ) {
-                HorizontalDivider(
-                    modifier  = Modifier.padding(vertical = 6.dp),
-                    thickness = 1.dp,
-                    color     = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                )
-            }
+                    }
+                },
+                onToggleCollapse = {
+                    localSplitterWeight = if (localSplitterWeight > 0f) {
+                        lastExpandedWeight = localSplitterWeight
+                        0f
+                    } else {
+                        lastExpandedWeight.takeIf { it > 0f } ?: 0.25f
+                    }
+                    scope.launch {
+                        sharedViewModel.setSplitterWeight(
+                            SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT,
+                            localSplitterWeight,
+                        )
+                    }
+                },
+            )
         }
 
-        when {
+        // When the period (bar) chart is dragged to full height the main chart collapses to nothing —
+        // skip rendering it instead of giving a Vico chart a zero-height slot.
+        if (localSplitterWeight < 1f) when {
             isChartDataLoading -> {
                 Box(
                     modifier          = Modifier.weight(1f).fillMaxSize(),
@@ -683,4 +703,62 @@ internal fun List<EnrichedMeasurement>.toSmoothedChartSeries(
     } else emptyList()
 
     return realSeries + projectedSeries
+}
+
+/**
+ * Draggable handle separating a chart from the content below it. Replaces a near-invisible 1dp
+ * divider with a discoverable Material-style grab handle (a small rounded pill) inside a comfortable
+ * touch band.
+ *
+ * - **Drag** vertically → [onDrag] receives the vertical delta in pixels (the caller adjusts its
+ *   split weight), [onDragEnd] fires when the gesture ends (persist).
+ * - **Tap** → [onToggleCollapse] (collapse the chart for maximum space, or restore it).
+ *
+ * When [collapsed] the handle shows a downward chevron hinting that a tap brings the chart back.
+ */
+@Composable
+fun ChartSplitterHandle(
+    collapsed: Boolean,
+    onDrag: (dyPx: Float) -> Unit,
+    onDragEnd: () -> Unit,
+    onToggleCollapse: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val description = stringResource(
+        if (collapsed) R.string.cd_chart_handle_show else R.string.cd_chart_handle_resize
+    )
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(24.dp)
+            .semantics { contentDescription = description }
+            // Tap and drag are detected by separate gesture detectors running concurrently: a tap
+            // (no movement) toggles collapse, a drag adjusts the split.
+            .pointerInput(Unit) { detectTapGestures(onTap = { onToggleCollapse() }) }
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDrag = { change, dragAmount -> change.consume(); onDrag(dragAmount.y) },
+                    onDragEnd = { onDragEnd() },
+                )
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        if (collapsed) {
+            // Chart is hidden → downward chevron hints "tap (or drag down) to show the chart",
+            // matching the drag-down-to-expand gesture and the app's ExpandMore/ExpandLess pattern.
+            Icon(
+                imageVector = Icons.Default.ExpandMore,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            // Material drag-handle pill (same idiom as a bottom sheet handle).
+            Box(
+                modifier = Modifier
+                    .size(width = 32.dp, height = 4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)),
+            )
+        }
+    }
 }
