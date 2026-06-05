@@ -37,7 +37,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,7 +50,6 @@ import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.screen.dialog.DeleteConfirmationDialog
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
-import kotlinx.coroutines.launch
 
 /**
  * Composable screen that displays a list of users.
@@ -73,7 +71,6 @@ fun UserSettingsScreen(
     onEditUser: (userId: Int?) -> Unit
 ) {
     val users by sharedViewModel.allUsers.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
 
     // Pre-load strings for LaunchedEffect
     val usersTitle = stringResource(id = R.string.user_settings_title)
@@ -86,9 +83,8 @@ fun UserSettingsScreen(
         DeleteConfirmationDialog(
             onDismissRequest = { userToDelete = null },
             onConfirm = {
-                coroutineScope.launch {
-                    settingsViewModel.deleteUser(user)
-                }
+                // deleteUser is fire-and-forget on the ViewModel's scope.
+                settingsViewModel.deleteUser(user)
             },
             title = stringResource(R.string.dialog_title_delete_user, user.name),
             text = stringResource(R.string.dialog_text_delete_user)

@@ -72,7 +72,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.ActivityLevel
@@ -92,7 +91,6 @@ import com.health.openscale.ui.screen.dialog.IconPickerDialog
 import com.health.openscale.ui.screen.dialog.UserGoalDialog
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
-import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Calendar
 import java.util.Date
@@ -242,25 +240,14 @@ fun UserDetailScreen(
             return
         }
 
-        settingsViewModel.viewModelScope.launch {
-            val newUserToSave = User(
-                id = 0, name = name, icon = selectedIcon, birthDate = birthDate,
-                gender = gender, heightCm = finalHeightCm, activityLevel = activityLevel,
-                useAssistedWeighing = useAssistedWeighing, amputations = amputations
-            )
-            val newGeneratedUserIdLong = settingsViewModel.addUser(newUserToSave)
-            if (newGeneratedUserIdLong > 0) {
-                val newGeneratedUserIdInt = newGeneratedUserIdLong.toInt()
-                pendingUserGoals.forEach { currentPendingGoal ->
-                    val finalGoalToSave = currentPendingGoal.copy(userId = newGeneratedUserIdInt)
-                    sharedViewModel.insertUserGoal(finalGoalToSave)
-                }
-                sharedViewModel.selectUser(newGeneratedUserIdInt)
-                navController.popBackStack()
-            } else {
-                Toast.makeText(context, R.string.user_detail_error_invalid_data, Toast.LENGTH_SHORT).show()
-            }
-        }
+        val newUserToSave = User(
+            id = 0, name = name, icon = selectedIcon, birthDate = birthDate,
+            gender = gender, heightCm = finalHeightCm, activityLevel = activityLevel,
+            useAssistedWeighing = useAssistedWeighing, amputations = amputations
+        )
+        // The ViewModel owns the coroutine (create user + goals + select) and reports via snackbar.
+        settingsViewModel.createUserWithGoals(newUserToSave, pendingUserGoals)
+        navController.popBackStack()
     }
 
     /**
@@ -280,39 +267,14 @@ fun UserDetailScreen(
             return
         }
 
-        settingsViewModel.viewModelScope.launch {
-            val updatedUser = currentLoadedUser.copy(
-                name = name, icon = selectedIcon, birthDate = birthDate, gender = gender,
-                heightCm = finalHeightCm, activityLevel = activityLevel, useAssistedWeighing = useAssistedWeighing,
-                amputations = amputations
-            )
-            settingsViewModel.updateUser(updatedUser)
-
-            val originalDbSnapshot = userGoals // Snapshot of goals from DB when screen loaded
-
-            // Goals to delete
-            val goalsToDelete = originalDbSnapshot.filter { originalGoal ->
-                pendingUserGoals.none { pendingGoal -> pendingGoal.measurementTypeId == originalGoal.measurementTypeId }
-            }
-            goalsToDelete.forEach { goalToDel ->
-                sharedViewModel.deleteUserGoal(currentLoadedUser.id, goalToDel.measurementTypeId)
-            }
-
-            // Goals to insert or update
-            pendingUserGoals.forEach { currentPendingGoal ->
-                val goalForDb = currentPendingGoal.copy(userId = currentLoadedUser.id)
-                val originalGoalInSnapshot = originalDbSnapshot.find { it.measurementTypeId == goalForDb.measurementTypeId }
-
-                if (originalGoalInSnapshot != null) { // Goal existed
-                    if (originalGoalInSnapshot.goalValue != goalForDb.goalValue) { // And value changed
-                        sharedViewModel.updateUserGoal(goalForDb)
-                    }
-                } else { // New goal for this user
-                    sharedViewModel.insertUserGoal(goalForDb)
-                }
-            }
-            navController.popBackStack()
-        }
+        val updatedUser = currentLoadedUser.copy(
+            name = name, icon = selectedIcon, birthDate = birthDate, gender = gender,
+            heightCm = finalHeightCm, activityLevel = activityLevel, useAssistedWeighing = useAssistedWeighing,
+            amputations = amputations
+        )
+        // The ViewModel owns the coroutine (update user + reconcile goals) and reports via snackbar.
+        settingsViewModel.updateUserWithGoals(updatedUser, pendingUserGoals, userGoals)
+        navController.popBackStack()
     }
 
 

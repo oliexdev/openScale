@@ -27,6 +27,7 @@ import com.health.openscale.R
 import com.health.openscale.core.data.BackupInterval
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.facade.DataManagementFacade
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.UserFacade
@@ -140,13 +141,58 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    suspend fun deleteUser(user: User, reseatSelection: Boolean = true) {
-        try {
-            userFacade.deleteUser(user, reseatSelection).getOrThrow()
-            showSnackbar(R.string.user_deleted_successfully, listOf(user.name))
-        } catch (e: Exception) {
-            LogManager.e(TAG, "deleteUser failed", e)
-            showSnackbar(R.string.user_deleted_error, listOf(user.name))
+    /** Fire-and-forget delete on [viewModelScope] so it completes even if the screen is left. */
+    fun deleteUser(user: User, reseatSelection: Boolean = true) {
+        viewModelScope.launch {
+            try {
+                userFacade.deleteUser(user, reseatSelection).getOrThrow()
+                showSnackbar(R.string.user_deleted_successfully, listOf(user.name))
+            } catch (e: Exception) {
+                LogManager.e(TAG, "deleteUser failed", e)
+                showSnackbar(R.string.user_deleted_error, listOf(user.name))
+            }
+        }
+    }
+
+    /**
+     * Creates [user] together with its [goals] and selects the new user — all on [viewModelScope],
+     * so the operation completes even if the edit screen navigates away immediately. Errors are
+     * reported by [addUser] via snackbar.
+     */
+    fun createUserWithGoals(user: User, goals: List<UserGoals>) {
+        viewModelScope.launch {
+            val newId = addUser(user)
+            if (newId > 0) {
+                val uid = newId.toInt()
+                goals.forEach { userFacade.insertUserGoal(it.copy(userId = uid)) }
+                userFacade.setSelectedUserId(uid)
+                showSnackbar(R.string.user_added_successfully, listOf(user.name))
+            }
+        }
+    }
+
+    /**
+     * Updates [user] and reconciles its goals (delete removed, insert new, update changed value) on
+     * [viewModelScope]. [updateUser] reports success/failure via snackbar.
+     */
+    fun updateUserWithGoals(
+        user: User,
+        pendingGoals: List<UserGoals>,
+        originalGoals: List<UserGoals>,
+    ) {
+        viewModelScope.launch {
+            updateUser(user)
+            originalGoals
+                .filter { orig -> pendingGoals.none { it.measurementTypeId == orig.measurementTypeId } }
+                .forEach { userFacade.deleteUserGoal(user.id, it.measurementTypeId) }
+            pendingGoals.forEach { pending ->
+                val goal = pending.copy(userId = user.id)
+                val orig = originalGoals.find { it.measurementTypeId == goal.measurementTypeId }
+                when {
+                    orig == null -> userFacade.insertUserGoal(goal)
+                    orig.goalValue != goal.goalValue -> userFacade.updateUserGoal(goal)
+                }
+            }
         }
     }
 

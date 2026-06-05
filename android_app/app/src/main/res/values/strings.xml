@@ -69,6 +69,7 @@
     <string name="user_deleted_successfully">User %1$s was deleted successfully.</string>
     <string name="user_deleted_error">Error deleting user %1$s.</string>
     <string name="user_updated_successfully">User %1$s updated successfully.</string>
+    <string name="user_added_successfully">User %1$s added successfully.</string>
     <string name="user_updated_error">Error updating user %1$s.</string>
     <string name="user_detail_label_name">Name</string>
     <string name="user_detail_label_height">Height</string>

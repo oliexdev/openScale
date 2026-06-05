@@ -27,6 +27,7 @@ import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.getDefaultMeasurementTypes
@@ -108,9 +109,56 @@ class SettingsViewModelTest {
         val id = vm.addUser(user("Alice")).toInt()
         val stored = repo.getAllUsers().first().first { it.id == id }
 
+        // deleteUser is fire-and-forget (runs on viewModelScope); await the DB reflecting the delete.
         vm.deleteUser(stored, reseatSelection = false)
 
+        withTimeout(5_000) { repo.getAllUsers().first { users -> users.none { it.id == id } } }
         assertThat(repo.getAllUsers().first().any { it.id == id }).isFalse()
+    }
+
+    @Test
+    fun createUserWithGoals_persistsUserAndGoals() = runBlocking {
+        repo.insertAllMeasurementTypes(getDefaultMeasurementTypes())
+        val typeId = repo.getAllMeasurementTypes().first().first().id
+
+        vm.createUserWithGoals(
+            user("Alice"),
+            listOf(UserGoals(userId = 0, measurementTypeId = typeId, goalValue = 80f)),
+        )
+
+        val uid = withTimeout(5_000) {
+            repo.getAllUsers().first { users -> users.any { it.name == "Alice" } }
+        }.first { it.name == "Alice" }.id
+        val goals = withTimeout(5_000) { repo.getAllGoalsForUser(uid).first { it.isNotEmpty() } }
+        assertThat(goals.map { it.measurementTypeId }).containsExactly(typeId)
+        assertThat(goals.first().goalValue).isEqualTo(80f)
+    }
+
+    @Test
+    fun updateUserWithGoals_reconcilesGoals() = runBlocking {
+        repo.insertAllMeasurementTypes(getDefaultMeasurementTypes())
+        val types = repo.getAllMeasurementTypes().first()
+        val keptType = types[0].id
+        val removedType = types[1].id
+
+        val uid = vm.addUser(user("Alice")).toInt()
+        repo.insertUserGoal(UserGoals(userId = uid, measurementTypeId = keptType, goalValue = 70f))
+        repo.insertUserGoal(UserGoals(userId = uid, measurementTypeId = removedType, goalValue = 90f))
+        val stored = repo.getAllUsers().first().first { it.id == uid }
+        val original = repo.getAllGoalsForUser(uid).first()
+
+        // Keep keptType (changed 70 → 75), drop removedType.
+        vm.updateUserWithGoals(
+            user = stored,
+            pendingGoals = listOf(UserGoals(userId = uid, measurementTypeId = keptType, goalValue = 75f)),
+            originalGoals = original,
+        )
+
+        val after = withTimeout(5_000) {
+            repo.getAllGoalsForUser(uid).first { goals -> goals.none { it.measurementTypeId == removedType } }
+        }
+        assertThat(after.map { it.measurementTypeId }).containsExactly(keptType)
+        assertThat(after.first { it.measurementTypeId == keptType }.goalValue).isEqualTo(75f)
     }
 
     @Test
