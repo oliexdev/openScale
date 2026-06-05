@@ -18,6 +18,7 @@
 package com.health.openscale.core.usecase
 
 import android.content.Context
+import android.database.sqlite.SQLiteConstraintException
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
@@ -62,7 +63,8 @@ class MeasurementCrudUseCases @Inject constructor(
      *   - insert values that are new (id == 0).
      *
      * @return [Result.success] with the final measurement id (new or existing) on success,
-     * or [Result.failure] on error.
+     * [Result.success] with `-1` if the (userId, timestamp) slot is already taken (duplicate),
+     * or [Result.failure] on an unexpected error.
      */
     suspend fun saveMeasurement(
         measurement: Measurement,
@@ -74,6 +76,11 @@ class MeasurementCrudUseCases @Inject constructor(
         if (measurement.id == 0) {
             // Insert path
             val newId = databaseRepository.insertMeasurement(measurement).toInt()
+            // A (userId, timestamp) duplicate is ignored by the DAO and returns -1. Signal it via the
+            // sentinel and abort, so we never insert orphan values referencing a non-existent id.
+            if (newId == -1) {
+                return@runCatching -1
+            }
             val measurementWithId = measurement.copy(id = newId)
 
             finalValues.forEach { v ->
@@ -90,18 +97,33 @@ class MeasurementCrudUseCases @Inject constructor(
 
             newId
         } else {
-            // Update path
-            databaseRepository.updateMeasurement(measurement)
+            // Update path. Editing the timestamp onto another measurement's (userId, timestamp) slot
+            // violates the unique index; signal that as a duplicate via the sentinel (nothing written).
+            try {
+                databaseRepository.updateMeasurement(measurement)
+            } catch (e: SQLiteConstraintException) {
+                return@runCatching -1
+            }
+
+            // Derived values (BMI, BMR, TDEE, …) are owned by the recalculation below — they must not
+            // be touched by the raw-value reconciliation, otherwise they are deleted and recreated on
+            // every edit (id churn). Only reconcile non-derived (raw) values.
+            val derivedTypeIds = databaseRepository.getAllMeasurementTypes().first()
+                .filter { it.isDerived }
+                .map { it.id }
+                .toSet()
 
             val existing = databaseRepository.getValuesForMeasurement(measurement.id).first()
+            val existingRawIds = existing
+                .filter { it.typeId !in derivedTypeIds }
+                .map { it.id }
+                .toSet()
             val newSetIds = finalValues.mapNotNull { if (it.id != 0) it.id else null }.toSet()
-            val existingIds = existing.map { it.id }.toSet()
 
-            // Delete removed values
-            val toDelete = existingIds - newSetIds
-            toDelete.forEach { id -> databaseRepository.deleteMeasurementValueById(id) }
+            // Delete raw values that are no longer present.
+            (existingRawIds - newSetIds).forEach { id -> databaseRepository.deleteMeasurementValueById(id) }
 
-            // Update or insert values
+            // Update or insert raw values.
             finalValues.forEach { v ->
                 val exists = existing.any { it.id == v.id && v.id != 0 }
                 if (exists) {
@@ -110,6 +132,10 @@ class MeasurementCrudUseCases @Inject constructor(
                     databaseRepository.insertMeasurementValue(v.copy(measurementId = measurement.id))
                 }
             }
+
+            // Ensure derived values reflect the final raw state once (also covers the case where all
+            // raw values were cleared, so the loop above triggered no recalculation).
+            databaseRepository.recalculateDerivedValuesForMeasurement(measurement.id)
 
             sync.triggerSyncUpdate(measurement, finalValues, "com.health.openscale.sync")
             sync.triggerSyncUpdate(measurement, finalValues,"com.health.openscale.sync.oss")
@@ -120,6 +146,7 @@ class MeasurementCrudUseCases @Inject constructor(
             measurement.id
         }
     }
+
 
     /**
      * Deletes the given [measurement].

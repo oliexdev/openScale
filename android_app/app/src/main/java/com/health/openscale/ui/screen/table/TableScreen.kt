@@ -304,24 +304,13 @@ fun TableScreen(
     )
 
     fun deleteSelectedItems() {
+        // Resolve the selection on the composition scope (read-only; needs screen state), then hand
+        // the deletion to the ViewModel, which owns the coroutine and reports via snackbar events.
         scope.launch {
-            val ids = resolveSelectedMeasurementIds()
-            if (ids.isEmpty()) return@launch
-            var allSucceeded = true
-            for (id in ids) {
-                val mwv = sharedViewModel.getMeasurementById(id).first()
-                if (mwv != null) {
-                    val ok = sharedViewModel.deleteMeasurement(mwv.measurement, true)
-                    if (!ok) { allSucceeded = false; break }
-                }
-            }
-            if (allSucceeded)
-                sharedViewModel.showSnackbar(
-                    messageResId = R.string.snackbar_items_deleted_successfully,
-                    formatArgs   = listOf(ids.size),
-                )
-            else
-                sharedViewModel.showSnackbar(messageResId = R.string.snackbar_error_deleting_items)
+            val measurements = resolveSelectedMeasurementIds()
+                .mapNotNull { id -> sharedViewModel.getMeasurementById(id).first()?.measurement }
+            if (measurements.isEmpty()) return@launch
+            sharedViewModel.deleteMeasurements(measurements)
             isInSelectionMode = false
             clearKeys()
         }
@@ -333,37 +322,13 @@ fun TableScreen(
     }
 
     fun changeUserOfSelectedItems(newUserId: Int) {
+        // Snapshot the selection (with values) before any modification — after the user change Room
+        // re-emits the current-user flow without these rows. The ViewModel owns the actual work.
         scope.launch {
-            val ids = resolveSelectedMeasurementIds()
-            if (ids.isEmpty()) return@launch
-
-            // Snapshot ALL measurements before any modifications.
-            // After saveMeasurement(userId = newUserId), Room immediately re-emits the
-            // flow for the current user — the measurement disappears from it because it
-            // now belongs to a different user. Subsequent getMeasurementById().first()
-            // calls inside the loop would return null, breaking the operation.
-            val snapshots = ids.mapNotNull { id ->
-                sharedViewModel.getMeasurementById(id).first()
-            }
+            val snapshots = resolveSelectedMeasurementIds()
+                .mapNotNull { id -> sharedViewModel.getMeasurementById(id).first() }
             if (snapshots.isEmpty()) return@launch
-
-            var allSucceeded = true
-            for (mwv in snapshots) {
-                val ok = sharedViewModel.saveMeasurement(
-                    measurement = mwv.measurement.copy(userId = newUserId),
-                    values      = mwv.values.map { it.value },
-                    silent      = true,
-                )
-                if (!ok) { allSucceeded = false; break }
-            }
-
-            if (allSucceeded)
-                sharedViewModel.showSnackbar(
-                    messageResId = R.string.snackbar_items_user_changed_successfully,
-                    formatArgs   = listOf(snapshots.size),
-                )
-            else
-                sharedViewModel.showSnackbar(messageResId = R.string.snackbar_error_user_changed_items)
+            sharedViewModel.changeUserForMeasurements(snapshots, newUserId)
             isInSelectionMode = false
             clearKeys()
         }

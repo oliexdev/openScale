@@ -18,6 +18,7 @@
 package com.health.openscale.ui.navigation
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -340,9 +341,15 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                                 )
                             }
                         } else {
-                            // Show back arrow for non-main (detail or sub-page) routes.
+                            // Show back arrow for non-main (detail or sub-page) routes. Route it
+                            // through the back dispatcher (instead of popBackStack directly) so screens
+                            // can intercept it via BackHandler (e.g. unsaved-changes guard); if nothing
+                            // intercepts, the NavHost handles it as a normal back.
+                            val backDispatcher =
+                                LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
                             IconButton(onClick = {
-                                navController.popBackStack()
+                                if (backDispatcher != null) backDispatcher.onBackPressed()
+                                else navController.popBackStack()
                             }) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.ArrowBack,

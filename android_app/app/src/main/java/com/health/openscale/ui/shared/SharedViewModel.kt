@@ -670,42 +670,135 @@ class SharedViewModel @Inject constructor(
     fun getMeasurementById(id: Int): Flow<MeasurementWithValues?> =
         measurementFacade.getMeasurementWithValuesById(id)
 
-    suspend fun saveMeasurement(
-        measurement: Measurement,
-        values: List<MeasurementValue>,
-        silent: Boolean = false,
-    ): Boolean = withContext(Dispatchers.IO) {
-        val result = measurementFacade.saveMeasurement(measurement, values)
-        if (result.isSuccess) {
-            if (!silent) showSnackbar(
-                messageResId = if (measurement.id == 0) R.string.success_measurement_saved
-                else R.string.success_measurement_updated
-            )
-            true
-        } else {
-            if (!silent) showSnackbar(messageResId = R.string.error_saving_measurement)
-            false
+    /**
+     * Fire-and-forget save (insert or edit): owns its coroutine on the internal [viewModelScope] so
+     * it completes even if the edit screen is left (e.g. navigated back) mid-save. The result is
+     * reported via snackbar (which may appear on the previous screen if the user already navigated).
+     */
+    fun saveMeasurement(measurement: Measurement, values: List<MeasurementValue>) {
+        viewModelScope.launch {
+            val result = withContext(Dispatchers.IO) { measurementFacade.saveMeasurement(measurement, values) }
+            val dateStr = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+                .format(Date(measurement.timestamp))
+            when {
+                // -1 = (userId, timestamp) duplicate signalled by the use case.
+                result.getOrNull() == -1 ->
+                    showSnackbar(
+                        messageResId = R.string.error_duplicate_timestamp,
+                        formatArgs = listOf(dateStr),
+                    )
+                result.isSuccess -> showSnackbar(
+                    messageResId = if (measurement.id == 0) R.string.success_measurement_saved
+                    else R.string.success_measurement_updated,
+                    formatArgs = listOf(dateStr),
+                )
+                else -> showSnackbar(messageResId = R.string.error_saving_measurement)
+            }
         }
     }
 
-    suspend fun deleteMeasurement(
-        measurement: Measurement,
-        silent: Boolean = false,
-    ): Boolean = withContext(Dispatchers.IO) {
-        val result = measurementFacade.deleteMeasurement(measurement)
-        if (result.isSuccess) {
-            if (!silent) {
-                val fmt = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+    /**
+     * Fire-and-forget delete: owns its coroutine on the internal [viewModelScope] so it completes
+     * even if the calling screen is disposed / navigates away immediately afterwards. The result is
+     * reported to the UI via the snackbar event stream (no return value needed).
+     */
+    fun deleteMeasurement(measurement: Measurement) {
+        viewModelScope.launch {
+            // Capture the measurement with its values before deleting, so it can be restored via Undo
+            // (the delete cascades the value rows away).
+            val snapshot = getMeasurementById(measurement.id).first()
+            val result = withContext(Dispatchers.IO) { measurementFacade.deleteMeasurement(measurement) }
+            if (result.isSuccess) {
+                if (_currentMeasurementId.value == measurement.id) _currentMeasurementId.value = null
+                val dateStr = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
+                    .format(Date(measurement.timestamp))
                 showSnackbar(
                     messageResId = R.string.success_measurement_deleted,
-                    formatArgs   = listOf(fmt.format(Date(measurement.timestamp))),
+                    formatArgs = listOf(dateStr),
+                    actionLabelResId = if (snapshot != null) R.string.action_undo else null,
+                    onAction = snapshot?.let { snap ->
+                        {
+                            // Re-insert as a new measurement; raw values only (derived are recomputed).
+                            viewModelScope.launch {
+                                withContext(Dispatchers.IO) {
+                                    measurementFacade.saveMeasurement(
+                                        snap.measurement.copy(id = 0),
+                                        snap.values.filter { !it.type.isDerived }.map { it.value },
+                                    )
+                                }
+                            }
+                        }
+                    },
+                )
+            } else {
+                showSnackbar(messageResId = R.string.error_deleting_measurement)
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Mutation triggers (UI events) — own their coroutine on the internal viewModelScope so they
+    // complete even if the calling screen is disposed / navigates away. Feedback flows back to the
+    // UI via the existing snackbarEvents stream, not via return values.
+    // -------------------------------------------------------------------------
+
+    /**
+     * Best-effort batch delete: processes every measurement (no early break), counts failures and
+     * reports a summary. Goes through [measurementFacade] directly so it can await per-item results
+     * for the count (the single [deleteMeasurement] is fire-and-forget and shows its own snackbar).
+     */
+    fun deleteMeasurements(measurements: List<Measurement>) {
+        if (measurements.isEmpty()) return
+        viewModelScope.launch {
+            val failed = withContext(Dispatchers.IO) {
+                measurements.count { !measurementFacade.deleteMeasurement(it).isSuccess }
+            }
+            if (failed == 0) {
+                showSnackbar(
+                    messageResId = R.string.snackbar_items_deleted_successfully,
+                    formatArgs = listOf(measurements.size),
+                )
+            } else {
+                showSnackbar(
+                    messageResId = R.string.snackbar_items_delete_partial_failure,
+                    formatArgs = listOf(failed, measurements.size),
+                    duration = SnackbarDuration.Long,
                 )
             }
-            if (_currentMeasurementId.value == measurement.id) _currentMeasurementId.value = null
-            true
-        } else {
-            if (!silent) showSnackbar(messageResId = R.string.error_deleting_measurement)
-            false
+        }
+    }
+
+    /**
+     * Best-effort batch user reassignment: moves every measurement to [newUserId], counts failures
+     * (e.g. a (userId, timestamp) clash with the target user) and reports a summary. Goes through
+     * [measurementFacade] directly so it can await per-item results for the count (the single
+     * [saveMeasurement] is fire-and-forget and shows its own snackbar).
+     */
+    fun changeUserForMeasurements(items: List<MeasurementWithValues>, newUserId: Int) {
+        if (items.isEmpty()) return
+        viewModelScope.launch {
+            val failed = withContext(Dispatchers.IO) {
+                items.count {
+                    // Failed = error (null) or a (userId, timestamp) clash (-1 sentinel) → not moved.
+                    val movedId = measurementFacade.saveMeasurement(
+                        it.measurement.copy(userId = newUserId),
+                        it.values.map { v -> v.value },
+                    ).getOrNull()
+                    movedId == null || movedId <= 0
+                }
+            }
+            if (failed == 0) {
+                showSnackbar(
+                    messageResId = R.string.snackbar_items_user_changed_successfully,
+                    formatArgs = listOf(items.size),
+                )
+            } else {
+                showSnackbar(
+                    messageResId = R.string.snackbar_items_move_partial_failure,
+                    formatArgs = listOf(failed, items.size),
+                    duration = SnackbarDuration.Long,
+                )
+            }
         }
     }
 

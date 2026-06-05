@@ -126,4 +126,74 @@ class MeasurementCrudUseCasesTest {
         assertThat(after.first { it.typeId == weightId }.floatValue).isWithin(1e-3f).of(72f) // updated
         assertThat(after.any { it.typeId == neckId && it.floatValue == 38f }).isTrue()  // inserted
     }
+
+    @Test
+    fun saveMeasurement_insert_duplicateTimestamp_returnsSentinelWithoutOrphanValues() = runBlocking {
+        val firstId = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 5_000L),
+            listOf(MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 70f)),
+        ).getOrThrow()
+        assertThat(firstId).isGreaterThan(0)
+        val valuesBefore = repo.getValuesForMeasurement(firstId).first()
+
+        // A second new measurement at the same (userId, timestamp) is a duplicate → -1 sentinel.
+        val result = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 5_000L),
+            listOf(MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 99f)),
+        )
+
+        assertThat(result.getOrThrow()).isEqualTo(-1)
+        // Original untouched, and no orphan values (e.g. measurementId = -1) were written.
+        assertThat(repo.getValuesForMeasurement(firstId).first()).hasSize(valuesBefore.size)
+        assertThat(repo.getValuesForMeasurement(-1).first()).isEmpty()
+    }
+
+    @Test
+    fun saveMeasurement_editWeight_recalculatesDerivedWithoutChurningIds() = runBlocking {
+        val bmiId = repo.getAllMeasurementTypes().first().first { it.key == MeasurementTypeKey.BMI }.id
+
+        val id = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 3_000L),
+            listOf(MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 70f)),
+        ).getOrThrow()
+
+        val bmiBefore = repo.getValuesForMeasurement(id).first().first { it.typeId == bmiId }
+        assertThat(bmiBefore.floatValue!!).isWithin(0.1f).of(22.86f) // 70 / 1.75^2
+
+        val weightValueId = repo.getValuesForMeasurement(id).first().first { it.typeId == weightId }.id
+        crud.saveMeasurement(
+            Measurement(id = id, userId = userId, timestamp = 3_000L),
+            listOf(MeasurementValue(id = weightValueId, measurementId = id, typeId = weightId, floatValue = 80f)),
+        ).getOrThrow()
+
+        val bmiAfter = repo.getValuesForMeasurement(id).first().first { it.typeId == bmiId }
+        assertThat(bmiAfter.floatValue!!).isWithin(0.1f).of(26.12f) // 80 / 1.75^2
+        // Derived row updated in place, not deleted+recreated.
+        assertThat(bmiAfter.id).isEqualTo(bmiBefore.id)
+    }
+
+    @Test
+    fun saveMeasurement_editTimestampOntoExisting_returnsSentinelAndLeavesDataUnchanged() = runBlocking {
+        val m1 = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 1_000L),
+            listOf(MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 60f)),
+        ).getOrThrow()
+        val m2 = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 2_000L),
+            listOf(MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 80f)),
+        ).getOrThrow()
+        val m2WeightValueId = repo.getValuesForMeasurement(m2).first().first { it.typeId == weightId }.id
+
+        // Move m2 onto m1's timestamp → violates the unique (userId, timestamp) index → -1 sentinel.
+        val result = crud.saveMeasurement(
+            Measurement(id = m2, userId = userId, timestamp = 1_000L),
+            listOf(MeasurementValue(id = m2WeightValueId, measurementId = m2, typeId = weightId, floatValue = 81f)),
+        )
+
+        assertThat(result.getOrThrow()).isEqualTo(-1)
+        // m2 keeps its timestamp; m1 untouched.
+        assertThat(db.measurementDao().getMeasurementById(m2)!!.timestamp).isEqualTo(2_000L)
+        assertThat(repo.getValuesForMeasurement(m1).first().first { it.typeId == weightId }.floatValue)
+            .isWithin(1e-3f).of(60f)
+    }
 }

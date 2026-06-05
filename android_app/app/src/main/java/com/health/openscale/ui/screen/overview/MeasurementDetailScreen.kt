@@ -18,6 +18,7 @@
 package com.health.openscale.ui.screen.overview
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -50,7 +51,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -75,12 +75,12 @@ import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.dialog.DateInputDialog
 import com.health.openscale.ui.screen.dialog.DeleteConfirmationDialog
+import com.health.openscale.ui.screen.dialog.DiscardChangesDialog
 import com.health.openscale.ui.screen.dialog.NumberInputDialog
 import com.health.openscale.ui.screen.dialog.TextInputDialog
 import com.health.openscale.ui.screen.dialog.TimeInputDialog
 import com.health.openscale.ui.screen.dialog.UserInputDialog
 import com.health.openscale.ui.shared.TopBarAction
-import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -105,7 +105,6 @@ fun MeasurementDetailScreen(
     sharedViewModel: SharedViewModel
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
 
     // Holds the string representation of measurement values, keyed by MeasurementType ID.
     val valuesState = remember { mutableStateMapOf<Int, String>() }
@@ -121,6 +120,12 @@ fun MeasurementDetailScreen(
     var showDatePickerForMainTimestamp by remember { mutableStateOf(false) }
     var showTimePickerForMainTimestamp by remember { mutableStateOf(false) }
     var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var showDiscardConfirmation by remember { mutableStateOf(false) }
+
+    // Snapshot of the form right after it was (pre)loaded — used to detect unsaved changes ("dirty").
+    var initialValues by remember { mutableStateOf<Map<Int, String>?>(null) }
+    var initialTimestamp by remember { mutableStateOf(0L) }
+    var initialUserId by remember { mutableStateOf(userId) }
 
     val allMeasurementTypes by sharedViewModel.measurementTypes.collectAsState()
     val lastMeasurementToPreloadFrom by sharedViewModel.lastMeasurementOfSelectedUser.collectAsState()
@@ -210,6 +215,25 @@ fun MeasurementDetailScreen(
                 }
             }
         }
+
+        // Capture the loaded/preloaded state as the baseline for unsaved-changes detection.
+        initialValues = valuesState.toMap()
+        initialTimestamp = measurementTimestampState
+        initialUserId = currentUserIdState
+    }
+
+    // Unsaved-changes detection: current form vs. the captured baseline.
+    val effectiveUserId = pendingUserId ?: currentUserIdState
+    val hasUnsavedChanges = initialValues != null && (
+        valuesState.toMap() != initialValues ||
+        measurementTimestampState != initialTimestamp ||
+        effectiveUserId != initialUserId
+    )
+
+    // Intercept back (both the top-bar arrow — routed through the dispatcher — and system/gesture
+    // back) while there are unsaved changes, and ask before discarding.
+    BackHandler(enabled = hasUnsavedChanges) {
+        showDiscardConfirmation = true
     }
 
     // Configure the top bar save action.
@@ -331,11 +355,12 @@ fun MeasurementDetailScreen(
                         }
 
                     if (allConversionsOk) {
-                        scope.launch {
-                            sharedViewModel.saveMeasurement(measurementToSave, valueList)
-                        }
+                        // Fire-and-forget on the ViewModel's scope → the save completes even though we
+                        // navigate away immediately; the result snackbar is shown by the ViewModel
+                        // (and may appear on the previous screen).
+                        sharedViewModel.saveMeasurement(measurementToSave, valueList)
                         pendingUserId = null
-                        isPendingNavigation = true // Trigger loading indicator and navigate back.
+                        isPendingNavigation = true
                         navController.popBackStack()
                     }
                 }
@@ -516,14 +541,24 @@ fun MeasurementDetailScreen(
             onDismissRequest = { showDeleteConfirmation = false },
             onConfirm = {
                 showDeleteConfirmation = false
-                scope.launch {
-                    sharedViewModel.deleteMeasurement(loadedData!!.measurement)
-                    isPendingNavigation = true
-                    navController.popBackStack()
-                }
+                // VM owns the coroutine → the delete completes even though we navigate away now.
+                sharedViewModel.deleteMeasurement(loadedData!!.measurement)
+                isPendingNavigation = true
+                navController.popBackStack()
             },
             title = stringResource(R.string.dialog_title_delete_item),
             text = stringResource(R.string.dialog_message_delete_item, formattedDate, weightValue)
+        )
+    }
+
+    // Ask before discarding unsaved changes when leaving the screen.
+    if (showDiscardConfirmation) {
+        DiscardChangesDialog(
+            onDismissRequest = { showDiscardConfirmation = false },
+            onConfirm = {
+                isPendingNavigation = true
+                navController.popBackStack()
+            },
         )
     }
 

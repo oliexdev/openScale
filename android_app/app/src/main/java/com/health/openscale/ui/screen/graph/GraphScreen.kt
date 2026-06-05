@@ -43,7 +43,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -68,7 +67,6 @@ import com.health.openscale.ui.screen.dialog.DeleteConfirmationDialog
 import com.health.openscale.ui.screen.overview.MeasurementValueRow
 import com.health.openscale.ui.screen.settings.BluetoothViewModel
 import com.health.openscale.ui.shared.SharedViewModel
-import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
@@ -81,7 +79,6 @@ fun GraphScreen(
     bluetoothViewModel: BluetoothViewModel,
 ) {
     val context = LocalContext.current
-    val scope   = rememberCoroutineScope()
 
     val graphState by sharedViewModel
         .screenFlow(SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT, useSmoothing = true)
@@ -152,9 +149,8 @@ fun GraphScreen(
         DeleteConfirmationDialog(
             onDismissRequest = { showDeleteDialog = false },
             onConfirm        = {
-                scope.launch {
-                    sharedViewModel.deleteMeasurement(enrichedItem.measurementWithValues.measurement)
-                }
+                // VM owns the coroutine → completes even though the sheet/screen is dismissed now.
+                sharedViewModel.deleteMeasurement(enrichedItem.measurementWithValues.measurement)
                 sheetMeasurementId = null
                 showDeleteDialog   = false
             },

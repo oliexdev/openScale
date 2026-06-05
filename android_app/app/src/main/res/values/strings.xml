@@ -103,11 +103,17 @@
     <string name="user_detail_content_description_change_unit">Change unit</string>
 
     <!-- Measurement CRUD & Operations -->
-    <string name="success_measurement_updated">Measurement successfully updated</string>
-    <string name="success_measurement_saved">Measurement successfully saved</string>
-    <string name="error_saving_measurement">Error saving measurement</string>
-    <string name="success_measurement_deleted">Measurement %1$s successfully deleted</string>
-    <string name="error_deleting_measurement">Error deleting measurement</string>
+    <string name="success_measurement_updated">Measurement updated (%1$s)</string> <!-- %1$s is date/time -->
+    <string name="success_measurement_saved">Measurement saved (%1$s)</string> <!-- %1$s is date/time -->
+    <string name="error_saving_measurement">Couldn\'t save measurement. Please try again.</string>
+    <string name="error_duplicate_timestamp">Not saved — a measurement already exists at %1$s.</string> <!-- %1$s is date/time -->
+    <string name="success_measurement_deleted">Measurement deleted (%1$s)</string> <!-- %1$s is date/time -->
+    <string name="error_deleting_measurement">Couldn\'t delete measurement. Please try again.</string>
+    <string name="action_undo">Undo</string>
+    <string name="dialog_title_discard_changes">Discard changes?</string>
+    <string name="dialog_message_discard_changes">Your changes haven\'t been saved and will be lost.</string>
+    <string name="action_discard">Discard</string>
+    <string name="action_keep_editing">Keep editing</string>
     <string name="action_save_measurement">Save measurement</string>
     <string name="action_add_measurement">Add Measurement</string>
     <string name="action_add_measurement_desc">Add new measurement</string>
@@ -495,12 +501,12 @@
     <string name="dialog_message_delete_selected_items">Are you sure you want to delete the selected %1$d items? This action cannot be undone.</string>
     <string name="dialog_title_delete_type">Delete Type?</string>
     <string name="dialog_text_delete_type">Are you sure you want to delete the custom type “%1$s”? All associated measurements will also be permanently deleted. This action cannot be undone.</string>
-    <string name="snackbar_items_deleted_successfully">%1$d items deleted successfully.</string>
-    <string name="snackbar_error_deleting_items">Error deleting items.</string>
+    <string name="snackbar_items_deleted_successfully">%1$d measurements deleted</string>
+    <string name="snackbar_items_delete_partial_failure">Couldn\'t delete %1$d of %2$d measurements.</string>
     <string name="dialog_title_select_user_for_assignment">Select User for Assignment</string>
     <string name="snackbar_no_other_users_to_change_to">No other users available to change to.</string>
-    <string name="snackbar_items_user_changed_successfully">User changed for %1$d items successfully.</string>
-    <string name="snackbar_error_user_changed_items">Error changing user for some items.</string>
+    <string name="snackbar_items_user_changed_successfully">%1$d measurements moved</string>
+    <string name="snackbar_items_move_partial_failure">Couldn\'t move %1$d of %2$d measurements (already exist for that user).</string>
 
     <!-- Insights Screen -->
     <string name="insights_confidence_low">Limited data</string>

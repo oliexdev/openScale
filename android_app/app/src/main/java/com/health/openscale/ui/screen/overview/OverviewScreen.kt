@@ -269,9 +269,8 @@ fun OverviewScreen(
         DeleteConfirmationDialog(
             onDismissRequest = { measurementToDelete = null },
             onConfirm        = {
-                scope.launch {
-                    sharedViewModel.deleteMeasurement(enrichedItem.measurementWithValues.measurement)
-                }
+                // VM owns the coroutine → completes even if the screen changes.
+                sharedViewModel.deleteMeasurement(enrichedItem.measurementWithValues.measurement)
                 measurementToDelete = null
             },
             title = stringResource(R.string.dialog_title_delete_item),

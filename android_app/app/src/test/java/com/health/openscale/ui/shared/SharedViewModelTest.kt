@@ -131,8 +131,12 @@ class SharedViewModelTest {
 
             vm.selectUser(uid)
 
+            // screenFlow emits a transient Success(emptyList()) while selectedUserId is still null
+            // (before selectUser propagates); wait for the first Success that actually carries data.
+            // The time range defaults to ALL_DAYS, so the inserted measurement is always in range.
             val state = withTimeout(5_000) {
-                vm.screenFlow("overview").first { it is SharedViewModel.UiState.Success }
+                vm.screenFlow("overview")
+                    .first { it is SharedViewModel.UiState.Success && it.data.isNotEmpty() }
             }
             val data = (state as SharedViewModel.UiState.Success).data
             assertThat(data).isNotEmpty()
