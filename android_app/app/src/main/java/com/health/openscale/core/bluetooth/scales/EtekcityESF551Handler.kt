@@ -109,10 +109,12 @@ class EtekcityESF551Handler : ScaleDeviceHandler() {
             return null
         }
 
-        val weightRaw = data[10].toUInt() or data[11].toUInt().shl(8) or data[12].toUInt().shl(16)
+        val weightRaw = data[10].toUByte().toUInt() or
+                data[11].toUByte().toUInt().shl(8) or
+                data[12].toUByte().toUInt().shl(16)
         val weightKg = weightRaw.toDouble() / 1000.0
-        val impedance = (data[13].toUInt() or data[14].toUInt().shl(8)).toDouble()
-//        val displayUnit = WeightUnit.fromInt(data[21].toInt())
+        val impedance = (data[13].toUByte().toUInt() or data[14].toUByte().toUInt().shl(8)).toDouble()
+        //        val displayUnit = WeightUnit.fromInt(data[21].toInt())
         val measurement = ScaleMeasurement(
             userId = user.id,
             dateTime = Date(),
