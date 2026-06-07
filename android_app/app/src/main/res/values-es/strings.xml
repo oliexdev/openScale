@@ -85,11 +85,11 @@
     <string name="user_settings_content_description_delete">Eliminar usuario</string>
     <string name="user_settings_content_description_add_user">Añadir nuevo usuario</string>
     <string name="user_detail_content_description_change_unit">Cambiar unidad</string>
-    <string name="success_measurement_updated">Medición actualizada correctamente</string>
-    <string name="success_measurement_saved">Medición guardada correctamente</string>
-    <string name="error_saving_measurement">Error al guardar la medición</string>
-    <string name="success_measurement_deleted">La medición %1$s se eliminó correctamente</string>
-    <string name="error_deleting_measurement">Error al eliminar la medición</string>
+    <string name="success_measurement_updated">Medición actualizada (%1$s)</string>
+    <string name="success_measurement_saved">Medición guardada (%1$s)</string>
+    <string name="error_saving_measurement">No se pudo guardar la medición. Inténtalo de nuevo.</string>
+    <string name="success_measurement_deleted">Medición eliminada (%1$s)</string>
+    <string name="error_deleting_measurement">No se pudo eliminar la medición. Inténtalo de nuevo.</string>
     <string name="action_save_measurement">Guardar medición</string>
     <string name="action_add_measurement">Añadir medición</string>
     <string name="action_add_measurement_desc">Añadir nueva medición</string>
@@ -411,11 +411,11 @@
     <string name="dialog_message_delete_selected_items">¿Seguro que quieres eliminar los %1$d elementos seleccionados? Esta acción no se puede deshacer.</string>
     <string name="dialog_title_delete_type">¿Eliminar tipo?</string>
     <string name="dialog_text_delete_type">¿Seguro que quieres eliminar el tipo personalizado “%1$s”? Todas las mediciones asociadas también se eliminarán permanentemente. Esta acción no se puede deshacer.</string>
-    <string name="snackbar_items_deleted_successfully">%1$d elementos eliminados correctamente.</string>
+    <string name="snackbar_items_deleted_successfully">%1$d mediciones eliminadas</string>
     <string name="snackbar_error_deleting_items">Error al eliminar los elementos.</string>
     <string name="dialog_title_select_user_for_assignment">Seleccionar usuario para la asignación</string>
     <string name="snackbar_no_other_users_to_change_to">No hay otros usuarios disponibles para cambiar.</string>
-    <string name="snackbar_items_user_changed_successfully">Usuario cambiado correctamente para %1$d elementos.</string>
+    <string name="snackbar_items_user_changed_successfully">%1$d mediciones movidas</string>
     <string name="snackbar_error_user_changed_items">Error al cambiar el usuario de algunos elementos.</string>
     <string name="statistics_no_relevant_types">No hay tipos de medición relevantes disponibles o configurados para las estadísticas.</string>
     <string name="statistics_label_min">Mín</string>
@@ -763,4 +763,15 @@
     <string name="s400_bmr_formula_label">Fórmula de BMR</string>
     <string name="s400_bmr_formula_cun91">Cunningham 1991</string>
     <string name="s400_bmr_formula_cun80">Cunningham 1980</string>
+    <string name="user_added_successfully">El usuario %1$s se añadió correctamente.</string>
+    <string name="error_duplicate_timestamp">No se ha guardado — ya existe una medición en %1$s.</string>
+    <string name="action_undo">Deshacer</string>
+    <string name="cd_chart_handle_resize">Arrastra para cambiar el tamaño del gráfico, o toca para contraerlo</string>
+    <string name="cd_chart_handle_show">Toca para mostrar el gráfico</string>
+    <string name="dialog_title_discard_changes">¿Descartar los cambios?</string>
+    <string name="dialog_message_discard_changes">Tus cambios no se han guardado y se perderán.</string>
+    <string name="action_discard">Descartar</string>
+    <string name="action_keep_editing">Seguir editando</string>
+    <string name="snackbar_items_delete_partial_failure">No se pudieron eliminar %1$d de %2$d mediciones.</string>
+    <string name="snackbar_items_move_partial_failure">No se pudieron mover %1$d de %2$d mediciones (ya existen para ese usuario).</string>
 </resources>
