@@ -28,13 +28,12 @@ import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLabelComponent
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianValueFormatter
-import com.patrykandpatrick.vico.compose.cartesian.data.columnSeries
+import com.patrykandpatrick.vico.compose.cartesian.data.columnModel
 import com.patrykandpatrick.vico.compose.cartesian.layer.ColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarker
 import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarkerController
 import com.patrykandpatrick.vico.compose.cartesian.marker.ColumnCartesianLayerMarkerTarget
-import com.patrykandpatrick.vico.compose.cartesian.marker.DefaultCartesianMarker
 import com.patrykandpatrick.vico.compose.cartesian.marker.Interaction
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.common.Fill
@@ -100,7 +99,7 @@ fun PeriodChart(
     LaunchedEffect(data, selectedPeriod) {
         if (data.isNotEmpty()) {
             modelProducer.runTransaction {
-                columnSeries {
+                columnModel {
                     // First series: all unselected items
                     series(data.map { if (it != selectedPeriod) it.count.toDouble() else 0.0 })
                     // Second series: the selected item
@@ -130,7 +129,7 @@ fun PeriodChart(
             )
         ),
         marker = rememberMarker(
-            DefaultCartesianMarker.ValueFormatter { _, targets ->
+            { _, targets ->
                 val column = (targets.getOrNull(0) as? ColumnCartesianLayerMarkerTarget)
                     ?.columns?.firstOrNull()
                 val hoveredIndex = column?.entry?.x?.toInt()

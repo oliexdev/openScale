@@ -17,8 +17,6 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
-import android.bluetooth.BluetoothGattCharacteristic.FORMAT_UINT16
-import android.bluetooth.BluetoothGattCharacteristic.FORMAT_UINT8
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
@@ -26,6 +24,7 @@ import com.health.openscale.core.service.ScannedDeviceInfo
 import com.welie.blessed.BluetoothBytesBuilder
 import com.welie.blessed.BluetoothBytesParser
 import java.util.GregorianCalendar
+import java.util.Locale
 import java.util.UUID
 
 /**
@@ -46,7 +45,7 @@ class SanitasSbf72Handler : StandardWeightProfileHandler() {
     }
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = device.name?.lowercase().orEmpty()
+        val name = device.name.lowercase()
 
         val isMatchByName =
                 name.contains("sbf72") ||
@@ -102,7 +101,7 @@ class SanitasSbf72Handler : StandardWeightProfileHandler() {
         when (characteristic) {
             CHR_SBF72_USER_LIST       -> {
                 //the if condition is to catch the response to "display-pin-on-scale", because this response would produce an error in handleVendorSpecificUserList().
-                if (data != null && data.size > 0 && data[0].toInt() != 17) {
+                if (data.size > 0 && data[0].toInt() != 17) {
                     handleSBF72UserList(data, user)
                 }
             }
@@ -126,13 +125,13 @@ class SanitasSbf72Handler : StandardWeightProfileHandler() {
     override fun onRequestMeasurement() {
         val bleBuilder = BluetoothBytesBuilder()
         bleBuilder.addUInt8(0)
-        writeTo(SVC_SBF72_CUSTOM, CHR_SBF72_TAKE_MEASUREMENT, bleBuilder.build());
+        writeTo(SVC_SBF72_CUSTOM, CHR_SBF72_TAKE_MEASUREMENT, bleBuilder.build())
     }
 
     override fun writeUserDataToScale() {
         val bleBuilder = BluetoothBytesBuilder()
         val activityLevel = currentAppUser().activityLevel.toInt() + 1
-        logD(String.format("activityLevel: %d", activityLevel))
+        logD(String.format(Locale.US, "activityLevel: %d", activityLevel))
 
         bleBuilder.addUInt8(activityLevel)
         writeTo(SVC_SBF72_CUSTOM,CHR_SBF72_ACTIVITY_LEVEL,bleBuilder.build())
@@ -140,7 +139,7 @@ class SanitasSbf72Handler : StandardWeightProfileHandler() {
         val raw = currentAppUser().userName.uppercase().replace(Regex("[^A-Z0-9]"), "")
         val initials = raw.take(3)
         if (initials.isNotEmpty()) {
-            logD(String.format("initials: %s", initials))
+            logD(String.format(Locale.US, "initials: %s", initials))
             writeTo(SVC_SBF72_CUSTOM,CHR_SBF72_INITIALS,initials.encodeToByteArray())
         }
 

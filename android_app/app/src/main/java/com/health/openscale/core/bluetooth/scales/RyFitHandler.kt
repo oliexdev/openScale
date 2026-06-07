@@ -5,13 +5,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.service.ScannedDeviceInfo
 import kotlinx.coroutines.*
 import java.util.*
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class RyFitHandler : ScaleDeviceHandler() {
 
@@ -120,7 +121,7 @@ class RyFitHandler : ScaleDeviceHandler() {
     }
 
     private fun refreshUserFromApp(): Boolean {
-        val appUser = currentAppUser() ?: return false
+        val appUser = currentAppUser()
         heightCm = appUser.bodyHeight.toInt().coerceIn(50, 250)
         age = appUser.getAge()
         gender = if (appUser.gender == GenderType.MALE) "男" else "女"
@@ -156,32 +157,32 @@ class RyFitHandler : ScaleDeviceHandler() {
 
             // 延迟 1 秒后发送 3 次 C0
             scope.launch {
-                delay(1000L)
+                delay(1.seconds)
                 repeat(3) {
                     sendC0()
-                    delay(500L)
+                    delay(500.milliseconds)
                 }
             }
 
             // 15 秒超时：如果仍未进入测量，重发 C0
             d2TimeoutJob?.cancel()
             d2TimeoutJob = scope.launch {
-                delay(15_000L)
+                delay(15.seconds)
                 if (!isMeasuring) {
-                    retriggerC0("D2 timeout (15 s) – no Packet1 received")
+                    retriggerC0()
                 }
             }
         }
     }
 
-    private fun retriggerC0(reason: String) {
-        logI("Retriggering C0 due to: $reason")
+    private fun retriggerC0() {
+        logI("Retriggering C0 due to: D2 timeout (15 s) – no Packet1 received")
         autoC0Triggered = false
         cancelTimeout()
         scope.launch {
             repeat(3) {
                 sendC0()
-                delay(500L)
+                delay(500.milliseconds)
             }
         }
     }

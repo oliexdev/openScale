@@ -34,6 +34,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
+import kotlin.time.Duration.Companion.milliseconds
 
 // -------------------------------------------------------------------------------------------------
 // Broadcast adapter (no GATT)
@@ -119,8 +120,8 @@ class BroadcastScaleAdapter(
                     lastForwardAtMs = t
                     LogManager.d(TAG, "Measurement stabilized → BroadcastComplete for ${peripheral.address}")
                     _events.tryEmit(BluetoothEvent.BroadcastComplete(peripheral.address))
-                    stopScanInternal(peripheral.address)
-                    cleanup(peripheral.address)
+                    stopScanInternal()
+                    cleanup()
                     broadcastAttached = false
                 }
             }
@@ -164,24 +165,24 @@ class BroadcastScaleAdapter(
         } catch (e: Exception) {
             LogManager.e(TAG, "Failed to start broadcast scan: ${e.message}", e)
             _events.tryEmit(BluetoothEvent.ConnectionFailed(address, e.message ?: context.getString(R.string.bt_error_generic)))
-            cleanup(address)
+            cleanup()
             return
         }
 
         // Arm scan timeout for this attempt
         scanTimeoutJob?.cancel()
         scanTimeoutJob = scope.launch {
-            delay(tuning.maxScanMs)
+            delay(tuning.maxScanMs.milliseconds)
             if (!isScanning) return@launch
             LogManager.w(TAG, "Broadcast scan timed out for $address")
-            stopScanInternal(address)
+            stopScanInternal()
 
             attempt++
             if (attempt <= tuning.common.maxRetries) {
-                delay(tuning.common.retryBackoffMs)
+                delay(tuning.common.retryBackoffMs.milliseconds)
                 startScanAttempt(address)
             } else {
-                cleanup(address)
+                cleanup()
                 // keep attached? we detach to be consistent with failure
                 runCatching { handler.handleDisconnected() }
                 runCatching { handler.detach() }
@@ -190,7 +191,7 @@ class BroadcastScaleAdapter(
         }
     }
 
-    private fun stopScanInternal(address: String) {
+    private fun stopScanInternal() {
         scanTimeoutJob?.cancel(); scanTimeoutJob = null
         runCatching { if (::central.isInitialized) central.stopScan() }
         isScanning = false
@@ -240,7 +241,7 @@ class BroadcastScaleAdapter(
     }
 
     override fun doDisconnect() {
-        stopScanInternal(targetAddress ?: "")
+        stopScanInternal()
         runCatching { handler.handleDisconnected() }
         runCatching { handler.detach() }
         broadcastAttached = false

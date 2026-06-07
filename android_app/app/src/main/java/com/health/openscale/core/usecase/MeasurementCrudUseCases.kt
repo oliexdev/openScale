@@ -28,9 +28,7 @@ import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.ui.widget.MeasurementWidget
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withContext
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -44,7 +42,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class MeasurementCrudUseCases @Inject constructor(
-    @ApplicationContext private val appContext: Context,
+    @param:ApplicationContext private val appContext: Context,
     private val settingsFacade: SettingsFacade,
     private val sync: SyncUseCases,
     private val transformation: MeasurementTransformationUseCase,
@@ -101,7 +99,7 @@ class MeasurementCrudUseCases @Inject constructor(
             // violates the unique index; signal that as a duplicate via the sentinel (nothing written).
             try {
                 databaseRepository.updateMeasurement(measurement)
-            } catch (e: SQLiteConstraintException) {
+            } catch (_: SQLiteConstraintException) {
                 return@runCatching -1
             }
 

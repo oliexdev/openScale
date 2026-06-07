@@ -25,7 +25,6 @@ import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
 import com.welie.blessed.BluetoothBytesBuilder
-import com.welie.blessed.BluetoothBytesParser
 import java.util.Calendar
 import java.util.GregorianCalendar
 import java.util.TimeZone
@@ -55,7 +54,7 @@ import java.util.UUID
 class SoehnleHandler : ScaleDeviceHandler() {
 
     override fun supportFor(device: com.health.openscale.core.service.ScannedDeviceInfo): DeviceSupport? {
-        val name = device.name ?: return null
+        val name = device.name
         val supported = name.startsWith("Shape200") || name.startsWith("Shape100") ||
                 name.startsWith("Shape50") || name.startsWith("Style100")
         return if (supported) {
@@ -171,8 +170,8 @@ class SoehnleHandler : ScaleDeviceHandler() {
         }
     }
 
-    protected fun saveUserIdForScaleIndex(scaleIndex: Int, appUserId: Int) {
-        settingsPutInt("userMap/userIdByIndex/$scaleIndex", appUserId)
+    protected fun saveUserIdForScaleIndex(scaleIndex: Int) {
+        settingsPutInt("userMap/userIdByIndex/$scaleIndex", -1)
     }
     protected fun loadUserIdForScaleIndex(scaleIndex: Int): Int =
         settingsGetInt("userMap/userIdByIndex/$scaleIndex", -1)
@@ -276,7 +275,7 @@ class SoehnleHandler : ScaleDeviceHandler() {
     private fun factoryReset() {
         logD("Soehnle: factory reset + clear mappings")
         writeTo(SVC_SOEHNLE, CHR_SOEHNLE_CMD, byteArrayOf(0x0B, 0xFF.toByte()), withResponse = true)
-        for (i in 1..7) saveUserIdForScaleIndex(i, -1)
+        for (i in 1..7) saveUserIdForScaleIndex(i)
     }
 
     private fun mapActivityLevel(user: ScaleUser?): Int = when (user?.activityLevel) {

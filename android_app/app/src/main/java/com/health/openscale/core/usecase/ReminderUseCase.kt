@@ -57,7 +57,7 @@ object TimeModule {
  */
 @Singleton
 class ReminderUseCase @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val settings: SettingsFacade,
     private val measurementQuery: MeasurementQueryUseCases,
     private val clock: Clock

@@ -17,10 +17,7 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
-import androidx.datastore.preferences.core.PreferencesSerializer.writeTo
 import com.health.openscale.core.bluetooth.data.ScaleUser
-import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler.Companion.CHR_SBF72_USER_LIST
-import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler.Companion.SVC_SBF72_CUSTOM
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -97,7 +94,7 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
 
     // Model detection; constructor stays empty.
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = device.name?.lowercase().orEmpty()
+        val name = device.name.lowercase()
 
         val model = when {
             "bf105" in name || "bf720" in name -> Model.BEURER_BF105
@@ -274,7 +271,7 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
     }
 
     private fun writeInitials(user: ScaleUser) {
-        val raw = user.userName?.uppercase()?.replace(Regex("[^A-Z0-9]"), "").orEmpty()
+        val raw = user.userName.uppercase().replace(Regex("[^A-Z0-9]"), "")
         val initials = raw.take(3)
         if (initials.isNotEmpty()) {
             profile?.chrInitials?.let { chr ->

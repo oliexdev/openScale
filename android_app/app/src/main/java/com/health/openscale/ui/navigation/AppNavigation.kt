@@ -73,7 +73,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -83,7 +83,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.health.openscale.BuildConfig
@@ -97,9 +96,11 @@ import com.health.openscale.ui.screen.dialog.BluetoothUserInteractionDialog
 import com.health.openscale.ui.screen.settings.BluetoothViewModel
 import com.health.openscale.ui.screen.settings.SettingsViewModel
 import com.health.openscale.ui.theme.AppBrandBlue
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Main composable function that sets up the application's navigation structure.
@@ -112,11 +113,10 @@ import kotlinx.coroutines.launch
  * @param sharedViewModel The [SharedViewModel] instance shared across multiple screens,
  *                        providing access to shared data and UI event channels.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
 fun AppNavigation(sharedViewModel: SharedViewModel) {
-    val TAG = "AppNavigation"
-    val context = LocalContext.current
+    val resources = LocalResources.current
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val snackbarHostState = remember { SnackbarHostState() }
@@ -171,13 +171,13 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
             .distinctUntilChanged { a, b ->
                     a.messageResId == b.messageResId && a.message == b.message && a.messageFormatArgs == b.messageFormatArgs
             }
-            .debounce(150)
+            .debounce(150.milliseconds)
             .collect { evt ->
-                val msg = evt.message ?: context.getString(
+                val msg = evt.message ?: resources.getString(
                     requireNotNull(evt.messageResId),
                     *evt.messageFormatArgs.toTypedArray()
                 )
-                val action = evt.actionLabel ?: evt.actionLabelResId?.let { context.getString(it) }
+                val action = evt.actionLabel ?: evt.actionLabelResId?.let { resources.getString(it) }
                 val res = snackbarHostState.run {
                     currentSnackbarData?.dismiss()
                     showSnackbar(
@@ -216,6 +216,9 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                         .padding(8.dp)
                         .fillMaxWidth()
                 ) {
+                    // BUILD_TYPE is a per-variant compile-time constant, so the IDE flags the
+                    // branches of the other variants as unreachable — they are needed at runtime.
+                    @Suppress("KotlinConstantConditions")
                     val launcherIconRes = when (BuildConfig.BUILD_TYPE) {
                         "beta", "oss" -> R.drawable.ic_launcher_beta_foreground
                         "debug" -> R.drawable.ic_launcher_dev_foreground

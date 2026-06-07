@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.material.icons.filled.SignalCellularAlt1Bar
 import androidx.compose.material.icons.outlined.SignalCellularAlt2Bar
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.key.key
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.ScaleCommunicator
@@ -44,6 +43,7 @@ import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -63,6 +63,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.min
+import kotlin.time.Duration.Companion.milliseconds
 
 // -------------------------------------------------------------------------------------------------
 // Shared tuning for BLE pacing & retry (used by GATT adapter).
@@ -111,7 +112,7 @@ data class BtSppTuning(
 )
 
 enum class TuningProfile(
-    @StringRes val labelRes: Int,
+    @param:StringRes val labelRes: Int,
     val icon: ImageVector
 ) {
     Conservative(
@@ -170,12 +171,12 @@ fun TuningProfile.forBroadcast(): BleBroadcastTuning = when (this) {
     TuningProfile.Balanced -> BleBroadcastTuning(common = CommonTuning(2200,1500,3))
     TuningProfile.Conservative -> BleBroadcastTuning(
         common = CommonTuning(2500,1800,3),
-        scanMode = android.bluetooth.le.ScanSettings.SCAN_MODE_BALANCED,
+        scanMode = ScanSettings.SCAN_MODE_BALANCED,
         maxScanMs = 30_000
     )
     TuningProfile.Aggressive -> BleBroadcastTuning(
         common = CommonTuning(1200,1200,2),
-        scanMode = android.bluetooth.le.ScanSettings.SCAN_MODE_LOW_LATENCY,
+        scanMode = ScanSettings.SCAN_MODE_LOW_LATENCY,
         maxScanMs = 15_000,
         stabilizeWindowMs = 900
     )
@@ -204,7 +205,7 @@ class FacadeDriverSettings(
         val k = prefix + key
         mem[k]?.toIntOrNull()?.let { return it }
         val v = runCatching {
-            runBlocking(Dispatchers.IO) { withTimeout(300) { facade.observeSetting(k, default).first() } }
+            runBlocking(Dispatchers.IO) { withTimeout(300.milliseconds) { facade.observeSetting(k, default).first() } }
         }.getOrElse { default }
         mem[k] = v.toString()
         return v
@@ -220,7 +221,7 @@ class FacadeDriverSettings(
         val k = prefix + key
         mem[k]?.let { return it }
         val raw = runCatching {
-            runBlocking(Dispatchers.IO) { withTimeout(300) { facade.observeSetting(k, default ?: "").first() } }
+            runBlocking(Dispatchers.IO) { withTimeout(300.milliseconds) { facade.observeSetting(k, default ?: "").first() } }
         }.getOrElse { default ?: "" }
         val result = if (raw.isEmpty() && default == null) null else raw
         result?.let { mem[k] = it }
@@ -246,6 +247,7 @@ class FacadeDriverSettings(
 // - Concrete subclasses implement link-specific connect/disconnect logic.
 // -------------------------------------------------------------------------------------------------
 
+@OptIn(ExperimentalCoroutinesApi::class)
 abstract class ModernScaleAdapter(
     protected val context: android.content.Context,
     protected val settingsFacade: SettingsFacade,
@@ -329,7 +331,7 @@ abstract class ModernScaleAdapter(
             val user: ScaleUser? =
                 scaleUser
                     ?: selectedUserSnapshot
-                    ?: withTimeoutOrNull(750) {
+                    ?: withTimeoutOrNull(750.milliseconds) {
                         userFacade.observeSelectedUser().first()
                     }?.let(::mapUser)
 
@@ -363,7 +365,7 @@ abstract class ModernScaleAdapter(
      */
     final override fun disconnect() {
         doDisconnect()
-        cleanup(targetAddress)
+        cleanup()
     }
 
     /**
@@ -447,7 +449,7 @@ abstract class ModernScaleAdapter(
         override fun lastMeasurementFor(userId: Int): ScaleMeasurement? = lastSnapshot[userId]
     }
 
-    protected fun cleanup(addr: String?) {
+    protected fun cleanup() {
         _isConnected.value = false
         _isConnecting.value = false
         // keep targetAddress to allow higher layer to retry if wanted

@@ -46,6 +46,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.util.UUID
 import kotlin.math.min
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * SPP (Bluetooth Classic / RFCOMM) adapter that plugs a [ScaleDeviceHandler] into a raw byte stream.
@@ -105,7 +106,7 @@ class SppScaleAdapter(
             // Cooldown between attempts
             val since = SystemClock.elapsedRealtime() - lastDisconnectAtMs
             if (since in 1 until tuning.common.reconnectCooldownMs) {
-                delay(tuning.common.reconnectCooldownMs - since)
+                delay((tuning.common.reconnectCooldownMs - since).milliseconds)
             }
 
             safeCancelDiscovery(adapter)
@@ -129,7 +130,7 @@ class SppScaleAdapter(
                     val guardJob = launch(Dispatchers.IO) {
                         val to = tuning.connectTimeoutMs
                         if (to > 0) {
-                            delay(to)
+                            delay(to.milliseconds)
                             if (!connected) {
                                 LogManager.w(TAG, "Connect timeout reached ($to ms), closing socket")
                                 // Force the connect() to abort by closing the socket
@@ -148,7 +149,7 @@ class SppScaleAdapter(
 
                     // Small settle delay before wiring the handler
                     val settleDelay = maxOf(50L, tuning.interChunkDelayMs * 3)
-                    delay(settleDelay)
+                    delay(settleDelay.milliseconds)
 
                     _isConnecting.value = false
                     _isConnected.value = true
@@ -184,7 +185,7 @@ class SppScaleAdapter(
                                     LogManager.d(TAG, "Received $n bytes from SPP ${payload.toHexPreview(24)}")
                                     handler.handleNotification(ScaleDeviceHandler.CLASSIC_DATA_UUID, payload)
                                 } else {
-                                    delay(50)
+                                    delay(50.milliseconds)
                                     val idle = SystemClock.elapsedRealtime() - lastRx
                                     if (tuning.readTimeoutMs > 0 && idle >= tuning.readTimeoutMs) {
                                         LogManager.w(TAG, "Read idle timeout reached, disconnecting")
@@ -201,7 +202,7 @@ class SppScaleAdapter(
                                 LogManager.i(TAG, "Reader loop finished, emitting disconnect")
                                 _events.tryEmit(BluetoothEvent.Disconnected(da, "SPP stream closed"))
                                 lastDisconnectAtMs = SystemClock.elapsedRealtime()
-                                cleanup(da)
+                                cleanup()
                                 doDisconnect()
                             }
                         }
@@ -220,13 +221,13 @@ class SppScaleAdapter(
                                 address
                             )
                         )
-                        delay(tuning.common.retryBackoffMs)
+                        delay(tuning.common.retryBackoffMs.milliseconds)
                         safeCancelDiscovery(adapter)
                         continue
                     } else {
                         _events.tryEmit(BluetoothEvent.ConnectionFailed(address, t.message ?: "SPP connect failed"))
                         lastDisconnectAtMs = SystemClock.elapsedRealtime()
-                        cleanup(address)
+                        cleanup()
                         doDisconnect()
                         break
                     }
@@ -271,7 +272,7 @@ class SppScaleAdapter(
                             LogManager.d(TAG, "Wrote chunk ${i / chunk + 1}: ${writtenChunk.toHexPreview(16)}")
                             i = end
                             if (i < payload.size && tuning.interChunkDelayMs > 0) {
-                                delay(tuning.interChunkDelayMs)
+                                delay(tuning.interChunkDelayMs.milliseconds)
                             }
                         }
                         LogManager.i(TAG, "Finished writing ${payload.size} bytes to SPP")
@@ -320,8 +321,4 @@ class SppScaleAdapter(
     @SuppressLint("MissingPermission")
     private fun safeDeviceAddress(device: BluetoothDevice): String =
         try { device.address } catch (_: SecurityException) { "unknown" }
-
-    companion object {
-        private const val TAG = "SppScaleAdapter"
-    }
 }

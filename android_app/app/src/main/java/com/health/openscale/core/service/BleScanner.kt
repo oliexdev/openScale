@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
 import androidx.core.util.isNotEmpty
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Data class to hold information about a scanned Bluetooth LE device.
@@ -149,7 +150,7 @@ class BluetoothScannerManager(
 
         scanTimeoutJob?.cancel()
         scanTimeoutJob = externalScope.launch {
-            delay(scanDurationMs)
+            delay(scanDurationMs.milliseconds)
             if (_isScanning.value) {
                 LogManager.i(TAG, "Scan timeout reached after $scanDurationMs ms.")
                 stopScanInternal(isTimeout = true)
@@ -270,7 +271,7 @@ class BluetoothScannerManager(
 
             if (existingDevice != null) {
                 // Update criteria: if RSSI changed, or if key device info (name, support, handler, services, manufacturer data) has improved or changed.
-                val nameChangedToKnown = newDevice.name != null && existingDevice.name == null
+                val nameChangedToKnown = newDevice.name.isNotEmpty() && existingDevice.name.isEmpty()
                 val supportStatusImproved = !existingDevice.isSupported && newDevice.isSupported
                 val handlerChanged = newDevice.determinedHandlerDisplayName != existingDevice.determinedHandlerDisplayName
                 val serviceUuidsUpdated = newDevice.serviceUuids.isNotEmpty() && newDevice.serviceUuids != existingDevice.serviceUuids
@@ -278,7 +279,7 @@ class BluetoothScannerManager(
 
                 if (newDevice.rssi != existingDevice.rssi || nameChangedToKnown || supportStatusImproved || handlerChanged || serviceUuidsUpdated || manuDataUpdated) {
                     deviceMap[newDevice.address] = existingDevice.copy(
-                        name = newDevice.name ?: existingDevice.name, // Prefer new name if available.
+                        name = newDevice.name.ifEmpty { existingDevice.name }, // Prefer new name if available.
                         rssi = newDevice.rssi,
                         isSupported = existingDevice.isSupported || newDevice.isSupported, // Retain 'supported' status if ever true.
                         determinedHandlerDisplayName = newDevice.determinedHandlerDisplayName ?: existingDevice.determinedHandlerDisplayName,
@@ -307,7 +308,7 @@ class BluetoothScannerManager(
                     .filter { it.isSupported || (it.name.isNotEmpty() && it.name != "Unbekanntes Gerät" && it.name != "Unknown Device") }
                     .sortedWith(compareByDescending<ScannedDeviceInfo> { it.isSupported }
                         .thenByDescending { it.rssi }
-                        .thenBy { it.name?.lowercase() ?: "zzzz" }) // "zzzz" ensures null names sort last.
+                        .thenBy { it.name.ifEmpty { "zzzz" }.lowercase() }) // "zzzz" ensures unnamed devices sort last.
                     .toList()
             }
         }

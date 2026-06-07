@@ -107,7 +107,7 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
         // the advert name, and some Honor / OEM rebrands prefix the vendor
         // name. Strip those so our match is robust without overshooting into
         // the CH100S handler's territory.
-        val raw = device.name ?: return null
+        val raw = device.name
         val cleaned = raw
             .replace("\u0000", "")
             .trim()
@@ -394,7 +394,7 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
         }.toByteArray()
 
         val full = authCode + tail
-        sendCmdEncrypted(CMD_USER_INFO, full)
+        sendCmdEncrypted(full)
     }
 
     private fun sendGetVersion() = sendCmd(CMD_GET_VERSION, byteArrayOf())
@@ -423,13 +423,13 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
     }
 
     /** Send an AES-CTR encrypted command (USER_INFO). */
-    private fun sendCmdEncrypted(cmd: Byte, payload: ByteArray) {
+    private fun sendCmdEncrypted(payload: ByteArray) {
         val mk = magicKey ?: run {
-            logW("magicKey missing; dropping encrypted cmd 0x%02X".format(cmd.toInt() and 0xFF))
+            logW("magicKey missing; dropping encrypted cmd 0x%02X".format(CMD_USER_INFO.toInt() and 0xFF))
             return
         }
-        val frame = buildEncryptedCommand(cmd, payload, mk, macBytes())
-        logD("→ CMD* 0x%02X len=%d (encrypted)".format(cmd.toInt() and 0xFF, payload.size))
+        val frame = buildEncryptedCommand(CMD_USER_INFO, payload, mk, macBytes())
+        logD("→ CMD* 0x%02X len=%d (encrypted)".format(CMD_USER_INFO.toInt() and 0xFF, payload.size))
         writeTo(SERVICE, CHAR_TX, frame, withResponse = true)
     }
 
@@ -460,7 +460,33 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
         val impedanceOhm: Int,
         val dateTime: Date?,
         val rawDecrypted: ByteArray
-    )
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Measurement
+
+            if (userId != other.userId) return false
+            if (weightKg != other.weightKg) return false
+            if (fatPct != other.fatPct) return false
+            if (impedanceOhm != other.impedanceOhm) return false
+            if (dateTime != other.dateTime) return false
+            if (!rawDecrypted.contentEquals(other.rawDecrypted)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = userId
+            result = 31 * result + weightKg.hashCode()
+            result = 31 * result + fatPct.hashCode()
+            result = 31 * result + impedanceOhm
+            result = 31 * result + (dateTime?.hashCode() ?: 0)
+            result = 31 * result + rawDecrypted.contentHashCode()
+            return result
+        }
+    }
 
     /**
      * Wire-protocol primitives for the Huawei AH100 / CH100 body-fat scale.
@@ -563,7 +589,6 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
         const val CMD_GET_RECORD: Byte = 11
         const val CMD_GET_VERSION: Byte = 12
         const val CMD_FAT_RESULT_ACK: Byte = 19
-        const val CMD_HEARTBEAT: Byte = 32
         const val CMD_AUTH: Byte = 36
         const val CMD_BIND_USER: Byte = 37
 

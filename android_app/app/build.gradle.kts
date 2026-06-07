@@ -8,7 +8,6 @@ import java.util.TimeZone
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
@@ -24,12 +23,12 @@ ksp {
 
 android {
     namespace = "com.health.openscale"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.health.openscale"
         minSdk = 31
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 75
         versionName = "3.1.1"
 
@@ -50,7 +49,7 @@ android {
                     keystoreProperties.load(fis)
                 }
                 propertiesLoaded = true
-            } catch (e: FileNotFoundException) {
+            } catch (_: FileNotFoundException) {
                 project.logger.warn("Keystore properties file not found: ${keystorePropertiesFile.absolutePath}. Release signing might fail if not configured via environment variables.")
                 propertiesLoaded = false
             }
@@ -75,7 +74,7 @@ android {
                     keystoreOSSProperties.load(fis)
                 }
                 propertiesLoaded = true
-            } catch (e: FileNotFoundException) {
+            } catch (_: FileNotFoundException) {
                 project.logger.warn("OSS Keystore properties file not found: ${keystoreOSSPropertiesFile.absolutePath}. OSS signing might fail if not configured via environment variables.")
                 propertiesLoaded = false
             }
@@ -135,22 +134,37 @@ android {
         }
     }
 
-    applicationVariants.all {
-        val variant = this
-        val buildType = variant.buildType.name
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
+    testOptions {
+        // JVM unit tests touch android.util.Log (via LogManager); return defaults
+        // instead of throwing "not mocked" so pure-logic tests can run on the JVM.
+        unitTests.isReturnDefaultValues = true
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
         // Include the version number for every build type except debug.
-        val baseName = if (buildType == "debug") {
-            "openScale-$buildType"
+        val baseName = if (variant.buildType == "debug") {
+            "openScale-${variant.buildType}"
         } else {
-            "openScale-${defaultConfig.versionName}-$buildType"
+            "openScale-${android.defaultConfig.versionName}-${variant.buildType}"
         }
 
-        // APK naming.
-        outputs.all {
-            val output = this
-            if (output is com.android.build.gradle.internal.api.BaseVariantOutputImpl) {
-                output.outputFileName = "$baseName.apk"
-            }
+        // APK naming. outputFileName is the official replacement for the removed
+        // applicationVariants API but still marked @Incubating in AGP 9.
+        @Suppress("UnstableApiUsage")
+        variant.outputs.forEach { output ->
+            output.outputFileName.set("$baseName.apk")
         }
 
         // AAB naming: the outputs API above only covers APKs, so rename the
@@ -171,23 +185,8 @@ android {
             }
         }
     }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-
-    buildFeatures {
-        compose = true
-        buildConfig = true
-    }
-
-    testOptions {
-        // JVM unit tests touch android.util.Log (via LogManager); return defaults
-        // instead of throwing "not mocked" so pure-logic tests can run on the JVM.
-        unitTests.isReturnDefaultValues = true
-    }
 }
+
 
 dependencies {
 

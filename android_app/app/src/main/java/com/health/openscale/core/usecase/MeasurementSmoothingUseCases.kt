@@ -39,11 +39,11 @@ import kotlin.math.roundToInt
  * to the previous implementation because every entry represents a single raw measurement.
  *
  * The smoothing is applied **per measurement type** across the chronological series,
- * then mapped back onto each entry's timestamp. Only types present in [typesToSmoothFlow]
+ * then mapped back onto each entry's timestamp. Only types present in `typesToSmoothFlow`
  * and numeric by [InputFieldType] are processed.
  *
  * To handle irregular measurements, the time series is split into blocks if the gap
- * between consecutive points exceeds [maxGapDaysFlow]. Each block is smoothed independently.
+ * between consecutive points exceeds `maxGapDaysFlow`. Each block is smoothed independently.
  */
 @Singleton
 class MeasurementSmoothingUseCases @Inject constructor() {
@@ -62,7 +62,6 @@ class MeasurementSmoothingUseCases @Inject constructor() {
      *
      * @param baseAggregatedFlow  Aggregated measurements (newest → oldest) to smooth.
      * @param typesToSmoothFlow   Set of type ids to smooth.
-     * @param measurementTypesFlow Global catalogue of measurement types.
      * @param algorithmFlow       The selected smoothing algorithm.
      * @param alphaFlow           Smoothing factor for exponential smoothing (0..1).
      * @param windowFlow          Window size for simple moving average (≥ 1).
@@ -146,7 +145,6 @@ class MeasurementSmoothingUseCases @Inject constructor() {
                             CalculationUtils.applyExponentialSmoothing(values, cfg.alpha)
                         SmoothingAlgorithm.SIMPLE_MOVING_AVERAGE ->
                             CalculationUtils.applySimpleMovingAverage(values, cfg.window)
-                        else -> values
                     }
 
                     finalSmoothedMap.putAll(

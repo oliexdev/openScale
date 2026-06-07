@@ -72,7 +72,7 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         // Match by name heuristics and/or advertised service UUID
         val name = device.name.lowercase()
-        val hasSvc = device.serviceUuids?.any { it == SERVICE } == true
+        val hasSvc = device.serviceUuids.any { it == SERVICE }
         if (
             hasSvc ||
             name.contains("AE BS-06".lowercase())
@@ -196,7 +196,7 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
             0x00 // checksum placeholder
         )
         // original legacy code summed 2..(len-3). We keep that to stay protocol-compatible.
-        pkt[pkt.lastIndex] = sumChecksum(pkt, from = 2, toExclusive = pkt.size - 3)
+        pkt[pkt.lastIndex] = sumChecksum(pkt, toExclusive = pkt.size - 3)
         return pkt
     }
 
@@ -355,10 +355,10 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
 
     // --- Small helpers --------------------------------------------------------
 
-    /** Legacy "sumChecksum": sum of bytes in [from, toExclusive) truncated to 8-bit. */
-    private fun sumChecksum(data: ByteArray, from: Int, toExclusive: Int): Byte {
+    /** Legacy "sumChecksum": sum of bytes in [2, toExclusive) truncated to 8-bit. */
+    private fun sumChecksum(data: ByteArray, toExclusive: Int): Byte {
         var sum = 0
-        for (i in from until toExclusive) sum = (sum + (data[i].toInt() and 0xFF)) and 0xFF
+        for (i in 2 until toExclusive) sum = (sum + (data[i].toInt() and 0xFF)) and 0xFF
         return sum.toByte()
     }
 

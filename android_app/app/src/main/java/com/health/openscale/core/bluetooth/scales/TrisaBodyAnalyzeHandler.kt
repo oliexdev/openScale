@@ -51,7 +51,7 @@ class TrisaBodyAnalyzeHandler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         // Legacy detection used device names "01257B" / "11257B" prefixes
-        val n = device.name ?: return null
+        val n = device.name
         val supported = n.startsWith("01257B") || n.startsWith("11257B")
         return if (supported) {
             DeviceSupport(
@@ -78,7 +78,6 @@ class TrisaBodyAnalyzeHandler : ScaleDeviceHandler() {
     private val CMD_DOWNLOAD_INFORMATION_UTC: Byte           = 0x02
     private val CMD_DOWNLOAD_INFORMATION_RESULT: Byte         = 0x20
     private val CMD_DOWNLOAD_INFORMATION_BROADCAST_ID: Byte   = 0x21
-    private val CMD_DOWNLOAD_INFORMATION_ENABLE_DISCONNECT: Byte = 0x22
 
     private val BROADCAST_ID = 0 // required to complete pairing; value seems arbitrary
 
@@ -214,10 +213,6 @@ class TrisaBodyAnalyzeHandler : ScaleDeviceHandler() {
     }
 
     // --- Command helpers (host → device) -------------------------------------
-
-    private fun writeCommand(opcode: Byte) {
-        writeTo(SVC_WEIGHT, CHR_DNLD, byteArrayOf(opcode), withResponse = true)
-    }
 
     private fun writeCommand(opcode: Byte, arg: Int) {
         val bytes = ByteArray(5)

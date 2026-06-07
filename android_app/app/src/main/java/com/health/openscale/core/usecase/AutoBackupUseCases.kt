@@ -46,7 +46,7 @@ import java.util.concurrent.TimeUnit
  */
 @Singleton
 class AutoBackupUseCases @Inject constructor(
-    @ApplicationContext private val appContext: Context,
+    @param:ApplicationContext private val appContext: Context,
     private val settings: SettingsFacade
 ) {
     private val TAG = "AutoBackupUseCase"

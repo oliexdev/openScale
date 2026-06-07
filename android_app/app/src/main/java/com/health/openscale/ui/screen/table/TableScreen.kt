@@ -75,9 +75,11 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.intl.Locale as ComposeLocale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -111,6 +113,8 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.time.Instant
@@ -152,6 +156,7 @@ fun TableScreen(
     drillDownEndMillis: Long? = null,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val scope   = rememberCoroutineScope()
 
     val isDrillDown = drillDownStartMillis != null && drillDownEndMillis != null
@@ -165,7 +170,7 @@ fun TableScreen(
 
     // ── Data ──────────────────────────────────────────────────────────────────
     val tableUiState by if (isDrillDown) {
-        sharedViewModel.drillDownFlow(drillDownStartMillis!!, drillDownEndMillis!!)
+        sharedViewModel.drillDownFlow(drillDownStartMillis, drillDownEndMillis)
             .collectAsStateWithLifecycle(initialValue = SharedViewModel.UiState.Loading)
     } else {
         sharedViewModel.screenFlow(SettingsPreferenceKeys.TABLE_SCREEN_CONTEXT)
@@ -278,6 +283,7 @@ fun TableScreen(
 
     // ── Actions ───────────────────────────────────────────────────────────────
     val allUsersForDialog       by sharedViewModel.allUsers.collectAsState()
+    val selectedUserIdState     by sharedViewModel.selectedUserId.collectAsState()
     var showDeleteConfirmDialog by rememberSaveable { mutableStateOf(false) }
     var showChangeUserDialog    by rememberSaveable { mutableStateOf(false) }
 
@@ -337,7 +343,7 @@ fun TableScreen(
     // ── Dialogs ───────────────────────────────────────────────────────────────
     if (showChangeUserDialog) {
         val usersForDialog = allUsersForDialog.filter {
-            it.id != 0 && it.id != sharedViewModel.selectedUserId.value
+            it.id != 0 && it.id != selectedUserIdState
         }
         if (usersForDialog.isNotEmpty()) {
             UserInputDialog(
@@ -390,8 +396,9 @@ fun TableScreen(
     val dateFormatterDayOfWeek = remember { SimpleDateFormat("EE", Locale.getDefault()) }
     val dateFormatterTime      = remember { DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault()) }
 
+    val calendarWeekAbbrev = stringResource(R.string.calendar_week_abbrev)
     val aggregationLabelFormatter: (Long, AggregationLevel) -> String =
-        remember(effectiveAggregationLevel) {
+        remember(effectiveAggregationLevel, calendarWeekAbbrev) {
             { timestamp, level ->
                 val date   = Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDate()
                 val locale = Locale.getDefault()
@@ -400,7 +407,7 @@ fun TableScreen(
                     AggregationLevel.DAY   -> dateFormatterDate.format(Date(timestamp))
                     AggregationLevel.WEEK  -> {
                         val wf = WeekFields.of(locale)
-                        "${date.get(wf.weekBasedYear())} – ${context.getString(R.string.calendar_week_abbrev)} ${date.get(wf.weekOfWeekBasedYear())}"
+                        "${date.get(wf.weekBasedYear())} – $calendarWeekAbbrev ${date.get(wf.weekOfWeekBasedYear())}"
                     }
                     AggregationLevel.MONTH ->
                         date.format(DateTimeFormatter.ofPattern("MMM yyyy", locale))
@@ -553,30 +560,31 @@ fun TableScreen(
         }
 
         val latestId = tableData.firstOrNull()?.measurementId ?: return@LaunchedEffect
-        kotlinx.coroutines.delay(500)
+        kotlinx.coroutines.delay(500.milliseconds)
         if (latestId == tableData.firstOrNull()?.measurementId) {
             highlightedItemId = latestId
             lazyListState.animateScrollToItem(0)
-            kotlinx.coroutines.delay(1500)
+            kotlinx.coroutines.delay(1.5.seconds)
             highlightedItemId = null
         }
     }
 
     // ── Top bar ───────────────────────────────────────────────────────────────
-    val tableScreenTitle = if (isDrillDown && drillDownStartMillis != null && drillDownEndMillis != null) {
+    val tableScreenTitle = if (isDrillDown) {
         val spanDays  = ChronoUnit.DAYS.between(
             Instant.ofEpochMilli(drillDownStartMillis).atZone(ZoneId.systemDefault()).toLocalDate(),
             Instant.ofEpochMilli(drillDownEndMillis).atZone(ZoneId.systemDefault()).toLocalDate(),
         )
         val midMillis = drillDownStartMillis + (drillDownEndMillis - drillDownStartMillis) / 2L
         val date      = Instant.ofEpochMilli(midMillis).atZone(ZoneId.systemDefault()).toLocalDate()
-        val locale    = Locale.getDefault()
+        // Read the locale observably so the title recomposes on locale changes.
+        val locale    = ComposeLocale.current.platformLocale
         val count     = aggregatedItems.size
         val label = when {
             spanDays <= 1  -> dateFormatterDate.format(Date(drillDownStartMillis))
             spanDays <= 8  -> {
                 val wf = WeekFields.of(locale)
-                "${date.get(wf.weekBasedYear())} – ${context.getString(R.string.calendar_week_abbrev)} ${date.get(wf.weekOfWeekBasedYear())}"
+                "${date.get(wf.weekBasedYear())} – $calendarWeekAbbrev ${date.get(wf.weekOfWeekBasedYear())}"
             }
             spanDays <= 32 -> date.format(DateTimeFormatter.ofPattern("MMMM yyyy", locale))
             else           -> date.year.toString()
@@ -597,7 +605,7 @@ fun TableScreen(
         sharedViewModel.setContextualSelectionMode(isInSelectionMode)
         if (isInSelectionMode) {
             sharedViewModel.setTopBarTitle(
-                context.getString(R.string.items_selected_count, resolvedSelectionCount)
+                resources.getString(R.string.items_selected_count, resolvedSelectionCount)
             )
             sharedViewModel.setTopBarActions(listOf(
                 TopBarAction(
@@ -942,7 +950,7 @@ fun TableDataCellInternal(
                         Text(
                             text       = "⌀",
                             style      = MaterialTheme.typography.bodyLarge,
-                            fontWeight = if (isAggregated) FontWeight.SemiBold else FontWeight.Normal,
+                            fontWeight = FontWeight.SemiBold,
                             modifier   = Modifier.padding(end = 2.dp),
                         )
                     }
@@ -1011,7 +1019,7 @@ fun TableDataCellInternal(
                                 Spacer(Modifier.width(2.dp))
                             }
                             Text(
-                                text      = cellData.diffDisplay!!,
+                                text      = cellData.diffDisplay,
                                 style     = MaterialTheme.typography.bodySmall,
                                 color     = diffColor,
                                 textAlign = TextAlign.End,

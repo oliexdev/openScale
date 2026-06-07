@@ -21,6 +21,7 @@ import com.health.openscale.core.data.User
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.model.UserEvaluationContext
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
@@ -70,6 +71,7 @@ class UserUseCases @Inject constructor(
     }
 
     /** Observe the currently selected user object (may be null). */
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun observeSelectedUser(): Flow<User?> =
         observeSelectedUserId().flatMapLatest { id ->
             if (id == null) flowOf(null) else observeUserById(id)

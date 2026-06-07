@@ -48,8 +48,6 @@ import java.util.UUID
 class QNHandlerBroadcast : ScaleDeviceHandler() {
 
     companion object {
-        private const val TAG = "QNBroadcastHandler"
-
         private const val COMPANY_ID_QN    = 0xFFFF
         private const val MAGIC_BYTE_0     = 0xAA.toByte()
         private const val MAGIC_BYTE_1     = 0xBB.toByte()
@@ -110,10 +108,10 @@ class QNHandlerBroadcast : ScaleDeviceHandler() {
      *   [BroadcastAction.CONSUMED_KEEP_SCANNING] — weight present but measurement not yet stable
      *   [BroadcastAction.CONSUMED_STOP]        — stable weight published; adapter stops scanning
      */
-    override fun onAdvertisement(scanResult: ScanResult, user: ScaleUser): BroadcastAction {
+    override fun onAdvertisement(result: ScanResult, user: ScaleUser): BroadcastAction {
         if (hasPublished) return BroadcastAction.IGNORED
 
-        val record = scanResult.scanRecord ?: return BroadcastAction.IGNORED
+        val record = result.scanRecord ?: return BroadcastAction.IGNORED
 
         // ScanRecord.getManufacturerSpecificData() strips the 2-byte Company ID
         // prefix, so data[0] is the first application byte (0xAA magic).

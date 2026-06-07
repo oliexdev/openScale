@@ -38,7 +38,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
@@ -81,11 +80,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.documentfile.provider.DocumentFile
-import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.BackupInterval
 import com.health.openscale.core.data.User
@@ -123,7 +122,6 @@ sealed class DataManagementSettingListItem {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DataManagementSettingsScreen(
-    navController: NavController,
     settingsViewModel: SettingsViewModel
 ) {
     val users by settingsViewModel.allUsers.collectAsState()
@@ -147,6 +145,7 @@ fun DataManagementSettingsScreen(
     var showRestoreConfirmationDialog by rememberSaveable { mutableStateOf(false) }
 
     val context = LocalContext.current
+    val resources = LocalResources.current
     val coroutineScope = rememberCoroutineScope()
 
     // --- Automatic Backup Settings from ViewModel ---
@@ -181,14 +180,14 @@ fun DataManagementSettingsScreen(
                         Locale.getDefault()
                     )
                     val formattedTime = dateFormat.format(date)
-                    context.getString(R.string.settings_last_backup_status_successful, formattedTime)
+                    resources.getString(R.string.settings_last_backup_status_successful, formattedTime)
                 } else {
-                    context.getString(R.string.settings_last_backup_status_never)
+                    resources.getString(R.string.settings_last_backup_status_never)
                 }
             } else if (autoBackupGloballyEnabled && !isAutoBackupLocationConfigured) {
-                context.getString(R.string.settings_backup_location_not_configured_for_auto)
+                resources.getString(R.string.settings_backup_location_not_configured_for_auto)
             } else {
-                context.getString(R.string.settings_auto_backups_disabled)
+                resources.getString(R.string.settings_auto_backups_disabled)
             }
         )
     }
@@ -200,8 +199,8 @@ fun DataManagementSettingsScreen(
 
     val backupBehaviorSupportingText by remember(autoBackupCreateNewFile, context) {
         mutableStateOf(
-            if (autoBackupCreateNewFile) context.getString(R.string.settings_backup_behavior_new_file)
-            else context.getString(R.string.settings_backup_behavior_overwrite)
+            if (autoBackupCreateNewFile) resources.getString(R.string.settings_backup_behavior_new_file)
+            else resources.getString(R.string.settings_backup_behavior_overwrite)
         )
     }
 
@@ -209,13 +208,13 @@ fun DataManagementSettingsScreen(
         mutableStateOf(
             if (autoBackupLocationUriString != null) {
                 try {
-                    DocumentFile.fromTreeUri(context, Uri.parse(autoBackupLocationUriString!!))?.name
-                        ?: context.getString(R.string.settings_backup_location_selected_folder)
-                } catch (e: Exception) {
-                    context.getString(R.string.settings_backup_location_error_accessing)
+                    DocumentFile.fromTreeUri(context, autoBackupLocationUriString!!.toUri())?.name
+                        ?: resources.getString(R.string.settings_backup_location_selected_folder)
+                } catch (_: Exception) {
+                    resources.getString(R.string.settings_backup_location_error_accessing)
                 }
             } else {
-                context.getString(R.string.settings_backup_location_not_configured)
+                resources.getString(R.string.settings_backup_location_not_configured)
             }
         )
     }
@@ -282,7 +281,7 @@ fun DataManagementSettingsScreen(
                         settingsViewModel.setAutoBackupEnabled(true)
                     }
                 }
-                Toast.makeText(context, context.getString(R.string.settings_backup_location_selected_toast,
+                Toast.makeText(context, resources.getString(R.string.settings_backup_location_selected_toast,
                     DocumentFile.fromTreeUri(context, uri)?.name ?: "Selected folder"), Toast.LENGTH_SHORT).show()
             } else {
                 // User cancelled or no folder selected
@@ -322,17 +321,17 @@ fun DataManagementSettingsScreen(
 
     val regularDataManagementItems = remember(users, isAnyOperationLoading, isLoadingExport, isLoadingImport, isLoadingBackup, isLoadingRestore, context) {
         buildList {
-            add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_export_measurements_csv), Icons.Default.FileDownload, { if (!isAnyOperationLoading) settingsViewModel.startExportProcess() }, users.isNotEmpty() && !isAnyOperationLoading, isLoading = isLoadingExport))
-            add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_import_measurements_csv), Icons.Default.FileUpload, { if (!isAnyOperationLoading) settingsViewModel.startImportProcess() }, users.isNotEmpty() && !isAnyOperationLoading, isLoading = isLoadingImport))
-            add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_backup_database), Icons.Default.CloudDownload, { if (!isAnyOperationLoading) settingsViewModel.startDatabaseBackup() }, !isAnyOperationLoading, isLoading = isLoadingBackup))
-            add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_restore_database), Icons.Filled.CloudUpload, { if (!isAnyOperationLoading) showRestoreConfirmationDialog = true }, !isAnyOperationLoading, isLoading = isLoadingRestore))
+            add(DataManagementSettingListItem.ActionItem(resources.getString(R.string.settings_export_measurements_csv), Icons.Default.FileDownload, { if (!isAnyOperationLoading) settingsViewModel.startExportProcess() }, users.isNotEmpty() && !isAnyOperationLoading, isLoading = isLoadingExport))
+            add(DataManagementSettingListItem.ActionItem(resources.getString(R.string.settings_import_measurements_csv), Icons.Default.FileUpload, { if (!isAnyOperationLoading) settingsViewModel.startImportProcess() }, users.isNotEmpty() && !isAnyOperationLoading, isLoading = isLoadingImport))
+            add(DataManagementSettingListItem.ActionItem(resources.getString(R.string.settings_backup_database), Icons.Default.CloudDownload, { if (!isAnyOperationLoading) settingsViewModel.startDatabaseBackup() }, !isAnyOperationLoading, isLoading = isLoadingBackup))
+            add(DataManagementSettingListItem.ActionItem(resources.getString(R.string.settings_restore_database), Icons.Filled.CloudUpload, { if (!isAnyOperationLoading) showRestoreConfirmationDialog = true }, !isAnyOperationLoading, isLoading = isLoadingRestore))
         }
     }
 
     val destructiveDataManagementItems = remember(users, isAnyOperationLoading, isLoadingDeletion, isLoadingEntireDatabaseDeletion, context) {
         buildList {
-            add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_delete_all_measurement_data), Icons.Default.DeleteForever, { if (!isAnyOperationLoading) settingsViewModel.initiateDeleteAllUserDataProcess() }, users.isNotEmpty() && !isAnyOperationLoading, true, isLoadingDeletion))
-            add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_delete_entire_database), Icons.Default.WarningAmber, { if (!isAnyOperationLoading) settingsViewModel.initiateDeleteEntireDatabaseProcess() }, !isAnyOperationLoading, true, isLoadingEntireDatabaseDeletion))
+            add(DataManagementSettingListItem.ActionItem(resources.getString(R.string.settings_delete_all_measurement_data), Icons.Default.DeleteForever, { if (!isAnyOperationLoading) settingsViewModel.initiateDeleteAllUserDataProcess() }, users.isNotEmpty() && !isAnyOperationLoading, true, isLoadingDeletion))
+            add(DataManagementSettingListItem.ActionItem(resources.getString(R.string.settings_delete_entire_database), Icons.Default.WarningAmber, { if (!isAnyOperationLoading) settingsViewModel.initiateDeleteEntireDatabaseProcess() }, !isAnyOperationLoading, true, isLoadingEntireDatabaseDeletion))
         }
     }
 
@@ -417,9 +416,9 @@ fun DataManagementSettingsScreen(
                                                 intent.setDataAndType(autoBackupLocationUriString!!.toUri(), "vnd.android.document/directory")
                                                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                                 context.startActivity(intent)
-                                            } catch (e: ActivityNotFoundException) {
+                                            } catch (_: ActivityNotFoundException) {
                                                 Toast.makeText(context, R.string.settings_backup_location_open_error_no_app, Toast.LENGTH_SHORT).show()
-                                            } catch (e: Exception) {
+                                            } catch (_: Exception) {
                                                 Toast.makeText(context, R.string.settings_backup_location_open_error, Toast.LENGTH_SHORT).show()
                                             }
                                         }
@@ -675,6 +674,7 @@ fun UserSelectionDialog(
     }
 
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     AlertDialog(
         onDismissRequest = { if (confirmButtonEnabled) onDismiss() },
@@ -693,8 +693,6 @@ fun UserSelectionDialog(
                             Icons.Default.Face6 to MaterialTheme.colorScheme.primary
                         GenderType.FEMALE ->
                             Icons.Default.Face3 to MaterialTheme.colorScheme.secondary
-                        else ->
-                            Icons.Filled.AccountCircle to MaterialTheme.colorScheme.onSurfaceVariant
                     }
 
                     val textColor =
@@ -711,7 +709,7 @@ fun UserSelectionDialog(
                         supportingContent = {
                             val genderName = user.gender.getDisplayName(context)
                             Text(
-                                text = "${context.getString(R.string.user_settings_item_details_conditional, age, genderName)}",
+                                text = resources.getString(R.string.user_settings_item_details_conditional, age, genderName),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

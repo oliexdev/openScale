@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,7 +35,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -53,6 +51,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -133,6 +132,7 @@ fun MeasurementChart(
     onPointSelected: (timestamp: Long) -> Unit = {},
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val scope   = rememberCoroutineScope()
 
     // ── Type-filter row visibility ────────────────────────────────────────────
@@ -266,7 +266,7 @@ fun MeasurementChart(
     }.collectAsStateWithLifecycle(initialValue = null)
 
     val goalValuesForScaling = remember(goalsToActuallyPlot, showGoalLinesSetting) {
-        if (showGoalLinesSetting) goalsToActuallyPlot?.map { it.goalValue.toFloat() } ?: emptyList()
+        if (showGoalLinesSetting) goalsToActuallyPlot?.map { it.goalValue } ?: emptyList()
         else emptyList()
     }
 
@@ -302,20 +302,20 @@ fun MeasurementChart(
                                 it.isEnabled &&
                                         (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT)
                             })
-                            context.getString(R.string.line_chart_no_plottable_types)
+                            resources.getString(R.string.line_chart_no_plottable_types)
                         else
-                            context.getString(R.string.line_chart_no_data_to_display)
+                            resources.getString(R.string.line_chart_no_data_to_display)
                     true
                 }
                 lineTypesToActuallyPlot.isEmpty() &&
                         filteredMeasurements.isEmpty() &&
                         targetMeasurementTypeId != null -> {
-                    noDataMessageText = context.getString(
+                    noDataMessageText = resources.getString(
                         R.string.line_chart_no_data_for_type_in_range,
                         allAvailableMeasurementTypes
                             .find { it.id == targetMeasurementTypeId }
                             ?.getDisplayName(context)
-                            ?: context.getString(R.string.line_chart_this_type_placeholder),
+                            ?: resources.getString(R.string.line_chart_this_type_placeholder),
                     )
                     true
                 }

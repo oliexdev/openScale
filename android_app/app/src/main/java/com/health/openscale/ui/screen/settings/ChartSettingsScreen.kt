@@ -31,14 +31,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -46,10 +44,8 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,20 +57,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.PolynomialDegree
 import com.health.openscale.core.data.SmoothingAlgorithm
 import com.health.openscale.ui.shared.SharedViewModel
 import kotlinx.coroutines.launch
+import java.util.Locale
 import kotlin.math.roundToInt
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun ChartSettingsScreen(
-    navController: NavController,
-    sharedViewModel: SharedViewModel,
-    settingsViewModel: SettingsViewModel
+    sharedViewModel: SharedViewModel
 ) {
     val chartSettingsScreenTitle = stringResource(R.string.settings_item_chart)
     LaunchedEffect(Unit) {
@@ -122,7 +116,7 @@ fun ChartSettingsScreen(
         .chartProjectionPolynomialDegree
         .collectAsStateWithLifecycle(initialValue = 1)
 
-    val availableAlgorithms = remember { SmoothingAlgorithm.values().toList() }
+    val availableAlgorithms = remember { SmoothingAlgorithm.entries.toList() }
     var algorithmDropdownExpanded by remember { mutableStateOf(false) }
 
     Column(
@@ -353,7 +347,7 @@ fun ChartSettingsScreen(
                             }
                         },
                         valueRange = alphaStepperRange,
-                        valueRepresentation = { intValue -> String.format("%.1f", intValue / 10f) },
+                        valueRepresentation = { intValue -> String.format(Locale.getDefault(), "%.1f", intValue / 10f) },
                         modifier = Modifier.padding(start = 16.dp)
                     )
                 }

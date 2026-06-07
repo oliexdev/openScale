@@ -62,6 +62,7 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
@@ -93,6 +94,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.intl.Locale as ComposeLocale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -306,7 +308,7 @@ fun InsightsScreen(
  */
 @Composable
 private fun MeasurementAnalysisCard(analysis: MeasurementAnalysis) {
-    val locale  = Locale.getDefault()
+    val locale  = ComposeLocale.current.platformLocale
     val context = LocalContext.current
 
     fun fmt(v: Float)       = LocaleUtils.formatValueForDisplay(v.toString(), analysis.type.unit)
@@ -578,7 +580,7 @@ private fun AnalysisSparkline(
         val visibleCount = (values.size * prog).toInt().coerceAtLeast(2)
         val path = Path()
         values.take(visibleCount).forEachIndexed { i, (ts, v) ->
-            val x = xOf(ts);
+            val x = xOf(ts)
             val y = yOf(v)
             if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
         }
@@ -710,7 +712,7 @@ private fun AnalysisSparkline(
 @Composable
 private fun BodyCompositionPlaneCard(pattern: BodyCompositionPattern) {
     val history  = pattern.history
-    val locale   = Locale.getDefault()
+    val locale   = ComposeLocale.current.platformLocale
     val shortFmt = DateTimeFormatter.ofPattern("MMM yy", locale)
 
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
@@ -876,7 +878,7 @@ private fun BodyCompositionPlaneCard(pattern: BodyCompositionPattern) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun WeekdayPatternCard(pattern: WeekdayPattern) {
-    val locale = Locale.getDefault()
+    val locale = ComposeLocale.current.platformLocale
     var animationPlayed by remember { mutableStateOf(false) }
     LaunchedEffect(pattern) { animationPlayed = true }
 
@@ -907,7 +909,7 @@ private fun WeekdayPatternCard(pattern: WeekdayPattern) {
                     val tooltipState = rememberTooltipState(isPersistent = true)
                     val tooltipScope = rememberCoroutineScope()
                     TooltipBox(
-                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
                         tooltip = {
                             PlainTooltip {
                                 Text(
@@ -952,7 +954,7 @@ private fun WeekdayPatternCard(pattern: WeekdayPattern) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SeasonalPatternCard(pattern: SeasonalPattern) {
-    val locale = Locale.getDefault()
+    val locale = ComposeLocale.current.platformLocale
     var animationPlayed by remember { mutableStateOf(false) }
     LaunchedEffect(pattern) { animationPlayed = true }
 
@@ -1000,7 +1002,7 @@ private fun SeasonalPatternCard(pattern: SeasonalPattern) {
                             val tooltipState = rememberTooltipState(isPersistent = true)
                             val tooltipScope = rememberCoroutineScope()
                             TooltipBox(
-                                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
                                 tooltip = { PlainTooltip { Text("${month.getDisplayName(TextStyle.SHORT, locale)} $year\n${LocaleUtils.formatValueForDisplay(avg.toString(), pattern.type.unit)}", style = MaterialTheme.typography.labelSmall) } },
                                 state    = tooltipState,
                                 modifier = Modifier.fillMaxSize().clickable { tooltipScope.launch { tooltipState.show() } },
@@ -1061,7 +1063,7 @@ private fun AnomaliesCard(
 
 @Composable
 private fun AnomalyRow(anomaly: MeasurementAnomaly, onAnomalyClick: (MeasurementAnomaly) -> Unit) {
-    val locale        = Locale.getDefault()
+    val locale        = ComposeLocale.current.platformLocale
     val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale) }
 
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable { onAnomalyClick(anomaly) }) {
@@ -1162,7 +1164,7 @@ private fun TrendLabel(
     val scope        = rememberCoroutineScope()
 
     TooltipBox(
-        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
         tooltip = { PlainTooltip { Text(tooltipText, style = MaterialTheme.typography.bodySmall) } },
         state   = tooltipState,
     ) {

@@ -202,7 +202,7 @@ class BluetoothFacadeImpl @Inject constructor(
             id = u.id
             userName = u.name
             birthday = Date(u.birthDate)
-            bodyHeight = u.heightCm ?: 0f
+            bodyHeight = u.heightCm
             gender = u.gender
         }
 
@@ -287,6 +287,8 @@ class BluetoothFacadeImpl @Inject constructor(
 @Module
 @InstallIn(SingletonComponent::class)
 interface BluetoothFacadeBindsModule {
+    // Invoked by Hilt's generated code only; the IDE cannot see that usage.
+    @Suppress("unused")
     @Binds
     @Singleton
     fun bindBluetoothFacade(impl: BluetoothFacadeImpl): BluetoothFacade

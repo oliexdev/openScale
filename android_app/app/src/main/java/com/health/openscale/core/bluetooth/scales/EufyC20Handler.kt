@@ -2,6 +2,8 @@ package com.health.openscale.core.bluetooth.scales
 
 import android.bluetooth.le.ScanResult
 import android.util.SparseArray
+import androidx.core.util.isEmpty
+import androidx.core.util.size
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.MiScaleLib
@@ -32,7 +34,7 @@ class EufyC20Handler : ScaleDeviceHandler() {
 
     private fun extractManufacturerIds(m: Any?): Iterable<Int> = when (m) {
         is Map<*, *> -> m.keys.filterIsInstance<Int>()
-        is SparseArray<*> -> (0 until m.size()).mapNotNull { m.keyAt(it) as? Int }
+        is SparseArray<*> -> (0 until m.size).map { m.keyAt(it) }
         is List<*> -> m.mapNotNull {
             if (it is Pair<*, *>) (it.first as? Int) else null
         }
@@ -43,9 +45,7 @@ class EufyC20Handler : ScaleDeviceHandler() {
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val m = device.manufacturerData
         if (m != null && extractManufacturerIds(m).any { it == MANUFACTURER_ID }) return deviceSupport
-        val name = device.name
-        if (name == null) return null
-        val un = name.uppercase(Locale.US)
+        val un = device.name.uppercase(Locale.US)
         if (un.startsWith("EUFY") && (un.contains("C20") || un.contains("T9130"))) {
             return deviceSupport
         }
@@ -56,12 +56,12 @@ class EufyC20Handler : ScaleDeviceHandler() {
     override fun onAdvertisement(result: ScanResult, user: ScaleUser): BroadcastAction {
         val msdRaw = result.scanRecord?.manufacturerSpecificData ?: return BroadcastAction.IGNORED
         val msd = msdRaw as? SparseArray<*> ?: return BroadcastAction.IGNORED
-        if (msd.size() == 0) return BroadcastAction.IGNORED
-        val values = (0 until msd.size()).mapNotNull { msd.valueAt(it) as? ByteArray }
+        if (msd.isEmpty()) return BroadcastAction.IGNORED
+        val values = (0 until msd.size).mapNotNull { msd.valueAt(it) as? ByteArray }
 
         val payload = values.firstOrNull { it.size >= 14 } ?: return BroadcastAction.IGNORED
 
-        return try {
+        try {
             val flags = payload[10].toInt() and 0xFF
             val hasWeight = (flags and 0x01) != 0
             val hasImpedance = (flags and 0x40) != 0

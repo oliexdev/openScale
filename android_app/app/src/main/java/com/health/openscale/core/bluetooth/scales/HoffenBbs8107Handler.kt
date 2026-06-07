@@ -34,7 +34,7 @@ import kotlin.math.max
  *
  * Protocol (single custom characteristic):
  *  - Service 0xFFB0, Characteristic 0xFFB2 (notify + write with response)
- *  - Packets start with 0xFA, then [cmdOrResp], [len], [payload], [checksum]
+ *  - Packets start with 0xFA, then `cmdOrResp`, `len`, `payload`, `checksum`
  *  - Checksum = XOR of bytes 1..(n-2); some final measurement frames deliver checksum in a follow-up notify.
  */
 class HoffenBbs8107Handler : ScaleDeviceHandler() {
@@ -47,7 +47,7 @@ class HoffenBbs8107Handler : ScaleDeviceHandler() {
     // --- DeviceSupport --------------------------------------------------------
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = device.name?.lowercase(Locale.US) ?: return null
+        val name = device.name.lowercase(Locale.US)
         if (name != "hoffen bs-8107") return null
 
         val caps = setOf(
@@ -185,19 +185,19 @@ class HoffenBbs8107Handler : ScaleDeviceHandler() {
         out[2] = payload.size.toByte()
         System.arraycopy(payload, 0, out, 3, payload.size)
         // checksum over bytes 1..n-2
-        out[out.lastIndex] = xorChecksum(out, 1, out.size - 2)
+        out[out.lastIndex] = xorChecksum(out, out.size - 2)
         writeTo(SERVICE, CHAR, out, withResponse = true)
     }
 
     private fun verify(buf: ByteArray): Boolean {
         if (buf.size < 4) return false
-        val sum = xorChecksum(buf, 1, buf.size - 1)
+        val sum = xorChecksum(buf, buf.size - 1)
         return sum.toInt() == 0
     }
 
-    private fun xorChecksum(buf: ByteArray, start: Int, endExclusive: Int): Byte {
+    private fun xorChecksum(buf: ByteArray, endExclusive: Int): Byte {
         var x = 0
-        for (i in start until endExclusive) x = x xor (buf[i].toInt() and 0xFF)
+        for (i in 1 until endExclusive) x = x xor (buf[i].toInt() and 0xFF)
         return (x and 0xFF).toByte()
     }
 

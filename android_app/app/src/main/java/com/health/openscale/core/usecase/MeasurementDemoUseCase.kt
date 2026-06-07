@@ -31,7 +31,7 @@ class MeasurementDemoUseCase @Inject constructor(
     private val query: MeasurementQueryUseCases,
     private val crud: MeasurementCrudUseCases,
 ) {
-    enum class DemoScenario(@StringRes val labelRes: Int) {
+    enum class DemoScenario(@param:StringRes val labelRes: Int) {
         // ── Pattern classification ─────────────────────────────────────────
         /** fat↓ muscle↑ → RECOMPOSITION — point lands TOP-LEFT */
         RECOMPOSITION(R.string.dev_tools_scenario_recomposition),
@@ -76,7 +76,7 @@ class MeasurementDemoUseCase @Inject constructor(
         fun getDisplayName(context: Context): String = context.getString(labelRes)
     }
 
-    enum class TimeRange(val days: Int, @StringRes val labelRes: Int) {
+    enum class TimeRange(val days: Int, @param:StringRes val labelRes: Int) {
         LAST_30_DAYS(30, R.string.dev_tools_range_30_days),
         LAST_6_MONTHS(180, R.string.dev_tools_range_6_months),
         LAST_2_YEARS(730, R.string.dev_tools_range_2_years),
@@ -237,7 +237,7 @@ class MeasurementDemoUseCase @Inject constructor(
     }
 
     /**
-     * Generates a stable baseline with deliberate z-score spikes every [spikeInterval]
+     * Generates a stable baseline with deliberate z-score spikes every `spikeInterval`
      * measurements to reliably trigger anomaly detection.
      * Spike magnitude is 5× the normal noise — well above the z-score threshold of 3.0.
      */
@@ -295,7 +295,7 @@ class MeasurementDemoUseCase @Inject constructor(
         var bw = 78f; var bf = 21f; var bm = 37f
 
         for (dayAgo in daysBack downTo 0) {
-            val timestamp  = now - dayAgo * MS_PER_DAY.toLong()
+            val timestamp  = now - dayAgo * MS_PER_DAY
             val dayOfWeek  = ((System.currentTimeMillis() / MS_PER_DAY - dayAgo) % 7).toInt()
             val offset     = weekdayOffset[((dayOfWeek % 7) + 7) % 7]
             bw            += noise(-0.05f, 0.05f)
@@ -350,7 +350,7 @@ class MeasurementDemoUseCase @Inject constructor(
             // Each cluster has a different baseline to produce a clear shift at boundaries
             bw += noise(-1f, 1f)
             range.forEach { dayAgo ->
-                val timestamp = now - dayAgo * MS_PER_DAY.toLong()
+                val timestamp = now - dayAgo * MS_PER_DAY
                 bw += noise(-0.15f, 0.15f)
                 bf += noise(-0.05f, 0.05f)
                 bm += noise(-0.03f, 0.03f)

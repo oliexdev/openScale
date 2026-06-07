@@ -45,6 +45,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withTimeout
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.time.Duration.Companion.milliseconds
 
 // -------------------------------------------------------------------------------------------------
 // GATT adapter (BLE)
@@ -86,7 +87,7 @@ class GattScaleAdapter(
             for (op in opQueue) {
                 // wait until BLE connection is established
                 while (!_isConnected.value) {
-                    delay(10)
+                    delay(10.milliseconds)
                 }
 
                 try {
@@ -108,7 +109,7 @@ class GattScaleAdapter(
     }
 
     private suspend fun ioGap(ms: Long) {
-        if (ms > 0) delay(ms)
+        if (ms > 0) delay(ms.milliseconds)
     }
 
     // -------------------------------------------------------------------------------------------------
@@ -120,7 +121,7 @@ class GattScaleAdapter(
             LogManager.i(TAG, "Found $targetAddress → stop scan + connect")
             central.stopScan()
             scope.launch {
-                if (tuning.connectAfterScanDelayMs > 0) delay(tuning.connectAfterScanDelayMs)
+                if (tuning.connectAfterScanDelayMs > 0) delay(tuning.connectAfterScanDelayMs.milliseconds)
                 central.connect(peripheral, peripheralCallback)
             }
         }
@@ -130,7 +131,7 @@ class GattScaleAdapter(
                 currentPeripheral = peripheral
                 _isConnected.value = true
                 _isConnecting.value = false
-                _events.tryEmit(BluetoothEvent.Connected(peripheral.name ?: "Unknown", peripheral.address))
+                _events.tryEmit(BluetoothEvent.Connected(peripheral.name, peripheral.address))
             }
         }
 
@@ -146,13 +147,13 @@ class GattScaleAdapter(
                         )
                     )
                     connectAttempts = nextTry
-                    delay(tuning.common.retryBackoffMs)
+                    delay(tuning.common.retryBackoffMs.milliseconds)
                     runCatching { central.stopScan() }
                     central.scanForPeripheralsWithAddresses(setOf(peripheral.address))
                     _isConnecting.value = true
                 } else {
                     _events.tryEmit(BluetoothEvent.ConnectionFailed(peripheral.address, status.toString()))
-                    cleanup(peripheral.address)
+                    cleanup()
                 }
             }
         }
@@ -165,7 +166,7 @@ class GattScaleAdapter(
                 lastDisconnectAtMs = SystemClock.elapsedRealtime()
                 if (peripheral.address == targetAddress) {
                     _events.tryEmit(BluetoothEvent.Disconnected(peripheral.address, status.toString()))
-                    cleanup(peripheral.address)
+                    cleanup()
                 }
             }
         }
@@ -264,10 +265,10 @@ class GattScaleAdapter(
 
                 try {
                     // Wait with timeout from tuning
-                    withTimeout(tuning.operationTimeoutMs) {
+                    withTimeout(tuning.operationTimeoutMs.milliseconds) {
                         deferred.await()
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     LogManager.w(TAG, "Timeout waiting for notify on $characteristic")
                 } finally {
                     val current = deferredMap[characteristic]
@@ -316,10 +317,10 @@ class GattScaleAdapter(
                 LogManager.d(TAG,"\u2192 write to chr=$characteristic svc=$service len=${payload.size} withResp=$withResponse ${payload.toHexPreview(24)}")
 
                 try {
-                    withTimeout(tuning.operationTimeoutMs) {
+                    withTimeout(tuning.operationTimeoutMs.milliseconds) {
                         deferred.await()
                     }
-                } catch (t: Throwable) {
+                } catch (_: Throwable) {
                     LogManager.w(TAG, "Timeout waiting for write on $characteristic")
                 } finally {
                     val current = deferredMap[characteristic]
@@ -336,7 +337,7 @@ class GattScaleAdapter(
         override fun read(service: UUID, characteristic: UUID) {
             opQueue.trySend {
                 val p = currentPeripheral ?: return@trySend
-                val ch = p.getCharacteristic(service, characteristic) ?: return@trySend
+                p.getCharacteristic(service, characteristic) ?: return@trySend
 
                 val opId = ++nextOpId
                 val deferred = CompletableDeferred<Unit>()
@@ -347,10 +348,10 @@ class GattScaleAdapter(
                 LogManager.d(TAG,"\u2192 read from chr=$characteristic svc=$service")
 
                 try {
-                    withTimeout(tuning.operationTimeoutMs) {
+                    withTimeout(tuning.operationTimeoutMs.milliseconds) {
                         deferred.await()
                     }
-                } catch (t: Throwable) {
+                } catch (_: Throwable) {
                     LogManager.w(TAG, "Timeout waiting for read on $characteristic")
                 } finally {
                     val current = deferredMap[characteristic]
@@ -394,7 +395,7 @@ class GattScaleAdapter(
         runCatching { central.stopScan() }
 
         scope.launch {
-            if (waitMs > 0) delay(waitMs)
+            if (waitMs > 0) delay(waitMs.milliseconds)
             try {
                 central.scanForPeripheralsWithAddresses(setOf(address))
             } catch (e: Exception) {
@@ -405,7 +406,7 @@ class GattScaleAdapter(
                         e.message ?: context.getString(R.string.bt_error_generic)
                     )
                 )
-                cleanup(address)
+                cleanup()
             }
         }
     }

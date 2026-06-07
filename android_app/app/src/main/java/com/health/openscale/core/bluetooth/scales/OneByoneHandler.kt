@@ -33,8 +33,8 @@ import kotlin.math.max
  *
  * Protocol summary (based on legacy driver behavior):
  * - Subscribe NOTIFY on 0xFFF4.
- * - Send "mode/unit" command FD 37 [unit] [group] ... XOR.
- * - Send clock F1 [YYYY be][MM][dd][HH][mm][ss] → expect 2-byte ACK "F1 00".
+ * - Send "mode/unit" command `FD 37 <unit> <group> ... XOR`.
+ * - Send clock `F1 <YYYY be><MM><dd><HH><mm><ss>` → expect 2-byte ACK "F1 00".
  * - Request history F2 00 → historic packets (starting with CF ...) follow, end with 2-byte "F2 00".
  *   If any history received, send F2 01 to clear.
  * - Real-time measurements also arrive as CF ... frames (11 or 18+ bytes).
@@ -166,8 +166,8 @@ class OneByoneHandler : ScaleDeviceHandler() {
     // --- Parsing & publishing --------------------------------------------------
 
     private fun parseMeasurementFrame(bytes: ByteArray, user: ScaleUser, isHistoric: Boolean) {
-        // Weight is uint16 LE at [3..4] in 0.01 kg
-        val weightKg = u16le(bytes, 3) / 100.0f
+        // Weight is uint16 LE at bytes 3..4 in 0.01 kg
+        val weightKg = ((bytes[3].toInt() and 0xFF) or ((bytes[4].toInt() and 0xFF) shl 8)) / 100.0f
 
         // Impedance is ((b2 << 8) + b1) * 0.1 Ω (note the byte order used by original driver)
         val impedanceOhm = (((bytes[2].toInt() and 0xFF) shl 8) + (bytes[1].toInt() and 0xFF)) * 0.1f
@@ -184,7 +184,8 @@ class OneByoneHandler : ScaleDeviceHandler() {
         // Timestamp (BE year + plain month/day/time), used when provided
         val whenCal = Calendar.getInstance()
         if (hasTimestamp) {
-            val year = u16be(bytes, 11)
+            // Year is uint16 BE at bytes 11..12
+            val year  = ((bytes[11].toInt() and 0xFF) shl 8) or (bytes[12].toInt() and 0xFF)
             val month = (bytes[13].toInt() and 0xFF).coerceIn(1, 12)
             val day   = (bytes[14].toInt() and 0xFF).coerceAtLeast(1)
             val hh    = bytes[15].toInt() and 0xFF
@@ -236,13 +237,12 @@ class OneByoneHandler : ScaleDeviceHandler() {
 
     // --- Command builders ------------------------------------------------------
 
-    /** FD 37 [unit] [group] 00..00 XX, where XX is XOR of all previous bytes. */
+    /** `FD 37 <unit> <group> 00..00 XX`, where XX is XOR of all previous bytes. */
     private fun buildModeUnitCmd(user: ScaleUser): ByteArray {
         val unit: Byte = when (user.scaleUnit) {
             WeightUnit.KG -> 0x00
             WeightUnit.LB -> 0x01
             WeightUnit.ST -> 0x02
-            else          -> 0x00
         }
         val group: Byte = 0x01
         val payload = byteArrayOf(
@@ -250,11 +250,11 @@ class OneByoneHandler : ScaleDeviceHandler() {
             0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00
         )
-        payload[payload.lastIndex] = xorChecksum(payload, 0, payload.size - 1)
+        payload[payload.lastIndex] = xorChecksum(payload, payload.size - 1)
         return payload
     }
 
-    /** F1 [YYYY be][MM][dd][HH][mm][ss] (2-byte ACK "F1 00" expected). */
+    /** `F1 <YYYY be><MM><dd><HH><mm><ss>` (2-byte ACK "F1 00" expected). */
     private fun buildClockCmd(): ByteArray {
         val dt = Calendar.getInstance()
         val year = dt.get(Calendar.YEAR)
@@ -272,17 +272,11 @@ class OneByoneHandler : ScaleDeviceHandler() {
 
     // --- Helpers ---------------------------------------------------------------
 
-    private fun xorChecksum(b: ByteArray, from: Int, len: Int): Byte {
+    private fun xorChecksum(b: ByteArray, len: Int): Byte {
         var x = 0
-        for (i in 0 until len) x = x xor (b[from + i].toInt() and 0xFF)
+        for (i in 0 until len) x = x xor (b[i].toInt() and 0xFF)
         return (x and 0xFF).toByte()
     }
-
-    private fun u16le(b: ByteArray, off: Int): Int =
-        (b[off].toInt() and 0xFF) or ((b[off + 1].toInt() and 0xFF) shl 8)
-
-    private fun u16be(b: ByteArray, off: Int): Int =
-        ((b[off].toInt() and 0xFF) shl 8) or (b[off + 1].toInt() and 0xFF)
 
     private fun mapUserToLibParams(u: ScaleUser): Pair<Int, Int> {
         val sex = if (u.gender == GenderType.MALE) 1 else 0

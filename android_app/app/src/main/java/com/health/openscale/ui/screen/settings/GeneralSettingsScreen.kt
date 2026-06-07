@@ -19,7 +19,6 @@ package com.health.openscale.ui.screen.settings
 
 import android.Manifest
 import android.app.Activity
-import android.app.TimePickerDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -33,12 +32,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -55,27 +51,20 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -88,15 +77,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.SupportedLanguage
@@ -111,11 +99,11 @@ import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GeneralSettingsScreen(
-    navController: NavController,
     sharedViewModel: SharedViewModel,
     settingsViewModel: SettingsViewModel
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val activity = LocalView.current.context as ComponentActivity
     val scope = rememberCoroutineScope()
 
@@ -165,7 +153,7 @@ fun GeneralSettingsScreen(
         val labels = dayOrder.filter { selected.contains(it.first.name) }.map { it.second }
         return when {
             labels.isEmpty() -> "—"
-            labels.size == 7 -> context.getString(R.string.all)
+            labels.size == 7 -> resources.getString(R.string.all)
             else -> labels.joinToString(", ")
         }
     }
@@ -176,14 +164,14 @@ fun GeneralSettingsScreen(
         scope.launch {
             if (granted) {
                 if (reminderText.isBlank()) {
-                    sharedViewModel.setReminderText(context.getString(R.string.reminder_default_text))
+                    sharedViewModel.setReminderText(resources.getString(R.string.reminder_default_text))
                 }
                 sharedViewModel.setReminderEnabled(true)
-                sharedViewModel.showSnackbar(context.getString(R.string.reminder_enabled_snackbar))
+                sharedViewModel.showSnackbar(resources.getString(R.string.reminder_enabled_snackbar))
                 settingsViewModel.requestReminderReschedule()
             } else {
                 sharedViewModel.setReminderEnabled(false)
-                sharedViewModel.showSnackbar(context.getString(R.string.permission_denied))
+                sharedViewModel.showSnackbar(resources.getString(R.string.permission_denied))
             }
         }
     }
@@ -199,9 +187,9 @@ fun GeneralSettingsScreen(
                         val ok = LogManager.exportLogToUri(context, uri)
                         scope.launch {
                             if (ok) {
-                                sharedViewModel.showSnackbar(context.getString(R.string.log_export_success))
+                                sharedViewModel.showSnackbar(resources.getString(R.string.log_export_success))
                             } else {
-                                sharedViewModel.showSnackbar(context.getString(R.string.log_export_error))
+                                sharedViewModel.showSnackbar(resources.getString(R.string.log_export_error))
                             }
                         }
                     }
@@ -209,7 +197,7 @@ fun GeneralSettingsScreen(
             }
         } else {
             scope.launch {
-                sharedViewModel.showSnackbar(context.getString(R.string.log_export_cancelled))
+                sharedViewModel.showSnackbar(resources.getString(R.string.log_export_cancelled))
             }
         }
     }
@@ -261,7 +249,7 @@ fun GeneralSettingsScreen(
                             sharedViewModel.setFileLoggingEnabled(true)
                             LogManager.updateLoggingPreference(true)
                             sharedViewModel.showSnackbar(
-                                context.getString(R.string.file_logging_enabled_snackbar)
+                                resources.getString(R.string.file_logging_enabled_snackbar)
                             )
                         }
                         showLoggingActivationDialog = false
@@ -284,7 +272,7 @@ fun GeneralSettingsScreen(
     }
 
     LaunchedEffect(Unit) {
-        sharedViewModel.setTopBarTitle(context.getString(R.string.settings_item_general))
+        sharedViewModel.setTopBarTitle(resources.getString(R.string.settings_item_general))
     }
 
     Column(
@@ -407,9 +395,9 @@ fun GeneralSettingsScreen(
                     sharedViewModel.setHapticOnMeasurement(enabled)
                     sharedViewModel.showSnackbar(
                         if (enabled)
-                            context.getString(R.string.settings_haptics_enabled_snackbar)
+                            resources.getString(R.string.settings_haptics_enabled_snackbar)
                         else
-                            context.getString(R.string.settings_haptics_disabled_snackbar)
+                            resources.getString(R.string.settings_haptics_disabled_snackbar)
                     )
                 }
             }
@@ -441,17 +429,17 @@ fun GeneralSettingsScreen(
                     } else {
                         scope.launch {
                             if (reminderText.isBlank()) {
-                                sharedViewModel.setReminderText(context.getString(R.string.reminder_default_text))
+                                sharedViewModel.setReminderText(resources.getString(R.string.reminder_default_text))
                             }
                             sharedViewModel.setReminderEnabled(true)
-                            sharedViewModel.showSnackbar(context.getString(R.string.reminder_enabled_snackbar))
+                            sharedViewModel.showSnackbar(resources.getString(R.string.reminder_enabled_snackbar))
                             settingsViewModel.requestReminderReschedule()
                         }
                     }
                 } else {
                     scope.launch {
                         sharedViewModel.setReminderEnabled(false)
-                        sharedViewModel.showSnackbar(context.getString(R.string.reminder_disabled_snackbar))
+                        sharedViewModel.showSnackbar(resources.getString(R.string.reminder_disabled_snackbar))
                         settingsViewModel.requestReminderReschedule()
                     }
                 }
@@ -586,7 +574,7 @@ fun GeneralSettingsScreen(
                         sharedViewModel.setFileLoggingEnabled(false)
                         LogManager.updateLoggingPreference(false)
                         sharedViewModel.showSnackbar(
-                            context.getString(R.string.file_logging_disabled_snackbar)
+                            resources.getString(R.string.file_logging_disabled_snackbar)
                         )
                     }
                 }
@@ -609,7 +597,7 @@ fun GeneralSettingsScreen(
                                 } catch (e: ActivityNotFoundException) {
                                     scope.launch {
                                         sharedViewModel.showSnackbar(
-                                            context.getString(R.string.log_export_no_app_error)
+                                            resources.getString(R.string.log_export_no_app_error)
                                         )
                                     }
                                     LogManager.e("GeneralSettingsScreen",
@@ -618,7 +606,7 @@ fun GeneralSettingsScreen(
                             } else {
                                 scope.launch {
                                     sharedViewModel.showSnackbar(
-                                        context.getString(R.string.log_export_no_file_to_export)
+                                        resources.getString(R.string.log_export_no_file_to_export)
                                     )
                                 }
                             }

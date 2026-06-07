@@ -84,7 +84,6 @@ internal fun rememberResolvedTimeRangeState(
                             TimeRangeFilter.LAST_7_DAYS -> cal.add(java.util.Calendar.DAY_OF_YEAR, -7)
                             TimeRangeFilter.LAST_30_DAYS -> cal.add(java.util.Calendar.DAY_OF_YEAR, -30)
                             TimeRangeFilter.LAST_365_DAYS -> cal.add(java.util.Calendar.DAY_OF_YEAR, -365)
-                            else -> { /* no-op */ }
                         }
                         cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
                         cal.set(java.util.Calendar.MINUTE, 0)

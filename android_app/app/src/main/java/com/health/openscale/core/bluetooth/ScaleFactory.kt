@@ -78,6 +78,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Factory class responsible for creating appropriate [ScaleCommunicator] instances
@@ -85,7 +86,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class ScaleFactory @Inject constructor(
-    @ApplicationContext private val applicationContext: Context,
+    @param:ApplicationContext private val applicationContext: Context,
     private val settingsFacade: SettingsFacade,
     private val measurementFacade: MeasurementFacade,
     private val userFacade: UserFacade,
@@ -155,7 +156,7 @@ class ScaleFactory @Inject constructor(
         val effectiveTuning: TuningProfile = run {
             val saved: String? = runCatching {
                 runBlocking(Dispatchers.IO) {
-                    withTimeout(250) {
+                    withTimeout(250.milliseconds) {
                         settingsFacade.savedBluetoothTuneProfile.firstOrNull()
                     }
                 }
@@ -205,7 +206,7 @@ class ScaleFactory @Inject constructor(
      * @return A [ScaleCommunicator] instance if a suitable handler or adapter is found, otherwise null.
      */
     fun createCommunicator(deviceInfo: ScannedDeviceInfo): ScaleCommunicator? {
-        val primaryIdentifier = deviceInfo.name ?: "UnknownDevice"
+        val primaryIdentifier = deviceInfo.name
         LogManager.d(TAG, "createCommunicator: Searching for communicator for '${primaryIdentifier}' (${deviceInfo.address}). Handler hint: '${deviceInfo.determinedHandlerDisplayName}'")
 
         // 1. Check if a modern Kotlin handler explicitly supports the device.

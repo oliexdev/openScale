@@ -19,7 +19,6 @@ import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Locale
 import java.util.UUID
-import kotlin.math.min
 
 /**
  * ## DebugGattHandler
@@ -117,7 +116,7 @@ class DebugGattHandler : ScaleDeviceHandler() {
             return
         }
 
-        val services = peripheral.services ?: emptyList()
+        val services = peripheral.services
         logD("=== GATT Service Dump BEGIN ===")
         if (services.isEmpty()) {
             logD( "(no services)")

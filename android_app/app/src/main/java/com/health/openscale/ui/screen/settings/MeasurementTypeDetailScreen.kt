@@ -48,7 +48,6 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -274,7 +273,7 @@ fun MeasurementTypeDetailScreen(
                 val typeName = (originalExistingType?.getDisplayName(context) ?: name)
                 val fromName = selectedUnit.displayName.lowercase().replaceFirstChar { it.uppercase() }
                 val toName   = dlg.to.displayName.lowercase().replaceFirstChar { it.uppercase() }
-                context.getString(
+                stringResource(
                     R.string.measurement_type_dialog_confirm_unit_change_message,
                     typeName, fromName, toName
                 )
@@ -282,7 +281,7 @@ fun MeasurementTypeDetailScreen(
             is PendingDialog.FormulaOnBodyFat,
             is PendingDialog.FormulaOnBodyWater,
             is PendingDialog.FormulaOnLBM -> {
-                context.getString(R.string.formula_warning_message)
+                stringResource(R.string.formula_warning_message)
             }
         }
 
@@ -450,56 +449,54 @@ fun MeasurementTypeDetailScreen(
 
         if (unitDropdownEnabled) {
             ExposedDropdownMenuBox(
-                expanded = expandedUnit && unitDropdownEnabled,
-                onExpandedChange = { if (unitDropdownEnabled) expandedUnit = !expandedUnit },
+                expanded = expandedUnit,
+                onExpandedChange = { expandedUnit = !expandedUnit },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedSettingRow(
                     label = stringResource(R.string.measurement_type_label_unit),
                     surfaceModifier = Modifier
-                        .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = unitDropdownEnabled)
-                        .clickable(enabled = unitDropdownEnabled) { if (unitDropdownEnabled) expandedUnit = true },
+                        .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                        .clickable { expandedUnit = true },
                     controlContent = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = selectedUnit.displayName,
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = if (unitDropdownEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                color = MaterialTheme.colorScheme.onSurface
                             )
-                            if (unitDropdownEnabled) ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedUnit)
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedUnit)
                         }
                     }
                 )
-                if (unitDropdownEnabled) {
-                    ExposedDropdownMenu(
-                        expanded = expandedUnit,
-                        onDismissRequest = { expandedUnit = false },
-                        modifier = Modifier.exposedDropdownSize(matchAnchorWidth = true)
-                    ) {
-                        allowedUnitsForKey.forEach { unit ->
-                            DropdownMenuItem(
-                                text = {
-                                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
-                                        Text(unit.displayName, modifier = Modifier.padding(end = 32.dp))
-                                    }
-                                },
-                                onClick = {
-                                    expandedUnit = false
-                                    if (unit == selectedUnit) return@DropdownMenuItem
-
-                                    val needsConfirm =
-                                        isEdit &&
-                                                (originalExistingType?.inputType == InputFieldType.FLOAT) &&
-                                                (selectedInputType == InputFieldType.FLOAT)
-
-                                    if (needsConfirm) {
-                                        pendingDialog = PendingDialog.UnitChange(from = selectedUnit, to = unit)
-                                    } else {
-                                        selectedUnit = unit
-                                    }
+                ExposedDropdownMenu(
+                    expanded = expandedUnit,
+                    onDismissRequest = { expandedUnit = false },
+                    modifier = Modifier.exposedDropdownSize(matchAnchorWidth = true)
+                ) {
+                    allowedUnitsForKey.forEach { unit ->
+                        DropdownMenuItem(
+                            text = {
+                                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+                                    Text(unit.displayName, modifier = Modifier.padding(end = 32.dp))
                                 }
-                            )
-                        }
+                            },
+                            onClick = {
+                                expandedUnit = false
+                                if (unit == selectedUnit) return@DropdownMenuItem
+
+                                val needsConfirm =
+                                    isEdit &&
+                                            (originalExistingType?.inputType == InputFieldType.FLOAT) &&
+                                            (selectedInputType == InputFieldType.FLOAT)
+
+                                if (needsConfirm) {
+                                    pendingDialog = PendingDialog.UnitChange(from = selectedUnit, to = unit)
+                                } else {
+                                    selectedUnit = unit
+                                }
+                            }
+                        )
                     }
                 }
             }
@@ -549,7 +546,7 @@ fun MeasurementTypeDetailScreen(
             iconTintColor = Color.Black,
             availableIcons = MeasurementTypeIcon.entries.map { it.resource },
             onIconSelected =  { selectedResource ->
-                selectedIcon = MeasurementTypeIcon.entries.first { it.resource == selectedResource };
+                selectedIcon = MeasurementTypeIcon.entries.first { it.resource == selectedResource }
                 showIconPicker = false },
             onDismiss = { showIconPicker = false }
         )

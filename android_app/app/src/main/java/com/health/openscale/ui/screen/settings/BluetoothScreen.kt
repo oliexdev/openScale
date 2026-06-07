@@ -57,7 +57,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -78,6 +77,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -85,7 +85,6 @@ import androidx.core.content.ContextCompat
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.scales.DeviceCapability
 import com.health.openscale.core.bluetooth.scales.DeviceSupport
-import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.shared.SharedViewModel
@@ -116,6 +115,7 @@ fun BluetoothScreen(
     val TAG = "BluetoothScreen"
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     // Observed state from ViewModel/facade
     val scannedDevices by bluetoothViewModel.scannedDevices.collectAsState()
@@ -161,7 +161,7 @@ fun BluetoothScreen(
             } else {
                 scope.launch {
                     sharedViewModel.showSnackbar(
-                        message = context.getString(R.string.bluetooth_enabled_permissions_missing),
+                        message = resources.getString(R.string.bluetooth_enabled_permissions_missing),
                         duration = SnackbarDuration.Short
                     )
                 }
@@ -169,7 +169,7 @@ fun BluetoothScreen(
         } else {
             scope.launch {
                 sharedViewModel.showSnackbar(
-                    message = context.getString(R.string.bluetooth_must_be_enabled_for_scan),
+                    message = resources.getString(R.string.bluetooth_must_be_enabled_for_scan),
                     duration = SnackbarDuration.Short
                 )
             }
@@ -197,7 +197,7 @@ fun BluetoothScreen(
             pendingScan = false
             scope.launch {
                 sharedViewModel.showSnackbar(
-                    message = context.getString(R.string.bluetooth_permissions_required_for_scan),
+                    message = resources.getString(R.string.bluetooth_permissions_required_for_scan),
                     duration = SnackbarDuration.Long
                 )
             }
@@ -277,9 +277,9 @@ fun BluetoothScreen(
                                     scope.launch {
                                         sharedViewModel.showSnackbar(
                                             message = if (implemented)
-                                                context.getString(R.string.cap_state_implemented, label)
+                                                resources.getString(R.string.cap_state_implemented, label)
                                             else
-                                                context.getString(R.string.cap_state_supported_only, label),
+                                                resources.getString(R.string.cap_state_supported_only, label),
                                             duration = SnackbarDuration.Short
                                         )
                                     }
@@ -334,7 +334,7 @@ fun BluetoothScreen(
                         bluetoothViewModel.saveDeviceAsPreferred(it)
                         scope.launch {
                             sharedViewModel.showSnackbar(
-                                context.getString(
+                                resources.getString(
                                     R.string.device_saved_as_preferred,
                                     it.name
                                 ),
@@ -381,9 +381,9 @@ fun BluetoothScreen(
                                 } else {
                                     scope.launch {
                                         sharedViewModel.showSnackbar(
-                                            context.getString(
+                                            resources.getString(
                                                 R.string.device_not_supported,
-                                                device.name ?: context.getString(R.string.unknown_device)
+                                                device.name.ifEmpty { resources.getString(R.string.unknown_device) }
                                             ),
                                             duration = SnackbarDuration.Short
                                         )
@@ -406,7 +406,7 @@ fun BluetoothScreen(
                                 )
                                 scope.launch {
                                     sharedViewModel.showSnackbar(
-                                        message = context.getString(R.string.snackbar_developer_for_device_enable_logs),
+                                        message = resources.getString(R.string.snackbar_developer_for_device_enable_logs),
                                         duration = SnackbarDuration.Long
                                     )
                                 }
@@ -524,7 +524,7 @@ private fun CapabilityIconsRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
-        DeviceCapability.values().forEach { cap ->
+        DeviceCapability.entries.forEach { cap ->
             if (support.capabilities.contains(cap)) {
                 val impl = support.implemented.contains(cap)
                 val tint = if (impl) primary else disabled
@@ -579,7 +579,7 @@ fun DeviceCardItem(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = deviceInfo.name ?: stringResource(R.string.unknown_device),
+                        text = deviceInfo.name.ifEmpty { stringResource(R.string.unknown_device) },
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium
                     )

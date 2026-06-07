@@ -75,15 +75,11 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
     // ---- UDS Control Point opcodes -------------------------------------------
     private val UDS_CP_REGISTER_NEW_USER       = 0x01
     private val UDS_CP_CONSENT                 = 0x02
-    private val UDS_CP_DELETE_USER_DATA        = 0x03
     private val UDS_CP_LIST_ALL_USERS          = 0x04
-    private val UDS_CP_DELETE_USERS            = 0x05
     private val UDS_CP_RESPONSE                = 0x20
 
     // UDS response values
     private val UDS_CP_RESP_VALUE_SUCCESS          = 0x01
-    private val UDS_CP_RESP_OP_CODE_NOT_SUPPORTED  = 0x02
-    private val UDS_CP_RESP_INVALID_PARAMETER      = 0x03
     private val UDS_CP_RESP_OPERATION_FAILED       = 0x04
     private val UDS_CP_RESP_USER_NOT_AUTHORIZED    = 0x05
 
@@ -100,9 +96,9 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
      */
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val adv = try { device.serviceUuids } catch (_: Throwable) { emptySet<UUID>() }
-        val looksStandard = adv?.any {
+        val looksStandard = adv.any {
             it == SVC_WEIGHT_SCALE || it == SVC_BODY_COMPOSITION || it == SVC_USER_DATA
-        } == true
+        }
         if (!looksStandard) return null
 
         val capabilities = buildSet {
@@ -370,7 +366,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
 
         if (bmiHeight) {
             val bmi = u16le(value, offset) * 0.1f; offset += 2
-            val heightMeters = u16le(value, offset) * 0.001f; offset += 2
+            val heightMeters = u16le(value, offset) * 0.001f
             logD("BMI=$bmi height(m)=$heightMeters")
         }
 
@@ -470,7 +466,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         }
 
         if (heightPresent) {
-            val heightVal = u16le(value, offset); offset += 2
+            val heightVal = u16le(value, offset)
             logD("Height(raw)=$heightVal")
         }
 
@@ -659,13 +655,15 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         )
         writeTo(SVC_USER_DATA, CHR_USER_HEIGHT, heightPayload)
 
-        // Change Increment: write 1 to bump DB revision (optional)
+        // Change Increment: write 1 to bump DB revision (optional).
+        // Wire format is a 4-byte little-endian uint32; the value (1) fits in the
+        // low byte, so the three upper bytes are always 0.
         val changeInc = 1
         val changePayload = byteArrayOf(
             (changeInc and 0xFF).toByte(),
-            ((changeInc shr 8) and 0xFF).toByte(),
-            ((changeInc shr 16) and 0xFF).toByte(),
-            ((changeInc shr 24) and 0xFF).toByte()
+            0x00,
+            0x00,
+            0x00
         )
         writeTo(SVC_USER_DATA, CHR_DATABASE_CHANGE_INCREMENT, changePayload)
     }
@@ -761,8 +759,6 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
                 saveConsentForScaleIndex(scaleIndex, consent)
                 sendConsent(scaleIndex, consent)
             }
-
-            else -> logW("Unhandled UserInteractionType=$interactionType for appUserId=$appUserId")
         }
     }
 

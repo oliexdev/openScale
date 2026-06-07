@@ -200,7 +200,7 @@ class MeasurementInsightsUseCase @Inject constructor() {
         if (byMonth.size >= 2) {
             byMonth.entries.filter { (_, pts) -> pts.size >= 2 }.forEach { (key, pts) ->
                 val monthDelta = pts.last().second - pts.first().second
-                if (bestPeriodDelta == null || abs(monthDelta) > abs(bestPeriodDelta!!)) {
+                if (bestPeriodDelta == null || abs(monthDelta) > abs(bestPeriodDelta)) {
                     bestPeriodDelta = monthDelta
                     bestPeriodStart = LocalDate.of(key.year, key.month, 1)
                 }

@@ -18,7 +18,6 @@
 package com.health.openscale.core.data
 
 import android.content.Context
-import android.text.InputType
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
@@ -39,7 +38,6 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.DeviceThermostat
-import androidx.compose.material.icons.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Egg
@@ -61,7 +59,6 @@ import androidx.compose.material.icons.filled.OilBarrel
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.QuestionMark
-import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material.icons.filled.ScatterPlot
 import androidx.compose.material.icons.filled.Schedule
@@ -69,7 +66,6 @@ import androidx.compose.material.icons.filled.SentimentSatisfied
 import androidx.compose.material.icons.filled.SentimentSatisfiedAlt
 import androidx.compose.material.icons.filled.SentimentVerySatisfied
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.SquareFoot
 import androidx.compose.material.icons.filled.StackedLineChart
@@ -79,7 +75,6 @@ import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.health.openscale.R
 import java.time.DayOfWeek
@@ -158,14 +153,14 @@ enum class SupportedLanguage(val code: String, val nativeDisplayName: String) {
     }
 }
 
-enum class GenderType(@StringRes val displayNameResId: Int) {
+enum class GenderType(@param:StringRes val displayNameResId: Int) {
     MALE(R.string.gender_male),
     FEMALE(R.string.gender_female);
 
     fun isMale(): Boolean {
         return this == MALE}
 
-    fun getDisplayName(context: android.content.Context): String {
+    fun getDisplayName(context: Context): String {
         return context.getString(displayNameResId)
     }
 }
@@ -217,19 +212,9 @@ enum class WeightUnit {
             KG -> return 0
         }
     }
-
-    companion object {
-        fun fromInt(unit: Int): WeightUnit {
-            when (unit) {
-                1 -> return LB
-                2 -> return ST
-            }
-            return KG
-        }
-    }
 }
 
-enum class Limb(@StringRes val displayNameResId: Int) {
+enum class Limb(@param:StringRes val displayNameResId: Int) {
     LEFT_ARM(R.string.amputation_left_arm),
     RIGHT_ARM(R.string.amputation_right_arm),
     LEFT_LEG(R.string.amputation_left_leg),
@@ -237,7 +222,7 @@ enum class Limb(@StringRes val displayNameResId: Int) {
 }
 
 enum class AmputationPart(
-    @StringRes val displayNameResId: Int,
+    @param:StringRes val displayNameResId: Int,
     val correctionValue: Float
 ) {
     HAND(R.string.amputation_hand, 0.8f),
@@ -282,20 +267,10 @@ enum class MeasureUnit {
             INCH -> return 1
         }
     }
-
-    companion object {
-        fun fromInt(unit: Int): MeasureUnit {
-            when (unit) {
-                0 -> return CM
-                1 -> return INCH
-            }
-            return CM
-        }
-    }
 }
 
 sealed class IconResource {
-    data class PainterResource(@DrawableRes val id: Int) : IconResource()
+    data class PainterResource(@param:DrawableRes val id: Int) : IconResource()
     data class VectorResource(val imageVector: ImageVector) : IconResource()
 }
 
@@ -388,7 +363,7 @@ enum class MeasurementTypeIcon(val resource: IconResource) {
 
 enum class MeasurementTypeKey(
     val id: Int,
-    @StringRes val localizedNameResId: Int,
+    @param:StringRes val localizedNameResId: Int,
     val allowedUnitTypes: List<UnitType>,
     val allowedInputType: List<InputFieldType>
 ) {
@@ -468,19 +443,19 @@ enum class Trend {
     UP, DOWN, NONE, NOT_APPLICABLE
 }
 
-enum class TimeRangeFilter(@StringRes val displayNameResId: Int) {
+enum class TimeRangeFilter(@param:StringRes val displayNameResId: Int) {
     ALL_DAYS(R.string.time_range_all_days),
     LAST_7_DAYS(R.string.time_range_last_7_days),
     LAST_30_DAYS(R.string.time_range_last_30_days),
     LAST_365_DAYS(R.string.time_range_last_365_days),
     CUSTOM(R.string.time_range_custom);
 
-    fun getDisplayName(context: android.content.Context): String {
+    fun getDisplayName(context: Context): String {
         return context.getString(displayNameResId)
     }
 }
 
-enum class AggregationLevel(@StringRes val displayNameResId: Int) {
+enum class AggregationLevel(@param:StringRes val displayNameResId: Int) {
     NONE(R.string.aggregation_level_none),
     DAY(R.string.aggregation_level_day),
     WEEK(R.string.aggregation_level_week),
@@ -569,17 +544,17 @@ enum class AggregationLevel(@StringRes val displayNameResId: Int) {
 
 }
 
-enum class SmoothingAlgorithm(@StringRes val displayNameResId: Int) {
+enum class SmoothingAlgorithm(@param:StringRes val displayNameResId: Int) {
     NONE(R.string.smoothing_algorithm_none),
     SIMPLE_MOVING_AVERAGE(R.string.smoothing_algorithm_sma),
     EXPONENTIAL_SMOOTHING(R.string.smoothing_algorithm_ses);
 
-    fun getDisplayName(context: android.content.Context): String {
+    fun getDisplayName(context: Context): String {
         return context.getString(displayNameResId)
     }
 }
 
-enum class PolynomialDegree(val degree: Int, @StringRes val displayNameRes: Int) {
+enum class PolynomialDegree(val degree: Int, @param:StringRes val displayNameRes: Int) {
     LINEAR(1, R.string.poly_degree_linear),
     QUADRATIC(2, R.string.poly_degree_quadratic),
     CUBIC(3, R.string.poly_degree_cubic);
@@ -629,8 +604,6 @@ enum class EvaluationState {
 enum class ConnectionStatus {
     /** No BT flow started yet. */
     NONE,
-    /** Ready but not connected; idle state after init or after a clean stop. */
-    IDLE,
     BROADCAST_LISTENING,
     /** Explicitly not connected (after a disconnect or failure). */
     DISCONNECTED,

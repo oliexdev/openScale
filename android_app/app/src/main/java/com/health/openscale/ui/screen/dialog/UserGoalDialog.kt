@@ -41,7 +41,6 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -56,6 +55,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -81,6 +81,7 @@ fun UserGoalDialog(
     onDelete: (userId: Int, measurementTypeId: Int) -> Unit
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val isEditing = existingUserGoal != null
 
     val targetableTypes = remember(allMeasurementTypes, allGoalsOfCurrentUser, isEditing) {
@@ -99,7 +100,7 @@ fun UserGoalDialog(
     var selectedTypeState by remember(targetableTypes, existingUserGoal, isEditing) {
         mutableStateOf(
             if (isEditing) {
-                allMeasurementTypes.find { it.id == existingUserGoal!!.measurementTypeId }
+                allMeasurementTypes.find { it.id == existingUserGoal.measurementTypeId }
             } else {
                 targetableTypes.firstOrNull()
             }
@@ -109,7 +110,7 @@ fun UserGoalDialog(
     var currentGoalValueString by remember(existingUserGoal, selectedTypeState?.id) {
         mutableStateOf(
             if (isEditing && selectedTypeState != null) {
-                existingUserGoal?.goalValue?.toString()?.replace(',', '.') ?: ""
+                existingUserGoal.goalValue.toString().replace(',', '.')
             } else {
                 ""
             }
@@ -123,15 +124,15 @@ fun UserGoalDialog(
     val formattedDate = remember(selectedDateMillis) {
         selectedDateMillis?.let {
             DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault()).format(Date(it))
-        } ?: context.getString(R.string.text_none)
+        } ?: resources.getString(R.string.text_none)
     }
 
     val dialogTitle = remember(isEditing, selectedTypeState) {
-        val typeName = selectedTypeState?.getDisplayName(context) ?: context.getString(R.string.measurement_type_custom_default_name)
+        val typeName = selectedTypeState?.getDisplayName(context) ?: resources.getString(R.string.measurement_type_custom_default_name)
         if (isEditing) {
-            context.getString(R.string.dialog_title_edit_goal, typeName)
+            resources.getString(R.string.dialog_title_edit_goal, typeName)
         } else {
-            context.getString(R.string.dialog_title_add_goal, typeName)
+            resources.getString(R.string.dialog_title_add_goal, typeName)
         }
     }
 
@@ -143,7 +144,7 @@ fun UserGoalDialog(
 
     if (showDeleteDialog) {
         val typeName = selectedTypeState?.getDisplayName(context)
-            ?: context.getString(R.string.measurement_type_custom_default_name)
+            ?: resources.getString(R.string.measurement_type_custom_default_name)
         DeleteConfirmationDialog(
             onDismissRequest = { showDeleteDialog = false },
             onConfirm = {

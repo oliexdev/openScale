@@ -34,11 +34,11 @@ import androidx.compose.material3.SnackbarDuration
  * @property onAction Optional lambda to be executed when the action button is pressed.
  */
 data class SnackbarEvent(
-    @StringRes val messageResId: Int? = null,
+    @param:StringRes val messageResId: Int? = null,
     val message: String? = null,
     val messageFormatArgs: List<Any> = emptyList(),
     val duration: SnackbarDuration = SnackbarDuration.Short,
-    @StringRes val actionLabelResId: Int? = null,
+    @param:StringRes val actionLabelResId: Int? = null,
     val actionLabel: String? = null,
     val onAction: (() -> Unit)? = null
 ) {

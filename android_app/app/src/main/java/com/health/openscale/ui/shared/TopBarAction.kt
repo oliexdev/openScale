@@ -24,7 +24,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 data class TopBarAction(
     val icon: ImageVector,
     val onClick: () -> Unit,
-    @StringRes val contentDescriptionResId: Int? = null,
+    @param:StringRes val contentDescriptionResId: Int? = null,
     val contentDescription: String? = null,
     val dropdownContent: (@Composable () -> Unit)? = null
 )

@@ -64,8 +64,8 @@ fun UserGoalChip(
     val showDifference = referenceMeasurement != null
 
     val currentValue: Float? = if (showDifference) {
-        referenceMeasurement?.values
-            ?.find { it.type.id == measurementType.id }
+        referenceMeasurement.values
+            .find { it.type.id == measurementType.id }
             ?.value?.floatValue
     } else {
         null

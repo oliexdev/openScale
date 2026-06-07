@@ -114,7 +114,7 @@ class MeasurementWidgetConfigActivity : ComponentActivity() {
         lifecycleScope.launch {
             val gm = GlanceAppWidgetManager(ctx)
             val glanceId = gm.getGlanceIds(MeasurementWidget::class.java)
-                .firstOrNull { it != null && gm.getAppWidgetId(it) == appWidgetId }
+                .firstOrNull { gm.getAppWidgetId(it) == appWidgetId }
 
             if (glanceId == null || appWidgetId == null ||
                 appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID
@@ -209,7 +209,7 @@ private fun WidgetConfigScreen(
                 onSelected = { selectedTheme = it },
                 modifier = Modifier.fillMaxWidth()
             )
-            Divider(Modifier.padding(vertical = 12.dp))
+            HorizontalDivider(Modifier.padding(vertical = 12.dp))
             if (types.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(text = stringResource(R.string.no_entries_found))

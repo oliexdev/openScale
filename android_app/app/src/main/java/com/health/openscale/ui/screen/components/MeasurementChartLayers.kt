@@ -24,7 +24,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -40,7 +39,7 @@ import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisGuidelineCom
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianValueFormatter
-import com.patrykandpatrick.vico.compose.cartesian.data.lineSeries
+import com.patrykandpatrick.vico.compose.cartesian.data.lineModel
 import com.patrykandpatrick.vico.compose.cartesian.decoration.HorizontalLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
@@ -60,7 +59,6 @@ import com.patrykandpatrick.vico.compose.common.data.ExtraStore
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -97,27 +95,27 @@ internal fun rememberChartModelProducer(
         modelProducer.runTransaction {
             // Layer 0: Raw points START (only when smoothing active and data points enabled)
             if (rawSeriesStart.isNotEmpty() && showDataPointsSetting) {
-                lineSeries { rawSeriesStart.forEach { series(x = it.points.map { p -> p.x }, y = it.points.map { p -> p.y }) } }
+                lineModel { rawSeriesStart.forEach { series(x = it.points.map { p -> p.x }, y = it.points.map { p -> p.y }) } }
             }
             // Layer 1: Raw points END
             if (rawSeriesEnd.isNotEmpty() && showDataPointsSetting) {
-                lineSeries { rawSeriesEnd.forEach { series(x = it.points.map { p -> p.x }, y = it.points.map { p -> p.y }) } }
+                lineModel { rawSeriesEnd.forEach { series(x = it.points.map { p -> p.x }, y = it.points.map { p -> p.y }) } }
             }
             // Layer 2: Smoothed/plain line START
             if (smoothedSeriesStart.isNotEmpty()) {
-                lineSeries { smoothedSeriesStart.forEach { series(x = it.points.map { p -> p.x }, y = it.points.map { p -> p.y }) } }
+                lineModel { smoothedSeriesStart.forEach { series(x = it.points.map { p -> p.x }, y = it.points.map { p -> p.y }) } }
             }
             // Layer 3: Smoothed/plain line END
             if (smoothedSeriesEnd.isNotEmpty()) {
-                lineSeries { smoothedSeriesEnd.forEach { series(x = it.points.map { p -> p.x }, y = it.points.map { p -> p.y }) } }
+                lineModel { smoothedSeriesEnd.forEach { series(x = it.points.map { p -> p.x }, y = it.points.map { p -> p.y }) } }
             }
             // Layer 4: Projected START
             if (projectedSeriesStart.isNotEmpty()) {
-                lineSeries { projectedSeriesStart.forEach { series(x = it.points.map { p -> p.x }, y = it.points.map { p -> p.y }) } }
+                lineModel { projectedSeriesStart.forEach { series(x = it.points.map { p -> p.x }, y = it.points.map { p -> p.y }) } }
             }
             // Layer 5: Projected END
             if (projectedSeriesEnd.isNotEmpty()) {
-                lineSeries { projectedSeriesEnd.forEach { series(x = it.points.map { p -> p.x }, y = it.points.map { p -> p.y }) } }
+                lineModel { projectedSeriesEnd.forEach { series(x = it.points.map { p -> p.x }, y = it.points.map { p -> p.y }) } }
             }
         }
     }
@@ -231,7 +229,7 @@ internal fun rememberChartLayers(
  * Creates a [LineCartesianLayer.Line] specification for a single chart series.
  *
  * @param color The line and point color.
- * @param statisticsMode Adds area fill, hides points. Used when [targetMeasurementTypeId] is set.
+ * @param statisticsMode Adds area fill, hides points. Used when `targetMeasurementTypeId` is set.
  * @param showPoints Whether to show dots on data points.
  * @param isProjection Creates a dashed line for future projection data.
  * @param isPointConnected Whether to connect points with a bezier curve.
@@ -262,7 +260,7 @@ internal fun createLineSpec(
                 LineCartesianLayer.Point(ShapeComponent(Fill(color.copy(alpha = 0.7f)),shape = RoundedCornerShape(50)), size = 6.dp)
             )
         } else null,
-        pointConnector = LineCartesianLayer.PointConnector.cubic()
+        interpolator = LineCartesianLayer.Interpolator.cubic()
     )
 }
 

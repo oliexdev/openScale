@@ -50,7 +50,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -68,6 +67,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -148,6 +148,7 @@ fun UserDetailScreen(
     var showAmputationDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
+    val resources = LocalResources.current
     val dateFormatter = remember {
         DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.getDefault()).apply {
             timeZone = TimeZone.getTimeZone("UTC")
@@ -281,8 +282,8 @@ fun UserDetailScreen(
     // --- TopBar Save Action ---
     LaunchedEffect(key1 = userId) {
         sharedViewModel.setTopBarTitle(
-            if (isEdit) context.getString(R.string.user_detail_edit_user_title)
-            else context.getString(R.string.user_detail_add_user_title)
+            if (isEdit) resources.getString(R.string.user_detail_edit_user_title)
+            else resources.getString(R.string.user_detail_add_user_title)
         )
         sharedViewModel.setTopBarAction(
             TopBarAction(icon = Icons.Default.Save, onClick = {

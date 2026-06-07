@@ -49,7 +49,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class BackupRestoreUseCases @Inject constructor(
-    @ApplicationContext private val appContext: Context,
+    @param:ApplicationContext private val appContext: Context,
     private val repository: DatabaseRepository,
     private val settings: SettingsFacade
 ) {

@@ -152,7 +152,6 @@ fun AppNavHost(
             }
             composable(Routes.GENERAL_SETTINGS) {
                 GeneralSettingsScreen(
-                    navController = navController,
                     sharedViewModel = sharedViewModel,
                     settingsViewModel = settingsViewModel
                 )
@@ -243,14 +242,11 @@ fun AppNavHost(
             }
             composable(Routes.CHART_SETTINGS) {
                 ChartSettingsScreen(
-                    navController = navController,
-                    sharedViewModel = sharedViewModel,
-                    settingsViewModel = settingsViewModel
+                    sharedViewModel = sharedViewModel
                 )
             }
             composable(Routes.DATA_MANAGEMENT_SETTINGS) {
                 DataManagementSettingsScreen(
-                    navController = navController,
                     settingsViewModel = settingsViewModel
                 )
             }

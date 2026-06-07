@@ -37,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import com.health.openscale.R
-import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
@@ -67,7 +66,7 @@ data class DeviceSupport(
 
 /** High-level capabilities a scale might offer. */
 enum class DeviceCapability(
-    @StringRes val labelRes: Int,
+    @param:StringRes val labelRes: Int,
     val icon: ImageVector
 ) {
     BODY_COMPOSITION( R.string.cap_body_composition, Icons.Filled.FitnessCenter ),
@@ -112,8 +111,6 @@ abstract class ScaleDeviceHandler {
 
     companion object {
         // Pseudo UUIDs for Classic/SPP
-        val CLASSIC_FAKE_SERVICE: UUID =
-            UUID.fromString("00000000-0000-0000-0000-00000000C1A0")
         val CLASSIC_DATA_UUID: UUID =
             UUID.fromString("00000000-0000-0000-0000-00000000C1A5")
     }
@@ -172,7 +169,7 @@ abstract class ScaleDeviceHandler {
     }
 
     internal fun handleNotification(characteristic: UUID, data: ByteArray) {
-        val u = currentAppUser() ?: return
+        val u = currentAppUser()
         try {
             onNotification(characteristic, data, u)
         } catch (t: Throwable) {
@@ -281,8 +278,6 @@ abstract class ScaleDeviceHandler {
     protected fun settingsGetInt(key: String, default: Int = -1): Int = settings.getInt(key, default)
     protected fun settingsPutInt(key: String, value: Int) { settings.putInt(key, value) }
 
-    protected fun settingsRemove(key: String) { settings.remove(key) }
-
     protected fun settingsGetString(key: String, default: String? = null): String? = settings.getString(key, default)
     protected fun settingsPutString(key: String, value: String) { settings.putString(key, value) }
 
@@ -309,7 +304,7 @@ abstract class ScaleDeviceHandler {
     }
 
     protected fun requestUserInteraction(
-        interactionType: BluetoothEvent.UserInteractionType,
+        interactionType: UserInteractionType,
         data: Any?
     ) {
         callbacks?.onUserInteractionRequired(interactionType, data)
@@ -378,7 +373,7 @@ abstract class ScaleDeviceHandler {
         fun onWarn(@StringRes resId: Int, vararg args: Any) { /* optional */ }
         fun onError(@StringRes resId: Int, t: Throwable? = null, vararg args: Any) { /* optional */ }
 
-        fun onUserInteractionRequired(interactionType: BluetoothEvent.UserInteractionType, data: Any?) { /* optional */ }
+        fun onUserInteractionRequired(interactionType: UserInteractionType, data: Any?) { /* optional */ }
         fun resolveString(@StringRes resId: Int, vararg args: Any): String
     }
 

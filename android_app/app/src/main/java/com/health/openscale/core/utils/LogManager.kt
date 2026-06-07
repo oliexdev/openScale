@@ -56,7 +56,9 @@ object LogManager {
     private var logToFileEnabled = false
     private lateinit var appContext: Context
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
+    // Log timestamps are technical output; use a fixed locale so the format is
+    // stable and independent of runtime locale changes.
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US)
 
     @Volatile
     private var isMarkdownBlockOpen = false
@@ -149,19 +151,18 @@ object LogManager {
     private fun getLogDirectory(): File {
         val externalLogDir = appContext.getExternalFilesDir(LOG_SUB_DIRECTORY)
         if (externalLogDir != null) {
-            if (!externalLogDir.exists()) {
-                if (!externalLogDir.mkdirs()) {
-                    w(
-                        TAG,
-                        "Failed to create external log directory: ${externalLogDir.absolutePath}. Attempting internal storage."
-                    )
-                    // Fall through to internal storage if mkdirs fails
-                } else {
-                    d(TAG, "External log directory created: ${externalLogDir.absolutePath}")
-                    return externalLogDir
-                }
+            if (externalLogDir.exists()) {
+                return externalLogDir
             }
-            return externalLogDir
+            if (externalLogDir.mkdirs()) {
+                d(TAG, "External log directory created: ${externalLogDir.absolutePath}")
+                return externalLogDir
+            }
+            // Fall through to internal storage if mkdirs fails
+            w(
+                TAG,
+                "Failed to create external log directory: ${externalLogDir.absolutePath}. Attempting internal storage."
+            )
         }
 
         // Fallback to internal storage
@@ -414,63 +415,6 @@ object LogManager {
     }
 
     /**
-     * Clears the current log file(s).
-     * If file logging is enabled, it then writes the initial log headers to the new empty log file.
-     */
-    fun clearLogFiles() {
-        if (!isInitialized) {
-            w(TAG, "clearLogFiles() called before LogManager was initialized.")
-            return
-        }
-        coroutineScope.launch {
-            val logDir = getLogDirectory() // Get directory first
-            val currentLogFile = File(logDir, "$CURRENT_LOG_FILE_NAME_BASE$LOG_FILE_EXTENSION")
-
-            try {
-                if (currentLogFile.exists()) {
-                    try {
-                        OutputStreamWriter(
-                            FileOutputStream(currentLogFile, true),
-                            StandardCharsets.UTF_8
-                        ).use {
-                            it.append("\n```").append("\n")
-                        }
-                        isMarkdownBlockOpen = false
-                    } catch (_: Exception) {
-                    }
-
-                    if (currentLogFile.delete()) {
-                        i(TAG, "Log file cleared: ${currentLogFile.absolutePath}")
-                    } else {
-                        e(TAG, "Failed to clear log file: ${currentLogFile.absolutePath}")
-                        // If deletion fails, do not proceed to write headers to a potentially problematic file.
-                        return@launch
-                    }
-                } else {
-                    i(
-                        TAG,
-                        "Log file already cleared or did not exist: ${currentLogFile.absolutePath}"
-                    )
-                }
-
-                // If file logging is enabled, a new log session effectively starts, so write headers.
-                if (logToFileEnabled) {
-                    d(TAG, "File logging is enabled, writing initial headers after clearing.")
-                    writeInitialLogHeaders(currentLogFile) // starts new ```diff block
-                    isMarkdownBlockOpen = true
-                }
-            } catch (e: Exception) {
-                // Catch any unexpected exception during file operations.
-                Log.e(
-                    TAG,
-                    "Error during clearLogFiles operation for ${currentLogFile.absolutePath}",
-                    e
-                )
-            }
-        }
-    }
-
-    /**
      * Closes the ```diff code block at the end of the current log file (if any).
      * Safe to call multiple times; appends a fence only if the file exists.
      */
@@ -490,27 +434,6 @@ object LogManager {
                     d(TAG, "Markdown diff block closed.")
                 } catch (e: IOException) {
                     Log.e(TAG, "Error closing markdown diff block", e)
-                }
-            }
-        }
-    }
-
-    @JvmStatic
-    fun ensureMarkdownBlockOpen() {
-        if (!isInitialized || !logToFileEnabled || isMarkdownBlockOpen) return
-        val logFile = File(getLogDirectory(), "$CURRENT_LOG_FILE_NAME_BASE$LOG_FILE_EXTENSION")
-        if (!logFile.exists() || logFile.length() == 0L) return
-
-        coroutineScope.launch {
-            fileMutex.withLock {
-                try {
-                    OutputStreamWriter(FileOutputStream(logFile, true), StandardCharsets.UTF_8).use {
-                        it.append("```diff\n")
-                    }
-                    isMarkdownBlockOpen = true
-                    d(TAG, "Markdown diff block reopened after export.")
-                } catch (e: IOException) {
-                    Log.e(TAG, "Error reopening markdown diff block", e)
                 }
             }
         }

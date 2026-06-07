@@ -51,7 +51,7 @@ class InlifeHandler : ScaleDeviceHandler() {
 
     // ---- Support detection ----
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = (device.name ?: "").lowercase(Locale.ROOT)
+        val name = device.name.lowercase(Locale.ROOT)
         val byName = name in setOf("000fatscale01", "000fatscale02", "042fatscale01")
         val bySvc  = device.serviceUuids.any { it == SVC }
 
@@ -95,7 +95,7 @@ class InlifeHandler : ScaleDeviceHandler() {
             return
         }
         // Verify XOR checksum over [1..(len-2)] must be 0x00
-        if (xorRange(data, 1, FRAME_LEN - 2) != 0.toByte()) {
+        if (xorRange(data, FRAME_LEN - 2) != 0.toByte()) {
             logE("Checksum invalid")
             return
         }
@@ -136,13 +136,12 @@ class InlifeHandler : ScaleDeviceHandler() {
     // ---- Parsing: legacy result frame (no impedance) ----
     private fun processMeasurementLegacy(d: ByteArray) {
         val weight = u16Be(d, 2) / 10.0f
-        var lbm    = u24Be(d, 4) / 1000.0f
+        var lbm    = u24BeAt4(d) / 1000.0f
         val viscF  = u16Be(d, 7) / 10.0f
-        val bmr    = u16Be(d, 9) / 10.0f // currently unused, kept for parity
 
         // Sentinel for invalid LBM
         if (lbm >= 0xFFFFFF / 1000.0f) {
-            logW("Measurement failed; feet not correctly placed on scale?");
+            logW("Measurement failed; feet not correctly placed on scale?")
             return
         }
 
@@ -203,7 +202,7 @@ class InlifeHandler : ScaleDeviceHandler() {
     // ---- Parsing: new result frame (weight + impedance) ----
     private fun processMeasurementNew(d: ByteArray) {
         val weight = u16Be(d, 2) / 10.0f
-        val impedance = u32Be(d, 4).toLong()
+        val impedance = u32BeAt4(d).toLong()
         logD("Result (new): weight=%.2f kg, impedance=%d".format(weight, impedance))
         // Legacy left BIA as TODO; publish weight plus the raw impedance so body
         // composition can be computed/recomputed later.
@@ -221,7 +220,6 @@ class InlifeHandler : ScaleDeviceHandler() {
         ActivityLevel.SEDENTARY, ActivityLevel.MILD     -> 0 // General
         ActivityLevel.MODERATE                          -> 1 // Amateur
         ActivityLevel.HEAVY, ActivityLevel.EXTREME      -> 2 // Professional
-        else                                            -> 0
     }
 
     private fun clamp(v: Double, lo: Double, hi: Double): Float =
@@ -237,28 +235,30 @@ class InlifeHandler : ScaleDeviceHandler() {
             frame[i++] = (p and 0xFF).toByte()
         }
         // checksum is XOR over [1..(len-3)], placed at [len-2]
-        frame[FRAME_LEN - 2] = xorRange(frame, 1, FRAME_LEN - 3)
+        frame[FRAME_LEN - 2] = xorRange(frame, FRAME_LEN - 3)
         frame[FRAME_LEN - 1] = END
         writeTo(SVC, CHR_CMD, frame, withResponse = true)
     }
 
-    private fun xorRange(b: ByteArray, from: Int, toInclusive: Int): Byte {
+    private fun xorRange(b: ByteArray, toInclusive: Int): Byte {
         var x = 0
-        for (i in from..toInclusive) x = x xor (b[i].toInt() and 0xFF)
+        for (i in 1..toInclusive) x = x xor (b[i].toInt() and 0xFF)
         return (x and 0xFF).toByte()
     }
 
     private fun u16Be(d: ByteArray, off: Int): Float =
         (((d[off].toInt() and 0xFF) shl 8) or (d[off + 1].toInt() and 0xFF)).toFloat()
 
-    private fun u24Be(d: ByteArray, off: Int): Float =
-        (((d[off].toInt() and 0xFF) shl 16) or
-                ((d[off + 1].toInt() and 0xFF) shl 8) or
-                (d[off + 2].toInt() and 0xFF)).toFloat()
+    /** 24-bit unsigned big-endian at frame offset 4 (legacy LBM field). */
+    private fun u24BeAt4(d: ByteArray): Float =
+        (((d[4].toInt() and 0xFF) shl 16) or
+                ((d[5].toInt() and 0xFF) shl 8) or
+                (d[6].toInt() and 0xFF)).toFloat()
 
-    private fun u32Be(d: ByteArray, off: Int): Int =
-        ((d[off].toInt() and 0xFF) shl 24) or
-                ((d[off + 1].toInt() and 0xFF) shl 16) or
-                ((d[off + 2].toInt() and 0xFF) shl 8) or
-                (d[off + 3].toInt() and 0xFF)
+    /** 32-bit unsigned big-endian at frame offset 4 (impedance field). */
+    private fun u32BeAt4(d: ByteArray): Int =
+        ((d[4].toInt() and 0xFF) shl 24) or
+                ((d[5].toInt() and 0xFF) shl 16) or
+                ((d[6].toInt() and 0xFF) shl 8) or
+                (d[7].toInt() and 0xFF)
 }

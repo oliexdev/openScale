@@ -57,7 +57,7 @@ import kotlinx.coroutines.launch
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val userFacade: UserFacade,
     private val dataManagementFacade: DataManagementFacade,
     private val measurementFacade: MeasurementFacade,

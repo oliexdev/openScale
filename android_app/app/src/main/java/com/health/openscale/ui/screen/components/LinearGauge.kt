@@ -40,9 +40,7 @@ fun LinearGauge(
     value: Float,
     lowLimit: Float?,
     highLimit: Float,
-    modifier: Modifier = Modifier
-        .fillMaxWidth()
-        .height(110.dp), // a bit taller: top labels + bar + bottom label
+    modifier: Modifier = Modifier,
     labelProvider: (Float) -> String = { "%.1f".format(it) }
 ) {
     val barHeight = 10f
@@ -57,12 +55,12 @@ fun LinearGauge(
     val hasFirst = lowLimit != null
     val lo = lowLimit
     var hi = highLimit
-    if (hasFirst && lo!! > hi) hi = lo
+    if (hasFirst && lo > hi) hi = lo
 
-    var span = if (hasFirst) (hi - lo!!) / 2f else 0.3f * hi
+    var span = if (hasFirst) (hi - lo) / 2f else 0.3f * hi
     val margin = 0.05f * span
     span = when {
-        hasFirst && value - margin < lo!! - span -> lo - value + margin
+        hasFirst && value - margin < lo - span -> lo - value + margin
         !hasFirst && value - margin < hi - span  -> hi - value + margin
         value + margin > hi + span               -> value - hi + margin
         else                                     -> span
@@ -82,7 +80,7 @@ fun LinearGauge(
     fun map(v: Float, w: Float) = frac(v) * w
 
     val fMin  = 0f
-    val fLow  = if (hasFirst) frac(lo!!) else null
+    val fLow  = if (hasFirst) frac(lo) else null
     val fHigh = frac(hi)
     val fMax  = 1f
     val fVal  = frac(value) // current value position (for bottom label)
@@ -121,7 +119,7 @@ fun LinearGauge(
             }
 
             Label(labelProvider(minV), gMin)
-            if (hasFirst) Label(labelProvider(lo!!), gLow!!)
+            if (hasFirst) Label(labelProvider(lo), gLow!!)
             Label(labelProvider(hi), gHigh)
             Label(labelProvider(maxV), gMax)
         }

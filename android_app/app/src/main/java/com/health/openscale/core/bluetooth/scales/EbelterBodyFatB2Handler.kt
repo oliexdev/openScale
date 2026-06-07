@@ -43,7 +43,7 @@ class EbelterBodyFatB2Handler : ScaleDeviceHandler() {
     private var lastPublishedFatRaw: Int = -1
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = (device.name ?: "").uppercase()
+        val name = device.name.uppercase()
 
         // En tus capturas sale como "Body Fat-B2"
         if (name.startsWith("BODY FAT-B2")) {

@@ -19,7 +19,6 @@ package com.health.openscale.ui.screen.overview
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,7 +31,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -55,10 +53,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -82,7 +79,6 @@ import com.health.openscale.ui.screen.dialog.TimeInputDialog
 import com.health.openscale.ui.screen.dialog.UserInputDialog
 import com.health.openscale.ui.shared.TopBarAction
 import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -105,6 +101,7 @@ fun MeasurementDetailScreen(
     sharedViewModel: SharedViewModel
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     // Holds the string representation of measurement values, keyed by MeasurementType ID.
     val valuesState = remember { mutableStateMapOf<Int, String>() }
@@ -150,8 +147,8 @@ fun MeasurementDetailScreen(
     LaunchedEffect(measurementId) {
         sharedViewModel.setCurrentMeasurementId(measurementId)
         sharedViewModel.setTopBarTitle(
-            if (measurementId == -1) context.getString(R.string.title_new_measurement)
-            else context.getString(R.string.title_edit_measurement)
+            if (measurementId == -1) resources.getString(R.string.title_new_measurement)
+            else resources.getString(R.string.title_edit_measurement)
         )
     }
 
@@ -244,7 +241,7 @@ fun MeasurementDetailScreen(
             actions.add(
                 TopBarAction(
                     icon = Icons.Default.Delete,
-                    contentDescription = context.getString(R.string.action_delete_measurement_desc,dateFormat.format(Date(measurementTimestampState))),
+                    contentDescription = resources.getString(R.string.action_delete_measurement_desc,dateFormat.format(Date(measurementTimestampState))),
                     onClick = { showDeleteConfirmation = true }
                 )
             )
@@ -253,7 +250,7 @@ fun MeasurementDetailScreen(
         actions.add(
             TopBarAction(
                 icon = Icons.Default.Save,
-                contentDescription = context.getString(R.string.action_save_measurement),
+                contentDescription = resources.getString(R.string.action_save_measurement),
                 onClick = {
                     val effectiveUserIdForSave = pendingUserId ?: currentUserIdState
 
@@ -304,7 +301,7 @@ fun MeasurementDetailScreen(
                                     if (floatVal == null) {
                                         Toast.makeText(
                                             context,
-                                            context.getString(
+                                            resources.getString(
                                                 R.string.toast_invalid_number_format,
                                                 type.getDisplayName(context),
                                                 inputString
@@ -320,7 +317,7 @@ fun MeasurementDetailScreen(
                                     if (intVal == null) {
                                         Toast.makeText(
                                             context,
-                                            context.getString(
+                                            resources.getString(
                                                 R.string.toast_invalid_integer_format,
                                                 type.getDisplayName(context),
                                                 inputString
@@ -354,15 +351,14 @@ fun MeasurementDetailScreen(
                             )
                         }
 
-                    if (allConversionsOk) {
-                        // Fire-and-forget on the ViewModel's scope → the save completes even though we
-                        // navigate away immediately; the result snackbar is shown by the ViewModel
-                        // (and may appear on the previous screen).
-                        sharedViewModel.saveMeasurement(measurementToSave, valueList)
-                        pendingUserId = null
-                        isPendingNavigation = true
-                        navController.popBackStack()
-                    }
+                    // Any conversion error returned early above, so saving is safe here.
+                    // Fire-and-forget on the ViewModel's scope → the save completes even though we
+                    // navigate away immediately; the result snackbar is shown by the ViewModel
+                    // (and may appear on the previous screen).
+                    sharedViewModel.saveMeasurement(measurementToSave, valueList)
+                    pendingUserId = null
+                    isPendingNavigation = true
+                    navController.popBackStack()
                 }
             )
         )
@@ -482,7 +478,7 @@ fun MeasurementDetailScreen(
                                     valuesState[currentType.id] = floatOrNull.toString()
                                     isValid = true
                                 } else {
-                                    Toast.makeText(context, context.getString(R.string.toast_invalid_number_format_short, currentType.getDisplayName(context)), Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, resources.getString(R.string.toast_invalid_number_format_short, currentType.getDisplayName(context)), Toast.LENGTH_SHORT).show()
                                 }
                             } else { // INT
                                 val intOrNull = trimmedValue.toIntOrNull()
@@ -490,7 +486,7 @@ fun MeasurementDetailScreen(
                                     valuesState[currentType.id] = intOrNull.toString()
                                     isValid = true
                                 } else {
-                                    Toast.makeText(context, context.getString(R.string.toast_invalid_integer_format_short, currentType.getDisplayName(context)), Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, resources.getString(R.string.toast_invalid_integer_format_short, currentType.getDisplayName(context)), Toast.LENGTH_SHORT).show()
                                 }
                             }
                             if (isValid) {
@@ -700,7 +696,6 @@ fun MeasurementValueEditRow(
             val displayText = when (type.inputType) {
                 InputFieldType.FLOAT, InputFieldType.INT -> LocaleUtils.formatValueForDisplay(value, type.unit)
                 InputFieldType.TEXT, InputFieldType.USER, InputFieldType.DATE, InputFieldType.TIME -> value
-                else -> ""
             }
             Text(
                 text = displayText,

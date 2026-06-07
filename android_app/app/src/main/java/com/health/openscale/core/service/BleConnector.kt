@@ -18,7 +18,6 @@
 package com.health.openscale.core.service
 
 import android.annotation.SuppressLint
-import android.os.Handler
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.ScaleCommunicator
@@ -30,12 +29,12 @@ import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
-import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.shared.SnackbarEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -48,6 +47,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Manages Bluetooth connections to scale devices, handling the connection lifecycle,
@@ -63,6 +63,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * @param measurementFacade Facade for handling measurement-related operations.
  * @param getCurrentScaleUser Callback function to retrieve the current Bluetooth scale user.
  */
+@OptIn(FlowPreview::class) // debounce
 class BleConnector(
     private val scope: CoroutineScope,
     private val scaleFactory: ScaleFactory,
@@ -79,8 +80,6 @@ class BleConnector(
     val snackbarEvents: SharedFlow<SnackbarEvent> = _snackbarEvents.asSharedFlow()
 
     private val _connectedDeviceName = MutableStateFlow<String?>(null)
-    /** Emits the name of the currently connected device, or null if not connected. */
-    val connectedDeviceName: StateFlow<String?> = _connectedDeviceName.asStateFlow()
 
     private val _connectedDeviceAddress = MutableStateFlow<String?>(null)
     /** Emits the MAC address of the currently connected device, or null if not connected. */
@@ -109,7 +108,7 @@ class BleConnector(
     init {
         scope.launch {
             savedBurstSignal
-                .debounce(700)
+                .debounce(700.milliseconds)
                 .collect {
                     val count = pendingSavedCount.getAndSet(0)
                     if (count <= 0) return@collect
@@ -146,7 +145,7 @@ class BleConnector(
     @SuppressLint("MissingPermission") // Permissions are expected to be checked by the caller.
     fun connectToDevice(deviceInfo: ScannedDeviceInfo) {
         scope.launch {
-            val deviceDisplayName = deviceInfo.name ?: deviceInfo.address
+            val deviceDisplayName = deviceInfo.name
             LogManager.i(TAG, "Attempting to connect to $deviceDisplayName")
 
             // Some legacy or specific openScale handlers might require a valid user.
@@ -201,7 +200,7 @@ class BleConnector(
      *                            Used for display names in logs and UI messages.
      */
     private fun observeActiveCommunicatorEvents(connectedDeviceInfo: ScannedDeviceInfo) {
-        val deviceDisplayName = connectedDeviceInfo.name ?: connectedDeviceInfo.address
+        val deviceDisplayName = connectedDeviceInfo.name
         communicatorJob?.cancel() // Ensure any previous observation job is stopped.
         communicatorJob = scope.launch {
             activeCommunicator?.let { comm ->
@@ -255,8 +254,8 @@ class BleConnector(
      * @param event The [BluetoothEvent] to handle.
      * @param deviceInfo Information about the device that emitted the event.
      */
-    private suspend fun handleBluetoothEvent(event: BluetoothEvent, deviceInfo: ScannedDeviceInfo) {
-        val deviceDisplayName = deviceInfo.name ?: deviceInfo.address // Fallback to address for display.
+    private fun handleBluetoothEvent(event: BluetoothEvent, deviceInfo: ScannedDeviceInfo) {
+        val deviceDisplayName = deviceInfo.name
         LogManager.d(TAG, "BluetoothEvent received: $event for $deviceDisplayName")
 
         when (event) {
@@ -267,7 +266,7 @@ class BleConnector(
                 // Treat 'listening' as connecting so existing UI states keep working
                 _connectionStatus.value = ConnectionStatus.BROADCAST_LISTENING
                 _connectedDeviceAddress.value = event.deviceAddress
-                _connectedDeviceName.value = deviceInfo.name ?: deviceDisplayName
+                _connectedDeviceName.value = deviceInfo.name
                 _snackbarEvents.tryEmit(
                     SnackbarEvent(
                         messageResId = R.string.bluetooth_connector_listening_for_device,
@@ -298,16 +297,16 @@ class BleConnector(
             }
 
             is BluetoothEvent.Connected -> {
-                LogManager.i(TAG, "Event: Connected to ${event.deviceName ?: deviceDisplayName} (${event.deviceAddress})")
+                LogManager.i(TAG, "Event: Connected to ${event.deviceName} (${event.deviceAddress})")
                 disconnectTimeoutJob?.cancel()
                 if (_connectionStatus.value != ConnectionStatus.CONNECTED) {
                     _connectionStatus.value = ConnectionStatus.CONNECTED
                     _connectedDeviceAddress.value = event.deviceAddress
-                    _connectedDeviceName.value = event.deviceName ?: deviceInfo.name
+                    _connectedDeviceName.value = event.deviceName
                     _snackbarEvents.tryEmit(
                         SnackbarEvent(
                             messageResId = R.string.bluetooth_connector_connected_to,
-                            messageFormatArgs = listOf(event.deviceName ?: deviceDisplayName)
+                            messageFormatArgs = listOf(event.deviceName)
                         )
                     )
                     _connectionError.value = null
@@ -336,7 +335,7 @@ class BleConnector(
                     _snackbarEvents.tryEmit(
                         SnackbarEvent(
                             messageResId = R.string.bluetooth_connector_connection_failed,
-                            messageFormatArgs = listOf(deviceDisplayName, event.error ?: "—")
+                            messageFormatArgs = listOf(deviceDisplayName, event.error)
                         )
                     )
                     _connectionStatus.value = ConnectionStatus.FAILED
@@ -351,7 +350,7 @@ class BleConnector(
 
             is BluetoothEvent.MeasurementReceived -> {
                 LogManager.i(TAG, "Event: Measurement received from $deviceDisplayName: Weight ${event.measurement.weight}")
-                saveMeasurementFromEvent(event.measurement, event.deviceAddress, deviceDisplayName)
+                saveMeasurementFromEvent(event.measurement, deviceDisplayName)
             }
 
             is BluetoothEvent.DeviceMessage -> {
@@ -370,7 +369,7 @@ class BleConnector(
                 _snackbarEvents.tryEmit(
                     SnackbarEvent(
                         messageResId = R.string.bluetooth_connector_device_error,
-                        messageFormatArgs = listOf(deviceDisplayName, event.error ?: "—")
+                        messageFormatArgs = listOf(deviceDisplayName, event.error)
                     )
                 )
 
@@ -418,7 +417,7 @@ class BleConnector(
      * 1) Validates that an app user is selected.
      * 2) Builds a `Measurement` row and associated `MeasurementValue` rows.
      * 3) **Converts units** from the scale's **raw units** into the **target display units**
-     *    defined by each [`MeasurementType`]'s `unit` field before persisting.
+     *    defined by each `MeasurementType`'s `unit` field before persisting.
      *
      * ### Raw units assumed for ScaleMeasurement
      * - WEIGHT, BONE, LBM  → **KG**
@@ -427,12 +426,10 @@ class BleConnector(
      * Other fields in `ScaleMeasurement` (if added later) should be appended here with the correct raw unit.
      *
      * @param measurementData Raw measurement from the scale (weight etc.)
-     * @param deviceAddress   Address of the device that sent the measurement (for logging/UX).
      * @param deviceName      Human-friendly device name (for snackbar/logging).
      */
-    private suspend fun saveMeasurementFromEvent(
+    private fun saveMeasurementFromEvent(
         measurementData: ScaleMeasurement,
-        deviceAddress: String,
         deviceName: String
     ) {
         val currentAppUserId = getCurrentScaleUser()?.id
@@ -632,7 +629,7 @@ class BleConnector(
         // Fallback timeout in case no Disconnected event is received from the communicator.
         disconnectTimeoutJob?.cancel()
         disconnectTimeoutJob = scope.launch {
-            delay(DISCONNECT_TIMEOUT_MS)
+            delay(DISCONNECT_TIMEOUT_MS.milliseconds)
             if (_connectionStatus.value == ConnectionStatus.DISCONNECTING) {
                 LogManager.w(TAG, "Disconnect timeout for $deviceDisplayName. Forcing status to DISCONNECTED.")
                 _connectionStatus.value = ConnectionStatus.DISCONNECTED
@@ -664,29 +661,6 @@ class BleConnector(
         }
         activeCommunicator = null
         LogManager.d(TAG, "${logPrefix}Active communicator released and set to null.")
-    }
-
-    /**
-     * Sets an external connection error message. This can be used by the hosting ViewModel
-     * to report errors that occur outside the manager's direct connection logic (e.g., permission issues).
-     *
-     * @param errorMessage The error message to display. If null, the error is cleared (see [clearConnectionError]).
-     */
-    fun setExternalConnectionError(errorMessage: String?) {
-        LogManager.w(TAG, "External connection error set: $errorMessage")
-        _connectionError.value = errorMessage
-        if (errorMessage != null) {
-            // When an error is set, typically the connection status should reflect failure.
-            // However, be mindful if this is called before any connection attempt has even started.
-            // If no connection attempt was active, setting to FAILED might be immediate.
-            // If a connection was in progress and this is an additional error, it might already be FAILED.
-            if (_connectionStatus.value != ConnectionStatus.CONNECTING &&
-                _connectionStatus.value != ConnectionStatus.CONNECTED &&
-                _connectionStatus.value != ConnectionStatus.DISCONNECTING
-            ) {
-                _connectionStatus.value = ConnectionStatus.FAILED
-            }
-        }
     }
 
     /**
