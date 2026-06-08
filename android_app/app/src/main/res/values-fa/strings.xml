@@ -187,4 +187,18 @@
     <string name="snackbar_bluetooth_connecting_to">اتصال به %1$s…</string>
     <string name="search_for_scales_button">جستجو برای ترازو</string>
     <string name="cap_battery">باتری</string>
+    <string name="app_logo_content_description">لوگوی برنامه</string>
+    <string name="text_none">خالی</string>
+    <string name="not_available">موجود نیست</string>
+    <string name="placeholder_empty_value">-</string>
+    <string name="open_link_content_description">باز کردن لینک</string>
+    <string name="measurement_type_detail_title_edit">ویرایش نوع</string>
+    <string name="measurement_type_detail_title_add">افزودن نوع</string>
+    <string name="measurement_type_settings_title">انواع اندازه گیری</string>
+    <string name="content_desc_switch_user">تغییر کاربر. کاربر زیر انتخاب شد: %1$s</string>
+    <string name="content_desc_selected_user_indicator">نمایشگر کاربر انتخاب شد</string>
+    <string name="user_added_successfully">کاربر %1$s با موفقیت افزوده شد.</string>
+    <string name="route_title_insights">بینش کلی</string>
+    <string name="error_duplicate_timestamp">ذخیره نشد - در %1$s یک اندازه گیری از پیش موجود است.</string>
+    <string name="action_keep_editing">ادامه دادن ویرایش</string>
 </resources>
