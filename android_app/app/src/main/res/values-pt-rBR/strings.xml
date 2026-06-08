@@ -85,11 +85,11 @@
     <string name="user_settings_content_description_delete">Excluir usuário</string>
     <string name="user_settings_content_description_add_user">Adicionar novo usuário</string>
     <string name="user_detail_content_description_change_unit">Alterar unidade</string>
-    <string name="success_measurement_updated">Medição atualizada com sucesso</string>
-    <string name="success_measurement_saved">Medição salva com sucesso</string>
-    <string name="error_saving_measurement">Erro ao salvar medição</string>
-    <string name="success_measurement_deleted">Medição %1$s excluída com sucesso</string>
-    <string name="error_deleting_measurement">Erro ao apagar medição</string>
+    <string name="success_measurement_updated">Medição atualizada (%1$s)</string>
+    <string name="success_measurement_saved">Medição salva (%1$s)</string>
+    <string name="error_saving_measurement">Não foi possível salvar a medição. Tente novamente.</string>
+    <string name="success_measurement_deleted">Medição excluída (%1$s)</string>
+    <string name="error_deleting_measurement">Não foi possível excluir a medição. Tente novamente.</string>
     <string name="action_save_measurement">Salvar medição</string>
     <string name="action_add_measurement">Adicionar medição</string>
     <string name="action_add_measurement_desc">Adicionar nova medição</string>
@@ -416,7 +416,7 @@
     <string name="dialog_message_delete_selected_items">Tem certeza de que deseja excluir o item %1$d selecionado? Esta ação não pode ser desfeita.</string>
     <string name="dialog_title_delete_type">Excluir Tipo?</string>
     <string name="dialog_text_delete_type">Tem certeza de que deseja excluir o tipo personalizado “%1$s”? Todas as medições associadas também serão excluídas permanentemente. Esta ação não pode ser desfeita.</string>
-    <string name="snackbar_items_deleted_successfully">%1$d itens excluídos com sucesso.</string>
+    <string name="snackbar_items_deleted_successfully">%1$d medições excluídas</string>
     <string name="enable_file_logging_dialog_message_warning">Ativar iniciará imediatamente uma nova sessão de registro. Um novo arquivo de log será criado e o antigo será excluído.</string>
     <string name="settings_delete_all_measurement_data">Excluir todos os dados de medição</string>
     <string name="settings_delete_entire_database">Excluir todo o banco de dados</string>
@@ -457,7 +457,7 @@
     <string name="snackbar_error_deleting_items">Erro ao excluir itens.</string>
     <string name="dialog_title_select_user_for_assignment">Selecionar Usuário para Atribuição</string>
     <string name="snackbar_no_other_users_to_change_to">Não há outros usuários disponíveis para troca.</string>
-    <string name="snackbar_items_user_changed_successfully">Usuário de %1$d itens alterado com sucesso.</string>
+    <string name="snackbar_items_user_changed_successfully">%1$d medições movidas</string>
     <string name="snackbar_error_user_changed_items">Erro ao alterar o usuário de alguns itens.</string>
     <string name="statistics_no_relevant_types">Nenhum tipo de medição relevante disponível ou configurado para estatísticas.</string>
     <string name="statistics_label_min">Mín</string>
@@ -764,4 +764,15 @@
     <string name="s400_bmr_formula_label">Fórmula de TMB</string>
     <string name="s400_bmr_formula_cun91">Cunningham 1991</string>
     <string name="s400_bmr_formula_cun80">Cunningham 1980</string>
+    <string name="user_added_successfully">Usuário %1$s adicionado com sucesso.</string>
+    <string name="error_duplicate_timestamp">Não salvo — já existe uma medição em %1$s.</string>
+    <string name="action_undo">Desfazer</string>
+    <string name="cd_chart_handle_resize">Arraste para redimensionar o gráfico ou toque para recolhê-lo</string>
+    <string name="cd_chart_handle_show">Toque para exibir o gráfico</string>
+    <string name="dialog_title_discard_changes">Descartar alterações?</string>
+    <string name="dialog_message_discard_changes">Suas alterações não foram salvas e serão perdidas.</string>
+    <string name="action_discard">Descartar</string>
+    <string name="action_keep_editing">Continuar editando</string>
+    <string name="snackbar_items_delete_partial_failure">Não foi possível excluir %1$d de %2$d medições.</string>
+    <string name="snackbar_items_move_partial_failure">Não foi possível mover %1$d de %2$d medições (já existem para esse usuário).</string>
 </resources>
