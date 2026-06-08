@@ -90,11 +90,11 @@
     <string name="user_settings_content_description_delete">Apagar utilizador</string>
     <string name="user_settings_content_description_add_user">Adicionar novo utilizador</string>
     <string name="user_detail_content_description_change_unit">Alterar unidade</string>
-    <string name="success_measurement_updated">Medição atualizada com sucesso</string>
-    <string name="success_measurement_saved">Medição gravada com sucesso</string>
-    <string name="error_saving_measurement">Erro ao gravar medição</string>
-    <string name="success_measurement_deleted">Medição %1$s apagada com sucesso</string>
-    <string name="error_deleting_measurement">Erro ao apagar medição</string>
+    <string name="success_measurement_updated">Medição atualizada (%1$s)</string>
+    <string name="success_measurement_saved">Medição salva (%1$s)</string>
+    <string name="error_saving_measurement">Não foi possível salvar a medição. Por favor, tente novamente.</string>
+    <string name="success_measurement_deleted">Medição excluída (%1$s)</string>
+    <string name="error_deleting_measurement">Não foi possível excluir a medição. Por favor, tente novamente.</string>
     <string name="action_save_measurement">Gravar medição</string>
     <string name="action_add_measurement">Adicionar medição</string>
     <string name="action_add_measurement_desc">Adicionar nova medição</string>
@@ -436,11 +436,11 @@
     <string name="dialog_message_delete_selected_items">Tem certeza que deseja apagar o elemento %1$d selecionado? Esta ação não pode ser desfeita.</string>
     <string name="dialog_title_delete_type">Apagar Tipo?</string>
     <string name="dialog_text_delete_type">Tem certeza que deseja apagar o tipo personalizado “%1$s”? Todas as medições associadas também serão apagadas permanentemente. Esta ação não pode ser desfeita.</string>
-    <string name="snackbar_items_deleted_successfully">%1$d elementos apagados com sucesso.</string>
+    <string name="snackbar_items_deleted_successfully">%1$d medições excluídas</string>
     <string name="snackbar_error_deleting_items">Erro ao apagar elementos.</string>
     <string name="dialog_title_select_user_for_assignment">Selecionar Utilizador para Atribuição</string>
     <string name="snackbar_no_other_users_to_change_to">Não há outros utilizadores disponíveis para troca.</string>
-    <string name="snackbar_items_user_changed_successfully">Utilizador de %1$d elementos alterado com sucesso.</string>
+    <string name="snackbar_items_user_changed_successfully">%1$d medições movidas</string>
     <string name="snackbar_error_user_changed_items">Erro ao alterar o utilizador de alguns elementos.</string>
     <string name="insights_confidence_low">Dados insuficientes</string>
     <string name="insights_section_measurement_analysis">Análise de %1$s</string>
@@ -761,4 +761,15 @@
     <string name="s400_bmr_formula_cun91">Cunningham 1991</string>
     <string name="s400_bmr_formula_cun80">Cunningham 1980</string>
     <string name="insights_volatility_stable">Estável</string>
+    <string name="user_added_successfully">Usuário %1$s adicionado com sucesso.</string>
+    <string name="error_duplicate_timestamp">Não salvo — já existe uma medição em %1$s.</string>
+    <string name="action_undo">Desfazer</string>
+    <string name="cd_chart_handle_resize">Arraste para redimensionar o gráfico ou toque para recolhê-lo</string>
+    <string name="cd_chart_handle_show">Toque para exibir o gráfico</string>
+    <string name="dialog_title_discard_changes">Descartar alterações?</string>
+    <string name="dialog_message_discard_changes">Suas alterações não foram salvas e serão perdidas.</string>
+    <string name="action_discard">Descartar</string>
+    <string name="action_keep_editing">Continuar editando</string>
+    <string name="snackbar_items_delete_partial_failure">Não foi possível excluir %1$d de %2$d medições.</string>
+    <string name="snackbar_items_move_partial_failure">Não foi possível mover %1$d de %2$d medições (já existem para esse usuário).</string>
 </resources>
