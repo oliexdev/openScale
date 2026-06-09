@@ -56,6 +56,12 @@ import java.util.UUID
  * Summary frame (emitted once when the reading locks):
  *   AC 27 01 00 02 <idx> 01 80 8D <hi> <lo> 00 …   — echoes the locked weight at bytes[8..10].
  *
+ * Publishing: in practice, under openScale's basic init the scale never emits a stable (0x80) or
+ * summary (0x01) frame — it just streams live values that plateau. So we publish using a stability
+ * heuristic: once the same weight has repeated [STABLE_FRAMES] times in a row the reading is final.
+ * The explicit stable/summary frames are still honored if they ever arrive, and [armFallback] is a
+ * last-resort timer for the case where the weight never settles.
+ *
  * Body composition: this scale transmits WEIGHT ONLY over BLE. A clean single-measurement capture
  * contains nothing but 0x8D weight frames (plus one idle 0x8C 00 00) — no impedance channel. The
  * Taylor app computes fat/water/muscle/etc. on the phone from weight + the user profile using vendor
@@ -65,6 +71,20 @@ import java.util.UUID
 class TaylorBIAHandler : ScaleDeviceHandler() {
 
     companion object {
+        /**
+         * Number of consecutive identical weight readings that marks the measurement as final.
+         * The scale's settled value repeats verbatim once the user is steady, whereas the step-on
+         * ramp values are all distinct — so a short run of identical frames (~1 s at ~4 Hz) is a
+         * reliable "stable" signal even though this scale never sends an explicit stable/summary frame.
+         */
+        private const val STABLE_FRAMES = 4
+
+        /**
+         * Last-resort timeout (ms): if the weight never settles into a [STABLE_FRAMES] run (e.g. the
+         * user keeps shifting), publish the latest reading anyway so a measurement is still recorded.
+         */
+        private const val FALLBACK_DELAY_MS = 8000L
+
         /**
          * Decode the weight (kg) from a NOTIFY frame's channel/hi/lo bytes.
          *
@@ -86,13 +106,16 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
     private val CHAR_CFG: UUID = uuid16(0xFFB1)   // FFB1: config/command writes (App → Scale)
     private val CHAR_DATA: UUID = uuid16(0xFFB2)  // FFB2: measurement notifications (Scale → App)
 
-    /** Most recent live (non-zero) weight seen this session; used as the weight-only fallback value. */
+    /** Most recent live (non-zero) weight seen this session; the value we publish once it settles. */
     private var pendingWeightKg: Float = 0f
 
-    /** Guards against publishing more than once per session (stable, summary and fallback can all fire). */
+    /** Run-length of consecutive identical readings; when it hits [STABLE_FRAMES] we publish. */
+    private var stableCount = 0
+
+    /** Guards against publishing more than once per session (stability, summary and fallback can all fire). */
     private var published = false
 
-    /** Timer that publishes weight-only if no stable/summary frame arrives after a live reading. */
+    /** Last-resort timer (see [FALLBACK_DELAY_MS]) for the case where the weight never settles. */
     private var fallbackJob: Job? = null
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
@@ -122,6 +145,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         // Handlers are long-lived singletons reused across connections (see ScaleFactory), so reset
         // all per-session state at the start of every connection.
         pendingWeightKg = 0f
+        stableCount = 0
         published = false
         fallbackJob?.cancel()
         fallbackJob = null
@@ -188,13 +212,18 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         // decodes to 0 and is filtered by the w > 0 guard below.
         if (chan == 0x8C || chan == 0x8D) {
             val w = weightKg(data[3], data[4], data[5])
-            if (w > 0f) {
-                pendingWeightKg = w
-                if (flag == 0x80) {
-                    publishWeight(pendingWeightKg)
-                } else {
-                    armFallback()
-                }
+            if (w <= 0f) return
+
+            // Stability detection: count how many identical readings arrive back-to-back. The settled
+            // value repeats exactly while the step-on ramp values are all distinct, so once we've seen
+            // the same weight STABLE_FRAMES times in a row we treat it as final and publish immediately.
+            stableCount = if (w == pendingWeightKg) stableCount + 1 else 1
+            pendingWeightKg = w
+
+            if (flag == 0x80 || stableCount >= STABLE_FRAMES) {
+                publishWeight(w)            // explicit stable frame, or our own stability heuristic
+            } else {
+                armFallback()               // safety net while the reading is still moving
             }
         }
     }
@@ -203,7 +232,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
 
     /**
      * Emit the final measurement exactly once, then close the link. Idempotent: the first caller wins
-     * (stable frame, summary frame or fallback timer), the rest are no-ops via the [published] guard.
+     * (stability run, stable frame, summary frame or fallback timer), the rest are no-ops via [published].
      */
     private fun publishWeight(weightKg: Float) {
         if (published || weightKg <= 0f) return
@@ -221,13 +250,17 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         requestDisconnect() // free the connection; this scale sends nothing more after a locked reading
     }
 
-    /** Publish weight-only if no stable/summary frame arrives shortly after a live weight. */
+    /**
+     * Safety net: armed on the first live reading, fires once after [FALLBACK_DELAY_MS]. Normally the
+     * stability heuristic publishes first; this only triggers if the weight never settles into a
+     * [STABLE_FRAMES] run, so we still record the latest value instead of hanging until disconnect.
+     */
     private fun armFallback() {
         if (fallbackJob != null || published) return
         fallbackJob = scope.launch {
-            delay(5000)
+            delay(FALLBACK_DELAY_MS)
             if (!published && pendingWeightKg > 0f) {
-                logD("No stable frame within 5s; publishing weight-only")
+                logD("Weight never stabilized within ${FALLBACK_DELAY_MS} ms; publishing latest reading")
                 publishWeight(pendingWeightKg)
             }
         }
