@@ -28,6 +28,8 @@ import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.User
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
+import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
+import com.health.openscale.core.usecase.SyncUseCases
 import com.health.openscale.getDefaultMeasurementTypes
 import com.health.openscale.testutil.MainDispatcherRule
 import com.health.openscale.testutil.RoomTestSupport
@@ -80,8 +82,9 @@ class SharedViewModelTest {
             scope, File(app.cacheDir, "shared-${System.nanoTime()}.preferences_pb")
         )
         val facades = RoomTestSupport.facadesFor(app, repo, settings)
+        val sync = SyncUseCases(app, MeasurementTypeCrudUseCases(repo))
         vm = SharedViewModel(
-            facades.userFacade, facades.measurementFacade, facades.dataManagementFacade, settings,
+            facades.userFacade, facades.measurementFacade, facades.dataManagementFacade, settings, sync,
         )
     }
 

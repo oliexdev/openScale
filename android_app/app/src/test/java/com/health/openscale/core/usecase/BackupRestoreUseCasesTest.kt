@@ -1,5 +1,6 @@
 package com.health.openscale.core.usecase
 
+import android.app.Application
 import android.content.Context
 import android.content.ContextWrapper
 import android.database.sqlite.SQLiteDatabase
@@ -87,7 +88,8 @@ class BackupRestoreUseCasesTest {
             produceFile = { File(sandboxRoot, "settings.preferences_pb") }
         )
         val settings = SettingsFacadeImpl(dataStore)
-        useCases = BackupRestoreUseCases(sandboxContext, repository, settings)
+        val sync = SyncUseCases(baseContext as Application, MeasurementTypeCrudUseCases(repository))
+        useCases = BackupRestoreUseCases(sandboxContext, repository, settings, sync)
 
         repository.insertUser(
             User(
