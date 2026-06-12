@@ -32,7 +32,7 @@ import java.util.UUID
  */
 class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
 
-    private enum class Model { BEURER_BF105, BEURER_BF950, BEURER_BF500, BEURER_BF600, BEURER_BF450 }
+    private enum class Model { BEURER_BF105, BEURER_BF950, BEURER_BF500, BEURER_BF600 }
     private val scaleUserList = mutableListOf<ScaleUser>()
 
     private data class Profile(
@@ -81,14 +81,6 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             chrInitials = uuid16(0xFFF6), // BF850 initials
             chrTargetWeight = null
         )
-        Model.BEURER_BF450 -> Profile(
-            service = uuid16(0xFFFF),
-            chrUserList = uuid16(0xFFF1),
-            chrActivity = uuid16(0xFFF2),
-            chrTakeMeasurement = uuid16(0xFFF4),
-            chrInitials = null,
-            chrTargetWeight = null
-        )
     }
 
     private fun nameFor(m: Model) = when (m) {
@@ -96,7 +88,6 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
         Model.BEURER_BF950 -> "Beurer BF950"
         Model.BEURER_BF500 -> "Beurer BF500"
         Model.BEURER_BF600 -> "Beurer BF600"
-        Model.BEURER_BF450 -> "Beurer BF450"
     }
 
     fun driverName(): String = friendlyName ?: "Beurer"
@@ -110,7 +101,6 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             "bf950" in name || "sbf77" in name || "sbf76" in name -> Model.BEURER_BF950
             "bf500" in name                    -> Model.BEURER_BF500
             "bf600" in name || "bf850" in name -> Model.BEURER_BF600
-            "bf450" in name                    -> Model.BEURER_BF450
             else -> return null
         }
 

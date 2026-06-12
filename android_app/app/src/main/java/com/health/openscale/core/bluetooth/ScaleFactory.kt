@@ -100,6 +100,7 @@ class ScaleFactory @Inject constructor(
     // TaylorBIAHandler must stay ahead of MGBHandler — both live on service 0xFFB0, and MGBHandler
     // also matches that service, so a later position would let MGB wrongly claim the Taylor scale.
     private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
+        BeurerBF450Handler(),
         TaylorBIAHandler(),
         RyFitHandler(),
         CultSmartScaleProHandler(),
