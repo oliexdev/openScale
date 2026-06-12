@@ -1,7 +1,5 @@
 <resources>
     <!-- App & Allgemein -->
-    <string name="sync_app_unreachable_hint">Letzte Änderung wurde nicht synchronisiert. Bitte öffne openScale-sync und führe einen manuellen Sync aus.</string>
-    <string name="sync_app_open_action">Öffnen</string>
     <string name="app_logo_content_description">App-Logo</string>
     <string name="text_none">Keine</string>
     <string name="not_available">N.V.</string> <!-- N.V. = Nicht verfügbar -->
