@@ -63,7 +63,8 @@ data class ImportReport(
  */
 @Singleton
 class ImportExportUseCases @Inject constructor(
-    private val repository: DatabaseRepository
+    private val repository: DatabaseRepository,
+    private val sync: SyncUseCases
 ) {
 
     private val TAG = "ImportExportUseCase"
@@ -382,6 +383,9 @@ class ImportExportUseCases @Inject constructor(
                         LogManager.e(TAG, "Derived recalculation failed for measurementId=$id", e)
                     }
                 }
+
+                // Bulk import: one coalesced "changed" wake-up instead of N per-measurement events.
+                sync.triggerSyncChangedAll()
             }
         }
 

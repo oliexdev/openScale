@@ -31,7 +31,7 @@ import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.facade.SettingsFacade
-import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
+import com.health.openscale.core.usecase.GenericValueJson
 import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
 import dagger.hilt.EntryPoint
@@ -49,7 +49,6 @@ import kotlinx.coroutines.runBlocking
 interface DatabaseProviderEntryPoint {
     fun databaseRepository(): DatabaseRepository
     fun userSettingsFacade(): SettingsFacade
-    fun measurementTypeCrudUseCases(): MeasurementTypeCrudUseCases
 }
 
 /**
@@ -62,7 +61,6 @@ class DatabaseProvider : ContentProvider() {
 
     private lateinit var databaseRepository: DatabaseRepository
     private lateinit var userSettingsFacade: SettingsFacade
-    private lateinit var measurementTypeUseCases: MeasurementTypeCrudUseCases
 
     object UserColumns {
         const val _ID = "_ID"
@@ -76,6 +74,8 @@ class DatabaseProvider : ContentProvider() {
         const val BODY_FAT = "fat"
         const val WATER = "water"
         const val MUSCLE = "muscle"
+        // Phase 2: self-describing generic value set (all types incl. custom) as a JSON string.
+        const val VALUES_JSON = "values_json"
     }
 
     override fun onCreate(): Boolean {
@@ -87,7 +87,6 @@ class DatabaseProvider : ContentProvider() {
             )
             databaseRepository = entryPoint.databaseRepository()
             userSettingsFacade = entryPoint.userSettingsFacade()
-            measurementTypeUseCases = entryPoint.measurementTypeCrudUseCases()
 
             CoroutineScope(Dispatchers.IO).launch {
                 val isFileLogging = userSettingsFacade.isFileLoggingEnabled.first()
@@ -155,58 +154,29 @@ class DatabaseProvider : ContentProvider() {
                 }
                 runBlocking {
                     try {
-                        val weightType = measurementTypeUseCases.getByKey(MeasurementTypeKey.WEIGHT)
-
                         val measurementsWithValuesList =
                             databaseRepository.getMeasurementsWithValuesForUser(userIdFromUri).first()
 
+                        // The self-describing generic value set (values_json) is the single source of
+                        // truth; the sync app derives weight/fat/water/muscle from it.
                         val defaultMeasurementProjection = arrayOf(
                             MeasurementColumns._ID,
                             MeasurementColumns.DATETIME,
-                            MeasurementColumns.WEIGHT,
-                            MeasurementColumns.BODY_FAT,
-                            MeasurementColumns.WATER,
-                            MeasurementColumns.MUSCLE
+                            MeasurementColumns.VALUES_JSON
                         )
                         val currentProjection = projection ?: defaultMeasurementProjection
                         val matrixCursor = MatrixCursor(currentProjection)
 
-                        val allMeasurementTypes = databaseRepository.getAllMeasurementTypes().first()
-
-                        measurementsWithValuesList.forEachIndexed { index, mcv -> // mcv is MeasurementWithValues
+                        measurementsWithValuesList.forEach { mcv -> // mcv is MeasurementWithValues
                             val measurement = mcv.measurement
-                            val valuesMap = mcv.values.associateBy { it.type.key }
-                            val weightInKg = valuesMap[MeasurementTypeKey.WEIGHT]?.value?.floatValue?.let {
-                                weightType?.unit?.let { unit -> ConverterUtils.convertFloatValueUnit(it, unit, UnitType.KG) }
-                            }
-
-                            fun convertToPercent(key: MeasurementTypeKey): Float? {
-                                val value = valuesMap[key]?.value?.floatValue ?: return null
-                                val fromUnit = valuesMap[key]?.type?.unit ?: return null
-                                if (fromUnit == UnitType.PERCENT) return value
-                                if (fromUnit.isWeightUnit() && weightInKg != null && weightInKg > 0) {
-                                    val valueInKg = ConverterUtils.convertFloatValueUnit(value, fromUnit, UnitType.KG)
-                                    return (valueInKg / weightInKg) * 100f
-                                }
-                                return null
-                            }
-
-                            val fatPercent = convertToPercent(MeasurementTypeKey.BODY_FAT)
-                            val waterPercent = convertToPercent(MeasurementTypeKey.WATER)
-                            val musclePercent = convertToPercent(MeasurementTypeKey.MUSCLE)
-
                             val rowData = mutableListOf<Any?>()
                             if (currentProjection.contains(MeasurementColumns._ID)) rowData.add(measurement.id)
                             if (currentProjection.contains(MeasurementColumns.DATETIME)) rowData.add(measurement.timestamp)
-                            if (currentProjection.contains(MeasurementColumns.WEIGHT)) rowData.add(weightInKg)
-                            if (currentProjection.contains(MeasurementColumns.BODY_FAT)) rowData.add(fatPercent ?: 0.0f)
-                            if (currentProjection.contains(MeasurementColumns.WATER)) rowData.add(waterPercent ?: 0.0f)
-                            if (currentProjection.contains(MeasurementColumns.MUSCLE)) rowData.add(musclePercent ?: 0.0f)
-
-                            LogManager.d(TAG, "Query Row #${index + 1} for user $userIdFromUri (MeasID: ${measurement.id}): ${
-                                currentProjection.zip(rowData).joinToString { "${it.first}=${it.second}" }
-                            }")
-
+                            if (currentProjection.contains(MeasurementColumns.VALUES_JSON)) {
+                                val typesById = mcv.values.associate { it.type.id to it.type }
+                                val rawValues = mcv.values.map { it.value }
+                                rowData.add(GenericValueJson.build(rawValues, typesById))
+                            }
                             matrixCursor.addRow(rowData.toTypedArray())
                         }
                         matrixCursor
@@ -310,6 +280,21 @@ class DatabaseProvider : ContentProvider() {
                     addConvertedValue(fatFromProviderPercent, fatType)
                     addConvertedValue(waterFromProviderPercent, waterType)
                     addConvertedValue(muscleFromProviderPercent, muscleType)
+
+                    // Inbound flexibility: any additional generic values (all types incl. custom)
+                    // supplied as a "values_json" payload are written too (canonical → user unit).
+                    val valuesJson = values.getAsString(MeasurementColumns.VALUES_JSON)
+                    if (valuesJson != null) {
+                        val typesByKey = allMeasurementTypes.associateBy { it.key.name }
+                        val typesById = allMeasurementTypes.associateBy { it.id }
+                        val existingTypeIds = measurementValuesToInsert.mapTo(HashSet()) { it.typeId }
+                        GenericValueJson.parse(valuesJson, typesByKey, typesById).forEach { (typeId, v) ->
+                            if (typeId !in existingTypeIds) {
+                                measurementValuesToInsert.add(MeasurementValue(measurementId = 0, typeId = typeId, floatValue = v))
+                                existingTypeIds.add(typeId)
+                            }
+                        }
+                    }
                 }
 
                 if (weightTypeIdFound == null) { // Double check if weight type ID was resolved
@@ -363,7 +348,7 @@ class DatabaseProvider : ContentProvider() {
             return 0 // Return 0 rows affected
         }
 
-        var rowsAffected = 0
+        var rowsAffected: Int
 
         when (uriMatcher.match(uri)) {
             MATCH_TYPE_MEASUREMENT_LIST_FOR_USER -> {
@@ -516,33 +501,53 @@ class DatabaseProvider : ContentProvider() {
 
 
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<String?>?): Int {
-        LogManager.w(TAG, "Delete operation is not supported by this provider.")
-        // To implement delete:
-        // 1. Identify user from URI (MATCH_TYPE_MEASUREMENT_LIST_FOR_USER implies user ID in URI)
-        // 2. Identify specific measurement to delete. This usually requires more than just user ID.
-        //    Commonly, the `selection` and `selectionArgs` would specify criteria like `DATETIME = ?`.
-        //    Or, you'd have a URI like "measurements/<user_id>/<measurement_id>" (MATCH_TYPE_SINGLE_MEASUREMENT).
-        // Example (conceptual):
-        /*
-        if (uriMatcher.match(uri) == MATCH_TYPE_MEASUREMENT_LIST_FOR_USER) {
-            val userId = ContentUris.parseId(uri).toInt()
-            if (selection != null && selectionArgs != null) {
-                // Parse selection to find the measurement (e.g., by datetime)
-                // val measurementToDelete = databaseRepository.findMeasurementByCriteria(userId, selection, selectionArgs)
-                // if (measurementToDelete != null) {
-                //     databaseRepository.deleteMeasurementWithValues(measurementToDelete)
-                //     rowsAffected = 1
-                //     context!!.contentResolver.notifyChange(uri, null)
-                // }
-            }
+        if (!::databaseRepository.isInitialized) {
+            LogManager.e(TAG, "DatabaseRepository not initialized in delete.")
+            return 0
         }
-        */
-        throw UnsupportedOperationException("Delete not supported by this provider")
+
+        when (uriMatcher.match(uri)) {
+            MATCH_TYPE_MEASUREMENT_LIST_FOR_USER -> {
+                val userId = try {
+                    ContentUris.parseId(uri).toInt()
+                } catch (e: NumberFormatException) {
+                    LogManager.e(TAG, "Invalid User ID in URI for measurement delete: $uri", e)
+                    return 0
+                }
+                // The measurement is identified by its datetime (epoch millis), passed as the first
+                // selectionArg (e.g. selection = "datetime = ?"). Enables external (bidirectional)
+                // sync apps to propagate a delete into openScale.
+                val datetime = selectionArgs?.firstOrNull()?.toLongOrNull()
+                if (datetime == null) {
+                    LogManager.e(TAG, "Delete requires a datetime selectionArg (epoch millis).")
+                    return 0
+                }
+                return runBlocking {
+                    try {
+                        val target = databaseRepository.getMeasurementsWithValuesForUser(userId).first()
+                            .find { it.measurement.timestamp == datetime }
+                        if (target == null) {
+                            LogManager.d(TAG, "No measurement to delete for user $userId at $datetime.")
+                            return@runBlocking 0
+                        }
+                        databaseRepository.deleteMeasurement(target.measurement)
+                        context!!.contentResolver.notifyChange(uri, null)
+                        1
+                    } catch (e: Exception) {
+                        LogManager.e(TAG, "Error deleting measurement for user $userId: ${e.message}", e)
+                        0
+                    }
+                }
+            }
+            else -> throw IllegalArgumentException("Unknown URI for delete: $uri")
+        }
     }
 
     companion object {
         private val uriMatcher = UriMatcher(UriMatcher.NO_MATCH)
-        private const val API_VERSION = 1
+        // v2: sync Intents carry userId on delete/clear (multi-user routing). openScale-sync
+        // requires >= 2 and warns the user to update openScale otherwise.
+        private const val API_VERSION = 2
         val AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
 
         private const val MATCH_TYPE_META = 1

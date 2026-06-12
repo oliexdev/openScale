@@ -1,6 +1,8 @@
 <resources>
     <!-- App & General -->
     <string name="app_name" translatable="false">openScale</string>
+    <string name="sync_app_unreachable_hint">Last change wasn\'t synchronized. Please open openScale-sync and run a manual sync.</string>
+    <string name="sync_app_open_action">Open</string>
     <string name="app_logo_content_description">App Logo</string>
     <string name="text_none">None</string>
     <string name="not_available">N/A</string>

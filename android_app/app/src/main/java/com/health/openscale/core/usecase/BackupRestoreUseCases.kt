@@ -51,7 +51,8 @@ import javax.inject.Singleton
 class BackupRestoreUseCases @Inject constructor(
     @param:ApplicationContext private val appContext: Context,
     private val repository: DatabaseRepository,
-    private val settings: SettingsFacade
+    private val settings: SettingsFacade,
+    private val sync: SyncUseCases
 ) {
 
     private val TAG = "BackupRestoreUseCase"
@@ -140,6 +141,8 @@ class BackupRestoreUseCases @Inject constructor(
             }
 
             LogManager.i(TAG, "Restore completed. Format=$format, Files=$restored")
+            // Whole DB replaced → one coalesced "changed" wake so sync apps reconcile their full state.
+            sync.triggerSyncChangedAll()
         } finally {
             if (restoreSessionDir.exists() && !restoreSessionDir.deleteRecursively()) {
                 LogManager.w(

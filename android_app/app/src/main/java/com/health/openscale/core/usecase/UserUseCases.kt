@@ -127,9 +127,9 @@ class UserUseCases @Inject constructor(
 
     /** Delete all measurements for the given user. Returns number of deleted rows. */
     suspend fun purgeMeasurementsForUser(userId: Int): Result<Int> = runCatching {
-        sync.triggerSyncClear("com.health.openscale.sync")
-        sync.triggerSyncClear("com.health.openscale.sync.oss")
-        sync.triggerSyncClear("com.health.openscale.sync.debug")
+        sync.triggerSyncClear(userId, "com.health.openscale.sync")
+        sync.triggerSyncClear(userId, "com.health.openscale.sync.oss")
+        sync.triggerSyncClear(userId, "com.health.openscale.sync.debug")
         databaseRepository.deleteAllMeasurementsForUser(userId)
     }
 
