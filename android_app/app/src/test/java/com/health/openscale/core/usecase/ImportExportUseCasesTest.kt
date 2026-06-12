@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.usecase
 
+import android.app.Application
 import android.content.Context
 import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
@@ -66,7 +67,8 @@ class ImportExportUseCasesTest {
         db = RoomTestSupport.inMemory(context)
         repo = RoomTestSupport.repositoryFor(db)
         repo.insertAllMeasurementTypes(getDefaultMeasurementTypes())
-        useCases = ImportExportUseCases(repo)
+        val sync = SyncUseCases(context as Application, MeasurementTypeCrudUseCases(repo))
+        useCases = ImportExportUseCases(repo, sync)
 
         userId = db.userDao().insert(
             User(

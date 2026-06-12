@@ -53,9 +53,8 @@ class InlifeHandler : ScaleDeviceHandler() {
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.lowercase(Locale.ROOT)
         val byName = name in setOf("000fatscale01", "000fatscale02", "042fatscale01")
-        val bySvc  = device.serviceUuids.any { it == SVC }
 
-        if (!byName && !bySvc) return null
+        if (!byName) return null
 
         val caps = setOf(
             DeviceCapability.LIVE_WEIGHT_STREAM,

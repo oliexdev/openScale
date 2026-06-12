@@ -23,7 +23,6 @@ import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.database.DatabaseRepository
-import com.health.openscale.core.utils.CalculationUtils
 import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.flow.first
@@ -54,10 +53,9 @@ class MeasurementTypeCrudUseCases @Inject constructor(
         repository.updateMeasurementType(type)
     }
 
-    /** Finds and returns a specific MeasurementType by its key. */
-    suspend fun getByKey(key: MeasurementTypeKey): MeasurementType? {
-        return repository.getAllMeasurementTypes().first().find { it.key == key }
-    }
+    /** All measurement types (predefined + custom). Used by the sync layer to build the
+     *  generic, self-describing value set for external sync apps. */
+    suspend fun getAll(): List<MeasurementType> = repository.getAllMeasurementTypes().first()
 
     /** Deletes a measurement type. Caller must ensure cascading semantics are OK. */
     suspend fun delete(type: MeasurementType): Result<Unit> = runCatching {
@@ -129,7 +127,7 @@ class MeasurementTypeCrudUseCases @Inject constructor(
         var updatedCount = 0
         for (mv in allValuesForType) {
             val current = mv.floatValue ?: continue
-            var converted: Float? = null
+            var converted: Float?
 
             // Percent <-> absolute conversions for composition-like metrics
             if (typeKey == MeasurementTypeKey.BODY_FAT ||

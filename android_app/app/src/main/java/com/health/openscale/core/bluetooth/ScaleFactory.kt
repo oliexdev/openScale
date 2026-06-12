@@ -46,6 +46,7 @@ import com.health.openscale.core.bluetooth.scales.MGBHandler
 import com.health.openscale.core.bluetooth.scales.MedisanaBs44xHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
+import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
@@ -61,6 +62,7 @@ import com.health.openscale.core.bluetooth.scales.SenssunHandler
 import com.health.openscale.core.bluetooth.scales.SinocareHandler
 import com.health.openscale.core.bluetooth.scales.SoehnleHandler
 import com.health.openscale.core.bluetooth.scales.SppScaleAdapter
+import com.health.openscale.core.bluetooth.scales.TaylorBIAHandler
 import com.health.openscale.core.bluetooth.scales.DrTrustSSW532Handler
 import com.health.openscale.core.bluetooth.scales.StandardBeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.TrisaBodyAnalyzeHandler
@@ -94,7 +96,11 @@ class ScaleFactory @Inject constructor(
     private val TAG = "ScaleHandlerFactory"
 
     // List of modern Kotlin-based device handlers.
+    // Order matters: createCommunicator() returns the FIRST handler whose supportFor() is non-null.
+    // TaylorBIAHandler must stay ahead of MGBHandler — both live on service 0xFFB0, and MGBHandler
+    // also matches that service, so a later position would let MGB wrongly claim the Taylor scale.
     private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
+        TaylorBIAHandler(),
         RyFitHandler(),
         CultSmartScaleProHandler(),
         RealmeSmartScaleHandler(),
@@ -137,6 +143,7 @@ class ScaleFactory @Inject constructor(
         AAAxHandler(),
         ActiveEraBF06Handler(),
         DrTrustSSW532Handler(),
+        BodyConnectHandler(),
     )
 
     /**

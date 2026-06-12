@@ -158,9 +158,9 @@ class MeasurementCrudUseCases @Inject constructor(
         measurement: Measurement
     ): Result<Unit> = runCatching {
         databaseRepository.deleteMeasurement(measurement)
-        sync.triggerSyncDelete(Date(measurement.timestamp), "com.health.openscale.sync")
-        sync.triggerSyncDelete(Date(measurement.timestamp), "com.health.openscale.sync.oss")
-        sync.triggerSyncDelete(Date(measurement.timestamp), "com.health.openscale.sync.debug")
+        sync.triggerSyncDelete(measurement.id, measurement.userId, Date(measurement.timestamp), "com.health.openscale.sync")
+        sync.triggerSyncDelete(measurement.id, measurement.userId, Date(measurement.timestamp), "com.health.openscale.sync.oss")
+        sync.triggerSyncDelete(measurement.id, measurement.userId, Date(measurement.timestamp), "com.health.openscale.sync.debug")
 
         MeasurementWidget.refreshAll(appContext)
     }

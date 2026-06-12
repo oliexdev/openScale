@@ -44,6 +44,7 @@ import com.health.openscale.core.model.MeasurementInsight
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.usecase.MeasurementDemoUseCase
+import com.health.openscale.core.usecase.SyncUseCases
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.screen.components.AGGREGATION_LEVEL_SUFFIX
 import com.health.openscale.ui.screen.components.CUSTOM_END_DATE_MILLIS_SUFFIX
@@ -72,8 +73,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.Duration.Companion.seconds
 import java.text.DateFormat
-import java.time.LocalDate
 import java.util.Date
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -97,7 +98,22 @@ class SharedViewModel @Inject constructor(
     private val measurementFacade: MeasurementFacade,
     private val dataManagementFacade: DataManagementFacade,
     private val settingsFacade: SettingsFacade,
+    private val sync: SyncUseCases,
 ) : ViewModel(), SettingsFacade by settingsFacade {
+
+    // When openScale can't wake an installed-but-force-stopped sync app, nudge the user to open it.
+    init {
+        viewModelScope.launch {
+            sync.syncAppUnreachable.collect { pkg ->
+                showSnackbar(
+                    messageResId = R.string.sync_app_unreachable_hint,
+                    duration = SnackbarDuration.Long,
+                    actionLabelResId = R.string.sync_app_open_action,
+                    onAction = { sync.openSyncApp(pkg) }
+                )
+            }
+        }
+    }
 
     companion object {
         private const val TAG = "SharedViewModel"
@@ -417,7 +433,7 @@ class SharedViewModel @Inject constructor(
     /**
      * Emits a fully computed [MeasurementInsight] for the currently selected user.
      * Reacts automatically to user switches, measurement data changes, and primary
-     * type selection changes from [insightsPrimaryTypeIdFlow].
+     * type selection changes from insightsPrimaryTypeIdFlow.
      *
      * The computation is dispatched to [kotlinx.coroutines.Dispatchers.Default] inside
      * [MeasurementFacade.insightsForUser] to keep the main thread free.
@@ -492,7 +508,7 @@ class SharedViewModel @Inject constructor(
      * Resolves a [TimeRangeFilter] into concrete start/end epoch-millisecond bounds.
      * Returns `null` for an open bound (no filter applied on that side).
      *
-     * Previously this logic was spread across [rememberResolvedTimeRangeState] in
+     * Previously this logic was spread across rememberResolvedTimeRangeState in
      * multiple Composables. Keeping it here makes it testable without Android instrumentation.
      */
     private fun resolveTimeRange(
@@ -541,7 +557,7 @@ class SharedViewModel @Inject constructor(
      * Used by drill-down screens that show the individual measurements within a period.
      *
      * The flow is cached per (startMillis, endMillis) pair so repeated calls from
-     * recompositions or from [resolveSelectedMeasurementIds] are free after the first access.
+     * recompositions or from resolveSelectedMeasurementIds are free after the first access.
      *
      * Each [AggregatedMeasurement] in the result has [AggregatedMeasurement.aggregatedFromCount] == 1.
      */
@@ -867,7 +883,7 @@ class SharedViewModel @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val types = withTimeoutOrNull(10_000) {
+                val types = withTimeoutOrNull(10.seconds) {
                     measurementFacade.getAllMeasurementTypes().first { it.isNotEmpty() }
                 }
                 if (types.isNullOrEmpty()) {
@@ -880,7 +896,7 @@ class SharedViewModel @Inject constructor(
                     return@launch
                 }
 
-                val users = withTimeoutOrNull(10_000) {
+                val users = withTimeoutOrNull(10.seconds) {
                     allUsers.first { it.isNotEmpty() }
                 }
                 if (users.isNullOrEmpty()) {
