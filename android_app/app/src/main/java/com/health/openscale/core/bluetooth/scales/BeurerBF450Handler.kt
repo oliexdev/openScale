@@ -224,9 +224,9 @@ class BeurerBF450Handler : StandardWeightProfileHandler() {
     private fun handleMeasurementStatus(data: ByteArray) {
         if (data.isEmpty()) return
         when (val s = data[0].toInt() and 0xFF) {
-            0x00 -> logD("FFF4: misura in corso…")
-            0x01 -> logD("FFF4: misura completata")
-            else -> logD("FFF4: status sconosciuto 0x${s.toString(16)}")
+            0x00 -> logD("FFF4: Taking measurement…")
+            0x01 -> logD("FFF4: Measurement taken")
+            else -> logD("FFF4: status unknown 0x${s.toString(16)}")
         }
     }
 

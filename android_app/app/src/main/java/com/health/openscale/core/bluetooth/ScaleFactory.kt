@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth
 
 import android.content.Context
+import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
