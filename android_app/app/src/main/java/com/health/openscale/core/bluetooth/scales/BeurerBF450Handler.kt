@@ -277,7 +277,7 @@ class BeurerBF450Handler : StandardWeightProfileHandler() {
         if (pendingBodyComposition) {
             transformed.fat        = lastFatPct
             transformed.muscle     = lastMusclePct
-            transformed.water      = lastBodyWater 
+            transformed.water      = (lastBodyWater / (transformed.weight.takeIf {it > 0f} ?: 1f) * 100f)
             if (lastImpedance > 0.0) {
                 transformed.impedance = lastImpedance
             }
