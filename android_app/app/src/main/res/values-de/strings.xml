@@ -456,7 +456,6 @@
     <string name="dialog_title_select_user_for_assignment">Nutzer für Zuweisung auswählen</string>
     <string name="snackbar_no_other_users_to_change_to">Keine anderen Nutzer vorhanden, zu denen gewechselt werden kann.</string>
     <string name="snackbar_items_user_changed_successfully">Nutzer für %1$d Elemente erfolgreich geändert.</string>
-
     <!-- Insights Screen -->
     <string name="insights_confidence_low">Begrenzte Datenbasis</string>
     <string name="insights_label_recomposition">Rekomposition</string>
@@ -785,4 +784,8 @@
     <string name="bt_sbf72_choice_slot_other_user">P%1$d: Verwendet von %2$s (Übernehmen?)</string>
     <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Belegt (Nicht verknüpft)</string>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d: \'%2$s\' hier erstellen</string>
+    <string name="sync_app_unreachable_hint">Die letzte Änderung wurde nicht synchronisiert. Bitte öffne openScale-sync und führe eine manuelle Synchronisierung durch.</string>
+    <string name="sync_app_open_action">Öffnen</string>
+    <string name="saved">Gespeichert</string>
+    <string name="user_added_successfully">Benutzer %1$s erfolgreich hinzugefügt.</string>
 </resources>
