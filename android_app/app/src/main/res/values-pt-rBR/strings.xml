@@ -775,4 +775,35 @@
     <string name="action_keep_editing">Continuar editando</string>
     <string name="snackbar_items_delete_partial_failure">Não foi possível excluir %1$d de %2$d medições.</string>
     <string name="snackbar_items_move_partial_failure">Não foi possível mover %1$d de %2$d medições (já existem para esse usuário).</string>
+    <string name="sync_app_open_action">Abrir</string>
+    <string name="sync_app_unreachable_hint">A última alteração não foi sincronizada. Abra o openScale-sync e execute uma sincronização manual.</string>
+    <string name="dev_tools_range_2_years" translatable="false"></string>
+    <string name="dev_tools_scenario_trend" translatable="false"></string>
+    <string name="dev_tools_dialog_wipe_warning" translatable="false"></string>
+    <string name="dev_tools_range_30_days" translatable="false"></string>
+    <string name="dev_tools_scenario_stable" translatable="false"></string>
+    <string name="dev_tools_scenario_mixed_loss" translatable="false"></string>
+    <string name="dev_tools_toast_generating" translatable="false"></string>
+    <string name="dev_tools_range_4_years" translatable="false"></string>
+    <string name="dev_tools_range_6_months" translatable="false"></string>
+    <string name="dev_tools_time_range_label" translatable="false"></string>
+    <string name="dev_tools_dialog_title" translatable="false"></string>
+    <string name="dev_tools_wipe_data_label" translatable="false"></string>
+    <string name="dev_tools_toast_success" translatable="false"></string>
+    <string name="dev_tools_scenario_sparse_metrics" translatable="false"></string>
+    <string name="dev_tools_scenario_with_anomalies" translatable="false"></string>
+    <string name="dev_tools_generate_button" translatable="false"></string>
+    <string name="dev_tools_scenario_seasonal" translatable="false"></string>
+    <string name="dev_tools_scenario_muscle_gain" translatable="false"></string>
+    <string name="dev_tools_scenario_fat_loss" translatable="false"></string>
+    <string name="dev_tools_scenario_weekday_habits" translatable="false"></string>
+    <string name="dev_tools_dialog_confirm" translatable="false"></string>
+    <string name="dev_tools_scenario_fat_gain" translatable="false"></string>
+    <string name="dev_tools_scenario_label" translatable="false"></string>
+    <string name="dev_tools_title" translatable="false"></string>
+    <string name="dev_tools_scenario_bulk" translatable="false"></string>
+    <string name="app_name" translatable="false"></string>
+    <string name="dev_tools_dialog_add_warning" translatable="false"></string>
+    <string name="dev_tools_scenario_with_gaps" translatable="false"></string>
+    <string name="dev_tools_scenario_recomposition" translatable="false"></string>
 </resources>
