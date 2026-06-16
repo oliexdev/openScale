@@ -299,7 +299,7 @@
     <string name="unknown_device">Unbekannt</string>
     <string name="stop_scan_button">Scan stoppen</string>
     <string name="search_for_scales_button">Nach Waagen suchen</string>
-    <string name="search_for_scales_button_desc">Schaltfläche "Nach Waagen suchen"</string>
+    <string name="search_for_scales_button_desc">Schaltfläche Nach Waagen suchen</string>
     <string name="found_devices_label">Gefundene Geräte:</string>
     <string name="device_saved_as_preferred">\'%1$s\' als bevorzugte Waage gespeichert.</string>
     <string name="device_not_supported">%1$s wird derzeit nicht unterstützt.</string>
@@ -329,7 +329,7 @@
     <string name="cap_state_supported_only">Unterstützt (nicht implementiert): %1$s</string>
     <string name="more_options_cd">Weitere Optionen</string>
     <!-- Bluetooth Detail Screen -->
-    <string name="title_device_settings_for">"%1$s Einstellungen"</string>
+    <string name="title_device_settings_for">%1$s Einstellungen</string>
     <string name="bluetooth_tuning_title">Bluetooth-Tuning</string>
     <string name="tuning_profile_label">Tuning-Profil</string>
     <string name="bluetooth_measurement_title">Bluetooth Messwerte</string>
@@ -456,7 +456,6 @@
     <string name="dialog_title_select_user_for_assignment">Nutzer für Zuweisung auswählen</string>
     <string name="snackbar_no_other_users_to_change_to">Keine anderen Nutzer vorhanden, zu denen gewechselt werden kann.</string>
     <string name="snackbar_items_user_changed_successfully">Nutzer für %1$d Elemente erfolgreich geändert.</string>
-
     <!-- Insights Screen -->
     <string name="insights_confidence_low">Begrenzte Datenbasis</string>
     <string name="insights_label_recomposition">Rekomposition</string>
@@ -488,7 +487,7 @@
     <string name="insights_section_anomalies">Ungewöhnliche Messungen</string>
     <string name="insights_anomalies_none">Keine ungewöhnlichen Messungen erkannt.</string>
     <string name="insights_anomaly_deviation">%1$s vom erwarteten Wert %2$s</string>
-    <string name="insights_anomaly_comment">"%1$s"</string>
+    <string name="insights_anomaly_comment">%1$s</string>
     <string name="insights_summary_plateau">Keine nennenswerte Veränderung seit %1$d Tagen — dein Körper könnte sich anpassen.</string>
     <string name="insights_summary_trend_change_down">Kurzfristig sinkender Trend — die kurzfristige Richtung weicht vom langfristigen Trend ab.</string>
     <string name="insights_summary_trend_change_up">Kurzfristig steigender Trend — die kurzfristige Richtung weicht vom langfristigen Trend ab.</string>
@@ -671,15 +670,15 @@
     <string name="export_error_generic">Fehler beim Export: %1$s</string>
     <string name="export_no_users_available">Keine Benutzer zum Exportieren verfügbar.</string>
     <!-- Datenimport Nachrichten -->
-    <string name="import_successful_records">"%1$d Messdatensätze erfolgreich importiert."</string>
+    <string name="import_successful_records">%1$d Messdatensätze erfolgreich importiert.</string>
     <string name="import_successful_records_with_details">%1$d Datensätze erfolgreich importiert%2$s.</string>
     <!-- %2$s für detaillierte Zusammenfassung -->
-    <string name="import_summary_details_base">"%1$d Messdatensätze erfolgreich importiert."</string>
+    <string name="import_summary_details_base">%1$d Messdatensätze erfolgreich importiert.</string>
     <!-- Basis zur Erstellung der Zusammenfassung -->
-    <string name="import_summary_ignored_duplicated_timestamp">"%1$d Zeilen ingoriert (doppelter Zeitstempel)."</string>
-    <string name="import_summary_skipped_missing_dates">"%1$d Zeilen wegen fehlender Daten übersprungen."</string>
-    <string name="import_summary_skipped_date_parse_errors">"%1$d Zeilen wegen Datums-Analysefehlern übersprungen."</string>
-    <string name="import_summary_values_skipped_parse_errors">"%1$d einzelne Werte konnten nicht analysiert werden."</string>
+    <string name="import_summary_ignored_duplicated_timestamp">%1$d Zeilen ingoriert (doppelter Zeitstempel).</string>
+    <string name="import_summary_skipped_missing_dates">%1$d Zeilen wegen fehlender Daten übersprungen.</string>
+    <string name="import_summary_skipped_date_parse_errors">%1$d Zeilen wegen Datums-Analysefehlern übersprungen.</string>
+    <string name="import_summary_values_skipped_parse_errors">%1$d einzelne Werte konnten nicht analysiert werden.</string>
     <string name="import_error_no_valid_data">Keine gültigen Daten in der CSV-Datei gefunden oder alle Zeilen enthielten Fehler.</string>
     <string name="import_error_missing_date_column">Import fehlgeschlagen: Die obligatorische Spalte Datum fehlt in der CSV-Kopfzeile.</string>
     <string name="import_error_cannot_read_file">Import fehlgeschlagen: Datei konnte nicht gelesen werden.</string>
@@ -785,4 +784,78 @@
     <string name="bt_sbf72_choice_slot_other_user">P%1$d: Verwendet von %2$s (Übernehmen?)</string>
     <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Belegt (Nicht verknüpft)</string>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d: \'%2$s\' hier erstellen</string>
+    <string name="insights_chip_volatility_high"></string>
+    <string name="user_added_successfully"></string>
+    <string name="sync_app_open_action"></string>
+    <string name="cd_chart_handle_show"></string>
+    <string name="dev_tools_range_2_years" translatable="false"></string>
+    <string name="insights_stat_start"></string>
+    <string name="dev_tools_scenario_trend" translatable="false"></string>
+    <string name="s400_bmr_formula_label"></string>
+    <string name="insights_chip_volatility_moderate"></string>
+    <string name="dev_tools_dialog_wipe_warning" translatable="false"></string>
+    <string name="dev_tools_range_30_days" translatable="false"></string>
+    <string name="dev_tools_scenario_stable" translatable="false"></string>
+    <string name="dev_tools_scenario_mixed_loss" translatable="false"></string>
+    <string name="dev_tools_toast_generating" translatable="false"></string>
+    <string name="insights_chip_plateau_days"></string>
+    <string name="dev_tools_range_4_years" translatable="false"></string>
+    <string name="dev_tools_range_6_months" translatable="false"></string>
+    <string name="s400_bmr_formula_cun91"></string>
+    <string name="saved"></string>
+    <string name="insights_placeholder_measurement_analysis"></string>
+    <string name="dev_tools_time_range_label" translatable="false"></string>
+    <string name="s400_bone_formula_heymsfield"></string>
+    <string name="dev_tools_dialog_title" translatable="false"></string>
+    <string name="dev_tools_wipe_data_label" translatable="false"></string>
+    <string name="measurement_type_protein"></string>
+    <string name="dev_tools_toast_success" translatable="false"></string>
+    <string name="dev_tools_scenario_sparse_metrics" translatable="false"></string>
+    <string name="s400_bmr_formula_cun80"></string>
+    <string name="dialog_title_discard_changes"></string>
+    <string name="dev_tools_scenario_with_anomalies" translatable="false"></string>
+    <string name="measurement_type_ecw"></string>
+    <string name="insights_stat_on_average"></string>
+    <string name="measurement_type_bcm"></string>
+    <string name="dev_tools_generate_button" translatable="false"></string>
+    <string name="dev_tools_scenario_seasonal" translatable="false"></string>
+    <string name="s400_bind_key_label"></string>
+    <string name="measurement_type_impedance"></string>
+    <string name="dev_tools_scenario_muscle_gain" translatable="false"></string>
+    <string name="s400_bone_formula_label"></string>
+    <string name="measurement_type_heart_rate"></string>
+    <string name="dev_tools_scenario_fat_loss" translatable="false"></string>
+    <string name="insights_stat_now"></string>
+    <string name="snackbar_items_move_partial_failure"></string>
+    <string name="action_undo"></string>
+    <string name="insights_stat_rate_month"></string>
+    <string name="dev_tools_scenario_weekday_habits" translatable="false"></string>
+    <string name="dev_tools_dialog_confirm" translatable="false"></string>
+    <string name="no_special_configuration_available"></string>
+    <string name="insights_section_measurement_analysis"></string>
+    <string name="dev_tools_scenario_fat_gain" translatable="false"></string>
+    <string name="snackbar_items_delete_partial_failure"></string>
+    <string name="s400_bone_formula_mi_legacy"></string>
+    <string name="dev_tools_scenario_label" translatable="false"></string>
+    <string name="bt_s400_missing_bind_key"></string>
+    <string name="s400_bind_key_placeholder"></string>
+    <string name="scale_configuration_title"></string>
+    <string name="action_keep_editing"></string>
+    <string name="insights_chip_volatility_stable"></string>
+    <string name="s400_bind_key_description"></string>
+    <string name="dev_tools_title" translatable="false"></string>
+    <string name="dev_tools_scenario_bulk" translatable="false"></string>
+    <string name="error_duplicate_timestamp"></string>
+    <string name="measurement_type_icw"></string>
+    <string name="app_name" translatable="false"></string>
+    <string name="dialog_message_discard_changes"></string>
+    <string name="route_title_insights"></string>
+    <string name="s400_bind_key_error"></string>
+    <string name="dev_tools_dialog_add_warning" translatable="false"></string>
+    <string name="sync_app_unreachable_hint"></string>
+    <string name="dev_tools_scenario_with_gaps" translatable="false"></string>
+    <string name="dev_tools_scenario_recomposition" translatable="false"></string>
+    <string name="measurement_type_impedance_low"></string>
+    <string name="cd_chart_handle_resize"></string>
+    <string name="action_discard"></string>
 </resources>
