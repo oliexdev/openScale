@@ -86,13 +86,19 @@ class BeurerBF450Handler : StandardWeightProfileHandler() {
 
     // Connection
     override fun onConnected(user: ScaleUser) {
-        super.onConnected(user)   
+        // super drives the user mapping/consent: auto-consent if a mapping exists,
+        // otherwise the standard UDS listing (which the BF450 ignores — we use FFF1).
+        super.onConnected(user)
         logD("BF450 connected: userId=${user.id}, name=${user.userName}")
 
         val scaleIndex = findKnownScaleIndexForAppUser(user.id) ?: -1
 
+        // Only enumerate the scale's stored users (over the proprietary FFF1 list)
+        // when we don't yet have a consent mapping. Discovery only — the actual
+        // mapping/consent is negotiated by the base UDS flow, never written here.
         if (loadConsentForScaleIndex(scaleIndex) == -1) {
-            logD("No consent found, requesting user list")
+            logD("No consent found, requesting FFF1 user list")
+            scaleUserList.clear()
             setNotifyOn(SVC, CHR_USER_LIST)
             writeTo(SVC, CHR_USER_LIST, byteArrayOf(0x00))
         } else {
@@ -145,17 +151,12 @@ class BeurerBF450Handler : StandardWeightProfileHandler() {
         val parser = BluetoothBytesParser(data)
         when (val status = parser.getUInt8().toInt()) {
             0x02 -> {
-                logD("FFF1: empty scale")
-                val appUserId = currentAppUser().id
-                
-                // Find an existing slot or assign them to slot 1 if this is a first-time setup
-                val scaleSlot = findKnownScaleIndexForAppUser(appUserId) ?: 1
-                
-                // Persist the clean cross-reference relationship
-                saveUserIdForScaleIndex(scaleSlot, appUserId)
-                saveConsentForScaleIndex(scaleSlot, 1) // persist consent?
-                logD("Successfully mapped appUserId=$appUserId to scaleSlot=$scaleSlot")
-                
+                // Empty scale: no stored users to choose from. Offer "create new user"
+                // and let the base UDS flow register it — REGISTER_NEW_USER returns the
+                // real scale slot and the real consent code. Do NOT pre-write a guessed
+                // slot/consent here: a fake consent (e.g. 1) overwrites the real one and
+                // causes USER_NOT_AUTHORIZED ("U ??") on the next reconnect.
+                logD("FFF1: empty scale, offering create-new-user")
                 presentCreateOnlyChoice()
             }
 
