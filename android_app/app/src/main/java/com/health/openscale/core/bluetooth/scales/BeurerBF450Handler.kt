@@ -146,12 +146,16 @@ class BeurerBF450Handler : StandardWeightProfileHandler() {
         when (val status = parser.getUInt8().toInt()) {
             0x02 -> {
                 logD("FFF1: empty scale")
-                val appId = user.id
-                findKnownScaleIndexForAppUser(appId)?.let { idx ->
-                    saveUserIdForScaleIndex(idx, -1)
-                    saveConsentForScaleIndex(idx, -1)
-                    logD("appUserId=$appId @ scaleIndex=$idx")
-                }
+                val appUserId = currentAppUser().id
+                
+                // Find an existing slot or assign them to slot 1 if this is a first-time setup
+                val scaleSlot = findKnownScaleIndexForAppUser(appUserId) ?: 1
+                
+                // Persist the clean cross-reference relationship
+                saveUserIdForScaleIndex(scaleSlot, appUserId)
+                saveConsentForScaleIndex(scaleSlot, 1) // persist consent?
+                logD("Successfully mapped appUserId=$appUserId to scaleSlot=$scaleSlot")
+                
                 presentCreateOnlyChoice()
             }
 
