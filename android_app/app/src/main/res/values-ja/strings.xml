@@ -204,7 +204,7 @@
     <string name="formula_bf_gallagher_2000_non_asian">ギャラガー­­­ (2000) – 非アジア人</string>
     <string name="formula_bf_gallagher_2000_asian">ギャラガー (2000) – アジア人</string>
     <string name="formula_bw_behnke_1963">ベンケ そして他の人々 (1963)</string>
-    <string name="formula_bw_delwaide_crenier_1973"/>
+    <string name="formula_bw_delwaide_crenier_1973">デルワイド＆クレニエ (1973)</string>
     <string name="formula_bw_hume_weyers_1971">ヒューム＆ウェイヤーズ (1971)</string>
     <string name="formula_bw_lee_song_kim_2001">リー、ソン&amp;キム (2001)</string>
     <string name="formula_lbm_boer_1984">ボーア (1984)</string>
@@ -221,7 +221,7 @@
     <string name="bf_gallagher_2000_asian_long">アジア系人口向けに調整されたコンパニオンモデル。ユーザーの背景により適している場合に使用します。</string>
     <string name="bw_behnke_1963_short">ベンケ総体液量推定</string>
     <string name="bw_behnke_1963_long">典型的な体内総体液量の推定。シンプルなアプローチで、アスリートや特殊なケース向けに個別化されていません。</string>
-    <string name="bw_delwaide_crenier_1973_short"/>
+    <string name="bw_delwaide_crenier_1973_short">デルワイド＆クレニエ</string>
     <string name="bw_hume_weyers_1971_short">Hume–Weyers 総体液量</string>
     <string name="bw_hume_weyers_1971_long">性別別の係数を持つ身長と体重を使用した一般的な総体液量モデル。</string>
     <string name="bw_lee_song_kim_2001_short">リー・ソン・キム</string>
