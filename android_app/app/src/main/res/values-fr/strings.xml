@@ -203,7 +203,7 @@
     <string name="user_detail_goals">%d Objectifs</string>
     <string name="user_detail_no_goals">Sans objectifs</string>
     <string name="delete_button_label">Supprimer</string>
-    <string name="dialog_title_edit_goal">Objectif édité  : %1$s</string>
+    <string name="dialog_title_edit_goal">Objectif édité : %1$s</string>
     <string name="toast_select_measurement_type">Veuillez sélectionner d\'abord un type de mesure.</string>
     <string name="toast_goal_deleted">Objectif supprimé</string>
     <string name="content_desc_drag_handle_sort">Classer</string>
@@ -227,11 +227,11 @@
     <string name="bluetooth_permissions_required_for_scan">Des permissions Bluetooth sont requises pour la recherche.</string>
     <string name="bluetooth_enabled_permissions_missing">Bluetooth actif, mais des permissions sont manquantes.</string>
     <string name="bluetooth_must_be_enabled_for_scan">Le Bluetooth doit être actif pour la recherche de balances.</string>
-    <string name="saved_scale_label">Balance sauvegardée :</string>
+    <string name="saved_scale_label">Balance sauvegardée :</string>
     <string name="unknown_device">Inconnu</string>
     <string name="stop_scan_button">Arrêt de la recherche</string>
     <string name="search_for_scales_button">Recherche de balances</string>
-    <string name="found_devices_label">Périphériques trouvés :</string>
+    <string name="found_devices_label">Périphériques trouvés :</string>
     <string name="device_saved_as_preferred">\'%1$s\' enregistré comme balance préférée.</string>
     <string name="device_not_supported">%1$s n\'est pas supporté actuellement.</string>
     <string name="no_devices_found_start_scan">Pas de périphériques trouvés. Démarrer une nouvelle recherche.</string>
