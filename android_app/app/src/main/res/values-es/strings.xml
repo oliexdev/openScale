@@ -774,4 +774,6 @@
     <string name="action_keep_editing">Seguir editando</string>
     <string name="snackbar_items_delete_partial_failure">No se pudieron eliminar %1$d de %2$d mediciones.</string>
     <string name="snackbar_items_move_partial_failure">No se pudieron mover %1$d de %2$d mediciones (ya existen para ese usuario).</string>
+    <string name="sync_app_unreachable_hint">El último cambio no se sincronizó. Abre openScale‑sync y ejecuta una sincronización manual.</string>
+    <string name="sync_app_open_action">Abrir</string>
 </resources>
