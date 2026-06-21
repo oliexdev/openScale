@@ -48,3 +48,15 @@ jobs:
           files: |
             android_app/app/build/outputs/apk/debug/openScale-debug.apk
 
+  # Keep the `weblate` branch (Weblate's push target) in sync with master so
+  # Weblate's rebased translation pushes stay fast-forward and don't fail.
+  sync-weblate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v3
+      - name: Force-update weblate branch to master
+        run: git push --force origin HEAD:weblate
+
