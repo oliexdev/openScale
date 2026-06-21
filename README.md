@@ -30,7 +30,7 @@ Monitor and track your weight, BMI, body fat, body water, muscle and other body 
 openScale has built-in support for a number of Bluetooth (BLE or "smart") scales from  many manufacturers, e.g. Beurer, Sanitas, Yunmai, Xiaomi, etc. (see model list below). Together with our users we constantly improve and extend the set of supported scales and in many cases pick up where the original app falls short.
 
 - Custom made Bluetooth scale
-- Beurer BF700, BF710, BF800, BF105, BF720, BF600, BF850 and BF950
+- Beurer BF105, BF500, BF600, BF700, BF710, BF720, BF800, BF850 and BF950
 - Digoo DG-S038H
 - Excelvan CF369BLE
 - Exingtech Y1
