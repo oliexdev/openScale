@@ -103,8 +103,17 @@ class QNHandler : ScaleDeviceHandler() {
             // while keeping the QN/Yolanda service layout.
             nameLc.contains("seb-scale")
 
-        // Require BOTH: QN services AND a QN-family name hint.
-        if (!(hasQN && nameIsQnFamily)) return null
+        // AE00 is a QN-only vendor service (newer QN firmware) that is never shared with the
+        // fff0 Inlife/1byone/Eufy cluster, so it positively identifies a QN scale even when the
+        // device uses a non-QN name (e.g. GE CS 10 G "Fit Plus", which advertises ae00 + fff0).
+        // No other openScale handler claims ae00 (ESCS20MHandler uses 0x1A10). Ported from
+        // ble-scale-sync 6a12687 (#235).
+        val hasAe00 = uuids.contains(uuid16(0xAE00))
+
+        // Require the QN GATT service (ffe0/fff0 — the channel this handler actually drives)
+        // AND either a QN-family name or the AE00 vendor service. AE00 only relaxes the name
+        // gate; it does not let us claim a device we cannot talk to.
+        if (!(hasQN && (nameIsQnFamily || hasAe00))) return null
 
         likelyUseType1 = uuids.contains(uuid16(0xFFE0)) && !uuids.contains(uuid16(0xFFF0))
 

@@ -117,11 +117,18 @@ class ESCS20MHandler : ScaleDeviceHandler() {
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name   = device.name.lowercase(Locale.ROOT)
         val hasSvc = device.serviceUuids.any { it == SVC_MAIN }
-        if (!hasSvc && !name.contains("es-cs20m")) return null
+        // Renpho ES-32MD is the same hardware family as the ES-CS20M (same 0x1A10 protocol per
+        // Renpho's manual). Some ES-32MD units advertise a "113360_" placeholder name instead of
+        // a model string and may not expose 0x1A10 before connecting, so match those names too.
+        // Ported from ble-scale-sync EsCs20mAdapter (068c14f, #172).
+        val nameMatch = name.contains("es-cs20m") ||
+            name.contains("es-32md") ||
+            name.startsWith("113360_")
+        if (!hasSvc && !nameMatch) return null
 
         val caps = setOf(DeviceCapability.BODY_COMPOSITION, DeviceCapability.LIVE_WEIGHT_STREAM)
         return DeviceSupport(
-            displayName = "ES-CS20M",
+            displayName = "ES-CS20M / ES-32MD",
             capabilities = caps,
             implemented  = caps,
             linkMode     = LinkMode.CONNECT_GATT

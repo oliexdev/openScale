@@ -33,6 +33,7 @@ import com.health.openscale.core.bluetooth.scales.ESCS20MHandler
 import com.health.openscale.core.bluetooth.scales.ExcelvanCF36xHandler
 import com.health.openscale.core.bluetooth.scales.ExingtechY1Handler
 import com.health.openscale.core.bluetooth.scales.EufyC20Handler
+import com.health.openscale.core.bluetooth.scales.EufyP2Handler
 import com.health.openscale.core.bluetooth.scales.EbelterBodyFatB2Handler
 import com.health.openscale.core.bluetooth.scales.EtekcityESF551Handler
 import com.health.openscale.core.bluetooth.scales.GattScaleAdapter
@@ -47,6 +48,7 @@ import com.health.openscale.core.bluetooth.scales.MGBHandler
 import com.health.openscale.core.bluetooth.scales.MedisanaBs44xHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
+import com.health.openscale.core.bluetooth.scales.XiaomiS800Handler
 import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneHandler
@@ -56,6 +58,7 @@ import com.health.openscale.core.bluetooth.scales.QNHandlerBroadcast
 import com.health.openscale.core.bluetooth.scales.RealmeSmartScaleHandler
 import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
 import com.health.openscale.core.bluetooth.scales.RenphoHandler
+import com.health.openscale.core.bluetooth.scales.RobiS9Handler
 import com.health.openscale.core.bluetooth.scales.RunstarR5Handler
 import com.health.openscale.core.bluetooth.scales.RyFitHandler
 import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler
@@ -121,8 +124,10 @@ class ScaleFactory @Inject constructor(
         OneByoneNewHandler(),
         OkOkHandler(),
         MiScaleS400Handler(),
+        XiaomiS800Handler(),
         MiScaleHandler(),
         RunstarR5Handler(),
+        RobiS9Handler(),
         MGBHandler(),
         MedisanaBs44xHandler(),
         InlifeHandler(),
@@ -136,6 +141,7 @@ class ScaleFactory @Inject constructor(
         ExcelvanCF36xHandler(),
         EtekcityESF551Handler(),
         EufyC20Handler(),
+        EufyP2Handler(),
         ESCS20MHandler(),
         RenphoES26BBHandler(),
         DigooDGSO38HHandler(),

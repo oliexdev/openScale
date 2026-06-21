@@ -70,6 +70,7 @@ class OneByoneHandler : ScaleDeviceHandler() {
         val model = when {
             "t9146" in name -> "Eufy C1"
             "t9147" in name -> "Eufy P1"
+            "t9120" in name -> "Eufy A1"
             "Health Scale".lowercase() in name -> "1byone (classic)"
             else -> return null
         }
