@@ -67,7 +67,7 @@
     <string name="amputation_lower_leg">Underben</string>
     <string name="user_detail_error_invalid_data">Vänligen ange giltig data</string>
     <string name="user_settings_item_details_conditional">Ålder: %1$d, Kön: %2$s</string>
-    <string name="success_measurement_updated">Uppdatering av mätvärde lyckades</string>
+    <string name="success_measurement_updated">Mätvärdet uppdaterat (%1$s)</string>
     <string name="error_saving_measurement">Ett fel uppstod medan mätvärdet sparades</string>
     <string name="success_measurement_deleted">Mätvärdet %1$s raderades framgångsrikt</string>
     <string name="action_add_measurement">Lägg till mätvärde</string>
@@ -76,7 +76,7 @@
     <string name="dialog_title_select_reference_user_for">Välj referensperson för %1$s</string>
     <string name="error_no_reference_users_available">Inga lämpliga referenspersoner är tillgängliga. Vänligen skapa en användare som inte använder assisterad vägning.</string>
     <string name="error_assisted_weighing_reference_user_missing">För assisterad vägning måste en referensperson väljas.</string>
-    <string name="success_measurement_saved">Mätvärdet sparades framgångsrikt</string>
+    <string name="success_measurement_saved">Mätvärdet sparat (%1$s)</string>
     <string name="error_deleting_measurement">Fel under radering av mätvärde</string>
     <string name="action_save_measurement">Spara mätvärde</string>
     <string name="action_edit_measurement_desc">Redigera mätvärde från %1$s</string>
@@ -400,11 +400,11 @@
     <string name="dialog_message_delete_selected_items">Är du säker på att du vill ta bort de valda %1$d objekten? Denna åtgärd kan inte ångras.</string>
     <string name="dialog_title_delete_type">Radera typ?</string>
     <string name="dialog_text_delete_type">Är du säker på att du vill ta bort den anpassade typen ”%1$s”? Alla tillhörande mätningar kommer också att raderas permanent. Denna åtgärd kan inte ångras.</string>
-    <string name="snackbar_items_deleted_successfully">%1$d objekt har tagits bort.</string>
+    <string name="snackbar_items_deleted_successfully">%1$d mätvärden borttagna</string>
     <string name="snackbar_error_deleting_items">Fel vid borttagning av objekt.</string>
     <string name="dialog_title_select_user_for_assignment">Välj användare för tilldelning</string>
     <string name="snackbar_no_other_users_to_change_to">Inga andra användare tillgängliga att byta till.</string>
-    <string name="snackbar_items_user_changed_successfully">Användaren har ändrats för %1$d objekt.</string>
+    <string name="snackbar_items_user_changed_successfully">%1$d mätvärden flyttade</string>
     <string name="snackbar_error_user_changed_items">Fel vid byte av användare för vissa objekt.</string>
     <string name="statistics_no_relevant_types">Inga relevanta mätningstyper tillgängliga eller konfigurerade för statistik.</string>
     <string name="statistics_label_min">Min</string>
