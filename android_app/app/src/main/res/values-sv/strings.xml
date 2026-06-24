@@ -687,4 +687,7 @@
     <string name="settings_appearance_title">Utseende</string>
     <string name="settings_dynamic_color_label">Dynamiska färger</string>
     <string name="auto_connect_on_startup_title">automatisk anslutning vid uppstart</string>
+    <string name="sync_app_open_action">Öppna</string>
+    <string name="route_title_insights">Insikter</string>
+    <string name="user_added_successfully">Användaren %1$s lyckades läggas till.</string>
 </resources>
