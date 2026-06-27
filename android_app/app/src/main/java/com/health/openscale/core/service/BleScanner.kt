@@ -49,6 +49,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * @property rssi The received signal strength indicator (RSSI) in dBm.
  * @property serviceUuids A list of service UUIDs advertised by the device.
  * @property manufacturerData Manufacturer-specific data advertised by the device.
+ * @property serviceData Service-data payloads advertised by the device.
  * @property isSupported Flag indicating whether openScale has a handler for this device.
  * @property determinedHandlerDisplayName The display name of the handler determined for this device, if any.
  */
@@ -58,6 +59,7 @@ data class ScannedDeviceInfo(
     val rssi: Int,
     val serviceUuids: List<UUID>,
     val manufacturerData: SparseArray<ByteArray>?,
+    val serviceData: Map<UUID, ByteArray> = emptyMap(),
     var isSupported: Boolean = false,
     var determinedHandlerDisplayName: String? = null
 )
@@ -250,6 +252,10 @@ class BluetoothScannerManager(
             val rssi = scanResult.rssi
             val serviceUuids: List<UUID> = scanResult.scanRecord?.serviceUuids?.mapNotNull { it?.uuid } ?: emptyList()
             val manufacturerData: SparseArray<ByteArray>? = scanResult.scanRecord?.manufacturerSpecificData
+            val serviceData: Map<UUID, ByteArray> = scanResult.scanRecord?.serviceData
+                ?.mapKeys { it.key.uuid }
+                ?.mapValues { it.value.copyOf() }
+                ?: emptyMap()
 
             val newDevice = ScannedDeviceInfo(
                 name = deviceName,
@@ -257,6 +263,7 @@ class BluetoothScannerManager(
                 rssi = rssi,
                 serviceUuids = serviceUuids,
                 manufacturerData = manufacturerData,
+                serviceData = serviceData,
                 isSupported = false, // will be determined in the next getSupportingHandlerInfo
                 determinedHandlerDisplayName = null // // will be determined in the next getSupportingHandlerInfo
             )
@@ -276,15 +283,17 @@ class BluetoothScannerManager(
                 val handlerChanged = newDevice.determinedHandlerDisplayName != existingDevice.determinedHandlerDisplayName
                 val serviceUuidsUpdated = newDevice.serviceUuids.isNotEmpty() && newDevice.serviceUuids != existingDevice.serviceUuids
                 val manuDataUpdated = newDevice.manufacturerData != null && !newDevice.manufacturerData.contentEquals(existingDevice.manufacturerData)
+                val serviceDataUpdated = newDevice.serviceData.isNotEmpty() && !newDevice.serviceData.contentEquals(existingDevice.serviceData)
 
-                if (newDevice.rssi != existingDevice.rssi || nameChangedToKnown || supportStatusImproved || handlerChanged || serviceUuidsUpdated || manuDataUpdated) {
+                if (newDevice.rssi != existingDevice.rssi || nameChangedToKnown || supportStatusImproved || handlerChanged || serviceUuidsUpdated || manuDataUpdated || serviceDataUpdated) {
                     deviceMap[newDevice.address] = existingDevice.copy(
                         name = newDevice.name.ifEmpty { existingDevice.name }, // Prefer new name if available.
                         rssi = newDevice.rssi,
                         isSupported = existingDevice.isSupported || newDevice.isSupported, // Retain 'supported' status if ever true.
                         determinedHandlerDisplayName = newDevice.determinedHandlerDisplayName ?: existingDevice.determinedHandlerDisplayName,
                         serviceUuids = if (newDevice.serviceUuids.isNotEmpty()) newDevice.serviceUuids else existingDevice.serviceUuids,
-                        manufacturerData = newDevice.manufacturerData ?: existingDevice.manufacturerData
+                        manufacturerData = newDevice.manufacturerData ?: existingDevice.manufacturerData,
+                        serviceData = newDevice.serviceData.ifEmpty { existingDevice.serviceData }
                     )
                     listShouldBeUpdated = true
                 }
@@ -294,7 +303,8 @@ class BluetoothScannerManager(
                 if (newDevice.isSupported ||
                     newDevice.name.isNotEmpty() ||
                     newDevice.serviceUuids.isNotEmpty() ||
-                    (newDevice.manufacturerData != null && newDevice.manufacturerData.isNotEmpty())
+                    (newDevice.manufacturerData != null && newDevice.manufacturerData.isNotEmpty()) ||
+                    newDevice.serviceData.isNotEmpty()
                 ) {
                     deviceMap[newDevice.address] = newDevice
                     listShouldBeUpdated = true
@@ -323,4 +333,25 @@ class BluetoothScannerManager(
         }
     }
 
+}
+
+private fun SparseArray<ByteArray>?.contentEquals(other: SparseArray<ByteArray>?): Boolean {
+    if (this == null || other == null) return this == other
+    if (size() != other.size()) return false
+    for (i in 0 until size()) {
+        val key = keyAt(i)
+        val otherIndex = other.indexOfKey(key)
+        if (otherIndex < 0) return false
+        if (!valueAt(i).contentEquals(other.valueAt(otherIndex))) return false
+    }
+    return true
+}
+
+private fun Map<UUID, ByteArray>.contentEquals(other: Map<UUID, ByteArray>): Boolean {
+    if (size != other.size) return false
+    for ((key, value) in this) {
+        val otherValue = other[key] ?: return false
+        if (!value.contentEquals(otherValue)) return false
+    }
+    return true
 }

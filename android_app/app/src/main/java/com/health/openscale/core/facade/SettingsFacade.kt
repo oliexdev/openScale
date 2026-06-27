@@ -85,6 +85,7 @@ object SettingsPreferenceKeys {
     val SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS  = stringSetPreferencesKey("saved_bluetooth_device_service_uuids")
     val SAVED_BLUETOOTH_DEVICE_HANDLER_HINT   = stringPreferencesKey("saved_bluetooth_device_handler_hint")
     val SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA   = stringPreferencesKey("saved_bluetooth_device_manufacturer_data")
+    val SAVED_BLUETOOTH_DEVICE_SERVICE_DATA   = stringPreferencesKey("saved_bluetooth_device_service_data")
     val SAVED_BLUETOOTH_TUNE_PROFILE = stringPreferencesKey("saved_bluetooth_tune_profile")
     val SAVED_BLUETOOTH_SMART_ASSIGNMENT_ENABLED = booleanPreferencesKey("saved_bluetooth_smart_assignment_enabled")
     val SAVED_BLUETOOTH_TOLERANCE_PERCENT = intPreferencesKey("saved_bluetooth_tolerance_percent")
@@ -461,14 +462,16 @@ class SettingsFacadeImpl @Inject constructor(
         val uuidsF = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS.name, emptySet<String>())
         val hintF  = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT.name,  null as String?)
         val manDataF = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA.name, null as String?)
+        val serviceDataF = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_DATA.name, null as String?)
 
-        return combine(addrF, nameF, rssiF, uuidsF, hintF, manDataF) { array ->
+        return combine(addrF, nameF, rssiF, uuidsF, hintF, manDataF, serviceDataF) { array ->
             val addr        = array[0] as String?
             val name        = array[1] as String?
             val rssi        = array[2] as Int
             val uuidStrSet = (array[3] as? Set<*>)?.filterIsInstance<String>() ?: emptySet()
             val hint        = array[4] as String?
             val manDataJson = array[5] as String?
+            val serviceDataJson = array[6] as String?
 
             if (addr.isNullOrBlank()) {
                 null
@@ -490,12 +493,25 @@ class SettingsFacadeImpl @Inject constructor(
                     }
                 }
 
+                val serviceData = mutableMapOf<UUID, ByteArray>()
+                serviceDataJson?.let { jsonStr ->
+                    runCatching {
+                        val jsonObj = JSONObject(jsonStr)
+                        jsonObj.keys().forEach { key ->
+                            val uuid = UUID.fromString(key)
+                            val value = Base64.decode(jsonObj.getString(key), Base64.NO_WRAP)
+                            serviceData[uuid] = value
+                        }
+                    }
+                }
+
                 ScannedDeviceInfo(
                     name = name ?: "",
                     address = addr,
                     rssi = rssi,
                     serviceUuids = uuids,
                     manufacturerData = if (manData.isNotEmpty()) manData else null,
+                    serviceData = serviceData.toMap(),
                     isSupported = false,
                     determinedHandlerDisplayName = hint
                 )
@@ -528,6 +544,12 @@ class SettingsFacadeImpl @Inject constructor(
                 }
             }
             prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA] = manData.toString()
+
+            val serviceData = JSONObject()
+            device.serviceData.forEach { (uuid, bytes) ->
+                serviceData.put(uuid.toString(), Base64.encodeToString(bytes, Base64.NO_WRAP))
+            }
+            prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_DATA] = serviceData.toString()
         }
     }
 
@@ -540,6 +562,7 @@ class SettingsFacadeImpl @Inject constructor(
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS)
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT)
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA)
+            prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_DATA)
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_AUTO_CONNECT)
         }
     }
