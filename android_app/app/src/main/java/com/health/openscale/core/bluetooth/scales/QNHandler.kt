@@ -21,6 +21,7 @@ import android.os.Handler
 import android.os.Looper
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
+import com.health.openscale.core.bluetooth.libs.BodyComposition
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.TrisaBodyAnalyzeLib
 import com.health.openscale.core.data.WeightUnit
@@ -531,22 +532,20 @@ class QNHandler : ScaleDeviceHandler() {
             impedance = r1.toDouble()
         }
 
-        val impedance = if (r1 < 410f) 3.0f else 0.3f * (r1 - 400f)
+        recomputeBodyComposition(m, user)
 
-        val trisa = TrisaBodyAnalyzeLib(
-            if (user.gender.isMale()) 1 else 0,
-            user.age,
-            user.bodyHeight
-        )
-
-        m.fat = trisa.getFat(weightKg, impedance)
-        m.water = trisa.getWater(weightKg, impedance)
-        m.muscle = trisa.getMuscle(weightKg, impedance)
-        m.bone = trisa.getBone(weightKg, impedance)
-
-        logD("QN: publishing $source measurement weight=$weightKg kg r1=$r1 impedance=$impedance")
+        logD("QN: publishing $source measurement weight=$weightKg kg r1=$r1")
         publish(snapshot(m))
     }
+
+    /**
+     * Re-derive body composition for [user] from the raw weight + resistance on
+     * [raw] (TrisaBodyAnalyzeLib). [raw.impedance] holds the raw resistance; the
+     * lib is fed the converted impedance. Shared by the parse path and the
+     * save-pipeline recompute so derived values match the FINAL assigned user.
+     */
+    override fun recomputeBodyComposition(raw: ScaleMeasurement, user: ScaleUser): ScaleMeasurement =
+        BodyComposition.fromTrisa(raw, user)
 
     /** Make a defensive snapshot so later mutations don’t affect published data. */
     private fun snapshot(m: ScaleMeasurement) = ScaleMeasurement().also {

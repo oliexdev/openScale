@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
+import com.health.openscale.core.bluetooth.libs.BodyComposition
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.TrisaBodyAnalyzeLib
 import com.health.openscale.core.bluetooth.libs.YunmaiLib
@@ -484,6 +485,21 @@ class ESCS20MHandler : ScaleDeviceHandler() {
         lbm         = m.lbm
         visceralFat = m.visceralFat
         impedance   = m.impedance
+    }
+
+    /**
+     * Re-derive body composition for [user] from the raw weight + BIA resistance
+     * on [raw] (TrisaBodyAnalyzeLib; QN resistance→impedance conversion applied
+     * first, mirroring the parse path). [raw.impedance] holds the raw resistance.
+     * Invoked by the save pipeline so values match the FINAL assigned user.
+     */
+    override fun recomputeBodyComposition(raw: ScaleMeasurement, user: ScaleUser): ScaleMeasurement {
+        // Shared Trisa derivation (fat/water/muscle/bone) + this scale's extra LBM.
+        val result = BodyComposition.fromTrisa(raw, user)
+        if (raw.weight > 0f && raw.impedance > 0.0) {
+            result.lbm = raw.weight * (100f - result.fat) / 100f
+        }
+        return result
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

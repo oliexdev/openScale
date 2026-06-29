@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
+import com.health.openscale.core.bluetooth.libs.BodyComposition
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.MiScaleLib
 import com.health.openscale.core.data.GenderType
@@ -350,14 +351,7 @@ class MiScaleHandler : ScaleDeviceHandler() {
             if (imp > 0) {
                 // Store the raw impedance so body composition can be recomputed later.
                 m.impedance = imp.toDouble()
-                val sex = if (user.gender == GenderType.MALE) 1 else 0
-                val lib = MiScaleLib(sex, user.age, user.bodyHeight)
-                m.water       = lib.getWater(m.weight, imp.toFloat())
-                m.visceralFat = lib.getVisceralFat(m.weight)
-                m.fat         = lib.getBodyFat(m.weight, imp.toFloat())
-                m.muscle      = lib.getMuscle(m.weight, imp.toFloat())
-                m.lbm         = lib.getLBM(m.weight, imp.toFloat())
-                m.bone        = lib.getBoneMass(m.weight, imp.toFloat())
+                recomputeBodyComposition(m, user)
             }
         }
 
@@ -366,6 +360,15 @@ class MiScaleHandler : ScaleDeviceHandler() {
 
         return true
     }
+
+    /**
+     * Re-derive body composition for [user] from the raw weight + impedance on
+     * [raw]. Shared by the parse path and the save-pipeline recompute so derived
+     * values always match the FINAL assigned user (see
+     * [com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler.recomputeBodyComposition]).
+     */
+    override fun recomputeBodyComposition(raw: ScaleMeasurement, user: ScaleUser): ScaleMeasurement =
+        BodyComposition.fromMiScale(raw, user)
 
     /** History record (10 bytes): [status][weightLE(2)][yearLE(2)][mon][day][h][m][s] */
     private fun parseHistory10(d: ByteArray, user: ScaleUser): Boolean {

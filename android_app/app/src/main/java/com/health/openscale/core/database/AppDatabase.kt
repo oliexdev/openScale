@@ -24,6 +24,10 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.health.openscale.core.bluetooth.libs.S400BodyComposition
+import com.health.openscale.core.bluetooth.libs.S400Inputs
+import com.health.openscale.core.bluetooth.libs.Reliability
+import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
@@ -47,7 +51,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext ctx: Context): AppDatabase =
         Room.databaseBuilder(ctx, AppDatabase::class.java, AppDatabase.Companion.DATABASE_NAME)
-            .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15)
+            .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16)
             .build()
 
     @Provides
@@ -74,7 +78,7 @@ object DatabaseModule {
         MeasurementValue::class,
         MeasurementType::class,
     ],
-    version = 15,
+    version = 16,
     exportSchema = true
 )
 @TypeConverters(DatabaseConverters::class)
@@ -444,6 +448,136 @@ val MIGRATION_14_15 = object : Migration(14, 15) {
                     "UPDATE MeasurementType SET displayOrder = ? WHERE `key` = ?",
                     arrayOf<Any?>(index + 1, measurementType.key.name)
                 )
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+}
+
+/**
+ * Data-only repair. No schema change.
+ *
+ * Xiaomi S400 (and any dual-band BIA) measurements stored body-composition that
+ * was computed with whichever user profile was *selected* at weigh-in, even
+ * though the row is attributed to a different user (smart-assignment reassigns
+ * by closest weight). Sex/height/age differences inflated body fat dramatically
+ * (e.g. a male row carried a female-profile 30% instead of ~18%).
+ *
+ * The raw inputs (weight + both impedance bands) are persisted, so the fields
+ * are fully reconstructable. This re-derives them with each row's OWN (stored)
+ * user via the same pure pipeline the scale uses ([S400BodyComposition.compute],
+ * S400 defaults: MI_LEGACY bone, Cunningham-1991 BMR, foot-to-foot 1.10).
+ * Rows whose inputs fall outside the validated range (compute returns
+ * NOT_AVAILABLE) are left untouched.
+ */
+val MIGRATION_15_16 = object : Migration(15, 16) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Activity factors mirror DerivedValuesCalculator.processTDEECalculation.
+        fun activityFactor(level: String): Float = when (level) {
+            ActivityLevel.SEDENTARY.name -> 1.2f
+            ActivityLevel.MILD.name      -> 1.375f
+            ActivityLevel.MODERATE.name  -> 1.55f
+            ActivityLevel.HEAVY.name     -> 1.725f
+            ActivityLevel.EXTREME.name   -> 1.9f
+            else -> 1.2f
+        }
+
+        data class Row(
+            val measurementId: Int,
+            val timestamp: Long,
+            val gender: String,
+            val heightCm: Float,
+            val birthDate: Long,
+            val activityLevel: String,
+            val weightKg: Float,
+            val impHigh: Float,
+            val impLow: Float,
+        )
+
+        // Only dual-band (S400) rows match: inner joins require WEIGHT + both
+        // impedance bands, and a valid user. typeIds resolved by key so the
+        // migration is independent of seeded id values.
+        val rows = mutableListOf<Row>()
+        db.query(
+            """
+            SELECT m.id, m.timestamp, u.gender, u.heightCm, u.birthDate, u.activityLevel,
+                   w.floatValue  AS weight,
+                   ih.floatValue AS impHigh,
+                   il.floatValue AS impLow
+            FROM Measurement m
+            JOIN User u  ON u.id = m.userId
+            JOIN MeasurementValue w  ON w.measurementId  = m.id AND w.typeId  = (SELECT id FROM MeasurementType WHERE `key`='WEIGHT')
+            JOIN MeasurementValue ih ON ih.measurementId = m.id AND ih.typeId = (SELECT id FROM MeasurementType WHERE `key`='IMPEDANCE')
+            JOIN MeasurementValue il ON il.measurementId = m.id AND il.typeId = (SELECT id FROM MeasurementType WHERE `key`='IMPEDANCE_LOW')
+            WHERE w.floatValue IS NOT NULL AND ih.floatValue IS NOT NULL AND il.floatValue IS NOT NULL
+            """.trimIndent()
+        ).use { c ->
+            while (c.moveToNext()) {
+                rows += Row(
+                    measurementId = c.getInt(0),
+                    timestamp = c.getLong(1),
+                    gender = c.getString(2),
+                    heightCm = c.getFloat(3),
+                    birthDate = c.getLong(4),
+                    activityLevel = c.getString(5),
+                    weightKg = c.getFloat(6),
+                    impHigh = c.getFloat(7),
+                    impLow = c.getFloat(8),
+                )
+            }
+        }
+
+        if (rows.isEmpty()) return
+
+        // Updates a single derived MeasurementValue in place (no-op if absent).
+        fun update(measurementId: Int, key: String, value: Float) {
+            db.execSQL(
+                """
+                UPDATE MeasurementValue
+                SET floatValue = ?
+                WHERE measurementId = ?
+                  AND typeId = (SELECT id FROM MeasurementType WHERE `key` = ?)
+                """.trimIndent(),
+                arrayOf<Any?>(value, measurementId, key)
+            )
+        }
+
+        db.beginTransaction()
+        try {
+            for (row in rows) {
+                val age = com.health.openscale.core.utils.CalculationUtils.ageOn(row.timestamp, row.birthDate)
+                val result = S400BodyComposition.compute(
+                    S400Inputs(
+                        age = age,
+                        sexMale = row.gender == "MALE",
+                        heightCm = row.heightCm,
+                        weightKg = row.weightKg,
+                        rHighRaw = row.impHigh,
+                        rLowRaw = row.impLow,
+                    )
+                )
+
+                // Inputs outside the validated range → leave the row as-is.
+                if (result.reliability == Reliability.NOT_AVAILABLE || result.bfPct == null) continue
+
+                fun round(v: Float) = com.health.openscale.core.utils.CalculationUtils.roundTo(v)
+
+                update(row.measurementId, "BODY_FAT", round(result.bfPct))
+                result.tbwPct?.let     { update(row.measurementId, "WATER",        round(it)) }
+                result.smmPct?.let     { update(row.measurementId, "MUSCLE",       round(it)) }
+                result.ffmKg?.let      { update(row.measurementId, "LBM",          round(it)) }
+                result.boneKg?.let     { update(row.measurementId, "BONE",         round(it)) }
+                result.vfi?.let        { update(row.measurementId, "VISCERAL_FAT", round(it)) }
+                result.ecwPct?.let     { update(row.measurementId, "ECW",          round(it)) }
+                result.icwPct?.let     { update(row.measurementId, "ICW",          round(it)) }
+                result.proteinPct?.let { update(row.measurementId, "PROTEIN",      round(it)) }
+                result.bcmKg?.let      { update(row.measurementId, "BCM",          round(it)) }
+                result.bmrKcal?.let { bmr ->
+                    update(row.measurementId, "BMR", round(bmr))
+                    update(row.measurementId, "TDEE", round(bmr * activityFactor(row.activityLevel)))
+                }
             }
             db.setTransactionSuccessful()
         } finally {

@@ -20,6 +20,7 @@ package com.health.openscale.core.bluetooth.scales
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.bluetooth.libs.BodyComposition
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
@@ -262,31 +263,29 @@ class CultSmartScaleProHandler : ScaleDeviceHandler() {
         }
 
         if (withBodyComp && user != null && pendingImpedance > 0.0) {
-            val lib = StandardImpedanceLib(
-                gender     = user.gender,
-                age        = user.age,
-                weightKg   = pendingWeight.toDouble(),
-                heightM    = user.bodyHeight / 100.0,
-                impedance  = pendingImpedance
-            )
-
-            m.fat        = lib.totalFatPercentage.toFloat().coerceIn(0f, 75f)
-            m.water      = lib.totalBodyWaterPercentage.toFloat().coerceIn(0f, 80f)
-            m.muscle     = lib.skeletalMuscleMassKg.toFloat().coerceIn(0f, 100f)
-            m.bone       = lib.boneMassKg.toFloat().coerceIn(0f, 10f)
-            m.lbm        = lib.fatFreeMassKg.toFloat().coerceIn(0f, 150f)
-            m.bmr        = lib.basalMetabolicRate.toFloat().coerceIn(0f, 5000f)
-            m.impedance  = pendingImpedance
-
-            logI(
-                "body comp (StandardImpedanceLib, impedance=${pendingImpedance}Ω): " +
-                "fat=${m.fat}% water=${m.water}% muscle=${m.muscle}kg " +
-                "bone=${m.bone}kg lbm=${m.lbm}kg bmr=${m.bmr}kcal"
-            )
+            m.impedance = pendingImpedance
+            recomputeBodyComposition(m, user)
         }
 
         logI("publishing → weight=${m.weight}kg fat=${m.fat}% water=${m.water}% muscle=${m.muscle}kg bmr=${m.bmr}kcal impedance=${m.impedance}Ω")
         publish(m)
+    }
+
+    /**
+     * Re-derive body composition for [user] from the raw weight + impedance on
+     * [raw] (StandardImpedanceLib). Shared by the parse path and the
+     * save-pipeline recompute so derived values match the FINAL assigned user.
+     */
+    override fun recomputeBodyComposition(raw: ScaleMeasurement, user: ScaleUser): ScaleMeasurement {
+        val lib = BodyComposition.standardImpedanceLib(raw, user) ?: return raw
+        return raw.apply {
+            fat    = lib.totalFatPercentage.toFloat().coerceIn(0f, 75f)
+            water  = lib.totalBodyWaterPercentage.toFloat().coerceIn(0f, 80f)
+            muscle = lib.skeletalMuscleMassKg.toFloat().coerceIn(0f, 100f)
+            bone   = lib.boneMassKg.toFloat().coerceIn(0f, 10f)
+            lbm    = lib.fatFreeMassKg.toFloat().coerceIn(0f, 150f)
+            bmr    = lib.basalMetabolicRate.toFloat().coerceIn(0f, 5000f)
+        }
     }
 
     private fun resetPendingState() {
