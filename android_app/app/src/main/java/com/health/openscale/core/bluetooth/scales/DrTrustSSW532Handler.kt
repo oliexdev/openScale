@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
+import com.health.openscale.core.bluetooth.libs.BodyComposition
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
 import com.health.openscale.core.data.GenderType
@@ -303,6 +304,26 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
         })
         writeTeardownAck()
         requestDisconnect()
+    }
+
+    /**
+     * Re-derive body composition for [user] from the raw whole-body impedance on
+     * [raw] (StandardImpedanceLib). Invoked by the save pipeline so derived
+     * values match the FINAL assigned user. VISCERAL_FAT is intentionally left
+     * as-is: it needs the segmental z3 reading which is not persisted on the row.
+     */
+    override fun recomputeBodyComposition(raw: ScaleMeasurement, user: ScaleUser): ScaleMeasurement {
+        val lib = BodyComposition.standardImpedanceLib(raw, user) ?: return raw
+        val fatPct = lib.totalFatPercentage.toFloat()
+        if (fatPct <= 0f) return raw // out of calibration range — keep existing values
+        return raw.apply {
+            fat         = fatPct.coerceIn(0f, 75f)
+            water       = lib.totalBodyWaterPercentage.toFloat().coerceIn(0f, 80f)
+            muscle      = lib.skeletalMusclePercentage.toFloat().coerceIn(0f, 99f)
+            bone        = lib.boneMassKg.toFloat().coerceIn(0f, 10f)
+            bmr         = lib.basalMetabolicRate.toFloat().coerceIn(0f, 5000f)
+            lbm         = lib.fatFreeMassKg.toFloat().coerceIn(0f, 150f)
+        }
     }
 
     private fun reset() {

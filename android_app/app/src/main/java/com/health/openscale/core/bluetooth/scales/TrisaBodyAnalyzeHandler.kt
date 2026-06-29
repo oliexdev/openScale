@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
+import com.health.openscale.core.bluetooth.libs.BodyComposition
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.TrisaBodyAnalyzeLib
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -199,18 +200,21 @@ class TrisaBodyAnalyzeHandler : ScaleDeviceHandler() {
         val r2Offset = 9 + if (hasR1) 4 else 0
         if (hasR2 && r2Offset + 4 <= data.size && isValidUser(user)) {
             val resistance2 = getBase10Float(data, r2Offset)
-            val impedance = if (resistance2 < 410f) 3.0f else 0.3f * (resistance2 - 400f)
-            val sexFlag = if (user!!.gender.isMale()) 1 else 0
-            val lib = TrisaBodyAnalyzeLib(sexFlag, user.age, user.bodyHeight)
-            measurement.fat = lib.getFat(weightKg, impedance)
-            measurement.water = lib.getWater(weightKg, impedance)
-            measurement.muscle = lib.getMuscle(weightKg, impedance)
-            measurement.bone = lib.getBone(weightKg, impedance)
             // Store the raw resistance so body composition can be recomputed later.
             measurement.impedance = resistance2.toDouble()
+            recomputeBodyComposition(measurement, user!!)
         }
         return measurement
     }
+
+    /**
+     * Re-derive body composition for [user] from the raw weight + resistance on
+     * [raw] (TrisaBodyAnalyzeLib). [raw.impedance] holds the raw resistance; the
+     * lib is fed the converted impedance. Shared by the parse path and the
+     * save-pipeline recompute so derived values match the FINAL assigned user.
+     */
+    override fun recomputeBodyComposition(raw: ScaleMeasurement, user: ScaleUser): ScaleMeasurement =
+        BodyComposition.fromTrisa(raw, user)
 
     // --- Command helpers (host → device) -------------------------------------
 

@@ -216,6 +216,18 @@ abstract class ScaleDeviceHandler {
      */
     open fun onAdvertisement(result: ScanResult, user: ScaleUser): BroadcastAction = BroadcastAction.IGNORED
 
+    /**
+     * Recompute body composition for [user] from the raw quantities already on
+     * [raw] (weight, impedance bands, …). Invoked by the save pipeline AFTER the
+     * final user is resolved (selected-user snapshot + smart weight-assignment),
+     * so BIA outputs (fat/water/muscle/…) never belong to a different profile
+     * than the row they are stored under.
+     *
+     * BIA handlers override this to re-run their composition lib with [user];
+     * the default is a no-op for handlers that emit weight only.
+     */
+    open fun recomputeBodyComposition(raw: ScaleMeasurement, user: ScaleUser): ScaleMeasurement = raw
+
     // --- Protected helper methods (use these from your handler) ----------------
 
     /** Enable notifications for a characteristic. */

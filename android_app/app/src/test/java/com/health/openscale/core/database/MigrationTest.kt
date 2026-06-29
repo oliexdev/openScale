@@ -81,4 +81,73 @@ class MigrationTest {
         // The rewrite seeds the default measurement types.
         assertThat(repo.getAllMeasurementTypes().first()).isNotEmpty()
     }
+
+    /**
+     * MIGRATION_15_16 re-derives S400 body-composition with each row's OWN user.
+     * Seeds a MALE row that wrongly carries female-profile body fat (30.08 %) plus
+     * the raw impedance bands, then asserts the migration rewrites it to the
+     * male re-derivation (~17.8 %) while leaving raw inputs untouched, and that a
+     * row with out-of-range impedance is left unchanged.
+     */
+    @Test
+    fun migration15to16_reDerivesS400BodyCompositionForRowUser() {
+        val opened = RoomTestSupport.onDisk(context).also { db = it }
+        val sql = opened.openHelper.writableDatabase
+
+        // --- Minimal type catalogue (raw; icon/unit values need not be valid enums here) ---
+        fun type(id: Int, key: String) = sql.execSQL(
+            "INSERT INTO MeasurementType (id,`key`,name,color,icon,unit,inputType,displayOrder,isDerived,isEnabled,isPinned,isOnRightYAxis,isInternal) " +
+                "VALUES ($id,'$key',NULL,0,'X','X','X',$id,0,1,0,0,0)"
+        )
+        listOf(
+            1 to "WEIGHT", 3 to "BODY_FAT", 4 to "WATER", 5 to "MUSCLE", 6 to "LBM",
+            7 to "BONE", 12 to "VISCERAL_FAT", 21 to "BMR", 22 to "TDEE",
+            29 to "IMPEDANCE", 30 to "IMPEDANCE_LOW", 31 to "ECW", 32 to "ICW",
+            33 to "PROTEIN", 34 to "BCM",
+        ).forEach { (id, key) -> type(id, key) }
+
+        // Male, 172 cm, born 1998-06-22 → age 28 at the measurement timestamp.
+        sql.execSQL(
+            "INSERT INTO User (id,name,icon,birthDate,gender,heightCm,activityLevel,useAssistedWeighing,amputations) " +
+                "VALUES (1,'dany','IC_DEFAULT',898560000000,'MALE',172.0,'MILD',0,'')"
+        )
+
+        fun value(measurementId: Int, typeId: Int, v: Float) = sql.execSQL(
+            "INSERT INTO MeasurementValue (measurementId,typeId,floatValue) VALUES ($measurementId,$typeId,$v)"
+        )
+
+        // Measurement 1: raw weight + dual-band impedance, but body-comp written
+        // with the WRONG (female) profile.
+        sql.execSQL("INSERT INTO Measurement (id,userId,timestamp) VALUES (1,1,1782735000000)")
+        value(1, 1, 72.9f)
+        value(1, 29, 455f)
+        value(1, 30, 410f)
+        value(1, 3, 30.08f)   // wrong body fat
+        value(1, 4, 51.18f)   // wrong water
+        value(1, 6, 50.97f)   // wrong LBM
+
+        // Measurement 2: impedance out of validated range → must stay untouched.
+        // Distinct timestamp to satisfy the unique (userId, timestamp) index.
+        sql.execSQL("INSERT INTO Measurement (id,userId,timestamp) VALUES (2,1,1782738600000)")
+        value(2, 1, 72.9f)
+        value(2, 29, 50f)
+        value(2, 30, 40f)
+        value(2, 3, 99f)      // sentinel; migration must not overwrite
+
+        MIGRATION_15_16.migrate(sql)
+
+        fun read(measurementId: Int, typeId: Int): Float? =
+            sql.query("SELECT floatValue FROM MeasurementValue WHERE measurementId=$measurementId AND typeId=$typeId")
+                .use { c -> if (c.moveToFirst()) c.getFloat(0) else null }
+
+        // Row 1 re-derived for the male user.
+        assertThat(read(1, 3)!!).isWithin(0.2f).of(17.8f)   // BODY_FAT
+        assertThat(read(1, 4)!!).isWithin(0.5f).of(60.1f)   // WATER
+        // Raw inputs untouched.
+        assertThat(read(1, 1)!!).isWithin(0.01f).of(72.9f)  // WEIGHT
+        assertThat(read(1, 29)!!).isWithin(0.01f).of(455f)  // IMPEDANCE
+
+        // Row 2 left as-is (NOT_AVAILABLE inputs).
+        assertThat(read(2, 3)!!).isWithin(0.01f).of(99f)
+    }
 }

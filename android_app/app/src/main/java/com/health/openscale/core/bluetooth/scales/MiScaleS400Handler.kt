@@ -330,23 +330,9 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
                 "hr=${finalized.heartRate}, timedOut=${finalized.timedOut}"
         )
 
-        val boneFormula = readBoneFormula()
-        val bmrFormula = readBmrFormula()
-
-        val composition = S400BodyComposition.compute(
-            S400Inputs(
-                age = user.age,
-                sexMale = user.gender == GenderType.MALE,
-                heightCm = user.bodyHeight,
-                weightKg = finalized.weightKg,
-                rHighRaw = finalized.impedanceHigh,
-                // Single-band fallback when Packet B never arrives (older firmware path).
-                rLowRaw = finalized.impedanceLow ?: finalized.impedanceHigh,
-            ),
-            boneFormula = boneFormula,
-            bmrFormula = bmrFormula,
-        )
-
+        // Carry only the raw, user-independent quantities here; body composition
+        // is derived in recomputeBodyComposition() so it always uses the FINAL
+        // assigned user (see ScaleDeviceHandler.recomputeBodyComposition).
         val scaleMeasurement = ScaleMeasurement().apply {
             dateTime = Date()
             weight = finalized.weightKg
@@ -354,7 +340,39 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
             heartRate = finalized.heartRate ?: 0
             impedance = finalized.impedanceHigh.toDouble()
             finalized.impedanceLow?.let { impedanceLow = it.toDouble() }
+        }
+        recomputeBodyComposition(scaleMeasurement, user)
 
+        publish(scaleMeasurement)
+
+        return BroadcastAction.CONSUMED_STOP
+    }
+
+    /**
+     * Re-derive S400 body composition for [user] from the raw weight + impedance
+     * bands already on [raw]. Shared by [onAdvertisement] (initial parse) and the
+     * save pipeline (final-user recompute), so the two can never diverge.
+     */
+    override fun recomputeBodyComposition(raw: ScaleMeasurement, user: ScaleUser): ScaleMeasurement {
+        val rHigh = raw.impedance.toFloat()
+        if (raw.weight <= 0f || rHigh <= 0f) return raw
+        // Single-band fallback when Packet B never arrived (older firmware path).
+        val rLow = if (raw.impedanceLow > 0.0) raw.impedanceLow.toFloat() else rHigh
+
+        val composition = S400BodyComposition.compute(
+            S400Inputs(
+                age = user.age,
+                sexMale = user.gender == GenderType.MALE,
+                heightCm = user.bodyHeight,
+                weightKg = raw.weight,
+                rHighRaw = rHigh,
+                rLowRaw = rLow,
+            ),
+            boneFormula = readBoneFormula(),
+            bmrFormula = readBmrFormula(),
+        )
+
+        return raw.apply {
             fat = composition.bfPct ?: 0f
             water = composition.tbwPct ?: 0f
             muscle = composition.smmPct ?: 0f
@@ -367,10 +385,6 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
             protein = composition.proteinPct ?: 0f
             bcm = composition.bcmKg ?: 0f
         }
-
-        publish(scaleMeasurement)
-
-        return BroadcastAction.CONSUMED_STOP
     }
 
     private fun readBoneFormula(): BoneFormula =
