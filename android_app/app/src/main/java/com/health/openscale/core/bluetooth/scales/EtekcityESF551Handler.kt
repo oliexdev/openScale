@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
+import com.health.openscale.core.bluetooth.libs.BodyComposition
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
 import com.health.openscale.core.data.WeightUnit
@@ -123,18 +124,7 @@ class EtekcityESF551Handler : ScaleDeviceHandler() {
         )
 
         if (impedance > 0 && impedance < 1500) {
-            val lib = StandardImpedanceLib(
-                gender = user.gender,
-                age = user.age,
-                weightKg = weightKg,
-                heightM = user.bodyHeight / 100.0,
-                impedance = impedance,
-            )
-            measurement.fat = lib.totalFatPercentage.toFloat()
-            measurement.water = lib.totalBodyWaterPercentage.toFloat()
-            measurement.muscle = lib.skeletalMusclePercentage.toFloat()
-            measurement.bone = lib.boneMassKg.toFloat()
-            measurement.bmr = lib.basalMetabolicRate.toFloat()
+            recomputeBodyComposition(measurement, user)
         }
 
         if (data[20] == 1.toByte() && impedance > 0) {
@@ -143,6 +133,22 @@ class EtekcityESF551Handler : ScaleDeviceHandler() {
         }
 
         return null
+    }
+
+    /**
+     * Re-derive body composition for [user] from the raw weight + impedance on
+     * [raw] (StandardImpedanceLib). Shared by the parse path and the
+     * save-pipeline recompute so derived values match the FINAL assigned user.
+     */
+    override fun recomputeBodyComposition(raw: ScaleMeasurement, user: ScaleUser): ScaleMeasurement {
+        val lib = BodyComposition.standardImpedanceLib(raw, user, maxImpedance = 1500.0) ?: return raw
+        return raw.apply {
+            fat = lib.totalFatPercentage.toFloat()
+            water = lib.totalBodyWaterPercentage.toFloat()
+            muscle = lib.skeletalMusclePercentage.toFloat()
+            bone = lib.boneMassKg.toFloat()
+            bmr = lib.basalMetabolicRate.toFloat()
+        }
     }
 
     private fun setUnit(unit: WeightUnit) {

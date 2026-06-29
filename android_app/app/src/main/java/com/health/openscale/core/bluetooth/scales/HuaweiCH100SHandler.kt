@@ -268,26 +268,43 @@ class HuaweiCH100SHandler : ScaleDeviceHandler() {
             this.fat = fat
             if (impedance in 1..3999) {
                 this.impedance = impedance.toDouble()
-                // Water%, muscle%, bone, BMR, visceral fat are not sent by the scale.
-                // Compute app-side from impedance using BIA formulas (Chipsea chipset).
-                val user = currentAppUser()
-                val lib = EtekcityLib(
-                    gender = user.gender,
-                    age = user.age,
-                    weightKg = weight.toDouble(),
-                    heightM = user.bodyHeight.toDouble() / 100.0,
-                    impedance = impedance.toDouble()
-                )
-                this.water = lib.water.toFloat()
-                this.muscle = lib.skeletalMusclePercentage.toFloat()
-                this.bone = lib.boneMass.toFloat()
-                this.bmr = lib.basalMetabolicRate.toFloat()
-                this.visceralFat = lib.visceralFat.toFloat()
             }
+        }
+        // Water%, muscle%, bone, BMR, visceral fat are not sent by the scale —
+        // derived app-side from impedance (Chipsea chipset). fat IS sent by the
+        // scale and is user-independent, so it is left untouched here.
+        if (m.impedance > 0.0) {
+            recomputeBodyComposition(m, currentAppUser())
         }
         publish(m)
         logI("Measurement: $weight kg, fat=$fat%, imp=$impedance Ω, user=$userId @ ${ts(dt)}")
         sendPlain(CMD_FAT_ACK, byteArrayOf(0x00))
+    }
+
+    /**
+     * Re-derive the app-side body-composition fields (water/muscle/bone/BMR/
+     * visceral fat) for [user] from the raw impedance on [raw] (EtekcityLib).
+     * BODY_FAT is sent by the scale (user-independent) and left untouched.
+     * Shared by the parse path and the save-pipeline recompute so values match
+     * the FINAL assigned user.
+     */
+    override fun recomputeBodyComposition(raw: ScaleMeasurement, user: ScaleUser): ScaleMeasurement {
+        val impedance = raw.impedance
+        if (raw.weight <= 0f || impedance < 1.0 || impedance > 3999.0) return raw
+        val lib = EtekcityLib(
+            gender = user.gender,
+            age = user.age,
+            weightKg = raw.weight.toDouble(),
+            heightM = user.bodyHeight.toDouble() / 100.0,
+            impedance = impedance
+        )
+        return raw.apply {
+            water = lib.water.toFloat()
+            muscle = lib.skeletalMusclePercentage.toFloat()
+            bone = lib.boneMass.toFloat()
+            bmr = lib.basalMetabolicRate.toFloat()
+            visceralFat = lib.visceralFat.toFloat()
+        }
     }
 
     // --- Commands -------------------------------------------------------------

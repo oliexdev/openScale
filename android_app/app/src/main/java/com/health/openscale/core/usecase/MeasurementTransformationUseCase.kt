@@ -88,14 +88,29 @@ class MeasurementTransformationUseCase @Inject constructor(
         measurement: Measurement,
         values: List<MeasurementValue>
     ): Measurement? {
+        val newWeight = values.find { it.typeId == MeasurementTypeKey.WEIGHT.id }?.floatValue
+            ?: return measurement // No weight to assign, save as is
+        val resolvedUserId = resolveAssignedUserId(newWeight, measurement.userId)
+            ?: return null // Signal to ignore
+        return measurement.copy(userId = resolvedUserId)
+    }
+
+    /**
+     * Resolves which user a weigh-in belongs to, applying "Smart User Assignment"
+     * (closest previous weight within tolerance) when enabled. Pure decision — no
+     * mutation — so the BLE pipeline can finalize the user BEFORE computing
+     * body-composition (which depends on the user's sex/age/height), and
+     * [applySmartUserAssignment] can reuse it.
+     *
+     * @param weightKg the new measured weight.
+     * @param fallbackUserId user to keep when smart-assignment is off, finds no
+     *        candidate, or the best match is outside tolerance but not ignored.
+     * @return the resolved user id, or null when the measurement should be ignored.
+     */
+    suspend fun resolveAssignedUserId(weightKg: Float, fallbackUserId: Int): Int? {
         val isSmartAssignment = settings.isSmartAssignmentEnabled.first()
         if (!isSmartAssignment) {
-            return measurement
-        }
-
-        val newWeight = values.find { it.typeId == MeasurementTypeKey.WEIGHT.id }?.floatValue
-        if (newWeight == null) {
-            return measurement // No weight to assign, save as is
+            return fallbackUserId
         }
 
         // 1. Find candidates
@@ -105,8 +120,8 @@ class MeasurementTransformationUseCase @Inject constructor(
                 .firstNotNullOfOrNull { m -> m.values.find { v -> v.type.key == MeasurementTypeKey.WEIGHT }?.value?.floatValue }
 
             if (lastWeight != null && lastWeight > 0) {
-                val diffPercent = (abs(newWeight - lastWeight) / lastWeight) * 100
-                LogManager.d("SmartAssignment", "User ${user.name}: last weight=$lastWeight, new=$newWeight, diff=${diffPercent.roundToInt()}%")
+                val diffPercent = (abs(weightKg - lastWeight) / lastWeight) * 100
+                LogManager.d("SmartAssignment", "User ${user.name}: last weight=$lastWeight, new=$weightKg, diff=${diffPercent.roundToInt()}%")
                 Triple(user, lastWeight, diffPercent)
             } else {
                 null
@@ -114,8 +129,8 @@ class MeasurementTransformationUseCase @Inject constructor(
         }
 
         if (userDiffs.isEmpty()) {
-            LogManager.i("SmartAssignment", "No users with previous weight found. Assigning to current user.")
-            return measurement
+            LogManager.i("SmartAssignment", "No users with previous weight found. Assigning to fallback user $fallbackUserId.")
+            return fallbackUserId
         }
 
         // 2. Find best candidate
@@ -125,20 +140,19 @@ class MeasurementTransformationUseCase @Inject constructor(
         val tolerancePercent = settings.smartAssignmentTolerancePercent.first()
         val ignoreOutsideTolerance = settings.smartAssignmentIgnoreOutsideTolerance.first()
 
-        val winningUser: User? = if (bestMatch.third <= tolerancePercent) {
-            bestMatch.first
+        val winningUserId: Int? = if (bestMatch.third <= tolerancePercent) {
+            bestMatch.first.id
         } else {
-            if (ignoreOutsideTolerance) null else allUsers.find { it.id == measurement.userId }
+            if (ignoreOutsideTolerance) null else fallbackUserId
         }
 
         // 4. Return result
-        return if (winningUser != null) {
-            LogManager.i("SmartAssignment", "Assigning measurement to ${winningUser.name}.")
-            measurement.copy(userId = winningUser.id)
+        if (winningUserId != null) {
+            LogManager.i("SmartAssignment", "Assigning measurement to userId $winningUserId.")
         } else {
             LogManager.i("SmartAssignment", "Ignoring measurement as no user is within tolerance.")
-            null // Signal to ignore
         }
+        return winningUserId
     }
 
     /**

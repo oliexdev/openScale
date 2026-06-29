@@ -464,108 +464,7 @@ class BleConnector(
                     return@launch
                 }
 
-            val typeKeyToIdMap   = types.associate { it.key to it.id }
-            val typeKeyToUnitMap = types.associate { it.key to it.unit }
-
-            fun getTypeId(key: MeasurementTypeKey) = typeKeyToIdMap[key]
-            fun getTargetUnit(key: MeasurementTypeKey) = typeKeyToUnitMap[key] ?: UnitType.NONE
-
-            // Declare raw units provided by ScaleMeasurement for each key.
-            // Percent-based values will "convert" to themselves (converter returns unchanged value).
-            val rawUnitByKey: Map<MeasurementTypeKey, UnitType> = mapOf(
-                MeasurementTypeKey.WEIGHT       to UnitType.KG,
-                MeasurementTypeKey.BODY_FAT     to UnitType.PERCENT,
-                MeasurementTypeKey.WATER        to UnitType.PERCENT,
-                MeasurementTypeKey.MUSCLE       to UnitType.PERCENT,
-                MeasurementTypeKey.VISCERAL_FAT to UnitType.PERCENT,
-                MeasurementTypeKey.BONE         to UnitType.KG,
-                MeasurementTypeKey.LBM          to UnitType.KG,
-                MeasurementTypeKey.HEART_RATE   to UnitType.BPM,
-                MeasurementTypeKey.IMPEDANCE    to UnitType.OHM,
-                MeasurementTypeKey.IMPEDANCE_LOW to UnitType.OHM,
-                MeasurementTypeKey.ECW          to UnitType.PERCENT,
-                MeasurementTypeKey.ICW          to UnitType.PERCENT,
-                MeasurementTypeKey.PROTEIN      to UnitType.PERCENT,
-                MeasurementTypeKey.BCM          to UnitType.KG,
-                MeasurementTypeKey.BMR          to UnitType.KCAL
-            )
-
-            val values = mutableListOf<MeasurementValue>()
-
-            /**
-             * Adds a converted float value for the given key if present & valid.
-             * - Reads the raw unit for the key (what the device/handler provided).
-             * - Looks up the target unit from MeasurementType.
-             * - Converts using existing ConverterUtils.convertFloatValueUnit.
-             */
-            fun addConvertedIfValid(
-                value: Float?,
-                key: MeasurementTypeKey,
-                isValid: (Float) -> Boolean = { it.isFinite() && it > 0f }
-            ) {
-                val v = value ?: return
-                if (!isValid(v)) return
-
-                val rawUnit = rawUnitByKey[key] ?: UnitType.NONE
-                val target  = getTargetUnit(key)
-
-                val converted = com.health.openscale.core.utils.ConverterUtils.convertFloatValueUnit(
-                    v, rawUnit, target
-                )
-
-                getTypeId(key)?.let { typeId ->
-                    values.add(
-                        MeasurementValue(
-                            measurementId = 0,
-                            typeId = typeId,
-                            floatValue = converted
-                        )
-                    )
-                }
-            }
-
-            /**
-             * Adds an integer value for the given key if present & valid.
-             * Used for heart rate which is stored as an Int.
-             */
-            fun addConvertedIfValid(
-                value: Int?,
-                key: MeasurementTypeKey
-            ) {
-                val v = value ?: return
-                if (v <= 0) return
-                getTypeId(key)?.let { typeId ->
-                    values.add(
-                        MeasurementValue(
-                            measurementId = 0,
-                            typeId = typeId,
-                            intValue = v
-                        )
-                    )
-                }
-            }
-
-            // BMR goes in first so its presence guards the per-value recalc that
-            // runs after WEIGHT lands; otherwise DerivedValuesProcess would write
-            // its Mifflin-St Jeor BMR before the device's BIA-based BMR arrives,
-            // leaving two rows for the same typeId.
-            addConvertedIfValid(measurementData.bmr,                    MeasurementTypeKey.BMR)
-
-            // Collect all supported values from ScaleMeasurement, converting as needed.
-            addConvertedIfValid(measurementData.weight,       MeasurementTypeKey.WEIGHT)
-            addConvertedIfValid(measurementData.fat,          MeasurementTypeKey.BODY_FAT)
-            addConvertedIfValid(measurementData.water,        MeasurementTypeKey.WATER)
-            addConvertedIfValid(measurementData.muscle,       MeasurementTypeKey.MUSCLE)
-            addConvertedIfValid(measurementData.visceralFat,  MeasurementTypeKey.VISCERAL_FAT)
-            addConvertedIfValid(measurementData.bone,         MeasurementTypeKey.BONE)
-            addConvertedIfValid(measurementData.lbm,          MeasurementTypeKey.LBM)
-            addConvertedIfValid(measurementData.heartRate, MeasurementTypeKey.HEART_RATE)
-            addConvertedIfValid(measurementData.impedance.toFloat(),    MeasurementTypeKey.IMPEDANCE)
-            addConvertedIfValid(measurementData.impedanceLow.toFloat(), MeasurementTypeKey.IMPEDANCE_LOW)
-            addConvertedIfValid(measurementData.ecw,                    MeasurementTypeKey.ECW)
-            addConvertedIfValid(measurementData.icw,                    MeasurementTypeKey.ICW)
-            addConvertedIfValid(measurementData.protein,                MeasurementTypeKey.PROTEIN)
-            addConvertedIfValid(measurementData.bcm,                    MeasurementTypeKey.BCM)
+            val values = buildBleValues(measurementData, types)
 
             if (values.isEmpty()) {
                 LogManager.w(TAG, "No valid values from measurement of $deviceName to save.")
@@ -578,11 +477,22 @@ class BleConnector(
                 return@launch
             }
 
+            // Once the final user is resolved (smart weight-assignment inside the
+            // facade), re-derive body composition for THAT user via the active
+            // handler. BIA outputs (fat/water/muscle/…) depend on sex/age/height,
+            // so they must match the user the row is stored under — not whoever
+            // was merely selected when the scale broadcast.
+            val recomputeForUser: suspend (Int) -> List<MeasurementValue> = { userId ->
+                val recomputed = activeCommunicator?.recomputeBodyCompositionForUser(measurementData, userId)
+                    ?: measurementData
+                buildBleValues(recomputed, types)
+            }
+
             try {
-                val measurementId = measurementFacade.saveMeasurementFromBleDevice(newDbMeasurement, values)
+                measurementFacade.saveMeasurementFromBleDevice(newDbMeasurement, values, recomputeForUser)
                 LogManager.i(
                     TAG,
-                    "Measurement from $deviceName for User $currentAppUserId saved (ID: $measurementId). Values: ${values.size}"
+                    "Measurement from $deviceName for User $currentAppUserId saved. Values: ${values.size}"
                 )
                 pendingSavedCount.incrementAndGet()
                 lastSavedArgs = listOf(measurementData.weight, deviceName)
@@ -597,6 +507,109 @@ class BleConnector(
                 )
             }
         }
+    }
+
+    /**
+     * Flattens a [ScaleMeasurement] into persistable [MeasurementValue] rows,
+     * converting each field from its raw device unit to the configured target
+     * unit. Pure — reused for the initial save and for the post-assignment
+     * body-composition recompute.
+     */
+    private fun buildBleValues(
+        measurementData: ScaleMeasurement,
+        types: List<com.health.openscale.core.data.MeasurementType>,
+    ): List<MeasurementValue> {
+        val typeKeyToIdMap   = types.associate { it.key to it.id }
+        val typeKeyToUnitMap = types.associate { it.key to it.unit }
+
+        fun getTypeId(key: MeasurementTypeKey) = typeKeyToIdMap[key]
+        fun getTargetUnit(key: MeasurementTypeKey) = typeKeyToUnitMap[key] ?: UnitType.NONE
+
+        // Declare raw units provided by ScaleMeasurement for each key.
+        // Percent-based values will "convert" to themselves (converter returns unchanged value).
+        val rawUnitByKey: Map<MeasurementTypeKey, UnitType> = mapOf(
+            MeasurementTypeKey.WEIGHT       to UnitType.KG,
+            MeasurementTypeKey.BODY_FAT     to UnitType.PERCENT,
+            MeasurementTypeKey.WATER        to UnitType.PERCENT,
+            MeasurementTypeKey.MUSCLE       to UnitType.PERCENT,
+            MeasurementTypeKey.VISCERAL_FAT to UnitType.PERCENT,
+            MeasurementTypeKey.BONE         to UnitType.KG,
+            MeasurementTypeKey.LBM          to UnitType.KG,
+            MeasurementTypeKey.HEART_RATE   to UnitType.BPM,
+            MeasurementTypeKey.IMPEDANCE    to UnitType.OHM,
+            MeasurementTypeKey.IMPEDANCE_LOW to UnitType.OHM,
+            MeasurementTypeKey.ECW          to UnitType.PERCENT,
+            MeasurementTypeKey.ICW          to UnitType.PERCENT,
+            MeasurementTypeKey.PROTEIN      to UnitType.PERCENT,
+            MeasurementTypeKey.BCM          to UnitType.KG,
+            MeasurementTypeKey.BMR          to UnitType.KCAL
+        )
+
+        val values = mutableListOf<MeasurementValue>()
+
+        fun addConvertedIfValid(
+            value: Float?,
+            key: MeasurementTypeKey,
+            isValid: (Float) -> Boolean = { it.isFinite() && it > 0f }
+        ) {
+            val v = value ?: return
+            if (!isValid(v)) return
+
+            val rawUnit = rawUnitByKey[key] ?: UnitType.NONE
+            val target  = getTargetUnit(key)
+
+            val converted = com.health.openscale.core.utils.ConverterUtils.convertFloatValueUnit(
+                v, rawUnit, target
+            )
+
+            getTypeId(key)?.let { typeId ->
+                values.add(
+                    MeasurementValue(
+                        measurementId = 0,
+                        typeId = typeId,
+                        floatValue = converted
+                    )
+                )
+            }
+        }
+
+        fun addConvertedIfValid(value: Int?, key: MeasurementTypeKey) {
+            val v = value ?: return
+            if (v <= 0) return
+            getTypeId(key)?.let { typeId ->
+                values.add(
+                    MeasurementValue(
+                        measurementId = 0,
+                        typeId = typeId,
+                        intValue = v
+                    )
+                )
+            }
+        }
+
+        // BMR goes in first so its presence guards the per-value recalc that
+        // runs after WEIGHT lands; otherwise DerivedValuesProcess would write
+        // its Mifflin-St Jeor BMR before the device's BIA-based BMR arrives,
+        // leaving two rows for the same typeId.
+        addConvertedIfValid(measurementData.bmr,                    MeasurementTypeKey.BMR)
+
+        // Collect all supported values from ScaleMeasurement, converting as needed.
+        addConvertedIfValid(measurementData.weight,       MeasurementTypeKey.WEIGHT)
+        addConvertedIfValid(measurementData.fat,          MeasurementTypeKey.BODY_FAT)
+        addConvertedIfValid(measurementData.water,        MeasurementTypeKey.WATER)
+        addConvertedIfValid(measurementData.muscle,       MeasurementTypeKey.MUSCLE)
+        addConvertedIfValid(measurementData.visceralFat,  MeasurementTypeKey.VISCERAL_FAT)
+        addConvertedIfValid(measurementData.bone,         MeasurementTypeKey.BONE)
+        addConvertedIfValid(measurementData.lbm,          MeasurementTypeKey.LBM)
+        addConvertedIfValid(measurementData.heartRate, MeasurementTypeKey.HEART_RATE)
+        addConvertedIfValid(measurementData.impedance.toFloat(),    MeasurementTypeKey.IMPEDANCE)
+        addConvertedIfValid(measurementData.impedanceLow.toFloat(), MeasurementTypeKey.IMPEDANCE_LOW)
+        addConvertedIfValid(measurementData.ecw,                    MeasurementTypeKey.ECW)
+        addConvertedIfValid(measurementData.icw,                    MeasurementTypeKey.ICW)
+        addConvertedIfValid(measurementData.protein,                MeasurementTypeKey.PROTEIN)
+        addConvertedIfValid(measurementData.bcm,                    MeasurementTypeKey.BCM)
+
+        return values
     }
 
 

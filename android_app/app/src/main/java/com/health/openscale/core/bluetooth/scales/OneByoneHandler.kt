@@ -207,10 +207,6 @@ class OneByoneHandler : ScaleDeviceHandler() {
         if (nowMs - lastSavedAt < DATE_TIME_THRESHOLD_MS) return
         lastSavedAt = nowMs
 
-        // Build composition using OneByoneLib (same as legacy)
-        val (sex, peopleType) = mapUserToLibParams(user)
-        val lib = OneByoneLib(sex, user.age, user.bodyHeight, peopleType)
-
         val m = ScaleMeasurement().apply {
             userId = user.id
             dateTime = if (hasTimestamp) whenCal.time else Calendar.getInstance().time
@@ -220,19 +216,32 @@ class OneByoneHandler : ScaleDeviceHandler() {
         }
 
         try {
-            // Derivations
-            val fatPct = lib.getBodyFat(m.weight, impedanceOhm)
-            m.fat = fatPct
-            m.water = lib.getWater(fatPct)
-            m.bone = lib.getBoneMass(m.weight, impedanceOhm)
-            m.visceralFat = lib.getVisceralFat(m.weight)
-            m.muscle = lib.getMuscle(m.weight, impedanceOhm)
-            m.lbm = lib.getLBM(m.weight, m.fat)
-
+            recomputeBodyComposition(m, user)
             publish(m)
         } catch (t: Throwable) {
             // If library throws on impossible inputs, just log & ignore this frame
             logW("OneByoneLib failed: ${t.message}")
+        }
+    }
+
+    /**
+     * Re-derive body composition for [user] from the raw weight + impedance on
+     * [raw] (OneByoneLib). Shared by the parse path and the save-pipeline
+     * recompute so derived values always match the FINAL assigned user.
+     */
+    override fun recomputeBodyComposition(raw: ScaleMeasurement, user: ScaleUser): ScaleMeasurement {
+        val impedanceOhm = raw.impedance.toFloat()
+        if (raw.weight <= 0f || impedanceOhm <= 0f) return raw
+        val (sex, peopleType) = mapUserToLibParams(user)
+        val lib = OneByoneLib(sex, user.age, user.bodyHeight, peopleType)
+        return raw.apply {
+            val fatPct = lib.getBodyFat(weight, impedanceOhm)
+            fat = fatPct
+            water = lib.getWater(fatPct)
+            bone = lib.getBoneMass(weight, impedanceOhm)
+            visceralFat = lib.getVisceralFat(weight)
+            muscle = lib.getMuscle(weight, impedanceOhm)
+            lbm = lib.getLBM(weight, fatPct)
         }
     }
 

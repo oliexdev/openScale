@@ -189,6 +189,17 @@ class OneByoneNewHandler : ScaleDeviceHandler() {
         m.lbm         = lib.getLBM(m.weight, impedanceOhm)
     }
 
+    /**
+     * Re-derive body composition for [user] from the raw weight + impedance on
+     * [raw], reusing [populateBodyComp]. Invoked by the save pipeline so derived
+     * values always match the FINAL assigned user.
+     */
+    override fun recomputeBodyComposition(raw: ScaleMeasurement, user: ScaleUser): ScaleMeasurement {
+        if (raw.weight <= 0f || raw.impedance <= 0.0) return raw
+        populateBodyComp(raw, raw.impedance.toInt(), user)
+        return raw
+    }
+
     // ---- Outbound commands ----------------------------------------------------
 
     /** Initial kick message (D7 checksum), includes current timestamp, unit, and one entry for the current user. */

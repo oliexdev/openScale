@@ -104,6 +104,14 @@ interface ScaleCommunicator {
     /** Stream of [BluetoothEvent] emitted by the communicator. */
     fun getEventsFlow(): SharedFlow<BluetoothEvent>
 
+    /**
+     * Recompute body composition on [raw] for the app user [userId], delegating
+     * to the active device handler. Used by the save pipeline to (re-)derive
+     * BIA outputs for the FINAL assigned user before persisting. Default no-op
+     * returns [raw] unchanged.
+     */
+    fun recomputeBodyCompositionForUser(raw: ScaleMeasurement, userId: Int): ScaleMeasurement = raw
+
     /** Deliver feedback for a previously requested user interaction. */
     suspend fun processUserInteractionFeedback(
         interactionType: BluetoothEvent.UserInteractionType,

@@ -157,6 +157,29 @@ class RealmeSmartScaleHandler : ScaleDeviceHandler() {
         publish(measurement)
     }
 
+    /**
+     * Re-derive body composition for [user] from the raw weight + impedance on
+     * [raw] (YunmaiLib). Invoked by the save pipeline so values match the FINAL
+     * assigned user.
+     */
+    override fun recomputeBodyComposition(raw: ScaleMeasurement, user: ScaleUser): ScaleMeasurement {
+        val impedance = raw.impedance.toInt()
+        if (raw.weight <= 0f || impedance <= 0) return raw
+        val sex = if (user.gender.isMale()) 1 else 0
+        val calc = com.health.openscale.core.bluetooth.libs.YunmaiLib(sex, user.bodyHeight, user.activityLevel)
+        val w = raw.weight
+        val fatPct = calc.getFat(user.age, w, impedance)
+        if (fatPct <= 0f) return raw
+        return raw.apply {
+            fat = fatPct
+            muscle = calc.getMuscle(fatPct) / w * 100.0f
+            water = calc.getWater(fatPct)
+            bone = calc.getBoneMass(muscle, w)
+            lbm = calc.getLeanBodyMass(w, fatPct)
+            visceralFat = calc.getVisceralFat(fatPct, user.age)
+        }
+    }
+
     // --- PROTOCOL DYNAMIC GENERATORS ---
 
     private fun deobfuscate(data: ByteArray): ByteArray {

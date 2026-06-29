@@ -223,9 +223,16 @@ class MeasurementFacade @Inject constructor(
     // BLE
     // -------------------------------------------------------------------------
 
+    /**
+     * @param recomputeForUser optional hook invoked AFTER the final user is
+     *   resolved by smart-assignment; given that user's id it returns the
+     *   re-derived value list (e.g. BIA body-composition recomputed for the
+     *   correct profile). When null, the original [values] are persisted as-is.
+     */
     suspend fun saveMeasurementFromBleDevice(
         measurement: Measurement,
         values: List<MeasurementValue>,
+        recomputeForUser: (suspend (userId: Int) -> List<MeasurementValue>)? = null,
     ) {
         val ref = pendingReferenceUser
         if (ref != null) {
@@ -233,7 +240,10 @@ class MeasurementFacade @Inject constructor(
             crud.saveMeasurement(measurement, finalValues)
         } else {
             val finalMeasurement = transformation.applySmartUserAssignment(measurement, values)
-            if (finalMeasurement != null) crud.saveMeasurement(finalMeasurement, values)
+            if (finalMeasurement != null) {
+                val finalValues = recomputeForUser?.invoke(finalMeasurement.userId) ?: values
+                crud.saveMeasurement(finalMeasurement, finalValues)
+            }
         }
     }
 

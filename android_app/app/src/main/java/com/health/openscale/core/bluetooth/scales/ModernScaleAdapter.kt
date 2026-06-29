@@ -449,6 +449,13 @@ abstract class ModernScaleAdapter(
         override fun lastMeasurementFor(userId: Int): ScaleMeasurement? = lastSnapshot[userId]
     }
 
+    override fun recomputeBodyCompositionForUser(raw: ScaleMeasurement, userId: Int): ScaleMeasurement {
+        // usersSnapshot holds every app user already mapped to ScaleUser; fall
+        // back to the selected user, then to the raw value if neither resolves.
+        val user = usersSnapshot.firstOrNull { it.id == userId } ?: selectedUserSnapshot ?: return raw
+        return handler.recomputeBodyComposition(raw, user)
+    }
+
     protected fun cleanup() {
         _isConnected.value = false
         _isConnecting.value = false

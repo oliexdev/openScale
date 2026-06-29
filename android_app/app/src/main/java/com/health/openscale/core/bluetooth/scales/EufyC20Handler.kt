@@ -5,6 +5,7 @@ import android.util.SparseArray
 import androidx.core.util.isEmpty
 import androidx.core.util.size
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
+import com.health.openscale.core.bluetooth.libs.BodyComposition
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.MiScaleLib
 import com.health.openscale.core.data.GenderType
@@ -104,15 +105,7 @@ class EufyC20Handler : ScaleDeviceHandler() {
             
             // compute composition if possible
             if (s.hasWeight() && s.impedance > 0.0) {
-                val sex = if (user.gender == GenderType.MALE) 1 else 0
-                val lib = MiScaleLib(sex, user.age, user.bodyHeight)
-                val wf = s.weight
-                s.fat = lib.getBodyFat(wf, s.impedance.toFloat())
-                s.water = lib.getWater(wf, s.impedance.toFloat())
-                s.muscle = lib.getMuscle(wf, s.impedance.toFloat())
-                s.bone = lib.getBoneMass(wf, s.impedance.toFloat())
-                s.lbm = lib.getLBM(wf, s.impedance.toFloat())
-                s.visceralFat = lib.getVisceralFat(wf)
+                recomputeBodyComposition(s, user)
             }
             
             // if full measurement -> clear stored and stop
@@ -134,4 +127,7 @@ class EufyC20Handler : ScaleDeviceHandler() {
     override fun onConnected(user: ScaleUser) {
         logI("Eufy C20 handler - onConnected (broadcast-only handler)")
     }
+
+    override fun recomputeBodyComposition(raw: ScaleMeasurement, user: ScaleUser): ScaleMeasurement =
+        BodyComposition.fromMiScale(raw, user)
 }
