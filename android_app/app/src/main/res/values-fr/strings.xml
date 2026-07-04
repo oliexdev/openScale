@@ -85,11 +85,11 @@
     <string name="user_settings_content_description_delete">Supprimer le profil</string>
     <string name="user_settings_content_description_add_user">Ajouter un novueau profil</string>
     <string name="user_detail_content_description_change_unit">Changer d\'unité</string>
-    <string name="success_measurement_updated">Mesure mise à jour avec succès</string>
-    <string name="success_measurement_saved">Mesure sauvegardée avec succès</string>
-    <string name="error_saving_measurement">Erreur lors de la sauvegarde de la mesure</string>
-    <string name="success_measurement_deleted">Mesure %1$s supprimée avec succès</string>
-    <string name="error_deleting_measurement">Erreur lors de la suppression de la mesure</string>
+    <string name="success_measurement_updated">Mesure mise à jour (%1$s)</string>
+    <string name="success_measurement_saved">Mesure sauvegardée (%1$s)</string>
+    <string name="error_saving_measurement">La mesure n\'a pas pu être sauvegarder. Veuillez réessayer.</string>
+    <string name="success_measurement_deleted">Mesure supprimée (%1$s)</string>
+    <string name="error_deleting_measurement">La mesure n\'a pas pu être supprimer. Veuillez réessayer.</string>
     <string name="action_save_measurement">Sauvegarder la mesure</string>
     <string name="action_add_measurement">Ajouter une mesure</string>
     <string name="action_add_measurement_desc">Ajouter une nouvelle mesure</string>
@@ -444,7 +444,7 @@
     <string name="setting_smoothing_window_size">Taille fenêtre</string>
     <string name="setting_smoothing_max_gap_days">Écart max. de lissage (jours)</string>
     <string name="smoothing_algorithm_none">Pas de lissage</string>
-    <string name="smoothing_algorithm_sma">Mouvement moyen</string>
+    <string name="smoothing_algorithm_sma">Moyenne Glissante</string>
     <string name="smoothing_algorithm_ses">Lissage exponentiel</string>
     <string name="setting_show_chart_projection">Montrer la projection</string>
     <string name="setting_projection_days_in_the_past">Bases pour la projection (jours)</string>
@@ -478,7 +478,7 @@
     <string name="log_export_no_app_error">Pas d\'application adaptée trouvée pour exporter le fichier.</string>
     <string name="export_log_file_button">Exporter le fichier de journalisation</string>
     <string name="settings_export_measurements_csv">Export des mesures (CSV)</string>
-    <string name="settings_import_measurements_csv">Import de mesures (CSV)</string>
+    <string name="settings_import_measurements_csv">Import des mesures (CSV)</string>
     <string name="settings_backup_database">Sauvegarde de la base de données</string>
     <string name="settings_restore_database">Restaurer la base de données</string>
     <string name="settings_delete_all_measurement_data">Supprimer toutes les données de mesure</string>
@@ -660,4 +660,21 @@
     <string name="bt_sbf72_choice_slot_other_user">P%1$d : Utilisé par %2$s (Remplacer ?)</string>
     <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d : Occupé (Pas lié)</string>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d : Créer \'%2$s\' ici</string>
+    <string name="settings_dynamic_color_label">Couleurs dynamiques</string>
+    <string name="settings_appearance_title">Apparence</string>
+    <string name="settings_high_contrast_label">Contraste élevé</string>
+    <string name="sync_app_unreachable_hint">La dernière modification n\'a pas été synchronisée. Veuillez ouvrir openScale-sync et lancer une synchronisation manuelle.</string>
+    <string name="sync_app_open_action">Ouvrir</string>
+    <string name="clear_button">Effacer</string>
+    <string name="saved">Enregistré</string>
+    <string name="route_title_insights">Insights</string>
+    <string name="route_title_table_drilldown">Détails</string>
+    <string name="calendar_week_abbrev">Sem.</string>
+    <string name="user_added_successfully">Profil %1$s ajouté avec succès.</string>
+    <string name="error_duplicate_timestamp">Non enregistrée — une mesure existe déjà à %1$s.</string>
+    <string name="action_undo">Annuler</string>
+    <string name="cd_chart_handle_resize">Faites glisser pour redimensionner le graphique, ou appuyez dessus pour le réduire</string>
+    <string name="cd_chart_handle_show">Appuyez pour afficher le graphique</string>
+    <string name="dialog_title_discard_changes">Annuler les modifications ?</string>
+    <string name="dialog_message_discard_changes">Vos modifications n\'ont pas été sauvegardées et seront perdues.</string>
 </resources>
