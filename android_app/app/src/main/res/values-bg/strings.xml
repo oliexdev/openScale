@@ -220,8 +220,8 @@
     <string name="lbm_boer_1984_long">Оценка на мускулна маса в клинични условия. Регресия от височина и тегло спрямо пола.</string>
     <string name="lbm_hume_1966_short">Hume формула за смятане на не мазнината част от тялото</string>
     <string name="lbm_weight_minus_bf_short">Тегло − Телесни мазнини</string>
-    <string name="bf_us_navy_short">Метод на Военноморските сили на САЩ</string>
-    <string name="bf_us_navy_long">Изчислява процента на телесните мазнини въз основа на обиколката на талията, врата и (при жените) бедрата, съгласно стандарта на Военноморските сили на САЩ.</string>
+    <string name="bf_us_navy_short">U.S Navy метод</string>
+    <string name="bf_us_navy_long">Изчислява процента на телесните мазнини въз основа на обиколката на талията, врата и (при жените) бедрата, съгласно стандарта на U.S. Navy.</string>
     <string name="batch_update_status_report">%1$d: %2$s</string>
     <string name="dialog_title_confirm_generic">Потвърждаване на %1$s?</string>
     <string name="dialog_text_confirm_generic_verb">Искате ли да %2$s%1$d елементи?</string>
