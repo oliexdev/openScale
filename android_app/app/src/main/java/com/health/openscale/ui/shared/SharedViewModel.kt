@@ -895,6 +895,12 @@ class SharedViewModel @Inject constructor(
                     LogManager.w(TAG, "Backfill skip: BMI type not found.")
                     return@launch
                 }
+                // Types needed to detect measurements that qualify for metabolic
+                // age (weight + body-fat/LBM) but don't have it yet — e.g. after
+                // upgrading to a build that introduced the metabolic-age metric.
+                val metabolicAgeType = types.firstOrNull { it.key == MeasurementTypeKey.METABOLIC_AGE }
+                val bodyFatType = types.firstOrNull { it.key == MeasurementTypeKey.BODY_FAT }
+                val lbmType = types.firstOrNull { it.key == MeasurementTypeKey.LBM }
 
                 val users = withTimeoutOrNull(10.seconds) {
                     allUsers.first { it.isNotEmpty() }
@@ -917,11 +923,29 @@ class SharedViewModel @Inject constructor(
                             v.type.id == bmiType.id && (v.value.floatValue ?: 0f) > 0f
                         }
                     }
-                    if (hasAnyBmi) return@forEach
+                    // Also backfill when a measurement carries body composition
+                    // (body-fat or LBM) but lacks a metabolic-age value. This is
+                    // idempotent and self-terminating: once the values exist the
+                    // condition turns false and no further recalculation happens.
+                    val needsMetabolicAgeBackfill = metabolicAgeType != null && allForUser.any { mwv ->
+                        val hasComposition = mwv.values.any { v ->
+                            (v.type.id == bodyFatType?.id || v.type.id == lbmType?.id) &&
+                                (v.value.floatValue ?: 0f) > 0f
+                        }
+                        val hasMetabolicAge = mwv.values.any { v ->
+                            v.type.id == metabolicAgeType.id && (v.value.floatValue ?: 0f) > 0f
+                        }
+                        hasComposition && !hasMetabolicAge
+                    }
+                    if (hasAnyBmi && !needsMetabolicAgeBackfill) return@forEach
 
                     usersAffected++
                     totalMeasurements += allForUser.size
-                    LogManager.i(TAG, "No BMI for userId=${user.id} — recalculating ${allForUser.size} measurements…")
+                    val missing = buildList {
+                        if (!hasAnyBmi) add("BMI")
+                        if (needsMetabolicAgeBackfill) add("metabolic age")
+                    }.joinToString(", ")
+                    LogManager.i(TAG, "Missing derived values [$missing] for userId=${user.id} — recalculating ${allForUser.size} measurements…")
                     showSnackbar(messageResId = R.string.derived_backfill_start, duration = SnackbarDuration.Short)
 
                     allForUser.forEach { mwv ->

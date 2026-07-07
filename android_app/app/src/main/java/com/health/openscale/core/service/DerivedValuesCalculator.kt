@@ -132,7 +132,8 @@ class DerivedValuesCalculator @Inject constructor(
 
         // Fetch raw values and their original units
         val (weightValue, weightUnitType) = findValueAndUnit(MeasurementTypeKey.WEIGHT)
-        val (bodyFatValue, _) = findValueAndUnit(MeasurementTypeKey.BODY_FAT) // Unit usually % (UnitType.PERCENT)
+        val (bodyFatValue, bodyFatUnitType) = findValueAndUnit(MeasurementTypeKey.BODY_FAT) // Unit usually % (UnitType.PERCENT)
+        val (lbmValue, lbmUnitType) = findValueAndUnit(MeasurementTypeKey.LBM) // Unit usually kg (UnitType.KG)
         val (waistValue, waistUnitType) = findValueAndUnit(MeasurementTypeKey.WAIST)
         val (hipsValue, hipsUnitType) = findValueAndUnit(MeasurementTypeKey.HIPS)
         val (caliper1Value, caliper1UnitType) = findValueAndUnit(MeasurementTypeKey.CALIPER_1)
@@ -209,6 +210,25 @@ class DerivedValuesCalculator @Inject constructor(
             birthDateMillis = user.birthDate
         )
 
+        // Fat-free (lean) mass in kg, used for the body-composition-aware
+        // (Katch-McArdle) BMR behind metabolic age. Prefer a measured LBM value;
+        // otherwise derive it from weight and body-fat. Body-fat may be stored as
+        // a percentage or as an absolute mass, so normalise to a percentage first.
+        val fatFreeMassKg: Float? = when {
+            lbmValue != null && lbmValue > 0f && lbmUnitType != null && lbmUnitType.isWeightUnit() ->
+                ConverterUtils.toKilogram(lbmValue, lbmUnitType.toWeightUnit())
+            weightKg != null && weightKg > 0f && bodyFatValue != null && bodyFatValue > 0f && bodyFatUnitType != null -> {
+                val bodyFatPercent = when (bodyFatUnitType) {
+                    UnitType.PERCENT -> bodyFatValue
+                    UnitType.KG, UnitType.LB, UnitType.ST ->
+                        ConverterUtils.toKilogram(bodyFatValue, bodyFatUnitType.toWeightUnit()) / weightKg * 100f
+                    else -> null
+                }
+                bodyFatPercent?.takeIf { it in 1f..75f }?.let { weightKg * (1f - it / 100f) }
+            }
+            else -> null
+        }
+
         // --- PERFORM DERIVED VALUE CALCULATIONS ---
         // Pass the converted values (e.g., weightKg, waistCm) to the processing functions
 
@@ -230,6 +250,13 @@ class DerivedValuesCalculator @Inject constructor(
             gender = user.gender
         )?.also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.BMR) }
         processTDEECalculation(bmr, user.activityLevel).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.TDEE) }
+
+        processMetabolicAgeCalculation(
+            weightKg = weightKg,
+            heightCm = user.heightCm,
+            gender = user.gender,
+            fatFreeMassKg = fatFreeMassKg
+        ).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.METABOLIC_AGE) }
 
         processFatCaliperCalculation(
             caliper1Cm = caliper1Cm,
@@ -302,6 +329,43 @@ class DerivedValuesCalculator @Inject constructor(
             GenderType.MALE   -> (10.0f * weightKg) + (6.25f * heightCm) - (5.0f * ageYears) + 5.0f
             GenderType.FEMALE -> (10.0f * weightKg) + (6.25f * heightCm) - (5.0f * ageYears) - 161.0f
         }
+    }
+
+    /**
+     * Science-based metabolic age (years): the age at which the population-normative
+     * BMR (Mifflin-St Jeor, evaluated at the user's own weight/height/gender) equals
+     * the user's actual body-composition BMR (Katch-McArdle, from fat-free mass).
+     *
+     * actualBMR   = 370 + 21.6 * FFM_kg                       (Katch-McArdle)
+     * refBMR(age) = 10*w + 6.25*h - 5*age + s ; s = +5 (male), -161 (female)  (Mifflin-St Jeor)
+     * Solving refBMR(metAge) = actualBMR (linear in age):
+     *   metAge = (10*w + 6.25*h + s - actualBMR) / 5
+     *
+     * A higher actual BMR (more lean mass) yields a younger metabolic age.
+     * Chronological age is not an input. Requires a fat-free-mass signal.
+     */
+    @VisibleForTesting
+    internal fun processMetabolicAgeCalculation(
+        weightKg: Float?,
+        heightCm: Float?,
+        gender: GenderType,
+        fatFreeMassKg: Float?
+    ): Float? {
+        if (weightKg == null || weightKg <= 0f ||
+            heightCm == null || heightCm <= 0f ||
+            fatFreeMassKg == null || fatFreeMassKg <= 0f
+        ) {
+            LogManager.d(CALC_PROCESS_TAG, "Metabolic age skipped: missing/invalid weight, height or fat-free mass.")
+            return null
+        }
+
+        val actualBmr = 370.0f + 21.6f * fatFreeMassKg // Katch-McArdle
+        val genderConst = when (gender) {
+            GenderType.MALE -> 5.0f
+            GenderType.FEMALE -> -161.0f
+        }
+        val metAge = ((10.0f * weightKg) + (6.25f * heightCm) + genderConst - actualBmr) / 5.0f
+        return metAge.coerceIn(15.0f, 99.0f)
     }
 
     @VisibleForTesting

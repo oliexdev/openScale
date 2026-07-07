@@ -161,4 +161,50 @@ class DerivedValuesCalculatorFormulasTest {
         assertThat(DerivedValuesCalculator.processFatCaliperCalculation(0f, 1f, 1f, 25, GenderType.MALE)).isNull()
         assertThat(DerivedValuesCalculator.processFatCaliperCalculation(1f, 1f, null, 25, GenderType.MALE)).isNull()
     }
+
+    // ---- Metabolic age (invert BMR-vs-age curve) ------------------------------------------------
+
+    @Test
+    fun metabolicAge_male_matchesInvertedCurve() {
+        // Mifflin intercept (age 0, male): 10*80 + 6.25*175 + 5 = 1898.75
+        // Katch-McArdle actual BMR: 370 + 21.6*60 = 1666
+        // metAge = (1898.75 - 1666) / 5 = 46.55
+        val age = DerivedValuesCalculator.processMetabolicAgeCalculation(80f, 175f, GenderType.MALE, 60f)
+        assertThat(age).isNotNull()
+        assertThat(age!!).isWithin(EPS).of(46.55f)
+    }
+
+    @Test
+    fun metabolicAge_female_usesFemaleConstant() {
+        // Mifflin intercept (age 0, female): 10*80 + 6.25*175 - 161 = 1732.75
+        // actual BMR: 370 + 21.6*55 = 1558 -> metAge = (1732.75 - 1558) / 5 = 34.95
+        val age = DerivedValuesCalculator.processMetabolicAgeCalculation(80f, 175f, GenderType.FEMALE, 55f)
+        assertThat(age).isNotNull()
+        assertThat(age!!).isWithin(EPS).of(34.95f)
+    }
+
+    @Test
+    fun metabolicAge_higherFatFreeMass_yieldsYoungerAge() {
+        val leaner = DerivedValuesCalculator.processMetabolicAgeCalculation(80f, 175f, GenderType.MALE, 65f)!!
+        val fatter = DerivedValuesCalculator.processMetabolicAgeCalculation(80f, 175f, GenderType.MALE, 60f)!!
+        assertThat(leaner).isLessThan(fatter)
+    }
+
+    @Test
+    fun metabolicAge_isClampedToPlausibleRange() {
+        // Very high FFM drives the raw result well below 15 -> clamp to 15.
+        val young = DerivedValuesCalculator.processMetabolicAgeCalculation(80f, 175f, GenderType.MALE, 90f)!!
+        assertThat(young).isWithin(EPS).of(15f)
+        // Very low FFM drives the raw result well above 99 -> clamp to 99.
+        val old = DerivedValuesCalculator.processMetabolicAgeCalculation(80f, 175f, GenderType.MALE, 1f)!!
+        assertThat(old).isWithin(EPS).of(99f)
+    }
+
+    @Test
+    fun metabolicAge_returnsNull_forMissingOrNonPositiveInputs() {
+        assertThat(DerivedValuesCalculator.processMetabolicAgeCalculation(null, 175f, GenderType.MALE, 60f)).isNull()
+        assertThat(DerivedValuesCalculator.processMetabolicAgeCalculation(80f, 0f, GenderType.MALE, 60f)).isNull()
+        assertThat(DerivedValuesCalculator.processMetabolicAgeCalculation(80f, 175f, GenderType.MALE, null)).isNull()
+        assertThat(DerivedValuesCalculator.processMetabolicAgeCalculation(80f, 175f, GenderType.MALE, 0f)).isNull()
+    }
 }

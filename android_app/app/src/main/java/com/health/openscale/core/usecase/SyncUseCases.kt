@@ -318,6 +318,7 @@ object GenericValueJson {
         UnitType.KCAL -> "kcal"
         UnitType.BPM -> "/min"
         UnitType.OHM -> "Ohm"
+        UnitType.YEARS -> "a"
         UnitType.NONE -> ""
     }
 }

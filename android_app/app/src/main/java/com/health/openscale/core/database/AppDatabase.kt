@@ -47,7 +47,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext ctx: Context): AppDatabase =
         Room.databaseBuilder(ctx, AppDatabase::class.java, AppDatabase.Companion.DATABASE_NAME)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16)
             .build()
 
     @Provides
@@ -74,7 +74,7 @@ object DatabaseModule {
         MeasurementValue::class,
         MeasurementType::class,
     ],
-    version = 15,
+    version = 16,
     exportSchema = true
 )
 @TypeConverters(DatabaseConverters::class)
@@ -578,6 +578,56 @@ val MIGRATION_14_15 = object : Migration(14, 15) {
             MeasurementTypeKey.PROTEIN,
             MeasurementTypeKey.BCM,
         )
+        val newTypes = getDefaultMeasurementTypes().filter { it.key in newKeys }
+        newTypes.forEach { type ->
+            db.execSQL(
+                """
+                INSERT OR IGNORE INTO MeasurementType
+                    (`key`, `name`, `color`, `icon`, `unit`, `inputType`, `displayOrder`,
+                     `isDerived`, `isEnabled`, `isPinned`, `isOnRightYAxis`, `isInternal`)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """.trimIndent(),
+                arrayOf<Any?>(
+                    type.key.name,
+                    null,
+                    type.color,
+                    type.icon.name,
+                    type.unit.name,
+                    type.inputType.name,
+                    -1,
+                    if (type.isDerived) 1 else 0,
+                    if (type.isEnabled) 1 else 0,
+                    if (type.isPinned) 1 else 0,
+                    if (type.isOnRightYAxis) 1 else 0,
+                    if (type.isInternal) 1 else 0
+                )
+            )
+        }
+
+        // Re-apply displayOrder to keep new + existing types aligned with the
+        // canonical order from getDefaultMeasurementTypes().
+        val defaultTypesInOrder = getDefaultMeasurementTypes()
+        db.beginTransaction()
+        try {
+            defaultTypesInOrder.forEachIndexed { index, measurementType ->
+                db.execSQL(
+                    "UPDATE MeasurementType SET displayOrder = ? WHERE `key` = ?",
+                    arrayOf<Any?>(index + 1, measurementType.key.name)
+                )
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+}
+
+val MIGRATION_15_16 = object : Migration(15, 16) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Seed the new derived MeasurementType introduced for science-based
+        // metabolic age. No schema change; existing installs receive the type
+        // here, new installs via getDefaultMeasurementTypes().
+        val newKeys = setOf(MeasurementTypeKey.METABOLIC_AGE)
         val newTypes = getDefaultMeasurementTypes().filter { it.key in newKeys }
         newTypes.forEach { type ->
             db.execSQL(

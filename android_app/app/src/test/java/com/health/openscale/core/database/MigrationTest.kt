@@ -22,6 +22,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -79,7 +80,18 @@ class MigrationTest {
         assertThat(weight).isNotNull()
 
         // The rewrite seeds the default measurement types.
-        assertThat(repo.getAllMeasurementTypes().first()).isNotEmpty()
+        val types = repo.getAllMeasurementTypes().first()
+        assertThat(types).isNotEmpty()
+
+        // Running the full chain (incl. MIGRATION_15_16) must produce the
+        // metabolic-age type with a positive displayOrder. (Exact-count/uniqueness
+        // can't be asserted on this synthetic v6 fixture: MIGRATION_6_7 already
+        // seeds it from the current getDefaultMeasurementTypes(), and the unique
+        // index on `key` is dropped in MIGRATION_13_14 — the same is true of every
+        // later add-a-type migration. Real v15->16 upgrades add exactly one row.)
+        val metabolicAge = types.firstOrNull { it.key == MeasurementTypeKey.METABOLIC_AGE }
+        assertThat(metabolicAge).isNotNull()
+        assertThat(metabolicAge!!.displayOrder).isGreaterThan(0)
     }
 
     /**

@@ -53,6 +53,8 @@ class DerivedValuesCalculatorIntegrationTest {
     private var userId = 0
     private var weightTypeId = 0
     private var bmiTypeId = 0
+    private var bodyFatTypeId = 0
+    private var metabolicAgeTypeId = 0
 
     @Before
     fun setUp() = runBlocking {
@@ -61,6 +63,8 @@ class DerivedValuesCalculatorIntegrationTest {
         val types = db.measurementTypeDao().getAll().first()
         weightTypeId = types.first { it.key == MeasurementTypeKey.WEIGHT }.id
         bmiTypeId = types.first { it.key == MeasurementTypeKey.BMI }.id
+        bodyFatTypeId = types.first { it.key == MeasurementTypeKey.BODY_FAT }.id
+        metabolicAgeTypeId = types.first { it.key == MeasurementTypeKey.METABOLIC_AGE }.id
 
         userId = db.userDao().insert(
             User(
@@ -125,6 +129,56 @@ class DerivedValuesCalculatorIntegrationTest {
         assertThat(
             db.measurementValueDao().getValuesForMeasurement(measurementId).first()
                 .any { it.typeId == bmiTypeId }
+        ).isFalse()
+    }
+
+    @Test
+    fun recalculate_insertsMetabolicAge_fromWeightAndBodyFat() = runBlocking {
+        val measurementId = db.measurementDao().insert(
+            Measurement(userId = userId, timestamp = 3_000L)
+        ).toInt()
+        db.measurementValueDao().insert(
+            MeasurementValue(measurementId = measurementId, typeId = weightTypeId, floatValue = 80f)
+        )
+        db.measurementValueDao().insert(
+            MeasurementValue(measurementId = measurementId, typeId = bodyFatTypeId, floatValue = 20f)
+        )
+
+        calculator.recalculateDerivedValuesForMeasurement(measurementId)
+
+        val values = db.measurementValueDao().getValuesForMeasurement(measurementId).first()
+        val metabolicAge = values.firstOrNull { it.typeId == metabolicAgeTypeId }?.floatValue
+        assertThat(metabolicAge).isNotNull()
+        // FFM = 80*(1-0.20) = 64 -> actualBMR = 370 + 21.6*64 = 1752.4
+        // intercept (male) = 10*80 + 6.25*175 + 5 = 1898.75 -> metAge = 146.35/5 = 29.27
+        assertThat(metabolicAge!!).isWithin(0.05f).of(29.27f)
+    }
+
+    @Test
+    fun recalculate_skipsMetabolicAge_whenNoBodyComposition() = runBlocking {
+        val measurementId = db.measurementDao().insert(
+            Measurement(userId = userId, timestamp = 4_000L)
+        ).toInt()
+        val bodyFatValueId = db.measurementValueDao().insert(
+            MeasurementValue(measurementId = measurementId, typeId = weightTypeId, floatValue = 80f)
+        ).let {
+            db.measurementValueDao().insert(
+                MeasurementValue(measurementId = measurementId, typeId = bodyFatTypeId, floatValue = 20f)
+            )
+        }
+        calculator.recalculateDerivedValuesForMeasurement(measurementId)
+        assertThat(
+            db.measurementValueDao().getValuesForMeasurement(measurementId).first()
+                .any { it.typeId == metabolicAgeTypeId }
+        ).isTrue()
+
+        // remove the body-fat source and recalc -> metabolic age must be deleted
+        db.measurementValueDao().deleteById(bodyFatValueId.toInt())
+        calculator.recalculateDerivedValuesForMeasurement(measurementId)
+
+        assertThat(
+            db.measurementValueDao().getValuesForMeasurement(measurementId).first()
+                .any { it.typeId == metabolicAgeTypeId }
         ).isFalse()
     }
 }

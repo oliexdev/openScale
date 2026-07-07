@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Grain
 import androidx.compose.material.icons.filled.Height
 import androidx.compose.material.icons.filled.Hive
+import androidx.compose.material.icons.filled.HourglassBottom
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalDining
 import androidx.compose.material.icons.filled.LocalDrink
@@ -362,7 +363,8 @@ enum class MeasurementTypeIcon(val resource: IconResource) {
     IC_M_WATER_DROP(IconResource.VectorResource(Icons.Filled.WaterDrop)),
     IC_M_SCATTER_PLOT(IconResource.VectorResource(Icons.Filled.ScatterPlot)),
     IC_M_BUBBLE_CHART(IconResource.VectorResource(Icons.Filled.BubbleChart)),
-    IC_M_HIVE(IconResource.VectorResource(Icons.Filled.Hive));
+    IC_M_HIVE(IconResource.VectorResource(Icons.Filled.Hive)),
+    IC_M_METABOLIC_AGE(IconResource.VectorResource(Icons.Filled.HourglassBottom));
 }
 
 enum class MeasurementTypeKey(
@@ -405,6 +407,7 @@ enum class MeasurementTypeKey(
     ICW(32, R.string.measurement_type_icw, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     PROTEIN(33, R.string.measurement_type_protein, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     BCM(34, R.string.measurement_type_bcm, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
+    METABOLIC_AGE(35, R.string.measurement_type_metabolic_age, listOf(UnitType.YEARS), listOf(InputFieldType.FLOAT)),
     CUSTOM(99, R.string.measurement_type_custom_default_name, UnitType.entries.toList(), listOf(InputFieldType.FLOAT, InputFieldType.INT, InputFieldType.TEXT, InputFieldType.DATE, InputFieldType.TIME));
 }
 
@@ -419,6 +422,7 @@ enum class UnitType(val displayName: String) {
     KCAL("kcal"),
     BPM("bpm"),
     OHM("Ω"),
+    YEARS("years"),
     NONE("");
 
     fun isWeightUnit(): Boolean {

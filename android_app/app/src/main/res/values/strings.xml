@@ -198,6 +198,7 @@
     <string name="s400_bmr_formula_cun91">Cunningham 1991</string>
     <string name="s400_bmr_formula_cun80">Cunningham 1980</string>
     <string name="measurement_type_tdee">TDEE</string>
+    <string name="measurement_type_metabolic_age">Metabolic Age</string>
     <string name="measurement_type_calories">Calories</string>
     <string name="measurement_type_comment">Comment</string>
     <string name="measurement_type_date">Date</string>
