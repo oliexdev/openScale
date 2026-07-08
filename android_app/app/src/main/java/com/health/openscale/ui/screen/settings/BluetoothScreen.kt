@@ -248,7 +248,10 @@ fun BluetoothScreen(
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 Text(
-                                        text = savedDevice?.name ?: stringResource(R.string.unknown_device),
+                                        // Some scales advertise no name; fall back to the handler's display name.
+                                        text = savedDevice?.name?.takeIf { it.isNotBlank() }
+                                            ?: savedDevice?.determinedHandlerDisplayName
+                                            ?: stringResource(R.string.unknown_device),
                                         style = MaterialTheme.typography.titleSmall
                                 )
                                 Text(
