@@ -72,6 +72,7 @@ import com.health.openscale.core.bluetooth.scales.StandardBeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.TrisaBodyAnalyzeHandler
 import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.bluetooth.scales.YunmaiHandler
+import com.health.openscale.core.bluetooth.scales.YunmaiXHandler
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
@@ -111,6 +112,7 @@ class ScaleFactory @Inject constructor(
         RealmeSmartScaleHandler(),
         YunmaiHandler(isMini = false),
         YunmaiHandler(isMini = true),
+        YunmaiXHandler(),
         TrisaBodyAnalyzeHandler(),
         SanitasSbf72Handler(),
         StandardBeurerSanitasHandler(),

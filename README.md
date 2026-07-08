@@ -42,7 +42,7 @@ openScale has built-in support for a number of Bluetooth (BLE or "smart") scales
 - Silvercrest SBF75, SBF77
 - Vigorun
 - Xiaomi Mi scale v1 and v2
-- Yunmai Mini and SE
+- Yunmai Mini, SE and X
 - iHealth HS3
 - Easy Home 64050
 - and many more
