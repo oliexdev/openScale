@@ -21,6 +21,7 @@ import android.content.Context
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
+import com.health.openscale.core.bluetooth.scales.ScaleupHandler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
 import com.health.openscale.core.bluetooth.scales.CultSmartScaleProHandler
 import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
@@ -149,6 +150,7 @@ class ScaleFactory @Inject constructor(
         CustomOpenScaleHandler(),
         BeurerSanitasHandler(),
         AAAxHandler(),
+        ScaleupHandler(),
         ActiveEraBF06Handler(),
         DrTrustSSW532Handler(),
         BodyConnectHandler(),
