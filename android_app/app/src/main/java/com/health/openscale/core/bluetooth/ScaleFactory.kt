@@ -68,6 +68,7 @@ import com.health.openscale.core.bluetooth.scales.SoehnleHandler
 import com.health.openscale.core.bluetooth.scales.SppScaleAdapter
 import com.health.openscale.core.bluetooth.scales.TaylorBIAHandler
 import com.health.openscale.core.bluetooth.scales.DrTrustSSW532Handler
+import com.health.openscale.core.bluetooth.scales.EEBBLHandler
 import com.health.openscale.core.bluetooth.scales.StandardBeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.TrisaBodyAnalyzeHandler
 import com.health.openscale.core.bluetooth.scales.TuningProfile
@@ -128,6 +129,7 @@ class ScaleFactory @Inject constructor(
         MiScaleHandler(),
         RunstarR5Handler(),
         RobiS9Handler(),
+        EEBBLHandler(),
         MGBHandler(),
         MedisanaBs44xHandler(),
         InlifeHandler(),
