@@ -181,4 +181,14 @@ object LocaleUtils {
             isGroupingUsed = false
         }.format(cleaned)
     }
+
+    /**
+     * Parses a user-entered decimal string tolerantly, accepting either a dot or a comma as the
+     * decimal separator. On locales such as Spanish the number keyboard emits a comma (e.g.
+     * "80,5"), which the plain [String.toFloatOrNull] rejects. Returns null if the string is not a
+     * valid number. Mirrors the `replace(',', '.')` pattern already used at the goal-input sites.
+     */
+    @JvmStatic
+    fun parseLocalizedFloat(value: String): Float? =
+        value.trim().replace(',', '.').toFloatOrNull()
 }

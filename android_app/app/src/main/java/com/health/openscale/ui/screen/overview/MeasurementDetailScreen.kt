@@ -297,7 +297,7 @@ fun MeasurementDetailScreen(
 
                             when (type.inputType) {
                                 InputFieldType.FLOAT -> {
-                                    floatVal = inputString.toFloatOrNull()
+                                    floatVal = LocaleUtils.parseLocalizedFloat(inputString)
                                     if (floatVal == null) {
                                         Toast.makeText(
                                             context,
@@ -473,7 +473,7 @@ fun MeasurementDetailScreen(
                         } else {
                             var isValid = false
                             if (currentType.inputType == InputFieldType.FLOAT) {
-                                val floatOrNull = trimmedValue.toFloatOrNull()
+                                val floatOrNull = LocaleUtils.parseLocalizedFloat(trimmedValue)
                                 if (floatOrNull != null) {
                                     valuesState[currentType.id] = floatOrNull.toString()
                                     isValid = true
@@ -735,7 +735,7 @@ fun incrementValue(value: String, type: MeasurementType): String {
                 else -> 0.1f
             }
 
-            (value.toFloatOrNull()?.plus(step) ?: 0.1f).toString()
+            (LocaleUtils.parseLocalizedFloat(value)?.plus(step) ?: 0.1f).toString()
         }
         else -> value
     }
@@ -752,7 +752,7 @@ fun decrementValue(value: String, type: MeasurementType): String {
                 else -> 0.1f
             }
 
-            (value.toFloatOrNull()?.minus(step) ?: 0.1f).toString()
+            (LocaleUtils.parseLocalizedFloat(value)?.minus(step) ?: 0.1f).toString()
         }
         else -> value
     }

@@ -322,8 +322,10 @@ fun UserDetailScreen(
         OutlinedTextField(
             value = heightValueString,
             onValueChange = { newValue ->
-                val filteredValue = newValue.filter { it.isDigit() || it == '.' }
-                if (filteredValue.count { it == '.' } <= 1) {
+                // Accept both '.' and ',' as decimal separators so comma-locale keyboards
+                // (e.g. Spanish) can enter decimals; addUser()/updateUser() normalize on save.
+                val filteredValue = newValue.filter { it.isDigit() || it == '.' || it == ',' }
+                if (filteredValue.count { it == '.' || it == ',' } <= 1) {
                     heightValueString = filteredValue
                 }
             },
@@ -337,7 +339,7 @@ fun UserDetailScreen(
                     val nextIndex = (currentIndex + 1) % heightUnitsOptions.size
                     val newUnit = heightUnitsOptions[nextIndex]
 
-                    val currentNumericValue = heightValueString.toFloatOrNull()
+                    val currentNumericValue = heightValueString.replace(',', '.').toFloatOrNull()
                     if (currentNumericValue != null && currentNumericValue > 0f) {
                         val convertedValue = ConverterUtils.convertFloatValueUnit(currentNumericValue, heightInputUnit, newUnit)
                         heightValueString = String.format(Locale.US, "%.1f", convertedValue)
