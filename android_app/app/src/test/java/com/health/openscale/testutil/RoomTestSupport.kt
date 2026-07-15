@@ -31,6 +31,11 @@ import com.health.openscale.core.database.MIGRATION_11_12
 import com.health.openscale.core.database.MIGRATION_12_13
 import com.health.openscale.core.database.MIGRATION_13_14
 import com.health.openscale.core.database.MIGRATION_14_15
+import com.health.openscale.core.database.MIGRATION_1_2
+import com.health.openscale.core.database.MIGRATION_2_3
+import com.health.openscale.core.database.MIGRATION_3_4
+import com.health.openscale.core.database.MIGRATION_4_5
+import com.health.openscale.core.database.MIGRATION_5_6
 import com.health.openscale.core.database.MIGRATION_6_7
 import com.health.openscale.core.database.MIGRATION_7_8
 import com.health.openscale.core.database.MIGRATION_8_9
@@ -74,6 +79,7 @@ object RoomTestSupport {
 
     /** The full, ordered migration chain — must mirror DatabaseModule.provideDatabase. */
     val ALL_MIGRATIONS: Array<Migration> = arrayOf(
+        MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
         MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
         MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15,
     )
@@ -168,6 +174,75 @@ object RoomTestSupport {
                 """.trimIndent()
             )
             database.execSQL("PRAGMA user_version = 6")
+        } finally {
+            database.close()
+        }
+    }
+
+    /**
+     * Writes the oldest legacy openScale schema (version 1) with one user and one measurement.
+     * Opening it with the full migration chain exercises MIGRATION_1_2 .. MIGRATION_5_6 (the
+     * migrations restored for issue #1410) before the MIGRATION_6_7 rewrite — i.e. the exact path
+     * a pre-v2.5 backup (e.g. v2.3.1, user_version=5) needs. The column set and order of
+     * `scaleMeasurements` must match MIGRATION_1_2's `INSERT ... SELECT *` target.
+     * User: gender=1 (FEMALE), height 170cm. Measurement: weight 80.5.
+     */
+    fun writeLegacyV1Database(file: File) {
+        val database = SQLiteDatabase.openOrCreateDatabase(file, null)
+        try {
+            database.execSQL(
+                """
+                    CREATE TABLE scaleUsers (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        username TEXT NOT NULL,
+                        birthday INTEGER NOT NULL,
+                        bodyHeight REAL NOT NULL,
+                        scaleUnit INTEGER NOT NULL,
+                        gender INTEGER NOT NULL,
+                        initialWeight REAL NOT NULL,
+                        goalWeight REAL NOT NULL,
+                        goalDate INTEGER
+                    )
+                """.trimIndent()
+            )
+            // v1 scaleMeasurements column order must line up with MIGRATION_1_2's SELECT *.
+            database.execSQL(
+                """
+                    CREATE TABLE scaleMeasurements (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        userId INTEGER NOT NULL,
+                        enabled INTEGER NOT NULL,
+                        datetime INTEGER,
+                        weight REAL NOT NULL,
+                        fat REAL NOT NULL,
+                        water REAL NOT NULL,
+                        muscle REAL NOT NULL,
+                        lbw REAL NOT NULL,
+                        waist REAL NOT NULL,
+                        hip REAL NOT NULL,
+                        bone REAL NOT NULL,
+                        comment TEXT
+                    )
+                """.trimIndent()
+            )
+            database.execSQL(
+                "CREATE INDEX index_scaleMeasurements_datetime ON scaleMeasurements (datetime)"
+            )
+            database.execSQL(
+                """
+                    INSERT INTO scaleUsers
+                        (id, username, birthday, bodyHeight, scaleUnit, gender, initialWeight, goalWeight, goalDate)
+                    VALUES (1, 'legacy-user', 946684800000, 170.0, 0, 1, 80.0, 75.0, NULL)
+                """.trimIndent()
+            )
+            database.execSQL(
+                """
+                    INSERT INTO scaleMeasurements
+                        (id, userId, enabled, datetime, weight, fat, water, muscle, lbw, waist, hip, bone, comment)
+                    VALUES (1, 1, 1, 1712325600000, 80.5, 0, 0, 0, 0, 0, 0, 0, 'legacy measurement')
+                """.trimIndent()
+            )
+            database.execSQL("PRAGMA user_version = 1")
         } finally {
             database.close()
         }

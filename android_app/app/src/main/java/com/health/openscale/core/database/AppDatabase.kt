@@ -47,7 +47,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext ctx: Context): AppDatabase =
         Room.databaseBuilder(ctx, AppDatabase::class.java, AppDatabase.Companion.DATABASE_NAME)
-            .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15)
             .build()
 
     @Provides
@@ -88,6 +88,176 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         const val DATABASE_NAME = "openScale.db"
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Legacy v2.x migrations (schema versions 1..6).
+//
+// These were shipped by the old Java app (see
+// v2.5.4:.../core/database/AppDatabase.java) and were dropped during the Kotlin
+// rewrite, which registered only 6..15. A database exported from an older v2.x
+// build carries a `user_version` below 6 (e.g. v2.3.1 == 5), so restoring it and
+// launching v3.x left Room without a migration path and it crashed on launch
+// (issue #1410). Restoring these brings a v1..v5 database up to version 6, where
+// MIGRATION_6_7 (the legacy schema converter) takes over. The SQL is a verbatim
+// port of the original, production-tested migrations; Room already wraps each
+// migration in a transaction, so the old explicit begin/end calls are omitted.
+// -----------------------------------------------------------------------------
+
+val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Drop old index on datetime only
+        db.execSQL("DROP INDEX index_scaleMeasurements_datetime")
+
+        // Rename old table
+        db.execSQL("ALTER TABLE scaleMeasurements RENAME TO scaleMeasurementsOld")
+
+        // Create new table with foreign key
+        db.execSQL(
+            "CREATE TABLE scaleMeasurements" +
+                " (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                " userId INTEGER NOT NULL, enabled INTEGER NOT NULL," +
+                " datetime INTEGER, weight REAL NOT NULL, fat REAL NOT NULL," +
+                " water REAL NOT NULL, muscle REAL NOT NULL, lbw REAL NOT NULL," +
+                " waist REAL NOT NULL, hip REAL NOT NULL, bone REAL NOT NULL," +
+                " comment TEXT, FOREIGN KEY(userId) REFERENCES scaleUsers(id)" +
+                " ON UPDATE NO ACTION ON DELETE CASCADE)"
+        )
+
+        // Create new index on datetime + userId
+        db.execSQL(
+            "CREATE UNIQUE INDEX index_scaleMeasurements_userId_datetime" +
+                " ON scaleMeasurements (userId, datetime)"
+        )
+
+        // Copy data from the old table, ignoring those with invalid userId (if any)
+        db.execSQL(
+            "INSERT INTO scaleMeasurements" +
+                " SELECT * FROM scaleMeasurementsOld" +
+                " WHERE userId IN (SELECT id from scaleUsers)"
+        )
+
+        // Delete old table
+        db.execSQL("DROP TABLE scaleMeasurementsOld")
+    }
+}
+
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Drop old index
+        db.execSQL("DROP INDEX index_scaleMeasurements_userId_datetime")
+
+        // Rename old tables
+        db.execSQL("ALTER TABLE scaleMeasurements RENAME TO scaleMeasurementsOld")
+        db.execSQL("ALTER TABLE scaleUsers RENAME TO scaleUsersOld")
+
+        // Create new table with foreign key
+        db.execSQL(
+            "CREATE TABLE scaleMeasurements" +
+                " (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                " userId INTEGER NOT NULL, enabled INTEGER NOT NULL," +
+                " datetime INTEGER, weight REAL NOT NULL, fat REAL NOT NULL," +
+                " water REAL NOT NULL, muscle REAL NOT NULL, visceralFat REAL NOT NULL," +
+                " lbm REAL NOT NULL, waist REAL NOT NULL, hip REAL NOT NULL," +
+                " bone REAL NOT NULL, chest REAL NOT NULL, thigh REAL NOT NULL," +
+                " biceps REAL NOT NULL, neck REAL NOT NULL, caliper1 REAL NOT NULL," +
+                " caliper2 REAL NOT NULL, caliper3 REAL NOT NULL, comment TEXT," +
+                " FOREIGN KEY(userId) REFERENCES scaleUsers(id)" +
+                " ON UPDATE NO ACTION ON DELETE CASCADE)"
+        )
+
+        db.execSQL(
+            "CREATE TABLE scaleUsers " +
+                "(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "username TEXT NOT NULL, birthday INTEGER NOT NULL, bodyHeight REAL NOT NULL, " +
+                "scaleUnit INTEGER NOT NULL, gender INTEGER NOT NULL, initialWeight REAL NOT NULL, " +
+                "goalWeight REAL NOT NULL, goalDate INTEGER, measureUnit INTEGER NOT NULL, activityLevel INTEGER NOT NULL)"
+        )
+
+        // Create new index on datetime + userId
+        db.execSQL(
+            "CREATE UNIQUE INDEX index_scaleMeasurements_userId_datetime" +
+                " ON scaleMeasurements (userId, datetime)"
+        )
+
+        // Copy data from the old tables
+        db.execSQL(
+            "INSERT INTO scaleMeasurements" +
+                " SELECT id, userId, enabled, datetime, weight, fat, water, muscle," +
+                " 0 AS visceralFat, lbw AS lbm, waist, hip, bone, 0 AS chest," +
+                " 0 as thigh, 0 as biceps, 0 as neck, 0 as caliper1," +
+                " 0 as caliper2, 0 as caliper3, comment FROM scaleMeasurementsOld"
+        )
+
+        db.execSQL(
+            "INSERT INTO scaleUsers" +
+                " SELECT id, username, birthday, bodyHeight, scaleUnit, gender, initialWeight, goalWeight," +
+                " goalDate, 0 AS measureUnit, 0 AS activityLevel FROM scaleUsersOld"
+        )
+
+        // Delete old tables
+        db.execSQL("DROP TABLE scaleMeasurementsOld")
+        db.execSQL("DROP TABLE scaleUsersOld")
+    }
+}
+
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Drop old index
+        db.execSQL("DROP INDEX index_scaleMeasurements_userId_datetime")
+
+        // Rename old table
+        db.execSQL("ALTER TABLE scaleMeasurements RENAME TO scaleMeasurementsOld")
+
+        // Create new table with foreign key
+        db.execSQL(
+            "CREATE TABLE scaleMeasurements" +
+                " (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                " userId INTEGER NOT NULL, enabled INTEGER NOT NULL," +
+                " datetime INTEGER, weight REAL NOT NULL, fat REAL NOT NULL," +
+                " water REAL NOT NULL, muscle REAL NOT NULL, visceralFat REAL NOT NULL," +
+                " lbm REAL NOT NULL, waist REAL NOT NULL, hip REAL NOT NULL," +
+                " bone REAL NOT NULL, chest REAL NOT NULL, thigh REAL NOT NULL," +
+                " biceps REAL NOT NULL, neck REAL NOT NULL, caliper1 REAL NOT NULL," +
+                " caliper2 REAL NOT NULL, caliper3 REAL NOT NULL, calories REAL NOT NULL, comment TEXT," +
+                " FOREIGN KEY(userId) REFERENCES scaleUsers(id)" +
+                " ON UPDATE NO ACTION ON DELETE CASCADE)"
+        )
+
+        // Create new index on datetime + userId
+        db.execSQL(
+            "CREATE UNIQUE INDEX index_scaleMeasurements_userId_datetime" +
+                " ON scaleMeasurements (userId, datetime)"
+        )
+
+        // Copy data from the old table
+        db.execSQL(
+            "INSERT INTO scaleMeasurements" +
+                " SELECT id, userId, enabled, datetime, weight, fat, water, muscle," +
+                " visceralFat, lbm, waist, hip, bone, chest," +
+                " thigh, biceps, neck, caliper1," +
+                " caliper2, caliper3, 0 as calories, comment FROM scaleMeasurementsOld"
+        )
+
+        // Delete old table
+        db.execSQL("DROP TABLE scaleMeasurementsOld")
+    }
+}
+
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Add assisted weighing and left/right amputation level to table
+        db.execSQL("ALTER TABLE scaleUsers ADD assistedWeighing INTEGER NOT NULL default 0")
+        db.execSQL("ALTER TABLE scaleUsers ADD leftAmputationLevel INTEGER NOT NULL default 0")
+        db.execSQL("ALTER TABLE scaleUsers ADD rightAmputationLevel INTEGER NOT NULL default 0")
+    }
+}
+
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Add goal enabled to scale user table
+        db.execSQL("ALTER TABLE scaleUsers ADD goalEnabled INTEGER NOT NULL default 0")
     }
 }
 

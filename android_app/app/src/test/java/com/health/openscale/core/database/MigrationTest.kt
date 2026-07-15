@@ -81,4 +81,39 @@ class MigrationTest {
         // The rewrite seeds the default measurement types.
         assertThat(repo.getAllMeasurementTypes().first()).isNotEmpty()
     }
+
+    /**
+     * Regression for issue #1410: a backup from an old v2.x build carries a legacy user_version
+     * below 6 (e.g. v2.3.1 == 5). Before the fix the app registered migrations only from 6, so
+     * Room had no path and crashed on the first launch after restore. Starting from version 1
+     * exercises the restored MIGRATION_1_2 .. MIGRATION_5_6 and then the 6_7.. rewrite chain.
+     */
+    @Test
+    fun legacyV1_migratesToCurrent_preservingData() = runBlocking {
+        val dbFile = context.getDatabasePath(AppDatabase.DATABASE_NAME)
+        dbFile.parentFile?.mkdirs()
+        if (dbFile.exists()) dbFile.delete()
+
+        RoomTestSupport.writeLegacyV1Database(dbFile)
+
+        // Opening with the full migration chain runs MIGRATION_1_2 .. MIGRATION_14_15 in order.
+        val opened = RoomTestSupport.onDisk(context).also { db = it }
+        val repo = RoomTestSupport.repositoryFor(opened)
+
+        val users = repo.getAllUsers().first()
+        assertThat(users).hasSize(1)
+        val user = users.single()
+        assertThat(user.name).isEqualTo("legacy-user")
+        assertThat(user.gender).isEqualTo(GenderType.FEMALE) // legacy gender=1 -> FEMALE
+        assertThat(user.heightCm).isWithin(0.1f).of(170f)
+
+        val measurements = repo.getMeasurementsWithValuesForUser(user.id).first()
+        assertThat(measurements).hasSize(1)
+        val weight = measurements.single().values
+            .mapNotNull { it.value.floatValue }
+            .firstOrNull { abs(it - 80.5f) < 0.1f }
+        assertThat(weight).isNotNull()
+
+        assertThat(repo.getAllMeasurementTypes().first()).isNotEmpty()
+    }
 }
