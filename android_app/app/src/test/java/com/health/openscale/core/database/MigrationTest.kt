@@ -92,6 +92,11 @@ class MigrationTest {
         val metabolicAge = types.firstOrNull { it.key == MeasurementTypeKey.METABOLIC_AGE }
         assertThat(metabolicAge).isNotNull()
         assertThat(metabolicAge!!.displayOrder).isGreaterThan(0)
+
+        // The same MIGRATION_15_16 also seeds the physique-rating type.
+        val physiqueRating = types.firstOrNull { it.key == MeasurementTypeKey.PHYSIQUE_RATING }
+        assertThat(physiqueRating).isNotNull()
+        assertThat(physiqueRating!!.displayOrder).isGreaterThan(0)
     }
 
     /**

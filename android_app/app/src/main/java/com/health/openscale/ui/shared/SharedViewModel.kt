@@ -455,10 +455,12 @@ class SharedViewModel @Inject constructor(
             selectedUserId
                 .flatMapLatest { uid ->
                     if (uid == null) return@flatMapLatest flowOf(UiState.Loading)
-                    measurementFacade.insightsForUser(uid, primaryTypeId)
-                        .map<MeasurementInsight, UiState<MeasurementInsight>> { UiState.Success(it) }
-                        .onStart { emit(UiState.Loading) }
-                        .catch { emit(UiState.Error(it.message)) }
+                    userEvaluationContext.flatMapLatest { ctx ->
+                        measurementFacade.insightsForUser(uid, primaryTypeId, ctx)
+                            .map<MeasurementInsight, UiState<MeasurementInsight>> { UiState.Success(it) }
+                            .onStart { emit(UiState.Loading) }
+                            .catch { emit(UiState.Error(it.message)) }
+                    }
                 }
                 .stateIn(
                     scope        = viewModelScope,
@@ -899,7 +901,9 @@ class SharedViewModel @Inject constructor(
                 // age (weight + body-fat/LBM) but don't have it yet — e.g. after
                 // upgrading to a build that introduced the metabolic-age metric.
                 val metabolicAgeType = types.firstOrNull { it.key == MeasurementTypeKey.METABOLIC_AGE }
+                val physiqueRatingType = types.firstOrNull { it.key == MeasurementTypeKey.PHYSIQUE_RATING }
                 val bodyFatType = types.firstOrNull { it.key == MeasurementTypeKey.BODY_FAT }
+                val muscleType = types.firstOrNull { it.key == MeasurementTypeKey.MUSCLE }
                 val lbmType = types.firstOrNull { it.key == MeasurementTypeKey.LBM }
 
                 val users = withTimeoutOrNull(10.seconds) {
@@ -937,13 +941,29 @@ class SharedViewModel @Inject constructor(
                         }
                         hasComposition && !hasMetabolicAge
                     }
-                    if (hasAnyBmi && !needsMetabolicAgeBackfill) return@forEach
+                    // Same idempotent, self-terminating backfill for the physique
+                    // rating: it needs both body-fat and muscle to be present, and
+                    // is recomputed only while the derived value is still missing.
+                    val needsPhysiqueRatingBackfill = physiqueRatingType != null && allForUser.any { mwv ->
+                        val hasBodyFat = mwv.values.any { v ->
+                            v.type.id == bodyFatType?.id && (v.value.floatValue ?: 0f) > 0f
+                        }
+                        val hasMuscle = mwv.values.any { v ->
+                            v.type.id == muscleType?.id && (v.value.floatValue ?: 0f) > 0f
+                        }
+                        val hasPhysiqueRating = mwv.values.any { v ->
+                            v.type.id == physiqueRatingType.id && (v.value.floatValue ?: 0f) > 0f
+                        }
+                        hasBodyFat && hasMuscle && !hasPhysiqueRating
+                    }
+                    if (hasAnyBmi && !needsMetabolicAgeBackfill && !needsPhysiqueRatingBackfill) return@forEach
 
                     usersAffected++
                     totalMeasurements += allForUser.size
                     val missing = buildList {
                         if (!hasAnyBmi) add("BMI")
                         if (needsMetabolicAgeBackfill) add("metabolic age")
+                        if (needsPhysiqueRatingBackfill) add("physique rating")
                     }.joinToString(", ")
                     LogManager.i(TAG, "Missing derived values [$missing] for userId=${user.id} — recalculating ${allForUser.size} measurements…")
                     showSnackbar(messageResId = R.string.derived_backfill_start, duration = SnackbarDuration.Short)

@@ -20,6 +20,7 @@ package com.health.openscale.core.service
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.data.UnitType
 import org.junit.Test
 
 /**
@@ -206,5 +207,75 @@ class DerivedValuesCalculatorFormulasTest {
         assertThat(DerivedValuesCalculator.processMetabolicAgeCalculation(80f, 0f, GenderType.MALE, 60f)).isNull()
         assertThat(DerivedValuesCalculator.processMetabolicAgeCalculation(80f, 175f, GenderType.MALE, null)).isNull()
         assertThat(DerivedValuesCalculator.processMetabolicAgeCalculation(80f, 175f, GenderType.MALE, 0f)).isNull()
+    }
+
+    // ---- toPercentOfWeight (body-composition normalisation) -------------------------------------
+
+    @Test
+    fun toPercentOfWeight_passesThroughPercent_andConvertsMass() {
+        // Already a percentage -> unchanged (weight irrelevant).
+        assertThat(DerivedValuesCalculator.toPercentOfWeight(20f, UnitType.PERCENT, 80f)!!).isWithin(EPS).of(20f)
+        // 16 kg of a 80 kg body = 20 %.
+        assertThat(DerivedValuesCalculator.toPercentOfWeight(16f, UnitType.KG, 80f)!!).isWithin(EPS).of(20f)
+    }
+
+    @Test
+    fun toPercentOfWeight_returnsNull_forMissingWeightOnMass_orBadInput() {
+        assertThat(DerivedValuesCalculator.toPercentOfWeight(16f, UnitType.KG, null)).isNull()
+        assertThat(DerivedValuesCalculator.toPercentOfWeight(16f, UnitType.KG, 0f)).isNull()
+        assertThat(DerivedValuesCalculator.toPercentOfWeight(null, UnitType.PERCENT, 80f)).isNull()
+        assertThat(DerivedValuesCalculator.toPercentOfWeight(0f, UnitType.PERCENT, 80f)).isNull()
+        assertThat(DerivedValuesCalculator.toPercentOfWeight(20f, UnitType.CM, 80f)).isNull()
+    }
+
+    // ---- Physique rating (Tanita 3x3 body-type matrix) ------------------------------------------
+
+    private data class PhysiqueCase(val fat: Float, val muscle: Float, val expected: Int)
+
+    @Test
+    fun physiqueRating_mapsFatAndMuscleBandsToTanitaMatrix_male() {
+        // Male age 25: body-fat band 13–18 %, muscle band 37.9–46.7 %.
+        // fat  <13 LOW, 13–18 NORMAL, >18 HIGH
+        // musc <37.9 LOW, 37.9–46.7 NORMAL, >46.7 HIGH
+        val cases = listOf(
+            PhysiqueCase(25f, 30f, 1), // high fat,   low muscle    -> hidden obese
+            PhysiqueCase(25f, 42f, 2), // high fat,   normal muscle -> obese
+            PhysiqueCase(25f, 50f, 3), // high fat,   high muscle   -> solidly built
+            PhysiqueCase(15f, 30f, 4), // normal fat, low muscle    -> under-exercised
+            PhysiqueCase(15f, 42f, 5), // normal fat, normal muscle -> standard
+            PhysiqueCase(15f, 50f, 6), // normal fat, high muscle   -> standard muscular
+            PhysiqueCase(10f, 30f, 7), // low fat,    low muscle     -> thin
+            PhysiqueCase(10f, 42f, 8), // low fat,    normal muscle  -> thin & muscular
+            PhysiqueCase(10f, 50f, 9), // low fat,    high muscle    -> very muscular
+        )
+        cases.forEach { c ->
+            val r = DerivedValuesCalculator.processPhysiqueRatingCalculation(c.fat, c.muscle, 25, GenderType.MALE)
+            assertThat(r).isEqualTo(c.expected.toFloat())
+        }
+    }
+
+    @Test
+    fun physiqueRating_usesSexSpecificBands() {
+        // Age 25, fat 20 %, muscle 38 %.
+        // Male:   fat 20 > 18 HIGH,   muscle 38 in 37.9–46.7 NORMAL -> 2 (obese)
+        // Female: fat 20 in 18–23 NORMAL, muscle 38 in 28.4–39.8 NORMAL -> 5 (standard)
+        val male = DerivedValuesCalculator.processPhysiqueRatingCalculation(20f, 38f, 25, GenderType.MALE)
+        val female = DerivedValuesCalculator.processPhysiqueRatingCalculation(20f, 38f, 25, GenderType.FEMALE)
+        assertThat(male).isEqualTo(2f)
+        assertThat(female).isEqualTo(5f)
+    }
+
+    @Test
+    fun physiqueRating_returnsNull_whenAgeOutsideReferenceBands() {
+        // Muscle reference (Janssen) starts at age 18; a 10-year-old has no band.
+        assertThat(DerivedValuesCalculator.processPhysiqueRatingCalculation(15f, 42f, 10, GenderType.MALE)).isNull()
+    }
+
+    @Test
+    fun physiqueRating_returnsNull_forMissingOrImplausibleInputs() {
+        assertThat(DerivedValuesCalculator.processPhysiqueRatingCalculation(null, 42f, 25, GenderType.MALE)).isNull()
+        assertThat(DerivedValuesCalculator.processPhysiqueRatingCalculation(15f, null, 25, GenderType.MALE)).isNull()
+        assertThat(DerivedValuesCalculator.processPhysiqueRatingCalculation(0.5f, 42f, 25, GenderType.MALE)).isNull() // fat < 1
+        assertThat(DerivedValuesCalculator.processPhysiqueRatingCalculation(15f, 2f, 25, GenderType.MALE)).isNull()   // muscle < 5
     }
 }

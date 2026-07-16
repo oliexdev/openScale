@@ -54,7 +54,9 @@ class DerivedValuesCalculatorIntegrationTest {
     private var weightTypeId = 0
     private var bmiTypeId = 0
     private var bodyFatTypeId = 0
+    private var muscleTypeId = 0
     private var metabolicAgeTypeId = 0
+    private var physiqueRatingTypeId = 0
 
     @Before
     fun setUp() = runBlocking {
@@ -64,12 +66,14 @@ class DerivedValuesCalculatorIntegrationTest {
         weightTypeId = types.first { it.key == MeasurementTypeKey.WEIGHT }.id
         bmiTypeId = types.first { it.key == MeasurementTypeKey.BMI }.id
         bodyFatTypeId = types.first { it.key == MeasurementTypeKey.BODY_FAT }.id
+        muscleTypeId = types.first { it.key == MeasurementTypeKey.MUSCLE }.id
         metabolicAgeTypeId = types.first { it.key == MeasurementTypeKey.METABOLIC_AGE }.id
+        physiqueRatingTypeId = types.first { it.key == MeasurementTypeKey.PHYSIQUE_RATING }.id
 
         userId = db.userDao().insert(
             User(
                 name = "u",
-                birthDate = 0L,
+                birthDate = 0L, // 1970-01-01; measurement timestamps below fix the age at recalc time
                 gender = GenderType.MALE,
                 heightCm = 175f,
                 activityLevel = ActivityLevel.MODERATE,
@@ -179,6 +183,62 @@ class DerivedValuesCalculatorIntegrationTest {
         assertThat(
             db.measurementValueDao().getValuesForMeasurement(measurementId).first()
                 .any { it.typeId == metabolicAgeTypeId }
+        ).isFalse()
+    }
+
+    @Test
+    fun recalculate_insertsPhysiqueRating_fromBodyFatAndMuscle() = runBlocking {
+        // timestamp 1e12 ms (2001) with birthDate 0 (1970) -> age 31.
+        // Male age 31: fat band 14–19, muscle band 34.1–44.1.
+        // fat 25 % -> HIGH, muscle 40 % -> NORMAL -> rating 2 (obese).
+        val measurementId = db.measurementDao().insert(
+            Measurement(userId = userId, timestamp = 1_000_000_000_000L)
+        ).toInt()
+        db.measurementValueDao().insert(
+            MeasurementValue(measurementId = measurementId, typeId = weightTypeId, floatValue = 80f)
+        )
+        db.measurementValueDao().insert(
+            MeasurementValue(measurementId = measurementId, typeId = bodyFatTypeId, floatValue = 25f)
+        )
+        db.measurementValueDao().insert(
+            MeasurementValue(measurementId = measurementId, typeId = muscleTypeId, floatValue = 40f)
+        )
+
+        calculator.recalculateDerivedValuesForMeasurement(measurementId)
+
+        val physique = db.measurementValueDao().getValuesForMeasurement(measurementId).first()
+            .firstOrNull { it.typeId == physiqueRatingTypeId }?.floatValue
+        assertThat(physique).isNotNull()
+        assertThat(physique!!).isEqualTo(2f)
+    }
+
+    @Test
+    fun recalculate_removesPhysiqueRating_whenMuscleRemoved() = runBlocking {
+        val measurementId = db.measurementDao().insert(
+            Measurement(userId = userId, timestamp = 1_000_000_000_000L)
+        ).toInt()
+        db.measurementValueDao().insert(
+            MeasurementValue(measurementId = measurementId, typeId = weightTypeId, floatValue = 80f)
+        )
+        db.measurementValueDao().insert(
+            MeasurementValue(measurementId = measurementId, typeId = bodyFatTypeId, floatValue = 25f)
+        )
+        val muscleValueId = db.measurementValueDao().insert(
+            MeasurementValue(measurementId = measurementId, typeId = muscleTypeId, floatValue = 40f)
+        )
+        calculator.recalculateDerivedValuesForMeasurement(measurementId)
+        assertThat(
+            db.measurementValueDao().getValuesForMeasurement(measurementId).first()
+                .any { it.typeId == physiqueRatingTypeId }
+        ).isTrue()
+
+        // remove the muscle source and recalc -> physique rating must be deleted
+        db.measurementValueDao().deleteById(muscleValueId.toInt())
+        calculator.recalculateDerivedValuesForMeasurement(measurementId)
+
+        assertThat(
+            db.measurementValueDao().getValuesForMeasurement(measurementId).first()
+                .any { it.typeId == physiqueRatingTypeId }
         ).isFalse()
     }
 }

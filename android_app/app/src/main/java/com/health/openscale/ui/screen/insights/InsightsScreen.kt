@@ -87,6 +87,9 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -107,7 +110,9 @@ import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.facade.SettingsPreferenceKeys.INSIGHTS_SCREEN_CONTEXT
 import com.health.openscale.core.model.BodyCompositionPattern
 import com.health.openscale.core.model.CompositionPatternType
+import com.health.openscale.core.data.PhysiqueRating
 import com.health.openscale.core.model.InsightConfidence
+import com.health.openscale.core.model.PhysiqueRatingPlot
 import com.health.openscale.core.model.MeasurementAnalysis
 import com.health.openscale.core.model.MeasurementAnomaly
 import com.health.openscale.core.model.MeasurementInsight
@@ -135,7 +140,10 @@ import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
 import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.cos
 import kotlin.math.max
+import kotlin.math.sin
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -200,7 +208,7 @@ fun InsightsScreen(
             },
             filterLogic = { types ->
                 types.filter {
-                    it.isEnabled && (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT)
+                    it.isEnabled && !it.isOrdinal() && (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT)
                 }
             },
             defaultSelectionLogic = { types -> types.firstOrNull()?.let { listOf(it.id) } ?: emptyList() },
@@ -256,6 +264,9 @@ fun InsightsScreen(
                                 message = stringResource(R.string.insights_placeholder_body_pattern, MeasurementInsightsUseCase.CORRELATION_MIN_MEASUREMENTS, MeasurementInsightsUseCase.CORRELATION_WINDOW_DAYS),
                             )
                         }
+                    }
+                    insight.physiqueRatingPlot?.let { plot ->
+                        item { PhysiqueRatingPlaneCard(plot) }
                     }
                     item {
                         val pattern = insight.weekdayPattern
@@ -868,6 +879,231 @@ private fun BodyCompositionPlaneCard(pattern: BodyCompositionPattern) {
         }
         Spacer(Modifier.height(8.dp))
         InsightSummaryText(summaryText)
+    }
+}
+
+// ---------------------------------------------------------------------------
+// PhysiqueRatingPlaneCard
+// ---------------------------------------------------------------------------
+
+/**
+ * Renders the Tanita physique-rating plane: a continuous body-fat% (Y, high at
+ * top) × muscle% (X, high at right) plot partitioned into nine body-type zones by
+ * the user's age/sex band thresholds. Recent measurements are plotted as a
+ * trajectory (dim history dots joined by a path, arrow-headed at the current
+ * point to show the trend direction), the current point pulses, and its zone is
+ * highlighted. Tapping a date chip inspects a past measurement. Axis threshold
+ * values (the band transitions in %) are labelled so the user can see what to
+ * change to move between body types.
+ */
+@Composable
+private fun PhysiqueRatingPlaneCard(plot: PhysiqueRatingPlot) {
+    val context      = LocalContext.current
+    val colorScheme  = MaterialTheme.colorScheme
+    val textMeasurer = rememberTextMeasurer()
+    val locale       = ComposeLocale.current.platformLocale
+    val shortFmt     = DateTimeFormatter.ofPattern("d MMM yy", locale)
+
+    val points  = plot.points
+    val history = points.dropLast(1)
+
+    // null = the current (latest) measurement; otherwise an index into `history`.
+    var selectedHistory by remember(plot) { mutableStateOf<Int?>(null) }
+    val selected = selectedHistory?.let { history.getOrNull(it) } ?: plot.current
+
+    val transition = remember { Animatable(1f) }
+    LaunchedEffect(plot) { transition.snapTo(0f); transition.animateTo(1f, tween(800, easing = EaseOutCubic)) }
+    val pulse = remember { Animatable(0f) }
+    LaunchedEffect(selectedHistory) {
+        pulse.snapTo(0f)
+        while (true) { pulse.animateTo(1f, tween(1100, easing = EaseOutCubic)); pulse.animateTo(0f, tween(700)) }
+    }
+
+    fun fmt(v: Float): String =
+        if (v == v.toInt().toFloat()) "${v.toInt()}%" else String.format(Locale.US, "%.1f%%", v)
+
+    // Axis ranges: keep all band lines and every plotted point visible with padding.
+    val padX = ((plot.muscleHigh - plot.muscleLow) * 0.6f).coerceAtLeast(3f)
+    val padY = ((plot.fatHigh - plot.fatLow) * 0.6f).coerceAtLeast(3f)
+    val xMin = (points.minOf { it.musclePercent }).coerceAtMost(plot.muscleLow) - padX
+    val xMax = (points.maxOf { it.musclePercent }).coerceAtLeast(plot.muscleHigh) + padX
+    val yMin = (points.minOf { it.fatPercent }).coerceAtMost(plot.fatLow) - padY
+    val yMax = (points.maxOf { it.fatPercent }).coerceAtLeast(plot.fatHigh) + padY
+
+    // Zone indices of the inspected point (fat: 0 = HIGH/top … 2 = LOW/bottom; muscle: 0 = LOW/left … 2 = HIGH/right).
+    val selFatIdx    = when { selected.fatPercent > plot.fatHigh -> 0; selected.fatPercent >= plot.fatLow -> 1; else -> 2 }
+    val selMuscleIdx = when { selected.musclePercent > plot.muscleHigh -> 2; selected.musclePercent >= plot.muscleLow -> 1; else -> 0 }
+
+    InsightCard(title = stringResource(R.string.insights_section_physique_rating), confidence = plot.confidence) {
+        Spacer(Modifier.height(12.dp))
+
+        // Body-fat axis caption (top), with margin above the plot.
+        Text(
+            text  = "▲ " + stringResource(R.string.physique_axis_body_fat),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(4.dp))
+
+        Box(modifier = Modifier.fillMaxWidth().height(240.dp)) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val w = size.width; val h = size.height
+
+                fun px(muscle: Float) = (muscle - xMin) / (xMax - xMin) * w
+                fun py(fat: Float)    = h - (fat - yMin) / (yMax - yMin) * h // high fat at top
+
+                val xLow  = px(plot.muscleLow); val xHigh = px(plot.muscleHigh)
+                val yHiF  = py(plot.fatHigh);    val yLoF  = py(plot.fatLow)
+                val xEdges = listOf(0f, xLow, xHigh, w)
+                val yEdges = listOf(0f, yHiF, yLoF, h)
+
+                // Highlight the inspected point's zone.
+                drawRect(
+                    color   = colorScheme.primary.copy(alpha = 0.14f),
+                    topLeft = Offset(xEdges[selMuscleIdx], yEdges[selFatIdx]),
+                    size    = androidx.compose.ui.geometry.Size(
+                        xEdges[selMuscleIdx + 1] - xEdges[selMuscleIdx],
+                        yEdges[selFatIdx + 1] - yEdges[selFatIdx],
+                    ),
+                )
+
+                // Band boundary lines.
+                val lineColor = colorScheme.onSurface.copy(alpha = 0.35f)
+                drawLine(lineColor, Offset(xLow, 0f), Offset(xLow, h), 1.2f)
+                drawLine(lineColor, Offset(xHigh, 0f), Offset(xHigh, h), 1.2f)
+                drawLine(lineColor, Offset(0f, yHiF), Offset(w, yHiF), 1.2f)
+                drawLine(lineColor, Offset(0f, yLoF), Offset(w, yLoF), 1.2f)
+
+                // Zone body-type labels (short names); the inspected zone emphasised.
+                for (fatIdx in 0..2) {
+                    for (muscleIdx in 0..2) {
+                        val cx = (xEdges[muscleIdx] + xEdges[muscleIdx + 1]) / 2f
+                        val cy = (yEdges[fatIdx] + yEdges[fatIdx + 1]) / 2f
+                        val isSel = fatIdx == selFatIdx && muscleIdx == selMuscleIdx
+                        val label = PhysiqueRating.forZone(fatIdx, muscleIdx).getShortDisplayName(context)
+                        val layout = textMeasurer.measure(
+                            AnnotatedString(label),
+                            style = androidx.compose.ui.text.TextStyle(
+                                fontSize   = 10.sp,
+                                fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
+                                color      = if (isSel) colorScheme.primary
+                                             else colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
+                            ),
+                        )
+                        drawText(layout, topLeft = Offset(cx - layout.size.width / 2f, cy - layout.size.height / 2f))
+                    }
+                }
+
+                // Threshold value labels — nudged off the grid lines (no backing chip).
+                val axisStyle = androidx.compose.ui.text.TextStyle(fontSize = 9.sp, color = colorScheme.onSurface.copy(alpha = 0.85f))
+                fun drawAxisLabel(text: String, left: Float, top: Float) {
+                    val layout = textMeasurer.measure(AnnotatedString(text), style = axisStyle)
+                    val lx = left.coerceIn(0f, w - layout.size.width)
+                    val ly = top.coerceIn(0f, h - layout.size.height)
+                    drawText(layout, topLeft = Offset(lx, ly))
+                }
+                // Muscle thresholds: just to the right of each vertical line, near the bottom.
+                drawAxisLabel(fmt(plot.muscleLow),  xLow + 4f,  h - 16f)
+                drawAxisLabel(fmt(plot.muscleHigh), xHigh + 4f, h - 16f)
+                // Fat thresholds: just above each horizontal line, at the left.
+                drawAxisLabel(fmt(plot.fatHigh), 3f, yHiF - 15f)
+                drawAxisLabel(fmt(plot.fatLow),  3f, yLoF - 15f)
+
+                // Trajectory path through the history + arrowhead at the current point.
+                val mapped = points.map { Offset(px(it.musclePercent), py(it.fatPercent)) }
+                if (mapped.size >= 2) {
+                    val pathColor = colorScheme.primary.copy(alpha = 0.45f)
+                    for (i in 1..mapped.lastIndex) drawLine(pathColor, mapped[i - 1], mapped[i], 2f)
+                    if (selectedHistory == null) {
+                        val tip  = mapped.last(); val prev = mapped[mapped.size - 2]
+                        val ang  = atan2(tip.y - prev.y, tip.x - prev.x)
+                        val len  = 16f; val spread = 0.5f
+                        drawLine(pathColor, tip, Offset(tip.x - len * cos(ang - spread), tip.y - len * sin(ang - spread)), 2.5f)
+                        drawLine(pathColor, tip, Offset(tip.x - len * cos(ang + spread), tip.y - len * sin(ang + spread)), 2.5f)
+                    }
+                }
+
+                // History dots — dimmed, or glowing when selected.
+                history.forEachIndexed { index, p ->
+                    val c = mapped[index]
+                    if (selectedHistory == index) {
+                        drawCircle(colorScheme.primary.copy(alpha = 0.12f + 0.13f * (1f - pulse.value)), 20f + pulse.value * 10f, c)
+                        drawCircle(colorScheme.primary, 8f, c)
+                        drawCircle(colorScheme.surface.copy(alpha = 0.6f), 3f, c)
+                    } else {
+                        drawCircle(colorScheme.onSurface.copy(alpha = 0.10f), 8f, c)
+                        drawCircle(colorScheme.onSurface.copy(alpha = 0.24f), 4.5f, c)
+                    }
+                }
+
+                // Current point — pulses when it is the inspected one, animating in from the previous point.
+                val target = mapped.last()
+                val prevOffset = mapped.getOrNull(mapped.size - 2) ?: target
+                val animated = Offset(
+                    lerp(prevOffset.x, target.x, transition.value),
+                    lerp(prevOffset.y, target.y, transition.value),
+                )
+                if (selectedHistory == null) {
+                    drawCircle(colorScheme.primary.copy(alpha = 0.10f + 0.12f * (1f - pulse.value)), 24f + pulse.value * 12f, animated)
+                    drawCircle(colorScheme.primary.copy(alpha = 0.25f), 18f, animated)
+                    drawCircle(colorScheme.primary, 9f, animated)
+                    drawCircle(colorScheme.surface.copy(alpha = 0.7f), 3.5f, animated)
+                } else {
+                    drawCircle(colorScheme.onSurface.copy(alpha = 0.14f), 14f, target)
+                    drawCircle(colorScheme.onSurface.copy(alpha = 0.30f), 7f, target)
+                }
+            }
+        }
+
+        Spacer(Modifier.height(4.dp))
+        // Muscle-mass axis caption (bottom), with margin below the plot.
+        Text(
+            text     = stringResource(R.string.physique_axis_muscle) + " ▶",
+            style    = MaterialTheme.typography.labelSmall,
+            color    = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.End,
+        )
+
+        // Date chips to inspect past measurements.
+        if (history.isNotEmpty()) {
+            Spacer(Modifier.height(10.dp))
+            Row(
+                modifier              = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment     = Alignment.CenterVertically,
+            ) {
+                SuggestionChip(
+                    onClick = { selectedHistory = null },
+                    label   = { Text(stringResource(R.string.insights_stat_now), maxLines = 1, style = MaterialTheme.typography.labelSmall, overflow = TextOverflow.Ellipsis) },
+                    colors  = SuggestionChipDefaults.suggestionChipColors(
+                        containerColor = if (selectedHistory == null) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+                        labelColor     = if (selectedHistory == null) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.50f),
+                    ),
+                )
+                history.indices.reversed().forEach { idx ->
+                    val isSelected = selectedHistory == idx
+                    SuggestionChip(
+                        onClick = { selectedHistory = if (isSelected) null else idx },
+                        label   = { Text(history[idx].date.format(shortFmt), maxLines = 1, style = MaterialTheme.typography.labelSmall, overflow = TextOverflow.Ellipsis) },
+                        colors  = SuggestionChipDefaults.suggestionChipColors(
+                            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+                            labelColor     = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.50f),
+                        ),
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+        val selectedType = PhysiqueRating.fromInt(selected.rating)
+        InsightSummaryText(
+            stringResource(
+                R.string.insights_physique_summary,
+                selectedType?.getDisplayName(context) ?: selected.rating.toString(),
+                selectedType?.getDescription(context) ?: "",
+            )
+        )
     }
 }
 

@@ -249,7 +249,7 @@ fun MeasurementChart(
         allAvailableMeasurementTypes.filter { type ->
             val isSelected  = type.id in currentSelectedTypeIntIds
             val isTarget    = targetMeasurementTypeId != null && type.id == targetMeasurementTypeId
-            val isPlottable = type.isEnabled &&
+            val isPlottable = type.isEnabled && !type.isOrdinal() &&
                     (type.inputType == InputFieldType.FLOAT || type.inputType == InputFieldType.INT)
             (if (targetMeasurementTypeId != null) isTarget else isSelected) && isPlottable
         }
@@ -299,7 +299,7 @@ fun MeasurementChart(
                         targetMeasurementTypeId == null -> {
                     noDataMessageText =
                         if (allAvailableMeasurementTypes.none {
-                                it.isEnabled &&
+                                it.isEnabled && !it.isOrdinal() &&
                                         (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT)
                             })
                             resources.getString(R.string.line_chart_no_plottable_types)
@@ -348,7 +348,7 @@ fun MeasurementChart(
                 },
                 filterLogic                  = { allTypes ->
                     allTypes.filter {
-                        it.isEnabled &&
+                        it.isEnabled && !it.isOrdinal() &&
                                 (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT)
                     }
                 },
@@ -449,7 +449,7 @@ fun MeasurementChart(
             chartSeries.isEmpty() -> {
                 val hasNoPlottableTypes = remember(allAvailableMeasurementTypes) {
                     allAvailableMeasurementTypes.none {
-                        it.isEnabled &&
+                        it.isEnabled && !it.isOrdinal() &&
                                 (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT)
                     }
                 }

@@ -69,6 +69,7 @@ import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.components.RoundMeasurementIcon
+import com.health.openscale.ui.screen.components.physiqueRatingDisplayText
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.dialog.DateInputDialog
 import com.health.openscale.ui.screen.dialog.DeleteConfirmationDialog
@@ -693,9 +694,14 @@ fun MeasurementValueEditRow(
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(text = type.getDisplayName(context), style = MaterialTheme.typography.bodyLarge)
-            val displayText = when (type.inputType) {
-                InputFieldType.FLOAT, InputFieldType.INT -> LocaleUtils.formatValueForDisplay(value, type.unit)
-                InputFieldType.TEXT, InputFieldType.USER, InputFieldType.DATE, InputFieldType.TIME -> value
+            val displayText = when {
+                type.key == MeasurementTypeKey.PHYSIQUE_RATING ->
+                    value.toFloatOrNull()?.let { physiqueRatingDisplayText(context, it) }
+                        ?: LocaleUtils.formatValueForDisplay(value, type.unit)
+                else -> when (type.inputType) {
+                    InputFieldType.FLOAT, InputFieldType.INT -> LocaleUtils.formatValueForDisplay(value, type.unit)
+                    InputFieldType.TEXT, InputFieldType.USER, InputFieldType.DATE, InputFieldType.TIME -> value
+                }
             }
             Text(
                 text = displayText,

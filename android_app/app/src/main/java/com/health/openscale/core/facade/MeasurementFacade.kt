@@ -210,12 +210,16 @@ class MeasurementFacade @Inject constructor(
      *                      pattern computation. If null, the use case selects the type
      *                      with the most measurements automatically.
      */
-    fun insightsForUser(userId: Int, primaryTypeId: Int? = null): Flow<MeasurementInsight> =
+    fun insightsForUser(
+        userId: Int,
+        primaryTypeId: Int? = null,
+        userContext: UserEvaluationContext? = null,
+    ): Flow<MeasurementInsight> =
         getMeasurementsForUser(userId)
             .distinctUntilChanged()
             .map { measurements ->
                 withContext(Dispatchers.Default) {
-                    insights.compute(measurements, primaryTypeId)
+                    insights.compute(measurements, primaryTypeId, userContext)
                 }
             }
 

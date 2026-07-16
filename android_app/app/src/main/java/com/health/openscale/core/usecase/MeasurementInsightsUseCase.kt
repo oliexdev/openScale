@@ -17,20 +17,28 @@
  */
 package com.health.openscale.core.usecase
 
+import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.model.BodyCompositionPattern
 import com.health.openscale.core.model.CompositionPatternType
+import com.health.openscale.core.model.EvaluationReferenceTables
 import com.health.openscale.core.model.InsightConfidence
 import com.health.openscale.core.model.MeasurementAnalysis
 import com.health.openscale.core.model.MeasurementAnomaly
 import com.health.openscale.core.model.MeasurementInsight
 import com.health.openscale.core.model.MeasurementWithValues
+import com.health.openscale.core.model.PhysiqueRatingPlot
+import com.health.openscale.core.model.PhysiqueRatingPoint
 import com.health.openscale.core.model.SeasonalPattern
 import com.health.openscale.core.model.TrendDirection
+import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.model.Volatility
 import com.health.openscale.core.model.WeekdayPattern
+import com.health.openscale.core.service.DerivedValuesCalculator
+import com.health.openscale.core.utils.CalculationUtils
+import com.health.openscale.core.utils.ConverterUtils
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
@@ -74,6 +82,7 @@ class MeasurementInsightsUseCase @Inject constructor() {
     fun compute(
         measurements: List<MeasurementWithValues>,
         primaryTypeId: Int?,
+        userContext: UserEvaluationContext? = null,
     ): MeasurementInsight {
         val empty = MeasurementInsight(
             measurementAnalysis    = null,
@@ -105,6 +114,90 @@ class MeasurementInsightsUseCase @Inject constructor() {
             anomalies              = computeAnomalies(sorted, primaryType),
             basedOnCount           = sorted.size,
             computedAt             = LocalDate.now(),
+            physiqueRatingPlot     = computePhysiqueRatingPlot(sorted, userContext),
+        )
+    }
+
+    // -------------------------------------------------------------------------
+    // Physique rating plane
+    // -------------------------------------------------------------------------
+
+    /**
+     * Builds the [PhysiqueRatingPlot] for the most recent measurement carrying
+     * weight + body-fat + muscle, using the same normalisation and 1–9 mapping as
+     * [DerivedValuesCalculator.processPhysiqueRatingCalculation] and the age/sex
+     * band thresholds from [EvaluationReferenceTables]. Returns null when the
+     * user context, the required metrics, or a valid age band is missing.
+     */
+    private fun computePhysiqueRatingPlot(
+        sorted: List<MeasurementWithValues>,
+        userContext: UserEvaluationContext?,
+    ): PhysiqueRatingPlot? {
+        if (userContext == null) return null
+
+        val typesByKey = sorted.flatMap { it.values }
+            .filter { isNumeric(it.type) }
+            .associateBy { it.type.key }
+            .mapValues { it.value.type }
+
+        val weightType = typesByKey[MeasurementTypeKey.WEIGHT]   ?: return null
+        val fatType    = typesByKey[MeasurementTypeKey.BODY_FAT] ?: return null
+        val muscleType = typesByKey[MeasurementTypeKey.MUSCLE]   ?: return null
+        val gender     = userContext.gender
+
+        // Normalise a measurement to (date, fat%, muscle%) or null if incomplete.
+        fun normalise(mwv: MeasurementWithValues): Triple<LocalDate, Float, Float>? {
+            val weightKg = numericValueFor(mwv, weightType)?.let {
+                if (weightType.unit.isWeightUnit()) ConverterUtils.toKilogram(it, weightType.unit.toWeightUnit()) else it
+            } ?: return null
+            val fat    = DerivedValuesCalculator.toPercentOfWeight(numericValueFor(mwv, fatType), fatType.unit, weightKg) ?: return null
+            val muscle = DerivedValuesCalculator.toPercentOfWeight(numericValueFor(mwv, muscleType), muscleType.unit, weightKg) ?: return null
+            return Triple(toLocalDate(mwv.measurement.timestamp), fat, muscle)
+        }
+
+        // The latest complete measurement fixes the reference frame (age/sex bands).
+        val latest     = sorted.lastOrNull { normalise(it) != null } ?: return null
+        val latestNorm = normalise(latest)!!
+        val age        = CalculationUtils.ageOn(latest.measurement.timestamp, userContext.birthDateMillis)
+
+        val fatBounds = (if (gender == GenderType.MALE) EvaluationReferenceTables.fatMale
+            else EvaluationReferenceTables.fatFemale).evaluate(latestNorm.second, age)
+        val muscleBounds = (if (gender == GenderType.MALE) EvaluationReferenceTables.muscleMale
+            else EvaluationReferenceTables.muscleFemale).evaluate(latestNorm.third, age)
+        if (fatBounds.lowLimit < 0f || muscleBounds.lowLimit < 0f) return null
+
+        val fatLow = fatBounds.lowLimit; val fatHigh = fatBounds.highLimit
+        val muscleLow = muscleBounds.lowLimit; val muscleHigh = muscleBounds.highLimit
+
+        // Rating from position on the fixed plane, so a point's zone always matches its dot.
+        fun ratingForZone(fat: Float, muscle: Float): Int {
+            val fatIdx    = when { fat > fatHigh -> 0; fat >= fatLow -> 1; else -> 2 }
+            val muscleIdx = when { muscle > muscleHigh -> 2; muscle >= muscleLow -> 1; else -> 0 }
+            return fatIdx * 3 + muscleIdx + 1
+        }
+
+        // Sample one representative measurement per CORRELATION_WINDOW_DAYS window so
+        // the trajectory is spaced like the body-composition plane rather than one dot
+        // per raw measurement. The latest measurement is always the "now" point; each
+        // preceding non-overlapping window contributes its most recent measurement.
+        val normAll = sorted.mapNotNull { normalise(it) } // (date, fat%, muscle%), ascending
+        if (normAll.isEmpty()) return null
+        val today = LocalDate.now()
+        val historical = (PATTERN_HISTORY_WINDOWS downTo 1).mapNotNull { windowIndex ->
+            val windowEnd   = today.minusDays(CORRELATION_WINDOW_DAYS * windowIndex)
+            val windowStart = windowEnd.minusDays(CORRELATION_WINDOW_DAYS)
+            normAll.lastOrNull { it.first >= windowStart && it.first < windowEnd }
+        }
+        val points = (historical + normAll.last())
+            .map { (date, fat, muscle) -> PhysiqueRatingPoint(date, fat, muscle, ratingForZone(fat, muscle)) }
+
+        return PhysiqueRatingPlot(
+            fatLow     = fatLow,
+            fatHigh    = fatHigh,
+            muscleLow  = muscleLow,
+            muscleHigh = muscleHigh,
+            points     = points,
+            confidence = InsightConfidence.HIGH,
         )
     }
 

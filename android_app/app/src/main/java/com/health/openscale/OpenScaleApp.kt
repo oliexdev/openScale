@@ -70,6 +70,7 @@ fun getDefaultMeasurementTypes(): List<MeasurementType> {
         MeasurementType(key = MeasurementTypeKey.BMR, unit = UnitType.KCAL, color = 0xFFAB47BC.toInt(), icon = MeasurementTypeIcon.IC_BMR, isDerived = true, isEnabled = true),
         MeasurementType(key = MeasurementTypeKey.TDEE, unit = UnitType.KCAL, color = 0xFF26A69A.toInt(), icon = MeasurementTypeIcon.IC_TDEE, isDerived = true, isEnabled = true),
         MeasurementType(key = MeasurementTypeKey.METABOLIC_AGE, unit = UnitType.YEARS, color = 0xFF7CB342.toInt(), icon = MeasurementTypeIcon.IC_M_METABOLIC_AGE, isDerived = true, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.PHYSIQUE_RATING, unit = UnitType.NONE, color = 0xFF00897B.toInt(), icon = MeasurementTypeIcon.IC_M_PHYSIQUE_RATING, isDerived = true, isEnabled = true),
         MeasurementType(key = MeasurementTypeKey.HEART_RATE, inputType = InputFieldType.INT, unit = UnitType.BPM, color = 0xFFE91E63.toInt(), icon = MeasurementTypeIcon.IC_M_HEART_RATE, isEnabled = true),
         MeasurementType(key = MeasurementTypeKey.IMPEDANCE, unit = UnitType.OHM, color = 0xFF607D8B.toInt(), icon = MeasurementTypeIcon.IC_DEFAULT, isEnabled = false, isInternal = true),
         MeasurementType(key = MeasurementTypeKey.IMPEDANCE_LOW, unit = UnitType.OHM, color = 0xFF455A64.toInt(), icon = MeasurementTypeIcon.IC_DEFAULT, isEnabled = false, isInternal = true),

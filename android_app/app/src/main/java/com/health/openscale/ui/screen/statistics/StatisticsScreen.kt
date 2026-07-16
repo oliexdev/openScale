@@ -119,7 +119,7 @@ fun StatisticsScreen(
 
     val relevantTypes = remember(allTypes) {
         allTypes.filter {
-            it.isEnabled &&
+            it.isEnabled && !it.isOrdinal() &&
                     (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT)
         }
     }

@@ -150,6 +150,41 @@ data class MeasurementAnomaly(
     val comment: String?,
 )
 
+/** A single measurement's position on the physique-rating plane. */
+@Immutable
+data class PhysiqueRatingPoint(
+    val date: LocalDate,
+    val fatPercent: Float,
+    val musclePercent: Float,
+    val rating: Int,
+)
+
+/**
+ * The user's trajectory on the Tanita physique-rating plane: recent body-fat% /
+ * muscle% [points] (oldest first, the last being the current measurement) over
+ * the age- and sex-specific band thresholds that partition the plane into the
+ * nine body-type zones. Thresholds are fixed to the latest measurement's age/sex
+ * so every point shares one reference frame; zone membership is therefore taken
+ * from position on this plane.
+ *
+ * @property fatLow  body-fat% boundary between the LOW and NORMAL zones.
+ * @property fatHigh body-fat% boundary between the NORMAL and HIGH zones.
+ * @property muscleLow  muscle% boundary between the LOW and NORMAL zones.
+ * @property muscleHigh muscle% boundary between the NORMAL and HIGH zones.
+ */
+@Immutable
+data class PhysiqueRatingPlot(
+    val fatLow: Float,
+    val fatHigh: Float,
+    val muscleLow: Float,
+    val muscleHigh: Float,
+    val points: List<PhysiqueRatingPoint>,
+    val confidence: InsightConfidence,
+) {
+    /** The most recent measurement — the highlighted "now" point. */
+    val current: PhysiqueRatingPoint get() = points.last()
+}
+
 /**
  * Top-level container for all computed insights for a single user.
  * Null fields indicate [InsightConfidence.INSUFFICIENT] data for that section.
@@ -163,4 +198,5 @@ data class MeasurementInsight(
     val anomalies: List<MeasurementAnomaly>,
     val basedOnCount: Int,
     val computedAt: LocalDate,
+    val physiqueRatingPlot: PhysiqueRatingPlot? = null,
 )

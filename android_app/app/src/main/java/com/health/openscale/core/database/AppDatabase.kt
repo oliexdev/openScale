@@ -624,10 +624,11 @@ val MIGRATION_14_15 = object : Migration(14, 15) {
 
 val MIGRATION_15_16 = object : Migration(15, 16) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        // Seed the new derived MeasurementType introduced for science-based
-        // metabolic age. No schema change; existing installs receive the type
-        // here, new installs via getDefaultMeasurementTypes().
-        val newKeys = setOf(MeasurementTypeKey.METABOLIC_AGE)
+        // Seed the new derived MeasurementTypes introduced in this release:
+        // science-based metabolic age and the Tanita-style physique rating. No
+        // schema change; existing installs receive the types here, new installs
+        // via getDefaultMeasurementTypes().
+        val newKeys = setOf(MeasurementTypeKey.METABOLIC_AGE, MeasurementTypeKey.PHYSIQUE_RATING)
         val newTypes = getDefaultMeasurementTypes().filter { it.key in newKeys }
         newTypes.forEach { type ->
             db.execSQL(

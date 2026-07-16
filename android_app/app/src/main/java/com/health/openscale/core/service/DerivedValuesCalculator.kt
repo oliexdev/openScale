@@ -19,6 +19,7 @@ package com.health.openscale.core.service
 
 import androidx.annotation.VisibleForTesting
 import com.health.openscale.core.data.ActivityLevel
+import com.health.openscale.core.data.EvaluationState
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.MeasureUnit
 import com.health.openscale.core.data.MeasurementTypeKey
@@ -29,6 +30,7 @@ import com.health.openscale.core.database.MeasurementDao
 import com.health.openscale.core.database.MeasurementTypeDao
 import com.health.openscale.core.database.MeasurementValueDao
 import com.health.openscale.core.database.UserDao
+import com.health.openscale.core.model.EvaluationReferenceTables
 import com.health.openscale.core.utils.CalculationUtils
 import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
@@ -133,6 +135,7 @@ class DerivedValuesCalculator @Inject constructor(
         // Fetch raw values and their original units
         val (weightValue, weightUnitType) = findValueAndUnit(MeasurementTypeKey.WEIGHT)
         val (bodyFatValue, bodyFatUnitType) = findValueAndUnit(MeasurementTypeKey.BODY_FAT) // Unit usually % (UnitType.PERCENT)
+        val (muscleValue, muscleUnitType) = findValueAndUnit(MeasurementTypeKey.MUSCLE) // Unit usually % (UnitType.PERCENT), may be mass
         val (lbmValue, lbmUnitType) = findValueAndUnit(MeasurementTypeKey.LBM) // Unit usually kg (UnitType.KG)
         val (waistValue, waistUnitType) = findValueAndUnit(MeasurementTypeKey.WAIST)
         val (hipsValue, hipsUnitType) = findValueAndUnit(MeasurementTypeKey.HIPS)
@@ -210,22 +213,20 @@ class DerivedValuesCalculator @Inject constructor(
             birthDateMillis = user.birthDate
         )
 
+        // Body-fat and muscle may each be stored as a percentage or as an absolute
+        // mass. Normalise both to a percentage of body weight so the science-based
+        // reference tables (body-fat, Janssen muscle) can band them consistently.
+        val bodyFatPercent: Float? = toPercentOfWeight(bodyFatValue, bodyFatUnitType, weightKg)
+        val musclePercent: Float? = toPercentOfWeight(muscleValue, muscleUnitType, weightKg)
+
         // Fat-free (lean) mass in kg, used for the body-composition-aware
         // (Katch-McArdle) BMR behind metabolic age. Prefer a measured LBM value;
-        // otherwise derive it from weight and body-fat. Body-fat may be stored as
-        // a percentage or as an absolute mass, so normalise to a percentage first.
+        // otherwise derive it from weight and the normalised body-fat percentage.
         val fatFreeMassKg: Float? = when {
             lbmValue != null && lbmValue > 0f && lbmUnitType != null && lbmUnitType.isWeightUnit() ->
                 ConverterUtils.toKilogram(lbmValue, lbmUnitType.toWeightUnit())
-            weightKg != null && weightKg > 0f && bodyFatValue != null && bodyFatValue > 0f && bodyFatUnitType != null -> {
-                val bodyFatPercent = when (bodyFatUnitType) {
-                    UnitType.PERCENT -> bodyFatValue
-                    UnitType.KG, UnitType.LB, UnitType.ST ->
-                        ConverterUtils.toKilogram(bodyFatValue, bodyFatUnitType.toWeightUnit()) / weightKg * 100f
-                    else -> null
-                }
+            weightKg != null && weightKg > 0f ->
                 bodyFatPercent?.takeIf { it in 1f..75f }?.let { weightKg * (1f - it / 100f) }
-            }
             else -> null
         }
 
@@ -257,6 +258,13 @@ class DerivedValuesCalculator @Inject constructor(
             gender = user.gender,
             fatFreeMassKg = fatFreeMassKg
         ).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.METABOLIC_AGE) }
+
+        processPhysiqueRatingCalculation(
+            bodyFatPercent = bodyFatPercent,
+            musclePercent = musclePercent,
+            age = ageAtMeasurementYears,
+            gender = user.gender
+        ).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.PHYSIQUE_RATING) }
 
         processFatCaliperCalculation(
             caliper1Cm = caliper1Cm,
@@ -366,6 +374,86 @@ class DerivedValuesCalculator @Inject constructor(
         }
         val metAge = ((10.0f * weightKg) + (6.25f * heightCm) + genderConst - actualBmr) / 5.0f
         return metAge.coerceIn(15.0f, 99.0f)
+    }
+
+    /**
+     * Normalises a body-composition value to a percentage of body weight.
+     * Values already stored as a percentage pass through; values stored as a
+     * mass (kg/lb/st) are divided by the weight. Returns null when the value is
+     * missing/non-positive, its unit is unsupported, or a mass value has no
+     * weight to divide by.
+     */
+    @VisibleForTesting
+    internal fun toPercentOfWeight(value: Float?, unitType: UnitType?, weightKg: Float?): Float? {
+        if (value == null || value <= 0f || unitType == null) return null
+        return when (unitType) {
+            UnitType.PERCENT -> value
+            UnitType.KG, UnitType.LB, UnitType.ST ->
+                if (weightKg != null && weightKg > 0f)
+                    ConverterUtils.toKilogram(value, unitType.toWeightUnit()) / weightKg * 100f
+                else null
+            else -> null
+        }
+    }
+
+    /**
+     * Science-based Tanita-style physique rating (1–9). Crosses the user's
+     * body-fat level with their muscle-mass level, each banded LOW/NORMAL/HIGH
+     * against age- and sex-specific population reference ranges (the body-fat
+     * ranges and the Janssen 2000 skeletal-muscle ranges in
+     * [EvaluationReferenceTables]).
+     *
+     *   fatIndex:    HIGH=0, NORMAL=1, LOW=2   (more fat -> lower row)
+     *   muscleIndex: LOW=0,  NORMAL=1, HIGH=2
+     *   rating = fatIndex*3 + muscleIndex + 1
+     *
+     * yielding the Tanita 3x3 body-type matrix:
+     *   1 hidden-obese     2 obese             3 solidly-built
+     *   4 under-exercised  5 standard          6 standard-muscular
+     *   7 thin             8 thin & muscular   9 very-muscular
+     *
+     * Returns null when body-fat or muscle is missing/implausible, or when the
+     * user's age falls outside either reference table (no defensible band).
+     */
+    @VisibleForTesting
+    internal fun processPhysiqueRatingCalculation(
+        bodyFatPercent: Float?,
+        musclePercent: Float?,
+        age: Int,
+        gender: GenderType
+    ): Float? {
+        if (bodyFatPercent == null || bodyFatPercent !in 1f..75f ||
+            musclePercent == null || musclePercent !in 5f..80f
+        ) {
+            LogManager.d(CALC_PROCESS_TAG, "Physique rating skipped: missing/implausible body-fat or muscle.")
+            return null
+        }
+
+        val fatStrategy = if (gender == GenderType.MALE)
+            EvaluationReferenceTables.fatMale else EvaluationReferenceTables.fatFemale
+        val muscleStrategy = if (gender == GenderType.MALE)
+            EvaluationReferenceTables.muscleMale else EvaluationReferenceTables.muscleFemale
+
+        val fatState = fatStrategy.evaluate(bodyFatPercent, age).state
+        val muscleState = muscleStrategy.evaluate(musclePercent, age).state
+        if (fatState == EvaluationState.UNDEFINED || muscleState == EvaluationState.UNDEFINED) {
+            LogManager.d(CALC_PROCESS_TAG, "Physique rating skipped: age $age outside reference bands.")
+            return null
+        }
+
+        val fatIndex = when (fatState) {
+            EvaluationState.HIGH -> 0
+            EvaluationState.NORMAL -> 1
+            EvaluationState.LOW -> 2
+            EvaluationState.UNDEFINED -> return null
+        }
+        val muscleIndex = when (muscleState) {
+            EvaluationState.LOW -> 0
+            EvaluationState.NORMAL -> 1
+            EvaluationState.HIGH -> 2
+            EvaluationState.UNDEFINED -> return null
+        }
+        return (fatIndex * 3 + muscleIndex + 1).toFloat()
     }
 
     @VisibleForTesting

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.automirrored.filled.TrendingDown
 import androidx.compose.material.icons.automirrored.filled.TrendingFlat
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.Accessibility
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Analytics
@@ -364,7 +365,47 @@ enum class MeasurementTypeIcon(val resource: IconResource) {
     IC_M_SCATTER_PLOT(IconResource.VectorResource(Icons.Filled.ScatterPlot)),
     IC_M_BUBBLE_CHART(IconResource.VectorResource(Icons.Filled.BubbleChart)),
     IC_M_HIVE(IconResource.VectorResource(Icons.Filled.Hive)),
-    IC_M_METABOLIC_AGE(IconResource.VectorResource(Icons.Filled.HourglassBottom));
+    IC_M_METABOLIC_AGE(IconResource.VectorResource(Icons.Filled.HourglassBottom)),
+    IC_M_PHYSIQUE_RATING(IconResource.VectorResource(Icons.Filled.Accessibility));
+}
+
+/**
+ * Tanita-style physique rating: a 1–9 body-type index derived from crossing a
+ * person's body-fat level (high/normal/low) with their muscle-mass level
+ * (low/standard/high). Value stored on the measurement is the [value]; the
+ * matching body-type name is shown alongside it in the UI.
+ *
+ * See [com.health.openscale.core.service.DerivedValuesCalculator.processPhysiqueRatingCalculation].
+ */
+enum class PhysiqueRating(
+    val value: Int,
+    @param:StringRes val displayNameResId: Int,
+    @param:StringRes val shortNameResId: Int,
+    @param:StringRes val descriptionResId: Int,
+) {
+    HIDDEN_OBESE(1, R.string.physique_rating_hidden_obese, R.string.physique_rating_short_hidden_obese, R.string.physique_rating_desc_hidden_obese),        // high fat, low muscle
+    OBESE(2, R.string.physique_rating_obese, R.string.physique_rating_short_obese, R.string.physique_rating_desc_obese),                                    // high fat, standard muscle
+    SOLIDLY_BUILT(3, R.string.physique_rating_solidly_built, R.string.physique_rating_short_solidly_built, R.string.physique_rating_desc_solidly_built),   // high fat, high muscle
+    UNDER_EXERCISED(4, R.string.physique_rating_under_exercised, R.string.physique_rating_short_under_exercised, R.string.physique_rating_desc_under_exercised), // normal fat, low muscle
+    STANDARD(5, R.string.physique_rating_standard, R.string.physique_rating_short_standard, R.string.physique_rating_desc_standard),                        // normal fat, standard muscle
+    STANDARD_MUSCULAR(6, R.string.physique_rating_standard_muscular, R.string.physique_rating_short_standard_muscular, R.string.physique_rating_desc_standard_muscular), // normal fat, high muscle
+    THIN(7, R.string.physique_rating_thin, R.string.physique_rating_short_thin, R.string.physique_rating_desc_thin),                                        // low fat, low muscle
+    THIN_AND_MUSCULAR(8, R.string.physique_rating_thin_muscular, R.string.physique_rating_short_thin_muscular, R.string.physique_rating_desc_thin_muscular), // low fat, standard muscle
+    VERY_MUSCULAR(9, R.string.physique_rating_very_muscular, R.string.physique_rating_short_very_muscular, R.string.physique_rating_desc_very_muscular);    // low fat, high muscle
+
+    fun getDisplayName(context: Context): String = context.getString(displayNameResId)
+
+    fun getShortDisplayName(context: Context): String = context.getString(shortNameResId)
+
+    fun getDescription(context: Context): String = context.getString(descriptionResId)
+
+    companion object {
+        fun fromInt(value: Int): PhysiqueRating? = entries.firstOrNull { it.value == value }
+
+        /** The physique rating for a given fat/muscle band index (0=high fat/low muscle … ). */
+        fun forZone(fatIndex: Int, muscleIndex: Int): PhysiqueRating =
+            fromInt(fatIndex * 3 + muscleIndex + 1) ?: STANDARD
+    }
 }
 
 enum class MeasurementTypeKey(
@@ -408,6 +449,7 @@ enum class MeasurementTypeKey(
     PROTEIN(33, R.string.measurement_type_protein, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     BCM(34, R.string.measurement_type_bcm, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     METABOLIC_AGE(35, R.string.measurement_type_metabolic_age, listOf(UnitType.YEARS), listOf(InputFieldType.FLOAT)),
+    PHYSIQUE_RATING(36, R.string.measurement_type_physique_rating, listOf(UnitType.NONE), listOf(InputFieldType.FLOAT)),
     CUSTOM(99, R.string.measurement_type_custom_default_name, UnitType.entries.toList(), listOf(InputFieldType.FLOAT, InputFieldType.INT, InputFieldType.TEXT, InputFieldType.DATE, InputFieldType.TIME));
 }
 

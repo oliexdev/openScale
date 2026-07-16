@@ -122,6 +122,9 @@ import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.screen.components.ChartSplitterHandle
 import com.health.openscale.ui.screen.components.MeasurementChart
+import com.health.openscale.ui.screen.components.PhysiqueRatingPlane
+import com.health.openscale.ui.screen.components.computePhysiquePlaneData
+import com.health.openscale.ui.screen.components.physiqueRatingShortText
 import com.health.openscale.ui.screen.components.UserGoalChip
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
 import com.health.openscale.ui.screen.components.rememberAddMeasurementActionButton
@@ -873,6 +876,7 @@ fun MeasurementCard(
                                 userEvaluationContext = userEvaluationContext,
                                 measuredAtMillis      = measuredAtMillis,
                                 expandedTypeIds       = expandedTypeIds,
+                                measurementWithValues = measurementWithValues,
                                 valuePrefix           = if (isAggregated && rawCount > 1) "⌀ " else "",
                             )
                         }
@@ -893,6 +897,7 @@ fun MeasurementCard(
                                 userEvaluationContext = userEvaluationContext,
                                 measuredAtMillis      = measuredAtMillis,
                                 expandedTypeIds       = expandedTypeIds,
+                                measurementWithValues = measurementWithValues,
                                 valuePrefix           = if (isAggregated && rawCount > 1) "⌀ " else "",
                             )
                         }
@@ -961,13 +966,17 @@ fun MeasurementValueRow(
     val unitName      = type.unit.displayName
     val context       = LocalContext.current
 
-    val displayValue = when (type.inputType) {
-        InputFieldType.FLOAT -> originalValue.floatValue?.let { LocaleUtils.formatValueForDisplay(it.toString(), type.unit) }
-        InputFieldType.INT   -> originalValue.intValue?.let { LocaleUtils.formatValueForDisplay(it.toString(), type.unit) }
-        InputFieldType.TEXT  -> originalValue.textValue
-        InputFieldType.DATE  -> originalValue.dateValue?.let { DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault()).format(Date(it)) }
-        InputFieldType.TIME  -> originalValue.dateValue?.let { DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault()).format(Date(it)) }
-        InputFieldType.USER  -> null
+    val displayValue = when {
+        type.key == MeasurementTypeKey.PHYSIQUE_RATING ->
+            originalValue.floatValue?.let { physiqueRatingShortText(context, it) }
+        else -> when (type.inputType) {
+            InputFieldType.FLOAT -> originalValue.floatValue?.let { LocaleUtils.formatValueForDisplay(it.toString(), type.unit) }
+            InputFieldType.INT   -> originalValue.intValue?.let { LocaleUtils.formatValueForDisplay(it.toString(), type.unit) }
+            InputFieldType.TEXT  -> originalValue.textValue
+            InputFieldType.DATE  -> originalValue.dateValue?.let { DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault()).format(Date(it)) }
+            InputFieldType.TIME  -> originalValue.dateValue?.let { DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault()).format(Date(it)) }
+            InputFieldType.USER  -> null
+        }
     } ?: "-"
 
     val iconMeasurementType = remember(type.icon) { type.icon }
@@ -1026,7 +1035,7 @@ fun MeasurementValueRow(
                     style    = MaterialTheme.typography.titleSmall,
                     maxLines = 1,
                 )
-                if (difference != null && trend != Trend.NOT_APPLICABLE) {
+                if (difference != null && trend != Trend.NOT_APPLICABLE && !type.isOrdinal()) {
                     Spacer(modifier = Modifier.height(2.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         val trendIconVector = when (trend) {
@@ -1129,6 +1138,7 @@ fun MeasurementRowExpandable(
     userEvaluationContext: UserEvaluationContext?,
     measuredAtMillis: Long,
     expandedTypeIds: MutableMap<Int, Boolean>,
+    measurementWithValues: MeasurementWithValues,
     modifier: Modifier = Modifier,
     gaugeHeightDp: Dp = 80.dp,
     valuePrefix: String = "",
@@ -1138,6 +1148,13 @@ fun MeasurementRowExpandable(
         InputFieldType.FLOAT -> valueWithTrend.currentValue.value.floatValue
         InputFieldType.INT   -> valueWithTrend.currentValue.value.intValue?.toFloat()
         else -> null
+    }
+
+    // Ordinal physique rating expands to its static body-type plane instead of a gauge.
+    val physiquePlane = remember(measurementWithValues, userEvaluationContext) {
+        if (type.key == MeasurementTypeKey.PHYSIQUE_RATING && userEvaluationContext != null)
+            computePhysiquePlaneData(measurementWithValues, userEvaluationContext.gender, userEvaluationContext.birthDateMillis)
+        else null
     }
 
     val evalResult = remember(valueWithTrend, userEvaluationContext, measuredAtMillis) {
@@ -1157,7 +1174,8 @@ fun MeasurementRowExpandable(
     else plausible?.let { numeric < it.start || numeric > it.endInclusive }
         ?: (unitName == "%" && (numeric < 0f || numeric > 100f))
 
-    val canExpand = (evalResult != null && !noAgeBand) || noAgeBand || outOfPlausibleRange
+    val canExpand = (evalResult != null && !noAgeBand) || noAgeBand || outOfPlausibleRange ||
+            physiquePlane != null
 
     Column(modifier) {
         Box(
@@ -1179,6 +1197,14 @@ fun MeasurementRowExpandable(
 
         AnimatedVisibility(visible = canExpand && (expandedTypeIds[type.id] == true)) {
             when {
+                physiquePlane != null -> {
+                    Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp)) {
+                        PhysiqueRatingPlane(
+                            data           = physiquePlane,
+                            highlightColor = Color(type.color),
+                        )
+                    }
+                }
                 noAgeBand -> EvaluationErrorBanner(
                     message = stringResource(R.string.eval_no_age_band)
                 )

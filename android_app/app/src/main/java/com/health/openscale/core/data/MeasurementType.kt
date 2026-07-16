@@ -51,6 +51,16 @@ data class MeasurementType(
      * @param context The context needed to resolve string resources.
      * @return The display name for this measurement type.
      */
+    /**
+     * True for ordinal / categorical types whose numeric value is an index into
+     * a set of categories rather than a magnitude on a continuous scale (e.g. the
+     * Tanita physique rating's 1–9 body types). Such types must be excluded from
+     * continuous visualisations and aggregates — line charts, trend/mean/volatility
+     * insights, and min/max/average statistics — where a linear axis is meaningless.
+     */
+    @Ignore
+    fun isOrdinal(): Boolean = key == MeasurementTypeKey.PHYSIQUE_RATING
+
     @Ignore // Room should not try to map this helper function to a DB column
     fun getDisplayName(context: Context): String {
         return if (key == MeasurementTypeKey.CUSTOM) {
