@@ -301,6 +301,8 @@ class DerivedValuesCalculator @Inject constructor(
         return when (gender) {
             GenderType.MALE   -> (10.0f * weightKg) + (6.25f * heightCm) - (5.0f * ageYears) + 5.0f
             GenderType.FEMALE -> (10.0f * weightKg) + (6.25f * heightCm) - (5.0f * ageYears) - 161.0f
+            // No sex-specific BMR offset defined for DIVERSE -> metric disabled (issue #1415).
+            GenderType.DIVERSE -> null
         }
     }
 
@@ -346,6 +348,12 @@ class DerivedValuesCalculator @Inject constructor(
             return null
         }
 
+        // Skinfold body-density constants are only defined for male/female. For DIVERSE
+        // the caliper-based body-fat metric is disabled (issue #1415).
+        if (!gender.hasSexSpecificReference()) {
+            return null
+        }
+
         // Sum of skinfolds in millimeters
         val sumSkinfoldsMm = (caliper1Cm + caliper2Cm + caliper3Cm) * 10.0f
         // LogManager.v(CALC_PROCESS_TAG, "Sum of skinfolds (S): $sumSkinfoldsMm mm")
@@ -369,6 +377,8 @@ class DerivedValuesCalculator @Inject constructor(
                 k2 = 0.0000023f
                 ka = 0.0001392f
             }
+            // Unreachable: DIVERSE returns null above. Kept for exhaustiveness/definite assignment.
+            GenderType.DIVERSE -> return null
         }
 
         val bodyDensity =

@@ -165,6 +165,12 @@ class MeasurementTransformationUseCase @Inject constructor(
         ) return values
 
         val user  = userUseCases.observeUserById(measurement.userId).first() ?: return values
+
+        // The body-fat / body-water / LBM estimation formulas below are sex-specific.
+        // For DIVERSE there is no defined sex reference, so we skip estimation entirely
+        // and leave any device-provided values untouched (issue #1415).
+        if (!user.gender.hasSexSpecificReference()) return values
+
         val types = query.getAllMeasurementTypes().first()
         val byKey = types.associateBy { it.key }
 

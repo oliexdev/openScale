@@ -155,10 +155,22 @@ enum class SupportedLanguage(val code: String, val nativeDisplayName: String) {
 
 enum class GenderType(@param:StringRes val displayNameResId: Int) {
     MALE(R.string.gender_male),
-    FEMALE(R.string.gender_female);
+    FEMALE(R.string.gender_female),
+    DIVERSE(R.string.gender_diverse);
 
     fun isMale(): Boolean {
         return this == MALE}
+
+    /**
+     * Whether this gender maps to a sex-specific reference table / body-composition
+     * formula. Body-composition metrics (body fat, water, muscle, LBM, BMR, ...) rely
+     * on male/female specific formulas and reference ranges. [DIVERSE] has no such
+     * medically defined reference, so those metrics are disabled for it (issue #1415):
+     * their values are neither estimated nor evaluated (no in/out-of-range coloring).
+     */
+    fun hasSexSpecificReference(): Boolean {
+        return this != DIVERSE
+    }
 
     fun getDisplayName(context: Context): String {
         return context.getString(displayNameResId)

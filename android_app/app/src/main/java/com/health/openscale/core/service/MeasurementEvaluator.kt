@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.service
 
+import com.health.openscale.core.data.EvaluationState
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.model.EvaluationReferenceTables
 import com.health.openscale.core.usecase.MeasurementEvaluationResult
@@ -27,38 +28,51 @@ import com.health.openscale.core.usecase.MeasurementEvaluationResult
  */
 object MeasurementEvaluator {
 
+    /**
+     * Result used when a metric cannot be evaluated for the given user, e.g. a
+     * sex-specific reference does not exist for [GenderType.DIVERSE] (issue #1415).
+     * Reported as [EvaluationState.UNDEFINED] so the UI shows no in/out-of-range coloring.
+     */
+    private fun undefined(value: Float): MeasurementEvaluationResult =
+        MeasurementEvaluationResult(value, -1f, -1f, EvaluationState.UNDEFINED)
+
     // --- Body composition ---
 
     fun evalBodyFat(value: Float, age: Int, gender: GenderType): MeasurementEvaluationResult =
         when (gender) {
-            GenderType.MALE   -> EvaluationReferenceTables.fatMale.evaluate(value, age)
-            GenderType.FEMALE -> EvaluationReferenceTables.fatFemale.evaluate(value, age)
+            GenderType.MALE    -> EvaluationReferenceTables.fatMale.evaluate(value, age)
+            GenderType.FEMALE  -> EvaluationReferenceTables.fatFemale.evaluate(value, age)
+            GenderType.DIVERSE -> undefined(value)
         }
 
     fun evalWater(value: Float, age: Int, gender: GenderType): MeasurementEvaluationResult =
         when (gender) {
-            GenderType.MALE   -> EvaluationReferenceTables.waterMale.evaluate(value, age)
-            GenderType.FEMALE -> EvaluationReferenceTables.waterFemale.evaluate(value, age)
+            GenderType.MALE    -> EvaluationReferenceTables.waterMale.evaluate(value, age)
+            GenderType.FEMALE  -> EvaluationReferenceTables.waterFemale.evaluate(value, age)
+            GenderType.DIVERSE -> undefined(value)
         }
 
     fun evalMuscle(value: Float, age: Int, gender: GenderType): MeasurementEvaluationResult =
         when (gender) {
-            GenderType.MALE   -> EvaluationReferenceTables.muscleMale.evaluate(value, age)
-            GenderType.FEMALE -> EvaluationReferenceTables.muscleFemale.evaluate(value, age)
+            GenderType.MALE    -> EvaluationReferenceTables.muscleMale.evaluate(value, age)
+            GenderType.FEMALE  -> EvaluationReferenceTables.muscleFemale.evaluate(value, age)
+            GenderType.DIVERSE -> undefined(value)
         }
 
     fun evalLBM(value: Float, age: Int, gender: GenderType): MeasurementEvaluationResult =
         when (gender) {
-            GenderType.MALE   -> EvaluationReferenceTables.lbmMale.evaluate(value, age)
-            GenderType.FEMALE -> EvaluationReferenceTables.lbmFemale.evaluate(value, age)
+            GenderType.MALE    -> EvaluationReferenceTables.lbmMale.evaluate(value, age)
+            GenderType.FEMALE  -> EvaluationReferenceTables.lbmFemale.evaluate(value, age)
+            GenderType.DIVERSE -> undefined(value)
         }
 
     // --- Indices ---
 
     fun evalBmi(value: Float, age: Int, gender: GenderType): MeasurementEvaluationResult =
         when (gender) {
-            GenderType.MALE   -> EvaluationReferenceTables.bmiMale.evaluate(value, age)
-            GenderType.FEMALE -> EvaluationReferenceTables.bmiFemale.evaluate(value, age)
+            GenderType.MALE    -> EvaluationReferenceTables.bmiMale.evaluate(value, age)
+            GenderType.FEMALE  -> EvaluationReferenceTables.bmiFemale.evaluate(value, age)
+            GenderType.DIVERSE -> undefined(value)
         }
 
     fun evalWHtR(value: Float, age: Int): MeasurementEvaluationResult =
@@ -66,8 +80,9 @@ object MeasurementEvaluator {
 
     fun evalWHR(value: Float, age: Int, gender: GenderType): MeasurementEvaluationResult =
         when (gender) {
-            GenderType.MALE   -> EvaluationReferenceTables.whrMale.evaluate(value, age)
-            GenderType.FEMALE -> EvaluationReferenceTables.whrFemale.evaluate(value, age)
+            GenderType.MALE    -> EvaluationReferenceTables.whrMale.evaluate(value, age)
+            GenderType.FEMALE  -> EvaluationReferenceTables.whrFemale.evaluate(value, age)
+            GenderType.DIVERSE -> undefined(value)
         }
 
     fun evalVisceralFat(value: Float, age: Int): MeasurementEvaluationResult =
@@ -76,7 +91,8 @@ object MeasurementEvaluator {
     // --- Circumference / targets ---
 
     fun evalWaistCm(value: Float, age: Int, gender: GenderType): MeasurementEvaluationResult =
-        EvaluationReferenceTables.waistStrategyCm(gender).evaluate(value, age)
+        if (!gender.hasSexSpecificReference()) undefined(value)
+        else EvaluationReferenceTables.waistStrategyCm(gender).evaluate(value, age)
 
     /** Evaluates current weight against BMI-derived target range for given height/gender. */
     fun evalWeightAgainstTargetRange(
@@ -85,7 +101,8 @@ object MeasurementEvaluator {
         heightCm: Int,
         gender: GenderType
     ): MeasurementEvaluationResult =
-        EvaluationReferenceTables
+        if (!gender.hasSexSpecificReference()) undefined(weightKg)
+        else EvaluationReferenceTables
             .targetWeightStrategy(heightCm, gender)
             .evaluate(weightKg, age)
 }

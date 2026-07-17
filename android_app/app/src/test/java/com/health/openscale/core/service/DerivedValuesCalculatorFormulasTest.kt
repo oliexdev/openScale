@@ -161,4 +161,17 @@ class DerivedValuesCalculatorFormulasTest {
         assertThat(DerivedValuesCalculator.processFatCaliperCalculation(0f, 1f, 1f, 25, GenderType.MALE)).isNull()
         assertThat(DerivedValuesCalculator.processFatCaliperCalculation(1f, 1f, null, 25, GenderType.MALE)).isNull()
     }
+
+    // ---- DIVERSE gender: sex-specific derived metrics are disabled (issue #1415) ---------------
+
+    @Test
+    fun bmr_returnsNull_forDiverseGender() {
+        // Same body inputs that yield a value for male/female must return null for DIVERSE.
+        assertThat(DerivedValuesCalculator.processBmrCalculation(80f, 175f, 30, GenderType.DIVERSE)).isNull()
+    }
+
+    @Test
+    fun fatCaliper_returnsNull_forDiverseGender() {
+        assertThat(DerivedValuesCalculator.processFatCaliperCalculation(1f, 1f, 1f, 25, GenderType.DIVERSE)).isNull()
+    }
 }

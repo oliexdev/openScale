@@ -108,4 +108,36 @@ class MeasurementEvaluatorTest {
         assertThat(MeasurementEvaluator.evalWeightAgainstTargetRange(85f, 30, 180, GenderType.MALE).state)
             .isEqualTo(EvaluationState.HIGH)
     }
+
+    // ---- DIVERSE gender: sex-specific metrics are disabled (issue #1415) ------------------------
+
+    @Test
+    fun diverse_sexSpecificMetrics_areUndefined() {
+        // Values that would be NORMAL for male/female must be UNDEFINED for DIVERSE.
+        assertThat(MeasurementEvaluator.evalBodyFat(17f, 25, GenderType.DIVERSE).state)
+            .isEqualTo(EvaluationState.UNDEFINED)
+        assertThat(MeasurementEvaluator.evalWater(55f, 30, GenderType.DIVERSE).state)
+            .isEqualTo(EvaluationState.UNDEFINED)
+        assertThat(MeasurementEvaluator.evalMuscle(40f, 25, GenderType.DIVERSE).state)
+            .isEqualTo(EvaluationState.UNDEFINED)
+        assertThat(MeasurementEvaluator.evalLBM(60f, 30, GenderType.DIVERSE).state)
+            .isEqualTo(EvaluationState.UNDEFINED)
+        assertThat(MeasurementEvaluator.evalBmi(22f, 30, GenderType.DIVERSE).state)
+            .isEqualTo(EvaluationState.UNDEFINED)
+        assertThat(MeasurementEvaluator.evalWHR(0.85f, 40, GenderType.DIVERSE).state)
+            .isEqualTo(EvaluationState.UNDEFINED)
+        assertThat(MeasurementEvaluator.evalWaistCm(90f, 40, GenderType.DIVERSE).state)
+            .isEqualTo(EvaluationState.UNDEFINED)
+        assertThat(MeasurementEvaluator.evalWeightAgainstTargetRange(70f, 30, 180, GenderType.DIVERSE).state)
+            .isEqualTo(EvaluationState.UNDEFINED)
+    }
+
+    @Test
+    fun diverse_nonGenderedMetrics_stillEvaluate() {
+        // WHtR and visceral fat are not sex-specific and stay available for DIVERSE users.
+        assertThat(MeasurementEvaluator.evalWHtR(0.45f, 30).state)
+            .isEqualTo(EvaluationState.NORMAL)
+        assertThat(MeasurementEvaluator.evalVisceralFat(5f, 30).state)
+            .isEqualTo(EvaluationState.NORMAL)
+    }
 }

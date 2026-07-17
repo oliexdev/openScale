@@ -43,6 +43,7 @@ import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Face3
 import androidx.compose.material.icons.filled.Face6
 import androidx.compose.material.icons.filled.FileDownload
@@ -693,6 +694,8 @@ fun UserSelectionDialog(
                             Icons.Default.Face6 to MaterialTheme.colorScheme.primary
                         GenderType.FEMALE ->
                             Icons.Default.Face3 to MaterialTheme.colorScheme.secondary
+                        GenderType.DIVERSE ->
+                            Icons.Default.Face to MaterialTheme.colorScheme.tertiary
                     }
 
                     val textColor =

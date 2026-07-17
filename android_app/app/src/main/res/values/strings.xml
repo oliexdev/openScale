@@ -78,6 +78,7 @@
     <string name="user_detail_label_gender">Gender</string>
     <string name="gender_male">Male</string>
     <string name="gender_female">Female</string>
+    <string name="gender_diverse">Diverse</string>
     <string name="amputation_correction_label">Amputation correction</string>
     <string name="amputation_none">None</string>
     <string name="amputation_hand">Hand</string>

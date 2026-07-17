@@ -222,14 +222,25 @@ object EvaluationReferenceTables {
 
     // ----- Dynamic strategies -----
 
+    /**
+     * Strategy that never yields a range, used when no sex-specific reference exists
+     * for the user (e.g. [GenderType.DIVERSE], see issue #1415).
+     */
+    val undefinedStrategy: EvaluationStrategy = object : EvaluationStrategy {
+        override fun evaluate(value: Float, age: Int): MeasurementEvaluationResult =
+            MeasurementEvaluationResult(value, -1f, -1f, EvaluationState.UNDEFINED)
+    }
+
     /** Waist circumference (cm) thresholds by gender. */
     fun waistStrategyCm(gender: GenderType): EvaluationStrategy = when (gender) {
-        GenderType.MALE   -> AgeBandStrategy(listOf(AgeBand(18, 90, 0f, 94f)))
-        GenderType.FEMALE -> AgeBandStrategy(listOf(AgeBand(18, 90, 0f, 80f)))
+        GenderType.MALE    -> AgeBandStrategy(listOf(AgeBand(18, 90, 0f, 94f)))
+        GenderType.FEMALE  -> AgeBandStrategy(listOf(AgeBand(18, 90, 0f, 80f)))
+        GenderType.DIVERSE -> undefinedStrategy
     }
 
     /** Target weight bounds computed from height (cm) and BMI ranges by gender. */
     fun targetWeightStrategy(heightCm: Int, gender: GenderType): EvaluationStrategy {
+        if (!gender.hasSexSpecificReference()) return undefinedStrategy
         val h2 = (heightCm / 100f) * (heightCm / 100f)
         val (bmiLo, bmiHi) = if (gender == GenderType.MALE) 20f to 25f else 19f to 24f
         return FormulaStrategy(
