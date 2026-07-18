@@ -36,7 +36,7 @@ class EEBBLHandler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.uppercase()
-        if (name.contains("EEBBL") || name.contains("P1") || name.contains("DEBUG")) {
+        if (name.contains("EEBBL") || name.contains("P1")) {
             return DeviceSupport(
                 displayName = "EEBBL Body Fat Scale (P1) - 8-electrode",
                 capabilities = setOf(
