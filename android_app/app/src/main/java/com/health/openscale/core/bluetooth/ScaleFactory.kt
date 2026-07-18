@@ -21,6 +21,7 @@ import android.content.Context
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
+import com.health.openscale.core.bluetooth.scales.ScaleupHandler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
 import com.health.openscale.core.bluetooth.scales.CultSmartScaleProHandler
 import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
@@ -68,11 +69,13 @@ import com.health.openscale.core.bluetooth.scales.SoehnleHandler
 import com.health.openscale.core.bluetooth.scales.SppScaleAdapter
 import com.health.openscale.core.bluetooth.scales.TaylorBIAHandler
 import com.health.openscale.core.bluetooth.scales.DrTrustSSW532Handler
+import com.health.openscale.core.bluetooth.scales.EEBBLHandler
 import com.health.openscale.core.bluetooth.scales.StandardBeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.TrisaBodyAnalyzeHandler
 import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.bluetooth.scales.VitafitVT701Handler
 import com.health.openscale.core.bluetooth.scales.YunmaiHandler
+import com.health.openscale.core.bluetooth.scales.YunmaiXHandler
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
@@ -112,6 +115,7 @@ class ScaleFactory @Inject constructor(
         RealmeSmartScaleHandler(),
         YunmaiHandler(isMini = false),
         YunmaiHandler(isMini = true),
+        YunmaiXHandler(),
         TrisaBodyAnalyzeHandler(),
         SanitasSbf72Handler(),
         StandardBeurerSanitasHandler(),
@@ -130,6 +134,7 @@ class ScaleFactory @Inject constructor(
         RunstarR5Handler(),
         RobiS9Handler(),
         VitafitVT701Handler(),
+        EEBBLHandler(),
         MGBHandler(),
         MedisanaBs44xHandler(),
         InlifeHandler(),
@@ -151,6 +156,7 @@ class ScaleFactory @Inject constructor(
         CustomOpenScaleHandler(),
         BeurerSanitasHandler(),
         AAAxHandler(),
+        ScaleupHandler(),
         ActiveEraBF06Handler(),
         DrTrustSSW532Handler(),
         BodyConnectHandler(),

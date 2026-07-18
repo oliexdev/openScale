@@ -66,7 +66,7 @@ class YunmaiHandler(
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name
         val matches = when {
-            isMini  -> name.startsWith("YUNMAI-SIGNAL") || name.startsWith("YUNMAI-ISM") || name.startsWith("YUNMAI-ISC2P")
+            isMini  -> name.startsWith("YUNMAI-SIGNAL") || name.startsWith("YUNMAI-ISM") || name.startsWith("YUNMAI-ISC2P") || name == "YUNMAI-Scale-3"
             else    -> name.startsWith("YUNMAI-ISSE")
         }
         if (!matches) return null

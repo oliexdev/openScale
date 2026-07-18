@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync_app_unreachable_hint">El darrer canvi no s’ha sincronitzat. Obriu l’openScale-sync i feu una sincronització manual.</string>
+    <string name="sync_app_open_action">Obre</string>
+    <string name="app_logo_content_description">Logo de l’aplicació</string>
+    <string name="text_none">Cap</string>
+    <string name="not_available">No disponible</string>
+    <string name="placeholder_empty_value">-</string>
+    <string name="theme_light">Clar</string>
+    <string name="theme_dark">Fosc</string>
+    <string name="enable_button">Activa</string>
+    <string name="cancel_button">Cancel·la</string>
+    <string name="clear_button">Esborra</string>
+    <string name="confirm_button">Confirma</string>
+    <string name="dialog_ok">D’acord</string>
+    <string name="saved">S’ha desat</string>
+    <string name="switch_on">Activat</string>
+    <string name="switch_off">Desactivat</string>
+    <string name="open_link_content_description">Obre l’enllaç</string>
+    <string name="content_desc_warning_icon">Icona d’advertència</string>
+    <string name="content_desc_restore_icon">Icona de restauració</string>
+    <string name="content_desc_information">Informació</string>
+    <string name="content_desc_open_menu">Obre el menú</string>
+    <string name="content_desc_back">Endarrere</string>
+    <string name="content_desc_selected">Seleccionat</string>
+    <string name="derived_backfill_start">S’estan calculant els valors derivats…</string>
+    <string name="derived_backfill_done">Els valors derivats s’han actualitzat correctament.</string>
+    <string name="error_generic">S’ha produït un error.</string>
+    <string name="error_loading_data">No s’han pogut carregar les dades.</string>
+    <string name="error_try_again">Torneu-ho a provar.</string>
+    <string name="no_data_available">No hi ha dades disponibles.</string>
+    <string name="no_measurements_found">No s’ha trobat cap mesura.</string>
+    <string name="no_entries_found">No hi ha cap element disponible.</string>
+    <string name="route_title_overview">Visió general</string>
+    <string name="route_title_graph">Gràfiques</string>
+    <string name="route_title_table">Taula</string>
+    <string name="route_title_statistics">Estadístiques</string>
+    <string name="route_title_insights">Anàlisis</string>
+    <string name="route_title_settings">Configuració</string>
+    <string name="route_title_table_drilldown">Detalls</string>
+    <string name="calendar_week_abbrev">Set</string>
+    <string name="title_new_measurement">Nova mesura</string>
+    <string name="title_edit_measurement">Edita la mesura</string>
+    <string name="about_screen_title">Quant a</string>
+</resources>
