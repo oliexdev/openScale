@@ -199,7 +199,7 @@
     <string name="measurement_type_label_icon">Icône</string>
     <string name="measurement_type_label_unit">Unité</string>
     <string name="measurement_type_label_goal">But</string>
-    <string name="my_goals_label">Mes Obejectfs</string>
+    <string name="my_goals_label">Mes Objectifs</string>
     <string name="user_detail_goals">%d Objectifs</string>
     <string name="user_detail_no_goals">Sans objectifs</string>
     <string name="delete_button_label">Supprimer</string>
