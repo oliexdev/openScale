@@ -416,21 +416,19 @@ class MiScaleHandler : ScaleDeviceHandler() {
      */
     private fun applyBodyMiScaleComposition(m: ScaleMeasurement, impedance: Float, user: ScaleUser) {
         val lib = BodyMiScaleLib(user.gender, user.age, user.bodyHeight)
-        val mode = BodyMiScaleLib.Mode.SCIENCE
 
         val lbmKg   = lib.getLbm(m.weight, impedance)
-        val fatPct  = lib.getFat(mode, m.weight, lbmKg)
+        val fatPct  = lib.getFat(m.weight, lbmKg)
         val boneKg  = lib.getBoneMass(lbmKg)
         val muscleKg = lib.getMuscleMass(m.weight, fatPct, boneKg)
-        val waterPct = lib.getWater(mode, fatPct)
 
         m.fat         = fatPct
-        m.water       = waterPct
+        m.water       = lib.getWater(fatPct)
         m.muscle      = if (m.weight > 0f) muscleKg / m.weight * 100f else 0f
         m.lbm         = lbmKg
         m.bone        = boneKg
-        m.protein     = lib.getProtein(mode, m.weight, lbmKg, muscleKg, waterPct)
-        m.bmr         = lib.getBmr(mode, m.weight)
+        m.protein     = lib.getProtein(m.weight, lbmKg)
+        m.bmr         = lib.getBmr(m.weight)
         m.visceralFat = lib.getVisceralFat(m.weight)
     }
 

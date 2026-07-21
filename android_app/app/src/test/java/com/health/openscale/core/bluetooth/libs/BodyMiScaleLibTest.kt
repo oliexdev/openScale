@@ -21,16 +21,15 @@
 package com.health.openscale.core.bluetooth.libs
 
 import com.google.common.truth.Truth.assertThat
-import com.health.openscale.core.bluetooth.libs.BodyMiScaleLib.Mode
 import com.health.openscale.core.data.GenderType
 import org.junit.Test
 
 /**
  * Unit tests for [BodyMiScaleLib].
  *
- * The SCIENCE-mode regression fixture is a real measurement captured from the upstream
- * bodymiscale Home Assistant integration (male, 46y, 168cm, 86.10kg, impedance 421),
- * so this test locks openScale's port to byte-for-byte parity with the reference project.
+ * The regression fixture is a real measurement captured from the upstream bodymiscale
+ * Home Assistant integration (male, 46y, 168cm, 86.10kg, impedance 421), so this test
+ * locks openScale's port to byte-for-byte parity with the reference project.
  */
 class BodyMiScaleLibTest {
     private val EPS = 0.05f
@@ -40,13 +39,13 @@ class BodyMiScaleLibTest {
     private val impedance = 421f
 
     @Test
-    fun science_mode_matches_bodymiscale_reference() {
+    fun matches_bodymiscale_reference() {
         val lbm = lib.getLbm(weight, impedance)
-        val fat = lib.getFat(Mode.SCIENCE, weight, lbm)
-        val water = lib.getWater(Mode.SCIENCE, fat)
+        val fat = lib.getFat(weight, lbm)
+        val water = lib.getWater(fat)
         val bone = lib.getBoneMass(lbm)
         val muscle = lib.getMuscleMass(weight, fat, bone)
-        val protein = lib.getProtein(Mode.SCIENCE, weight, lbm, muscle, water)
+        val protein = lib.getProtein(weight, lbm)
 
         assertThat(lbm).isWithin(EPS).of(60.0f)
         assertThat(fat).isWithin(EPS).of(30.33f)
@@ -54,24 +53,15 @@ class BodyMiScaleLibTest {
         assertThat(protein).isWithin(EPS).of(13.59f)
         assertThat(bone).isWithin(EPS).of(3.01f)
         assertThat(muscle).isWithin(EPS).of(56.97f)
-        assertThat(lib.getBmr(Mode.SCIENCE, weight)).isWithin(1f).of(1861f)
+        assertThat(lib.getBmr(weight)).isWithin(1f).of(1861f)
         assertThat(lib.getVisceralFat(weight)).isWithin(EPS).of(15.36f)
     }
 
     @Test
-    fun science_fat_reacts_to_impedance_only_weakly() {
+    fun fat_reacts_to_impedance_only_weakly() {
         // Xiaomi-calibrated LBM barely moves with impedance; verify direction is sane.
-        val fatLow = lib.getFat(Mode.SCIENCE, weight, lib.getLbm(weight, 400f))
-        val fatHigh = lib.getFat(Mode.SCIENCE, weight, lib.getLbm(weight, 600f))
+        val fatLow = lib.getFat(weight, lib.getLbm(weight, 400f))
+        val fatHigh = lib.getFat(weight, lib.getLbm(weight, 600f))
         assertThat(fatHigh).isGreaterThan(fatLow)
-    }
-
-    @Test
-    fun xiaomi_mode_stays_close_to_miscalelib() {
-        // bodymiscale XIAOMI mode should track the existing MiScaleLib within ~1pp.
-        val lbm = lib.getLbm(weight, impedance)
-        val bmXiaomi = lib.getFat(Mode.XIAOMI, weight, lbm)
-        val miScale = MiScaleLib(1, 46, 168f).getBodyFat(weight, impedance)
-        assertThat(bmXiaomi).isWithin(1.0f).of(miScale)
     }
 }

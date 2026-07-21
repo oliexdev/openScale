@@ -23,37 +23,30 @@ package com.health.openscale.core.bluetooth.libs
 import com.health.openscale.core.data.GenderType
 
 /**
- * Port of the body-composition algorithms from the Home Assistant integration
- * **bodymiscale** by dckiller51 (GPL-3.0):
+ * Scientific mono-frequency (standard impedance) body-composition estimator, ported from the
+ * Home Assistant integration **bodymiscale** by dckiller51 (GPL-3.0):
  *   https://github.com/dckiller51/bodymiscale
  *   custom_components/bodymiscale/metrics/{impedance,weight}.py + util.py
  *
- * Two mono-frequency (standard impedance) modes are supported:
- *
- *  - [Mode.XIAOMI]  : the reverse-engineered Zepp Life / Mi Fit algorithm. This is the
- *                     same family as [MiScaleLib]; it barely reacts to impedance and is
- *                     dominated by height/weight. Kept for parity with the Xiaomi app.
- *
- *  - [Mode.SCIENCE] : a hardware-calibrated LBM (identical baseline to Xiaomi) combined
- *                     with peer-reviewed downstream formulas — body fat via the Siri (1956)
- *                     2-compartment model, water via the Pace & Rathbun (1945) constant,
- *                     protein via Wang (1999), and BMR via the Schofield (WHO) equation.
+ * A hardware-calibrated LBM (the same baseline Xiaomi uses) is combined with peer-reviewed
+ * downstream formulas — body fat via the Siri (1956) 2-compartment model, water via the
+ * Pace & Rathbun (1945) constant, protein via Wang (1999), and BMR via the Schofield (WHO)
+ * equation.
  *
  * All metrics are chained and internally consistent: fat is derived from LBM, water and
  * protein from fat/LBM, and muscle from fat and bone. Compute [getLbm] first and feed its
  * result into the other methods (as the callers in bodymiscale do) to reproduce its output
  * exactly.
  *
- * The S400 dual-frequency mode of bodymiscale is intentionally not ported here — openScale
- * has its own dual-frequency path in [S400BodyComposition].
+ * The reverse-engineered Zepp Life / Mi Fit algorithm is not reproduced here — openScale
+ * selects [MiScaleLib] for that path. The S400 dual-frequency mode of bodymiscale is likewise
+ * out of scope; openScale has its own dual-frequency path in [S400BodyComposition].
  */
 class BodyMiScaleLib(
     private val gender: GenderType,
     private val age: Int,
     private val heightCm: Float,
 ) {
-    enum class Mode { XIAOMI, SCIENCE }
-
     private val isMale = gender == GenderType.MALE
 
     /**
@@ -66,54 +59,19 @@ class BodyMiScaleLib(
         return minOf(lbm, weightKg * 0.98f)
     }
 
-    /** Body fat percentage. Pass the [getLbm] result as [lbm]. */
-    fun getFat(mode: Mode, weightKg: Float, lbm: Float): Float {
-        val fat = when (mode) {
-            Mode.SCIENCE -> (weightKg - lbm) / weightKg * 100f // Siri 1956, 2-compartment
-            Mode.XIAOMI -> {
-                val adjust: Float
-                var coeff: Float
-                if (isMale) {
-                    adjust = 0.8f
-                    coeff = if (weightKg < 61f) 0.98f else 1.0f
-                } else {
-                    adjust = if (age <= 49) 9.25f else 7.25f
-                    coeff = 1.0f
-                    if (weightKg > 60f) coeff = 0.96f * (if (heightCm > 160f) 1.03f else 1.0f)
-                    else if (weightKg < 50f) coeff = 1.02f * (if (heightCm > 160f) 1.03f else 1.0f)
-                }
-                (1.0f - ((lbm - adjust) * coeff / weightKg)) * 100f
-            }
-        }
+    /** Body fat percentage via the Siri (1956) 2-compartment model. Pass the [getLbm] result as [lbm]. */
+    fun getFat(weightKg: Float, lbm: Float): Float {
+        val fat = (weightKg - lbm) / weightKg * 100f
         return fat.coerceIn(5f, 75f)
     }
 
-    /**
-     * Water percentage of body weight. SCIENCE uses the Pace & Rathbun 0.73 constant;
-     * XIAOMI uses the Zepp Life 0.7 factor with a low/high correction.
-     */
-    fun getWater(mode: Mode, fatPercent: Float): Float {
-        return when (mode) {
-            Mode.SCIENCE -> ((100f - fatPercent) * 0.73f).coerceIn(35f, 73f)
-            Mode.XIAOMI -> {
-                var water = (100f - fatPercent) * 0.7f
-                water *= if (water <= 50f) 1.02f else 0.98f
-                water.coerceIn(35f, 75f)
-            }
-        }
-    }
+    /** Water percentage of body weight, via the Pace & Rathbun (1945) 0.73 constant. */
+    fun getWater(fatPercent: Float): Float =
+        ((100f - fatPercent) * 0.73f).coerceIn(35f, 73f)
 
-    /**
-     * Protein percentage. SCIENCE: Wang (1999), protein ≈ 19.5% of LBM. XIAOMI: the legacy
-     * subtraction (muscle% − water%), matching the Zepp app.
-     */
-    fun getProtein(mode: Mode, weightKg: Float, lbm: Float, muscleMassKg: Float, waterPercent: Float): Float {
-        val protein = when (mode) {
-            Mode.SCIENCE -> lbm * 0.195f / weightKg * 100f
-            Mode.XIAOMI -> muscleMassKg / weightKg * 100f - waterPercent
-        }
-        return protein.coerceIn(5f, 32f)
-    }
+    /** Protein percentage via Wang (1999): protein ≈ 19.5% of LBM. */
+    fun getProtein(weightKg: Float, lbm: Float): Float =
+        (lbm * 0.195f / weightKg * 100f).coerceIn(5f, 32f)
 
     /** Bone mass in kg — empirical formula shared by all modes, driven by [getLbm]. */
     fun getBoneMass(lbm: Float): Float {
@@ -133,17 +91,9 @@ class BodyMiScaleLib(
         return muscle.coerceIn(10f, 120f)
     }
 
-    /** Basal metabolic rate in kcal/day. SCIENCE: Schofield (WHO). XIAOMI: Zepp Life. */
-    fun getBmr(mode: Mode, weightKg: Float): Float {
-        val bmr = when (mode) {
-            Mode.SCIENCE -> schofieldBmr(weightKg)
-            Mode.XIAOMI -> if (isMale)
-                877.8f + weightKg * 14.916f - heightCm * 0.726f - age * 8.976f
-            else
-                864.6f + weightKg * 10.2036f - heightCm * 0.39336f - age * 6.204f
-        }
-        return bmr.coerceIn(500f, 5000f)
-    }
+    /** Basal metabolic rate in kcal/day via the Schofield (WHO) equation. */
+    fun getBmr(weightKg: Float): Float =
+        schofieldBmr(weightKg).coerceIn(500f, 5000f)
 
     /** Schofield BMR by age bracket (WHO standard). */
     private fun schofieldBmr(weightKg: Float): Float {
