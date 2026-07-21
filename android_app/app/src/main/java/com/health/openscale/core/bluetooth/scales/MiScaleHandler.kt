@@ -202,7 +202,7 @@ class MiScaleHandler : ScaleDeviceHandler() {
 
     /** Prefer writing Current Time to the primary service; fallback to alternate if needed. */
     private fun writeCurrentTimePreferPrimary(primarySvc: UUID, alternateSvc: UUID) {
-        val c = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        val c = Calendar.getInstance()
         val year = c.get(Calendar.YEAR)
         val payload = byteArrayOf(
             (year and 0xFF).toByte(), ((year shr 8) and 0xFF).toByte(),
@@ -455,7 +455,7 @@ class MiScaleHandler : ScaleDeviceHandler() {
     private fun parseMinuteDate(y: Int, m: Int, d: Int, h: Int, min: Int): Date? =
         runCatching {
             val sdf = SimpleDateFormat("yyyy/MM/dd/HH/mm", Locale.US)
-            sdf.timeZone = TimeZone.getTimeZone("UTC")
+            sdf.timeZone = TimeZone.getDefault()
             sdf.parse("$y/$m/$d/$h/$min")
         }.getOrNull()
 
