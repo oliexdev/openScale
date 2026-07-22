@@ -17,9 +17,11 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
+import androidx.compose.runtime.Composable
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.bluetooth.libs.BodyMiScaleLib
 import com.health.openscale.core.bluetooth.libs.MiScaleLib
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -80,6 +82,36 @@ class MiScaleHandler : ScaleDeviceHandler() {
 
     // Timers
     private var historyFallbackJob: Job? = null
+
+    // ----- Body-composition algorithm selection (per-scale setting) -----
+
+    private val SETTINGS_KEY_ALGORITHM = "body_comp_algorithm"
+
+    /**
+     * Which library derives body composition from this scale's mono-frequency impedance.
+     * [XIAOMI] is openScale's reverse-engineered Mi Fit port ([MiScaleLib]); [BODYMISCALE_SCIENCE]
+     * is the peer-reviewed estimator ported from the bodymiscale Home Assistant integration
+     * ([BodyMiScaleLib]).
+     */
+    private enum class BodyCompAlgorithm { XIAOMI, BODYMISCALE_SCIENCE }
+
+    private fun readBodyCompAlgorithm(): BodyCompAlgorithm =
+        runCatching { BodyCompAlgorithm.valueOf(settingsGetString(SETTINGS_KEY_ALGORITHM) ?: "") }
+            .getOrDefault(BodyCompAlgorithm.XIAOMI)
+
+    @Composable
+    override fun DeviceConfigurationUi() {
+        SettingRadioGroup(
+            titleRes = R.string.mi_body_comp_algorithm_label,
+            key = SETTINGS_KEY_ALGORITHM,
+            options = listOf(
+                BodyCompAlgorithm.XIAOMI.name to R.string.mi_algorithm_xiaomi,
+                BodyCompAlgorithm.BODYMISCALE_SCIENCE.name to R.string.mi_algorithm_bodymiscale_science,
+            ),
+            defaultValue = BodyCompAlgorithm.XIAOMI.name,
+            descriptionRes = R.string.mi_algorithm_description,
+        )
+    }
 
     // ----- Capability & detection -----
 
@@ -350,14 +382,10 @@ class MiScaleHandler : ScaleDeviceHandler() {
             if (imp > 0) {
                 // Store the raw impedance so body composition can be recomputed later.
                 m.impedance = imp.toDouble()
-                val sex = if (user.gender == GenderType.MALE) 1 else 0
-                val lib = MiScaleLib(sex, user.age, user.bodyHeight)
-                m.water       = lib.getWater(m.weight, imp.toFloat())
-                m.visceralFat = lib.getVisceralFat(m.weight)
-                m.fat         = lib.getBodyFat(m.weight, imp.toFloat())
-                m.muscle      = lib.getMuscle(m.weight, imp.toFloat())
-                m.lbm         = lib.getLBM(m.weight, imp.toFloat())
-                m.bone        = lib.getBoneMass(m.weight, imp.toFloat())
+                when (readBodyCompAlgorithm()) {
+                    BodyCompAlgorithm.XIAOMI -> applyXiaomiComposition(m, imp.toFloat(), user)
+                    BodyCompAlgorithm.BODYMISCALE_SCIENCE -> applyBodyMiScaleComposition(m, imp.toFloat(), user)
+                }
             }
         }
 
@@ -365,6 +393,43 @@ class MiScaleHandler : ScaleDeviceHandler() {
         updateLastImportedTimestamp(user.id, ts)
 
         return true
+    }
+
+    /** openScale's reverse-engineered Mi Fit algorithm (the original-app parity path). */
+    private fun applyXiaomiComposition(m: ScaleMeasurement, impedance: Float, user: ScaleUser) {
+        val sex = if (user.gender == GenderType.MALE) 1 else 0
+        val lib = MiScaleLib(sex, user.age, user.bodyHeight)
+        m.water       = lib.getWater(m.weight, impedance)
+        m.visceralFat = lib.getVisceralFat(m.weight)
+        m.fat         = lib.getBodyFat(m.weight, impedance)
+        m.muscle      = lib.getMuscle(m.weight, impedance)
+        m.lbm         = lib.getLBM(m.weight, impedance)
+        m.bone        = lib.getBoneMass(m.weight, impedance)
+    }
+
+    /**
+     * Scientific estimator; see [BodyMiScaleLib] for attribution and formula sources.
+     *
+     * Fields follow the same units as [applyXiaomiComposition]: fat/water/muscle/protein are
+     * percentages of body weight, bone/lbm are kg, bmr is kcal/day. Muscle mass (kg) is
+     * converted to a percentage to match the schema and the Xiaomi path.
+     */
+    private fun applyBodyMiScaleComposition(m: ScaleMeasurement, impedance: Float, user: ScaleUser) {
+        val lib = BodyMiScaleLib(user.gender, user.age, user.bodyHeight)
+
+        val lbmKg   = lib.getLbm(m.weight, impedance)
+        val fatPct  = lib.getFat(m.weight, lbmKg)
+        val boneKg  = lib.getBoneMass(lbmKg)
+        val muscleKg = lib.getMuscleMass(m.weight, fatPct, boneKg)
+
+        m.fat         = fatPct
+        m.water       = lib.getWater(fatPct)
+        m.muscle      = if (m.weight > 0f) muscleKg / m.weight * 100f else 0f
+        m.lbm         = lbmKg
+        m.bone        = boneKg
+        m.protein     = lib.getProtein(m.weight, lbmKg)
+        m.bmr         = lib.getBmr(m.weight)
+        m.visceralFat = lib.getVisceralFat(m.weight)
     }
 
     /** History record (10 bytes): [status][weightLE(2)][yearLE(2)][mon][day][h][m][s] */
