@@ -21,6 +21,7 @@ import android.content.Context
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
+import com.health.openscale.core.bluetooth.scales.FitTrackDaraHandler
 import com.health.openscale.core.bluetooth.scales.ScaleupHandler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
 import com.health.openscale.core.bluetooth.scales.CultSmartScaleProHandler
@@ -106,8 +107,8 @@ class ScaleFactory @Inject constructor(
 
     // List of modern Kotlin-based device handlers.
     // Order matters: createCommunicator() returns the FIRST handler whose supportFor() is non-null.
-    // TaylorBIAHandler must stay ahead of MGBHandler — both live on service 0xFFB0, and MGBHandler
-    // also matches that service, so a later position would let MGB wrongly claim the Taylor scale.
+    // TaylorBIAHandler and FitTrackDaraHandler must stay ahead of MGBHandler — all live on service
+    // 0xFFB0, which MGBHandler also matches, so a later position would let MGB wrongly claim them.
     private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
         BeurerBF450Handler(),
         TaylorBIAHandler(),
@@ -136,6 +137,7 @@ class ScaleFactory @Inject constructor(
         RobiS9Handler(),
         VitafitVT701Handler(),
         EEBBLHandler(),
+        FitTrackDaraHandler(),
         MGBHandler(),
         MedisanaBs44xHandler(),
         InlifeHandler(),
