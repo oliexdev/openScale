@@ -692,8 +692,8 @@
     <string name="insights_section_body_shift">Tvoja analiza %1$s</string>
     <string name="insights_no_data">Za izračun ugotovitev še ni dovolj podatkov. Nadaljuj z merjenjem!</string>
     <string name="insights_based_on">na podlagi %1$d meritev</string>
-    <string name="insights_short_term_trend">Kratkoročni trend (30 dni)</string>
-    <string name="insights_long_term_trend">Dolgoročni trend</string>
+    <string name="insights_short_term_trend">kratkoročno</string>
+    <string name="insights_long_term_trend">dolgoročno</string>
     <string name="insights_placeholder_body_shift">Za analizo sprememb svojega telesa skozi čas je potrebnih vsaj %1$d meritev.</string>
     <string name="insights_placeholder_weekday">Za ugotavljanje tedenskih navad je potrebnih vsaj %1$d meritev na delovni dan.</string>
     <string name="insights_placeholder_seasonal">Za ugotavljanje sezonskih vzorcev je potrebnih vsaj %1$d let podatkov.</string>
@@ -761,4 +761,22 @@
     <string name="insights_pattern_summary_fat_loss">Teža in maščoba se zmanjšujeta, medtem ko se mišična masa ohranja ali celo rahlo narašča — izgubljaš predvsem maščobno maso.</string>
     <string name="insights_pattern_summary_recomposition">Tvoje telo se učinkovito preoblikuje: izgubljaš maščobo in hkrati pridobivaš znatno mišično maso.</string>
     <string name="insights_pattern_summary_muscle_gain">Pridobivaš mišično maso, medtem ko telesna maščoba ostaja stabilna ali se zmanjšuje – to je pozitiven trend telesne sestave.</string>
+    <string name="insights_pattern_summary_weight_loss_mixed">Opozorilo: hujšaš, vendar se hkrati zmanjšuje tudi tvoja mišična masa.</string>
+    <string name="insights_pattern_summary_fat_gain">Maščobna masa se povečuje. Če to ni namerno povečanje telesne mase, razmisli o prilagoditvi svoje telesne aktivnosti.</string>
+    <string name="insights_pattern_summary_fat_gain_with_muscle">Naraščata tako maščoba kot mišice — to kaže na fazo nabiranja mase. Če je tvoj cilj pridobivanje mišic, preveri, ali je povečanje maščobe v okviru tvojega ciljnega obsega.</string>
+    <string name="insights_pattern_summary_stable">Vsi kazalniki so stabilni — si v fazi vzdrževanja.</string>
+    <string name="insights_pattern_summary_undefined">Zaenkrat ni zaznan noben jasen vzorec — potrebne so dodatne meritve, vključno s težo, telesno maščobo, mišično maso in vsebnostjo vode.</string>
+    <string name="insights_pattern_summary_undefined_with_data">Mešani signali v %1$s — trendi glede teže, maščobe in mišic še ne kažejo jasnega vzorca.</string>
+    <string name="insights_zone_tooltip_recomposition">Maščoba se zmanjšuje, mišična masa pa narašča — najboljši možni izid.</string>
+    <string name="insights_zone_tooltip_bulking">Povečujeta se tako maščoba kot mišice.</string>
+    <string name="insights_zone_tooltip_mixed_loss">Tako maščoba kot mišična masa se zmanjšujeta. Teža pada, vendar se hkrati izgublja tudi mišična masa.</string>
+    <string name="insights_zone_tooltip_fat_gain">Maščoba narašča, mišična masa pa se zmanjšuje ali ostaja nespremenjena — najmanj ugoden izid.</string>
+    <string name="insights_stat_start">Začni</string>
+    <string name="insights_stat_now">Sedaj</string>
+    <string name="insights_stat_rate_month">Ocena / mesec</string>
+    <string name="insights_stat_on_average">v povprečju</string>
+    <string name="insights_chip_volatility_stable">stabilna</string>
+    <string name="insights_chip_volatility_moderate">zmerna</string>
+    <string name="insights_chip_volatility_high">nihajoča</string>
+    <string name="insights_chip_plateau_days">stabilna %1$d dni</string>
 </resources>
