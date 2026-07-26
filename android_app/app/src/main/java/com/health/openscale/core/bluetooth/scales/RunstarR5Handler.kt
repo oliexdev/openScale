@@ -57,6 +57,9 @@ class RunstarR5Handler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.uppercase(Locale.US)
+        // R6 is a different, incompatible protocol (see RunstarR6Handler) despite the
+        // similar name; exclude it explicitly so the two can never collide.
+        if (name == "RUNSTAR-R6" || name.startsWith("RUNSTAR-R6")) return null
         val matchesKnownAdvertisingName =
             name == "RUNSTAR-R5" || name == "RUNSTAR-RX" || name.startsWith("RUNSTAR-")
         if (!matchesKnownAdvertisingName) return null
