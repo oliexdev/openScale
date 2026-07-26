@@ -45,11 +45,10 @@ import java.util.UUID
  * [MGBHandler] in [com.health.openscale.core.bluetooth.ScaleFactory] so a "Robi …" device
  * is claimed here by name (the MGB handler claims by service and would otherwise grab it).
  *
- * The handshake is replayed verbatim: its 20-byte frames carry a trailer checksum — now
- * known to be `sum(bytes[3..18]) & 0x1F`, verified with zero mismatches across all 11
- * frames of [HANDSHAKE] plus a separate Runstar R6 capture (see [RunstarR6Handler]) — plus
- * a stale unix-timestamp + token, so regenerating them is still unsafe; the scale accepts
- * the replayed frames for a weigh-in.
+ * The handshake is replayed verbatim: its 20-byte frames carry a trailer checksum, now
+ * known to be `sum(bytes[3..18]) & 0x1F` (verified with zero mismatches across all 11
+ * frames of [HANDSHAKE]) — plus a stale unix-timestamp + token, so regenerating them is
+ * still unsafe; the scale accepts the replayed frames for a weigh-in.
  */
 class RobiS9Handler : ScaleDeviceHandler() {
 
@@ -96,10 +95,8 @@ class RobiS9Handler : ScaleDeviceHandler() {
         val m = ScaleMeasurement().apply {
             dateTime = Date()
             weight = weightKg
-            // A Runstar R6 capture (see RunstarR6Handler) decoded the rest of this frame:
-            // byte 8 is heart rate (bpm) and bytes 9..10 are impedance (u16 BE, Ohm). This
-            // capture's A3 frame simply had zeros there, so body composition still isn't
-            // published here.
+            // Byte 8 is heart rate (bpm), bytes 9..10 are impedance (u16 BE, Ohm); this
+            // capture's A3 frame had zeros there, so body composition still isn't published.
         }
         publish(m)
     }

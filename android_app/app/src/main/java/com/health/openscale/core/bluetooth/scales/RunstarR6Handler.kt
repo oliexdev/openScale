@@ -43,9 +43,7 @@ import kotlin.math.abs
  * unacked entries keep reappearing on later connects, so every 0xA4 must be acked. 0xA4
  * only carries a timestamp + weight, no impedance/heart rate.
  *
- * Despite the name this is a different, incompatible protocol from [RunstarR5Handler];
- * [RunstarR5Handler.supportFor] excludes "RUNSTAR-R6" and this handler is registered
- * ahead of it in [com.health.openscale.core.bluetooth.ScaleFactory].
+ * Despite the name this is a different, incompatible protocol from [RunstarR5Handler].
  */
 class RunstarR6Handler : ScaleDeviceHandler() {
 

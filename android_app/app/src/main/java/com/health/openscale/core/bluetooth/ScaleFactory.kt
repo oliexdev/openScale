@@ -134,8 +134,6 @@ class ScaleFactory @Inject constructor(
         MiScaleS400Handler(),
         XiaomiS800Handler(),
         MiScaleHandler(),
-        // RunstarR6Handler must stay ahead of RunstarR5Handler: RunstarR5Handler.supportFor()
-        // matches any name.startsWith("RUNSTAR-"), which would otherwise swallow the R6 too.
         RunstarR6Handler(),
         RunstarR5Handler(),
         RobiS9Handler(),
