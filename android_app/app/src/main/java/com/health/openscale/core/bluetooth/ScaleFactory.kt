@@ -63,6 +63,7 @@ import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
 import com.health.openscale.core.bluetooth.scales.RenphoHandler
 import com.health.openscale.core.bluetooth.scales.RobiS9Handler
 import com.health.openscale.core.bluetooth.scales.RunstarR5Handler
+import com.health.openscale.core.bluetooth.scales.RunstarR6Handler
 import com.health.openscale.core.bluetooth.scales.RyFitHandler
 import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler
 import com.health.openscale.core.bluetooth.scales.SenssunHandler
@@ -133,6 +134,7 @@ class ScaleFactory @Inject constructor(
         MiScaleS400Handler(),
         XiaomiS800Handler(),
         MiScaleHandler(),
+        RunstarR6Handler(),
         RunstarR5Handler(),
         RobiS9Handler(),
         VitafitVT701Handler(),
