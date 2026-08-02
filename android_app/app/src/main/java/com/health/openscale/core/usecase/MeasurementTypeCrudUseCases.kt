@@ -21,7 +21,6 @@ import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.UnitType
-import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
@@ -76,9 +75,9 @@ class MeasurementTypeCrudUseCases @Inject constructor(
      * Updates a type (e.g., name, flags, **unit**) and, if its unit changed, converts
      * all existing values of that type to the new unit.
      *
-     * Special handling: BODY_FAT, WATER, MUSCLE may switch between PERCENT and absolute
-     * weight units (KG/LB/ST). Conversion uses the WEIGHT value from the *same measurement*.
-     * If the required weight value is missing for a row, that row is skipped.
+     * Composition values that support both PERCENT and absolute weight units (KG/LB/ST) use
+     * the WEIGHT value from the *same measurement*. If the required weight value is missing
+     * for a row, that row is skipped.
      *
      * Note: repository.updateMeasurementValue(...) is assumed to trigger derived-value
      * recalculation. If not, add explicit recalculation here after updates.
@@ -130,57 +129,34 @@ class MeasurementTypeCrudUseCases @Inject constructor(
             var converted: Float?
 
             // Percent <-> absolute conversions for composition-like metrics
-            if (typeKey == MeasurementTypeKey.BODY_FAT ||
-                typeKey == MeasurementTypeKey.WATER ||
-                typeKey == MeasurementTypeKey.MUSCLE
-            ) {
-                if (weightType == null) {
-                    // No weight type found; cannot compute percent-based conversions.
-                    continue
+            if (ConverterUtils.isPercentageOrMassComposition(typeKey)) {
+                val needsBodyWeight = oldUnit == UnitType.PERCENT || newUnit == UnitType.PERCENT
+                val weightInKg = if (needsBodyWeight) {
+                    val resolvedWeightType = weightType ?: continue
+                    if (!resolvedWeightType.unit.isWeightUnit()) continue
+
+                    val weightOnThisMeasurement = repository
+                        .getValuesForMeasurement(mv.measurementId)
+                        .first()
+                        .find { it.typeId == resolvedWeightType.id }
+                        ?.floatValue
+                        ?: continue
+
+                    ConverterUtils.convertFloatValueUnit(
+                        weightOnThisMeasurement,
+                        resolvedWeightType.unit,
+                        UnitType.KG,
+                    )
+                } else {
+                    null
                 }
 
-                val weightOnThisMeasurement = repository
-                    .getValuesForMeasurement(mv.measurementId)
-                    .first()
-                    .find { it.typeId == weightType.id }?.floatValue
-
-                if (weightOnThisMeasurement == null) {
-                    // Missing WEIGHT value for this measurement row; skip.
-                    continue
-                }
-
-                // Normalize the total weight to KG for math, then convert to target at the end
-                val weightInKg = when (weightType.unit) {
-                    UnitType.KG -> weightOnThisMeasurement
-                    UnitType.LB -> ConverterUtils.toKilogram(weightOnThisMeasurement, WeightUnit.LB)
-                    UnitType.ST -> ConverterUtils.toKilogram(weightOnThisMeasurement, WeightUnit.ST)
-                    else -> null
-                } ?: continue
-
-                when {
-                    // PERCENT -> absolute (kg/lb/st)
-                    oldUnit == UnitType.PERCENT && newUnit.isWeightUnit() -> {
-                        val absoluteInKg = (current / 100f) * weightInKg
-                        converted = ConverterUtils.convertFloatValueUnit(absoluteInKg, UnitType.KG, newUnit)
-                    }
-                    // absolute (kg/lb/st) -> PERCENT
-                    oldUnit.isWeightUnit() && newUnit == UnitType.PERCENT -> {
-                        val currentInKg = ConverterUtils.convertFloatValueUnit(current, oldUnit, UnitType.KG)
-                        if (weightInKg != 0f) {
-                            converted = currentInKg / weightInKg * 100f
-                        } else {
-                            converted = 0f
-                        }
-                    }
-                    // absolute <-> absolute
-                    oldUnit.isWeightUnit() && newUnit.isWeightUnit() -> {
-                        converted = ConverterUtils.convertFloatValueUnit(current, oldUnit, newUnit)
-                    }
-                    else -> {
-                        // Unsupported path, keep original
-                        converted = current
-                    }
-                }
+                converted = ConverterUtils.convertPercentageOrMassCompositionUnit(
+                    value = current,
+                    fromUnit = oldUnit,
+                    toUnit = newUnit,
+                    bodyWeightKg = weightInKg,
+                ) ?: continue
             } else {
                 // Generic unit conversion
                 converted = ConverterUtils.convertFloatValueUnit(current, oldUnit, newUnit)

@@ -18,6 +18,7 @@
 package com.health.openscale.core.utils
 
 import com.health.openscale.core.data.MeasureUnit
+import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.WeightUnit
 import kotlin.math.floor
@@ -30,6 +31,17 @@ object ConverterUtils {
     private const val CM_IN: Float = 0.393701f
 
     private const val LB_PER_ST_DOUBLE: Double = 14.0
+
+    private val percentageOrMassCompositionKeys = setOf(
+        MeasurementTypeKey.BODY_FAT,
+        MeasurementTypeKey.WATER,
+        MeasurementTypeKey.MUSCLE,
+        MeasurementTypeKey.ECW,
+        MeasurementTypeKey.ICW,
+        MeasurementTypeKey.PROTEIN,
+        MeasurementTypeKey.SKELETAL_MUSCLE,
+        MeasurementTypeKey.SUBCUTANEOUS_FAT,
+    )
 
     @JvmStatic
     fun toKilogram(value: Float, unit: WeightUnit): Float {
@@ -250,6 +262,54 @@ object ConverterUtils {
         }
 
         return value
+    }
+
+    /**
+     * Whether [key] represents a body-composition value that may be stored either as a
+     * percentage of body weight or as an absolute mass.
+     *
+     * Mass-only values such as lean soft tissue are intentionally excluded.
+     */
+    @JvmStatic
+    fun isPercentageOrMassComposition(key: MeasurementTypeKey): Boolean =
+        key in percentageOrMassCompositionKeys
+
+    /**
+     * Converts a body-composition value between percent and mass units.
+     *
+     * Unlike [convertFloatValueUnit], percent-to-mass conversions require the body weight from
+     * the same measurement, normalized to kilograms. Unsupported conversions, or conversions
+     * that need a missing/invalid body weight, return `null` instead of silently returning the
+     * unconverted value.
+     */
+    @JvmStatic
+    fun convertPercentageOrMassCompositionUnit(
+        value: Float,
+        fromUnit: UnitType,
+        toUnit: UnitType,
+        bodyWeightKg: Float?,
+    ): Float? {
+        if (!value.isFinite()) return null
+        if (fromUnit == toUnit) return value
+
+        if (fromUnit.isWeightUnit() && toUnit.isWeightUnit()) {
+            return convertFloatValueUnit(value, fromUnit, toUnit)
+        }
+
+        val validBodyWeightKg = bodyWeightKg?.takeIf { it.isFinite() && it > 0f }
+            ?: return null
+
+        return when {
+            fromUnit == UnitType.PERCENT && toUnit.isWeightUnit() -> {
+                val massKg = value / 100f * validBodyWeightKg
+                convertFloatValueUnit(massKg, UnitType.KG, toUnit)
+            }
+            fromUnit.isWeightUnit() && toUnit == UnitType.PERCENT -> {
+                val massKg = convertFloatValueUnit(value, fromUnit, UnitType.KG)
+                massKg / validBodyWeightKg * 100f
+            }
+            else -> null
+        }
     }
 
     /**

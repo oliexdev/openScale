@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- App & General -->
     <string name="app_name" translatable="false">openScale</string>
     <string name="sync_app_unreachable_hint">Last change wasn\'t synchronized. Please open openScale-sync and run a manual sync.</string>
@@ -187,6 +187,14 @@
     <string name="measurement_type_heart_rate">Heart Rate</string>
     <string name="measurement_type_impedance">Impedance (high)</string>
     <string name="measurement_type_impedance_low">Impedance (low)</string>
+    <string name="measurement_type_phase_angle" tools:ignore="MissingTranslation">Phase angle</string>
+    <string name="measurement_type_phase_angle_high" tools:ignore="MissingTranslation">Phase angle (100 kHz)</string>
+    <string name="measurement_type_skeletal_muscle" tools:ignore="MissingTranslation">Skeletal muscle</string>
+    <string name="measurement_type_lean_soft_tissue" tools:ignore="MissingTranslation">Lean soft tissue</string>
+    <string name="measurement_type_device_impedance" tools:ignore="MissingTranslation">Device impedance</string>
+    <string name="measurement_type_subcutaneous_fat" tools:ignore="MissingTranslation">Subcutaneous fat</string>
+    <string name="measurement_type_body_age" tools:ignore="MissingTranslation">Estimated body age</string>
+    <string name="measurement_type_bmi_22_reference_weight" tools:ignore="MissingTranslation">BMI 22 reference weight</string>
     <string name="measurement_type_ecw">Extracellular water</string>
     <string name="measurement_type_icw">Intracellular water</string>
     <string name="measurement_type_protein">Protein</string>

@@ -47,6 +47,14 @@
     <string name="measurement_type_body_fat">体脂率</string>
     <string name="measurement_type_water">水分</string>
     <string name="measurement_type_muscle">肌肉</string>
+    <string name="measurement_type_phase_angle">相位角</string>
+    <string name="measurement_type_phase_angle_high">相位角（100 kHz）</string>
+    <string name="measurement_type_skeletal_muscle">骨骼肌率</string>
+    <string name="measurement_type_lean_soft_tissue">去骨瘦体重</string>
+    <string name="measurement_type_device_impedance">设备阻抗</string>
+    <string name="measurement_type_subcutaneous_fat">皮下脂肪率</string>
+    <string name="measurement_type_body_age">估算身体年龄</string>
+    <string name="measurement_type_bmi_22_reference_weight">BMI 22 参考体重</string>
     <string name="my_goals_label">我的目标</string>
     <string name="user_detail_goals">%d目标</string>
     <string name="user_detail_no_goals">没有目标</string>

@@ -365,6 +365,16 @@ class GattScaleAdapter(
             }
         }
 
+        override suspend fun awaitPendingOperations() {
+            val barrier = CompletableDeferred<Unit>()
+            val queued = opQueue.trySend { barrier.complete(Unit) }
+            if (queued.isFailure) {
+                LogManager.w(TAG, "Unable to enqueue BLE operation barrier")
+                return
+            }
+            barrier.await()
+        }
+
         override fun disconnect() {
             currentPeripheral?.let { central.cancelConnection(it) }
         }

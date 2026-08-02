@@ -405,6 +405,14 @@ enum class MeasurementTypeKey(
     ICW(32, R.string.measurement_type_icw, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     PROTEIN(33, R.string.measurement_type_protein, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     BCM(34, R.string.measurement_type_bcm, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
+    PHASE_ANGLE(35, R.string.measurement_type_phase_angle, listOf(UnitType.DEGREE), listOf(InputFieldType.FLOAT)),
+    PHASE_ANGLE_HIGH(36, R.string.measurement_type_phase_angle_high, listOf(UnitType.DEGREE), listOf(InputFieldType.FLOAT)),
+    SKELETAL_MUSCLE(37, R.string.measurement_type_skeletal_muscle, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
+    SUBCUTANEOUS_FAT(38, R.string.measurement_type_subcutaneous_fat, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
+    BODY_AGE(39, R.string.measurement_type_body_age, listOf(UnitType.NONE), listOf(InputFieldType.INT)),
+    BMI_22_REFERENCE_WEIGHT(40, R.string.measurement_type_bmi_22_reference_weight, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
+    LEAN_SOFT_TISSUE(41, R.string.measurement_type_lean_soft_tissue, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
+    DEVICE_IMPEDANCE(42, R.string.measurement_type_device_impedance, listOf(UnitType.OHM), listOf(InputFieldType.FLOAT)),
     CUSTOM(99, R.string.measurement_type_custom_default_name, UnitType.entries.toList(), listOf(InputFieldType.FLOAT, InputFieldType.INT, InputFieldType.TEXT, InputFieldType.DATE, InputFieldType.TIME));
 }
 
@@ -419,6 +427,7 @@ enum class UnitType(val displayName: String) {
     KCAL("kcal"),
     BPM("bpm"),
     OHM("Ω"),
+    DEGREE("°"),
     NONE("");
 
     fun isWeightUnit(): Boolean {
