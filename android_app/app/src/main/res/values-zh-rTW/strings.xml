@@ -34,14 +34,6 @@
     <string name="measurement_type_detail_title_edit">編輯類型</string>
     <string name="measurement_type_detail_title_add">增加類型</string>
     <string name="measurement_type_settings_title">測量類型</string>
-    <string name="measurement_type_phase_angle">相位角</string>
-    <string name="measurement_type_phase_angle_high">相位角（100 kHz）</string>
-    <string name="measurement_type_skeletal_muscle">骨骼肌率</string>
-    <string name="measurement_type_lean_soft_tissue">去骨瘦體重</string>
-    <string name="measurement_type_device_impedance">裝置阻抗</string>
-    <string name="measurement_type_subcutaneous_fat">皮下脂肪率</string>
-    <string name="measurement_type_body_age">估算身體年齡</string>
-    <string name="measurement_type_bmi_22_reference_weight">BMI 22 參考體重</string>
     <string name="user_detail_edit_user_title">編輯使用者</string>
     <string name="user_detail_add_user_title">新增使用者</string>
     <string name="user_settings_title">使用者</string>

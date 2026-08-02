@@ -549,10 +549,14 @@ class KeepS3Handler : ScaleDeviceHandler() {
             userId = user.id
             dateTime = Date()
             weight = weightKg
-            if (deviceImpedanceOhm > 0) deviceImpedance = deviceImpedanceOhm.toDouble()
             if (heartRateBpm > 0) heartRate = heartRateBpm
-            phaseAngle50Degrees?.takeIf { it.isFinite() && it > 0f }?.let { phaseAngle = it }
-            phaseAngle100Degrees?.takeIf { it.isFinite() && it > 0f }?.let { phaseAngleHigh = it }
+            // openScale has no measurement type for the vendor impedance or the phase angles,
+            // so they are decoded and logged but not published. Re-enabling any of these needs
+            // a MeasurementTypeKey, a ScaleMeasurement field, a DB migration and BleConnector
+            // wiring.
+            // if (deviceImpedanceOhm > 0) deviceImpedance = deviceImpedanceOhm.toDouble()
+            // phaseAngle50Degrees?.takeIf { it.isFinite() && it > 0f }?.let { phaseAngle = it }
+            // phaseAngle100Degrees?.takeIf { it.isFinite() && it > 0f }?.let { phaseAngleHigh = it }
 
             val hasDualFrequencyImpedance =
                 compositionImpedance50Ohm != null && compositionImpedance100Ohm != null
@@ -596,13 +600,14 @@ class KeepS3Handler : ScaleDeviceHandler() {
                 lbm = composition.fatFreeMassKg
                 bmr = composition.basalMetabolicRateKcal.toFloat()
                 protein = composition.proteinPercent
-                skeletalMuscle = composition.skeletalMusclePercent
-                // The vendor calls this "muscle", but its verified formula is FFM minus bone.
-                // Store it as lean soft tissue instead of openScale's skeletal-muscle metric.
-                leanSoftTissue = composition.muscleKg
-                subcutaneousFat = composition.subcutaneousFatPercent
-                bodyAge = composition.bodyAge
-                bmi22ReferenceWeight = composition.bmi22ReferenceWeightKg
+                // Not published — openScale has no measurement type for these. Note that the
+                // vendor's "muscle" is FFM minus bone, so it is lean soft tissue rather than
+                // openScale's MUSCLE metric and must not be mapped onto it.
+                // skeletalMuscle = composition.skeletalMusclePercent
+                // leanSoftTissue = composition.muscleKg
+                // subcutaneousFat = composition.subcutaneousFatPercent
+                // bodyAge = composition.bodyAge
+                // bmi22ReferenceWeight = composition.bmi22ReferenceWeightKg
                 logI("Keep S3 body composition calculated with offline BHKeep SDK-compatible model")
             }
         }
@@ -620,12 +625,10 @@ class KeepS3Handler : ScaleDeviceHandler() {
         writeTo(service, writeCharacteristic, stopRequest, withResponse = true)
 
         finishJob = scope.launch {
-            // A Keep S3 session can leave several 0x57 ACKs queued. Wait for those ACKs,
-            // the 0x58 ACK, and both stop commands before starting the disconnect delay.
-            awaitPendingTransportOperations()
+            // A Keep S3 session can leave several 0x57 ACKs, the 0x58 ACK and both stop
+            // commands queued. The delay gives them time to drain before disconnecting;
+            // the stop command is sent twice so a dropped one is not fatal.
             delay(DISCONNECT_DELAY_MS)
-            // Include any duplicate events acknowledged during the quiet period.
-            awaitPendingTransportOperations()
             requestDisconnect()
         }
     }
@@ -647,16 +650,13 @@ class KeepS3Handler : ScaleDeviceHandler() {
         )
     }
 
+    /**
+     * The vendor/protocol impedance is not stored by openScale, so the previous record reuses
+     * the high-frequency band saved with the last measurement. A Keep S3 also accepts an
+     * all-zero previous record, so a missing value is not fatal.
+     */
     private fun previousDeviceImpedance(previous: ScaleMeasurement): Double {
-        if (previous.deviceImpedance.isFinite() && previous.deviceImpedance > 0.0) {
-            return previous.deviceImpedance
-        }
-
-        // Compatibility with measurements saved by earlier Keep S3 test builds, which placed
-        // the vendor/protocol impedance in the generic high-frequency field before the three
-        // distinct impedance values were understood.
         if (previous.impedance.isFinite() && previous.impedance > 0.0) {
-            logW("Previous Keep S3 measurement has no device impedance; using legacy impedance value")
             return previous.impedance
         }
         return 0.0

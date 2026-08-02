@@ -23,7 +23,6 @@ import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.KeepS3BodyComposition
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.service.ScannedDeviceInfo
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceTimeBy
@@ -174,7 +173,6 @@ class KeepS3HandlerTest {
         val setup = attachedHandler(scope = this)
         setup.handler.handleConnected(setup.user)
         setup.transport.clearWrites()
-        setup.transport.blockPendingOperations()
 
         // A non-final 0x57 can still provide the impedance used by the 0x58 fallback.
         setup.handler.handleNotification(
@@ -194,42 +192,29 @@ class KeepS3HandlerTest {
 
         assertThat(setup.callbacks.published).hasSize(1)
         assertThat(setup.callbacks.published.single().weight).isWithin(0.0001f).of(85.10f)
-        assertThat(setup.callbacks.published.single().deviceImpedance).isEqualTo(301.0)
         assertThat(setup.callbacks.published.single().impedance).isEqualTo(478.0)
         assertThat(setup.callbacks.published.single().impedanceLow).isEqualTo(506.0)
         assertThat(setup.callbacks.published.single().heartRate).isEqualTo(107)
-        assertThat(setup.callbacks.published.single().phaseAngle).isWithin(0.0001f).of(7.6f)
-        assertThat(setup.callbacks.published.single().phaseAngleHigh).isWithin(0.0001f).of(7.6f)
         assertThat(setup.callbacks.published.single().fat).isEqualTo(29.5f)
         assertThat(setup.callbacks.published.single().water).isEqualTo(50.2f)
         assertThat(setup.callbacks.published.single().muscle).isEqualTo(0f)
-        assertThat(setup.callbacks.published.single().leanSoftTissue).isEqualTo(57.0f)
-        assertThat(setup.callbacks.published.single().skeletalMuscle)
-            .isWithin(0.001f).of(38.42538f)
-        assertThat(setup.callbacks.published.single().subcutaneousFat).isEqualTo(25.7f)
         assertThat(setup.callbacks.published.single().visceralFat).isEqualTo(12f)
         assertThat(setup.callbacks.published.single().protein).isEqualTo(12.7f)
         assertThat(setup.callbacks.published.single().bone).isEqualTo(3.0f)
         assertThat(setup.callbacks.published.single().lbm).isEqualTo(60.0f)
         assertThat(setup.callbacks.published.single().bmr).isEqualTo(1791f)
-        assertThat(setup.callbacks.published.single().bodyAge).isEqualTo(28)
-        assertThat(setup.callbacks.published.single().bmi22ReferenceWeight).isEqualTo(62.0f)
 
         val payloads = setup.transport.writes.map { it.payload }
         assertThat(payloads.count { it.contentEquals(KeepS3Protocol.buildAck(0x58)) }).isEqualTo(2)
         assertThat(payloads.count { isControlRequest(it, start = false) }).isEqualTo(2)
 
-        runCurrent()
-        assertThat(setup.transport.awaitPendingCount).isEqualTo(1)
-        advanceTimeBy(800)
+        // The disconnect is held back for DISCONNECT_DELAY_MS so the queued ACKs and stop
+        // commands can drain first.
         runCurrent()
         assertThat(setup.transport.disconnectCount).isEqualTo(0)
 
-        setup.transport.releasePendingOperations()
-        runCurrent()
         advanceTimeBy(800)
         runCurrent()
-        assertThat(setup.transport.awaitPendingCount).isEqualTo(2)
         assertThat(setup.transport.disconnectCount).isEqualTo(1)
     }
 
@@ -257,19 +242,11 @@ class KeepS3HandlerTest {
 
         assertThat(setup.callbacks.published).hasSize(1)
         assertThat(setup.callbacks.published.single().userId).isEqualTo(setup.user.id)
-        assertThat(setup.callbacks.published.single().deviceImpedance).isEqualTo(300.0)
         assertThat(setup.callbacks.published.single().impedance).isEqualTo(475.0)
         assertThat(setup.callbacks.published.single().impedanceLow).isEqualTo(502.0)
-        assertThat(setup.callbacks.published.single().phaseAngle).isWithin(0.0001f).of(7.7f)
-        assertThat(setup.callbacks.published.single().phaseAngleHigh).isWithin(0.0001f).of(7.7f)
         assertThat(setup.callbacks.published.single().fat).isEqualTo(29.4f)
         assertThat(setup.callbacks.published.single().water).isEqualTo(50.3f)
         assertThat(setup.callbacks.published.single().muscle).isEqualTo(0f)
-        assertThat(setup.callbacks.published.single().leanSoftTissue).isEqualTo(57.1f)
-        assertThat(setup.callbacks.published.single().skeletalMuscle)
-            .isWithin(0.001f).of(38.47059f)
-        assertThat(setup.callbacks.published.single().subcutaneousFat).isEqualTo(25.5f)
-        assertThat(setup.callbacks.published.single().bodyAge).isEqualTo(28)
         assertThat(setup.transport.writes.count {
             it.payload.contentEquals(KeepS3Protocol.buildAck(0x57))
         }).isEqualTo(2)
@@ -297,11 +274,9 @@ class KeepS3HandlerTest {
 
         assertThat(setup.callbacks.published).hasSize(1)
         assertThat(setup.callbacks.published.single().weight).isWithin(0.0001f).of(85.00f)
-        assertThat(setup.callbacks.published.single().deviceImpedance).isEqualTo(300.0)
         assertThat(setup.callbacks.published.single().impedance).isEqualTo(0.0)
         assertThat(setup.callbacks.published.single().impedanceLow).isEqualTo(0.0)
         assertThat(setup.callbacks.published.single().heartRate).isEqualTo(97)
-        assertThat(setup.callbacks.published.single().phaseAngle).isEqualTo(0f)
     }
 
     @Test
@@ -327,7 +302,8 @@ class KeepS3HandlerTest {
         assertThat(setup.callbacks.published.single().weight).isEqualTo(85.1f)
         assertThat(setup.callbacks.published.single().heartRate).isEqualTo(107)
         assertThat(setup.callbacks.published.single().fat).isEqualTo(0f)
-        assertThat(setup.callbacks.published.single().bodyAge).isEqualTo(0)
+        assertThat(setup.callbacks.published.single().water).isEqualTo(0f)
+        assertThat(setup.callbacks.published.single().lbm).isEqualTo(0f)
     }
 
     @Test
@@ -363,8 +339,8 @@ class KeepS3HandlerTest {
         val actual = setup.callbacks.published.single()
         assertThat(actual.fat).isEqualTo(expected.bodyFatPercent)
         assertThat(actual.water).isEqualTo(expected.waterPercent)
-        assertThat(actual.skeletalMuscle).isEqualTo(expected.skeletalMusclePercent)
-        assertThat(actual.bodyAge).isEqualTo(expected.bodyAge)
+        assertThat(actual.bone).isEqualTo(expected.boneKg)
+        assertThat(actual.lbm).isEqualTo(expected.fatFreeMassKg)
     }
 
     @Test
@@ -532,24 +508,7 @@ class KeepS3HandlerTest {
     }
 
     @Test
-    fun `profile prefers device impedance for previous Keep S3 record`() {
-        val previous = ScaleMeasurement(
-            userId = 7,
-            dateTime = Date(0x1234_5678L * 1000L),
-            weight = 85.10f,
-            impedance = 999.0,
-            deviceImpedance = 301.0,
-        )
-        val setup = attachedHandler(previous = previous)
-
-        driveInitializationThroughProfile(setup)
-
-        val profileRequest = setup.transport.writes.single { requestOpcode(it.payload) == 0x32 }.payload
-        assertThat(KeepS3Protocol.decodeU16BE(profileRequest, 5 + 54)).isEqualTo(301)
-    }
-
-    @Test
-    fun `profile falls back to legacy impedance when device impedance is absent`() {
+    fun `profile carries the impedance of the previous Keep S3 record`() {
         val previous = ScaleMeasurement(
             userId = 7,
             dateTime = Date(0x1234_5678L * 1000L),
@@ -607,7 +566,7 @@ class KeepS3HandlerTest {
             userId = user.id,
             dateTime = Date(0x1234_5678L * 1000L),
             weight = 85.10f,
-            deviceImpedance = 301.0,
+            impedance = 301.0,
         ),
     ): Setup {
         val handler = KeepS3Handler()
@@ -739,8 +698,6 @@ class KeepS3HandlerTest {
         val notifications = mutableListOf<Pair<UUID, UUID>>()
         val writes = mutableListOf<Write>()
         var disconnectCount = 0
-        var awaitPendingCount = 0
-        private var pendingOperationsGate: CompletableDeferred<Unit>? = null
 
         override fun setNotifyOn(service: UUID, characteristic: UUID) {
             notifications += service to characteristic
@@ -757,11 +714,6 @@ class KeepS3HandlerTest {
 
         override fun read(service: UUID, characteristic: UUID) = Unit
 
-        override suspend fun awaitPendingOperations() {
-            awaitPendingCount++
-            pendingOperationsGate?.await()
-        }
-
         override fun disconnect() {
             disconnectCount++
         }
@@ -769,16 +721,6 @@ class KeepS3HandlerTest {
         override fun hasCharacteristic(service: UUID, characteristic: UUID): Boolean = true
 
         fun clearWrites() = writes.clear()
-
-        fun blockPendingOperations() {
-            check(pendingOperationsGate == null)
-            pendingOperationsGate = CompletableDeferred()
-        }
-
-        fun releasePendingOperations() {
-            pendingOperationsGate?.complete(Unit)
-            pendingOperationsGate = null
-        }
     }
 
     private class CapturingCallbacks : ScaleDeviceHandler.Callbacks {

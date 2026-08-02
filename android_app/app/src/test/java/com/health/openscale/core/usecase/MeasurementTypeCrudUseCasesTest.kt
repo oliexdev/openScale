@@ -29,7 +29,6 @@ import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
-import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.getDefaultMeasurementTypes
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.flow.first
@@ -119,44 +118,6 @@ class MeasurementTypeCrudUseCasesTest {
 
         assertThat(report.updatedCount).isEqualTo(1)
         assertThat(valueOf(bodyFat.id)).isWithin(1e-2f).of(16f) // 20% of 80kg
-    }
-
-    @Test
-    fun compositionConversion_proteinPercentToKg_usesPerMeasurementWeight() = runBlocking {
-        val weight = type(MeasurementTypeKey.WEIGHT)
-        val protein = type(MeasurementTypeKey.PROTEIN)
-        val mId = newMeasurement(1_000L)
-        repo.insertMeasurementValue(MeasurementValue(measurementId = mId, typeId = weight.id, floatValue = 85.55f))
-        repo.insertMeasurementValue(MeasurementValue(measurementId = mId, typeId = protein.id, floatValue = 12.8f))
-
-        val report = useCase.updateTypeAndConvertValues(
-            protein,
-            protein.copy(unit = UnitType.KG),
-        ).getOrThrow()
-
-        assertThat(report.updatedCount).isEqualTo(1)
-        assertThat(valueOf(protein.id)).isWithin(1e-4f).of(10.9504f)
-    }
-
-    @Test
-    fun compositionConversion_skeletalMuscleKgToPercent_normalizesLbBodyWeight() = runBlocking {
-        val weight = type(MeasurementTypeKey.WEIGHT)
-        val skeletalMuscle = type(MeasurementTypeKey.SKELETAL_MUSCLE)
-        repo.updateMeasurementType(weight.copy(unit = UnitType.LB))
-        repo.updateMeasurementType(skeletalMuscle.copy(unit = UnitType.KG))
-
-        val mId = newMeasurement(1_000L)
-        val weightLb = ConverterUtils.convertFloatValueUnit(85.55f, UnitType.KG, UnitType.LB)
-        repo.insertMeasurementValue(MeasurementValue(measurementId = mId, typeId = weight.id, floatValue = weightLb))
-        repo.insertMeasurementValue(MeasurementValue(measurementId = mId, typeId = skeletalMuscle.id, floatValue = 33.0223f))
-
-        val report = useCase.updateTypeAndConvertValues(
-            skeletalMuscle.copy(unit = UnitType.KG),
-            skeletalMuscle.copy(unit = UnitType.PERCENT),
-        ).getOrThrow()
-
-        assertThat(report.updatedCount).isEqualTo(1)
-        assertThat(valueOf(skeletalMuscle.id)).isWithin(1e-3f).of(38.6f)
     }
 
     @Test

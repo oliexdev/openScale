@@ -19,7 +19,6 @@ package com.health.openscale.core.utils
 
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.MeasureUnit
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.WeightUnit
 import org.junit.Test
@@ -99,102 +98,6 @@ class ConverterUtilsTest {
     fun convertFloatValueUnit_unsupportedConversionReturnsOriginal() {
         // percent has no conversion to kg -> original value returned unchanged
         assertThat(ConverterUtils.convertFloatValueUnit(42f, UnitType.PERCENT, UnitType.KG)).isEqualTo(42f)
-    }
-
-    // ---- percentage-or-mass body composition ---------------------------------------------------
-
-    @Test
-    fun compositionConversion_proteinPercentToKg_usesBodyWeight() {
-        val converted = ConverterUtils.convertPercentageOrMassCompositionUnit(
-            value = 12.8f,
-            fromUnit = UnitType.PERCENT,
-            toUnit = UnitType.KG,
-            bodyWeightKg = 85.55f,
-        )
-
-        assertThat(converted).isNotNull()
-        assertThat(converted!!).isWithin(1e-4f).of(10.9504f)
-    }
-
-    @Test
-    fun compositionConversion_skeletalMusclePercentRoundTripsThroughKg() {
-        val massKg = ConverterUtils.convertPercentageOrMassCompositionUnit(
-            value = 38.6f,
-            fromUnit = UnitType.PERCENT,
-            toUnit = UnitType.KG,
-            bodyWeightKg = 85.55f,
-        )
-        val percent = ConverterUtils.convertPercentageOrMassCompositionUnit(
-            value = massKg!!,
-            fromUnit = UnitType.KG,
-            toUnit = UnitType.PERCENT,
-            bodyWeightKg = 85.55f,
-        )
-
-        assertThat(massKg).isWithin(1e-4f).of(33.0223f)
-        assertThat(percent).isNotNull()
-        assertThat(percent!!).isWithin(1e-4f).of(38.6f)
-    }
-
-    @Test
-    fun compositionConversion_percentToLbAndStone_matchesKgConversion() {
-        val massKg = 10.9504f
-        val massLb = ConverterUtils.convertPercentageOrMassCompositionUnit(
-            12.8f, UnitType.PERCENT, UnitType.LB, 85.55f
-        )
-        val massSt = ConverterUtils.convertPercentageOrMassCompositionUnit(
-            12.8f, UnitType.PERCENT, UnitType.ST, 85.55f
-        )
-
-        assertThat(massLb).isNotNull()
-        assertThat(massLb!!).isWithin(1e-4f)
-            .of(ConverterUtils.convertFloatValueUnit(massKg, UnitType.KG, UnitType.LB))
-        assertThat(massSt).isNotNull()
-        assertThat(massSt!!).isWithin(1e-4f)
-            .of(ConverterUtils.convertFloatValueUnit(massKg, UnitType.KG, UnitType.ST))
-    }
-
-    @Test
-    fun compositionConversion_rejectsMissingWeightAndUnsupportedUnits() {
-        assertThat(
-            ConverterUtils.convertPercentageOrMassCompositionUnit(
-                12.8f, UnitType.PERCENT, UnitType.KG, null
-            )
-        ).isNull()
-        assertThat(
-            ConverterUtils.convertPercentageOrMassCompositionUnit(
-                12.8f, UnitType.PERCENT, UnitType.CM, 85.55f
-            )
-        ).isNull()
-    }
-
-    @Test
-    fun compositionConversion_samePercentUnitDoesNotRequireBodyWeight() {
-        assertThat(
-            ConverterUtils.convertPercentageOrMassCompositionUnit(
-                12.8f, UnitType.PERCENT, UnitType.PERCENT, null
-            )
-        ).isEqualTo(12.8f)
-    }
-
-    @Test
-    fun percentageOrMassCompositionKeys_includeExtendedMetricsButNotLeanSoftTissue() {
-        val expected = listOf(
-            MeasurementTypeKey.BODY_FAT,
-            MeasurementTypeKey.WATER,
-            MeasurementTypeKey.MUSCLE,
-            MeasurementTypeKey.ECW,
-            MeasurementTypeKey.ICW,
-            MeasurementTypeKey.PROTEIN,
-            MeasurementTypeKey.SKELETAL_MUSCLE,
-            MeasurementTypeKey.SUBCUTANEOUS_FAT,
-        )
-
-        expected.forEach {
-            assertThat(ConverterUtils.isPercentageOrMassComposition(it)).isTrue()
-        }
-        assertThat(ConverterUtils.isPercentageOrMassComposition(MeasurementTypeKey.LEAN_SOFT_TISSUE))
-            .isFalse()
     }
 
     // ---- sanitizeDigits -------------------------------------------------------------------------

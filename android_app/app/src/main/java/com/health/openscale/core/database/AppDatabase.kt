@@ -47,7 +47,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext ctx: Context): AppDatabase =
         Room.databaseBuilder(ctx, AppDatabase::class.java, AppDatabase.Companion.DATABASE_NAME)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15)
             .build()
 
     @Provides
@@ -74,7 +74,7 @@ object DatabaseModule {
         MeasurementValue::class,
         MeasurementType::class,
     ],
-    version = 16,
+    version = 15,
     exportSchema = true
 )
 @TypeConverters(DatabaseConverters::class)
@@ -618,81 +618,6 @@ val MIGRATION_14_15 = object : Migration(14, 15) {
             db.setTransactionSuccessful()
         } finally {
             db.endTransaction()
-        }
-    }
-}
-
-val MIGRATION_15_16 = object : Migration(15, 16) {
-    override fun migrate(db: SupportSQLiteDatabase) {
-        val newKeys = setOf(
-            MeasurementTypeKey.PHASE_ANGLE,
-            MeasurementTypeKey.PHASE_ANGLE_HIGH,
-            MeasurementTypeKey.SKELETAL_MUSCLE,
-            MeasurementTypeKey.LEAN_SOFT_TISSUE,
-            MeasurementTypeKey.SUBCUTANEOUS_FAT,
-            MeasurementTypeKey.BODY_AGE,
-            MeasurementTypeKey.BMI_22_REFERENCE_WEIGHT,
-            MeasurementTypeKey.DEVICE_IMPEDANCE,
-        )
-        getDefaultMeasurementTypes().filter { it.key in newKeys }.forEach { type ->
-            db.execSQL(
-                """
-                INSERT INTO MeasurementType
-                    (`key`, `name`, `color`, `icon`, `unit`, `inputType`, `displayOrder`,
-                     `isDerived`, `isEnabled`, `isPinned`, `isOnRightYAxis`, `isInternal`)
-                SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-                WHERE NOT EXISTS (
-                    SELECT 1 FROM MeasurementType WHERE `key` = ?
-                )
-                """.trimIndent(),
-                arrayOf<Any?>(
-                    type.key.name,
-                    null,
-                    type.color,
-                    type.icon.name,
-                    type.unit.name,
-                    type.inputType.name,
-                    -1,
-                    if (type.isDerived) 1 else 0,
-                    if (type.isEnabled) 1 else 0,
-                    if (type.isPinned) 1 else 0,
-                    if (type.isOnRightYAxis) 1 else 0,
-                    if (type.isInternal) 1 else 0,
-                    type.key.name,
-                ),
-            )
-
-            // Very old databases are rebuilt by MIGRATION_6_7 using the current default list.
-            // In a full-chain migration that can create these keys before isInternal exists, so
-            // normalize their v16 metadata even when the idempotent insert found an existing row.
-            db.execSQL(
-                """
-                UPDATE MeasurementType
-                SET `color` = ?, `icon` = ?, `unit` = ?, `inputType` = ?,
-                    `isDerived` = ?, `isEnabled` = ?, `isPinned` = ?,
-                    `isOnRightYAxis` = ?, `isInternal` = ?
-                WHERE `key` = ?
-                """.trimIndent(),
-                arrayOf<Any?>(
-                    type.color,
-                    type.icon.name,
-                    type.unit.name,
-                    type.inputType.name,
-                    if (type.isDerived) 1 else 0,
-                    if (type.isEnabled) 1 else 0,
-                    if (type.isPinned) 1 else 0,
-                    if (type.isOnRightYAxis) 1 else 0,
-                    if (type.isInternal) 1 else 0,
-                    type.key.name,
-                ),
-            )
-        }
-
-        getDefaultMeasurementTypes().forEachIndexed { index, measurementType ->
-            db.execSQL(
-                "UPDATE MeasurementType SET displayOrder = ? WHERE `key` = ?",
-                arrayOf<Any?>(index + 1, measurementType.key.name),
-            )
         }
     }
 }

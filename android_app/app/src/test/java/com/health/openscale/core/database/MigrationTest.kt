@@ -22,8 +22,6 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
-import com.health.openscale.core.data.MeasurementTypeKey
-import com.health.openscale.core.data.UnitType
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -37,7 +35,7 @@ import kotlin.math.abs
 /**
  * Exercises the full migration chain end-to-end on the JVM (Robolectric): a hand-built
  * legacy schema-v6 database is opened with all migrations, running MIGRATION_6_7 (the risky
- * legacy rewrite) through MIGRATION_15_16 in sequence. Verifies the enum mapping and that
+ * legacy rewrite) through MIGRATION_14_15 in sequence. Verifies the enum mapping and that
  * data survives — the highest data-loss risk in the app.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -61,7 +59,7 @@ class MigrationTest {
 
         RoomTestSupport.writeLegacyV6Database(dbFile)
 
-        // Opening with the full migration chain runs MIGRATION_6_7 .. MIGRATION_15_16 in order.
+        // Opening with the full migration chain runs MIGRATION_6_7 .. MIGRATION_14_15 in order.
         val opened = RoomTestSupport.onDisk(context).also { db = it }
         val repo = RoomTestSupport.repositoryFor(opened)
 
@@ -80,27 +78,8 @@ class MigrationTest {
             .firstOrNull { abs(it - 72.5f) < 0.1f }
         assertThat(weight).isNotNull()
 
-        val types = repo.getAllMeasurementTypes().first()
-        assertThat(types).isNotEmpty()
-        assertThat(types.single { it.key == MeasurementTypeKey.PHASE_ANGLE }.unit)
-            .isEqualTo(UnitType.DEGREE)
-        assertThat(types.single { it.key == MeasurementTypeKey.PHASE_ANGLE_HIGH }.isInternal)
-            .isTrue()
-        assertThat(types.single { it.key == MeasurementTypeKey.SKELETAL_MUSCLE }.unit)
-            .isEqualTo(UnitType.PERCENT)
-        assertThat(types.single { it.key == MeasurementTypeKey.LEAN_SOFT_TISSUE }.unit)
-            .isEqualTo(UnitType.KG)
-        assertThat(types.single { it.key == MeasurementTypeKey.SUBCUTANEOUS_FAT }.unit)
-            .isEqualTo(UnitType.PERCENT)
-        assertThat(types.single { it.key == MeasurementTypeKey.BODY_AGE }.unit)
-            .isEqualTo(UnitType.NONE)
-        assertThat(types.single { it.key == MeasurementTypeKey.BMI_22_REFERENCE_WEIGHT }.unit)
-            .isEqualTo(UnitType.KG)
-        assertThat(MeasurementTypeKey.BMI_22_REFERENCE_WEIGHT.id).isEqualTo(40)
-        val deviceImpedance = types.single { it.key == MeasurementTypeKey.DEVICE_IMPEDANCE }
-        assertThat(deviceImpedance.unit).isEqualTo(UnitType.OHM)
-        assertThat(deviceImpedance.isEnabled).isFalse()
-        assertThat(deviceImpedance.isInternal).isTrue()
+        // The rewrite seeds the default measurement types.
+        assertThat(repo.getAllMeasurementTypes().first()).isNotEmpty()
     }
 
     /**
@@ -117,7 +96,7 @@ class MigrationTest {
 
         RoomTestSupport.writeLegacyV1Database(dbFile)
 
-        // Opening with the full migration chain runs MIGRATION_1_2 .. MIGRATION_15_16 in order.
+        // Opening with the full migration chain runs MIGRATION_1_2 .. MIGRATION_14_15 in order.
         val opened = RoomTestSupport.onDisk(context).also { db = it }
         val repo = RoomTestSupport.repositoryFor(opened)
 

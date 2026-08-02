@@ -63,7 +63,6 @@ import kotlinx.coroutines.withTimeoutOrNull
 import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.min
-import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 
 // -------------------------------------------------------------------------------------------------
@@ -526,51 +525,13 @@ abstract class ModernScaleAdapter(
         fun valueOf(key: MeasurementTypeKey): MeasurementValue? =
             mwv.values.firstOrNull { it.type.key == key }?.value
 
-        mwv.values.firstOrNull { it.type.key == MeasurementTypeKey.WEIGHT }?.let { weight ->
-            m.weight = ConverterUtils.convertFloatValueUnit(
-                value = weight.value.floatValue ?: 0f,
-                fromUnit = weight.type.unit,
-                toUnit = UnitType.KG,
-            )
-        }
+        valueOf(MeasurementTypeKey.WEIGHT)?.let { m.weight = it.floatValue ?: 0f }
         valueOf(MeasurementTypeKey.BODY_FAT)?.let { m.fat = it.floatValue ?: 0f }
         valueOf(MeasurementTypeKey.WATER)?.let { m.water = it.floatValue ?: 0f }
         valueOf(MeasurementTypeKey.MUSCLE)?.let { m.muscle = it.floatValue ?: 0f }
-        mwv.values.firstOrNull { it.type.key == MeasurementTypeKey.LEAN_SOFT_TISSUE }?.let {
-            m.leanSoftTissue = ConverterUtils.convertFloatValueUnit(
-                value = it.value.floatValue ?: 0f,
-                fromUnit = it.type.unit,
-                toUnit = UnitType.KG,
-            )
-        }
-        mwv.values.firstOrNull { it.type.key == MeasurementTypeKey.BMI_22_REFERENCE_WEIGHT }?.let {
-            m.bmi22ReferenceWeight = ConverterUtils.convertFloatValueUnit(
-                value = it.value.floatValue ?: 0f,
-                fromUnit = it.type.unit,
-                toUnit = UnitType.KG,
-            )
-        }
         valueOf(MeasurementTypeKey.VISCERAL_FAT)?.let { m.visceralFat = it.floatValue ?: 0f }
         valueOf(MeasurementTypeKey.LBM)?.let { m.lbm = it.floatValue ?: 0f }
         valueOf(MeasurementTypeKey.BONE)?.let { m.bone = it.floatValue ?: 0f }
-        valueOf(MeasurementTypeKey.HEART_RATE)?.let {
-            m.heartRate = it.intValue ?: it.floatValue?.roundToInt() ?: 0
-        }
-        valueOf(MeasurementTypeKey.IMPEDANCE)?.let {
-            m.impedance = (it.floatValue ?: it.intValue?.toFloat() ?: 0f).toDouble()
-        }
-        valueOf(MeasurementTypeKey.IMPEDANCE_LOW)?.let {
-            m.impedanceLow = (it.floatValue ?: it.intValue?.toFloat() ?: 0f).toDouble()
-        }
-        valueOf(MeasurementTypeKey.DEVICE_IMPEDANCE)?.let {
-            m.deviceImpedance = (it.floatValue ?: it.intValue?.toFloat() ?: 0f).toDouble()
-        }
-        valueOf(MeasurementTypeKey.PHASE_ANGLE)?.let {
-            m.phaseAngle = it.floatValue ?: it.intValue?.toFloat() ?: 0f
-        }
-        valueOf(MeasurementTypeKey.PHASE_ANGLE_HIGH)?.let {
-            m.phaseAngleHigh = it.floatValue ?: it.intValue?.toFloat() ?: 0f
-        }
 
         return m
     }

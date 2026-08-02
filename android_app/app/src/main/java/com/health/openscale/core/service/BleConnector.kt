@@ -30,7 +30,6 @@ import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.facade.MeasurementFacade
-import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.shared.SnackbarEvent
 import kotlinx.coroutines.CoroutineScope
@@ -421,10 +420,8 @@ class BleConnector(
      *    defined by each `MeasurementType`'s `unit` field before persisting.
      *
      * ### Raw units assumed for ScaleMeasurement
-     * - WEIGHT, BONE, LBM, LEAN_SOFT_TISSUE → **KG**
-     * - BODY_FAT, WATER, MUSCLE, ECW, ICW, PROTEIN, SKELETAL_MUSCLE,
-     *   SUBCUTANEOUS_FAT → **PERCENT**
-     * - VISCERAL_FAT → vendor-defined unitless level
+     * - WEIGHT, BONE, LBM  → **KG**
+     * - BODY_FAT, WATER, MUSCLE, VISCERAL_FAT → **PERCENT**
      *
      * Other fields in `ScaleMeasurement` (if added later) should be appended here with the correct raw unit.
      *
@@ -474,28 +471,22 @@ class BleConnector(
             fun getTargetUnit(key: MeasurementTypeKey) = typeKeyToUnitMap[key] ?: UnitType.NONE
 
             // Declare raw units provided by ScaleMeasurement for each key.
+            // Percent-based values will "convert" to themselves (converter returns unchanged value).
             val rawUnitByKey: Map<MeasurementTypeKey, UnitType> = mapOf(
                 MeasurementTypeKey.WEIGHT       to UnitType.KG,
                 MeasurementTypeKey.BODY_FAT     to UnitType.PERCENT,
                 MeasurementTypeKey.WATER        to UnitType.PERCENT,
                 MeasurementTypeKey.MUSCLE       to UnitType.PERCENT,
-                MeasurementTypeKey.VISCERAL_FAT to UnitType.NONE,
+                MeasurementTypeKey.VISCERAL_FAT to UnitType.PERCENT,
                 MeasurementTypeKey.BONE         to UnitType.KG,
                 MeasurementTypeKey.LBM          to UnitType.KG,
                 MeasurementTypeKey.HEART_RATE   to UnitType.BPM,
                 MeasurementTypeKey.IMPEDANCE    to UnitType.OHM,
                 MeasurementTypeKey.IMPEDANCE_LOW to UnitType.OHM,
-                MeasurementTypeKey.DEVICE_IMPEDANCE to UnitType.OHM,
-                MeasurementTypeKey.PHASE_ANGLE to UnitType.DEGREE,
-                MeasurementTypeKey.PHASE_ANGLE_HIGH to UnitType.DEGREE,
                 MeasurementTypeKey.ECW          to UnitType.PERCENT,
                 MeasurementTypeKey.ICW          to UnitType.PERCENT,
                 MeasurementTypeKey.PROTEIN      to UnitType.PERCENT,
                 MeasurementTypeKey.BCM          to UnitType.KG,
-                MeasurementTypeKey.SKELETAL_MUSCLE to UnitType.PERCENT,
-                MeasurementTypeKey.LEAN_SOFT_TISSUE to UnitType.KG,
-                MeasurementTypeKey.SUBCUTANEOUS_FAT to UnitType.PERCENT,
-                MeasurementTypeKey.BMI_22_REFERENCE_WEIGHT to UnitType.KG,
                 MeasurementTypeKey.BMR          to UnitType.KCAL
             )
 
@@ -505,8 +496,7 @@ class BleConnector(
              * Adds a converted float value for the given key if present & valid.
              * - Reads the raw unit for the key (what the device/handler provided).
              * - Looks up the target unit from MeasurementType.
-             * - Converts percentage-or-mass composition values using the same measurement's
-             *   body weight; all other values use the regular unit converter.
+             * - Converts using existing ConverterUtils.convertFloatValueUnit.
              */
             fun addConvertedIfValid(
                 value: Float?,
@@ -519,22 +509,9 @@ class BleConnector(
                 val rawUnit = rawUnitByKey[key] ?: UnitType.NONE
                 val target  = getTargetUnit(key)
 
-                val converted = if (ConverterUtils.isPercentageOrMassComposition(key)) {
-                    ConverterUtils.convertPercentageOrMassCompositionUnit(
-                        value = v,
-                        fromUnit = rawUnit,
-                        toUnit = target,
-                        bodyWeightKg = measurementData.weight,
-                    ) ?: run {
-                        LogManager.w(
-                            TAG,
-                            "Skipping $key: cannot convert $rawUnit to $target without a valid body weight."
-                        )
-                        return
-                    }
-                } else {
-                    ConverterUtils.convertFloatValueUnit(v, rawUnit, target)
-                }
+                val converted = com.health.openscale.core.utils.ConverterUtils.convertFloatValueUnit(
+                    v, rawUnit, target
+                )
 
                 getTypeId(key)?.let { typeId ->
                     values.add(
@@ -585,21 +562,10 @@ class BleConnector(
             addConvertedIfValid(measurementData.heartRate, MeasurementTypeKey.HEART_RATE)
             addConvertedIfValid(measurementData.impedance.toFloat(),    MeasurementTypeKey.IMPEDANCE)
             addConvertedIfValid(measurementData.impedanceLow.toFloat(), MeasurementTypeKey.IMPEDANCE_LOW)
-            addConvertedIfValid(measurementData.deviceImpedance.toFloat(), MeasurementTypeKey.DEVICE_IMPEDANCE)
-            addConvertedIfValid(measurementData.phaseAngle,             MeasurementTypeKey.PHASE_ANGLE)
-            addConvertedIfValid(measurementData.phaseAngleHigh,         MeasurementTypeKey.PHASE_ANGLE_HIGH)
             addConvertedIfValid(measurementData.ecw,                    MeasurementTypeKey.ECW)
             addConvertedIfValid(measurementData.icw,                    MeasurementTypeKey.ICW)
             addConvertedIfValid(measurementData.protein,                MeasurementTypeKey.PROTEIN)
             addConvertedIfValid(measurementData.bcm,                    MeasurementTypeKey.BCM)
-            addConvertedIfValid(measurementData.skeletalMuscle,         MeasurementTypeKey.SKELETAL_MUSCLE)
-            addConvertedIfValid(measurementData.leanSoftTissue,         MeasurementTypeKey.LEAN_SOFT_TISSUE)
-            addConvertedIfValid(measurementData.subcutaneousFat,        MeasurementTypeKey.SUBCUTANEOUS_FAT)
-            addConvertedIfValid(measurementData.bodyAge,                MeasurementTypeKey.BODY_AGE)
-            addConvertedIfValid(
-                measurementData.bmi22ReferenceWeight,
-                MeasurementTypeKey.BMI_22_REFERENCE_WEIGHT,
-            )
 
             if (values.isEmpty()) {
                 LogManager.w(TAG, "No valid values from measurement of $deviceName to save.")

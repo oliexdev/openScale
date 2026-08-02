@@ -238,12 +238,6 @@ abstract class ScaleDeviceHandler {
             ?: logW("writeTo called without transport")
     }
 
-    /** Suspend until transport operations queued before this call have completed. */
-    protected suspend fun awaitPendingTransportOperations() {
-        transport?.awaitPendingOperations()
-            ?: logW("awaitPendingTransportOperations called without transport")
-    }
-
     /** Read a characteristic (rare for scales; most data comes via NOTIFY). */
     protected fun readFrom(service: UUID, characteristic: UUID) {
         transport?.read(service, characteristic)
@@ -345,7 +339,6 @@ abstract class ScaleDeviceHandler {
         fun setNotifyOn(service: UUID, characteristic: UUID)
         fun write(service: UUID, characteristic: UUID, payload: ByteArray, withResponse: Boolean = true)
         fun read(service: UUID, characteristic: UUID)
-        suspend fun awaitPendingOperations() = Unit
         fun disconnect()
         fun getPeripheral(): BluetoothPeripheral? = null
         fun hasCharacteristic(service: UUID, characteristic: UUID): Boolean
