@@ -197,7 +197,7 @@ class KeepS3HandlerTest {
         assertThat(setup.callbacks.published.single().heartRate).isEqualTo(107)
         assertThat(setup.callbacks.published.single().fat).isEqualTo(29.5f)
         assertThat(setup.callbacks.published.single().water).isEqualTo(50.2f)
-        assertThat(setup.callbacks.published.single().muscle).isEqualTo(0f)
+        assertThat(setup.callbacks.published.single().muscle).isEqualTo(66.9f)
         assertThat(setup.callbacks.published.single().visceralFat).isEqualTo(12f)
         assertThat(setup.callbacks.published.single().protein).isEqualTo(12.7f)
         assertThat(setup.callbacks.published.single().bone).isEqualTo(3.0f)
@@ -246,7 +246,7 @@ class KeepS3HandlerTest {
         assertThat(setup.callbacks.published.single().impedanceLow).isEqualTo(502.0)
         assertThat(setup.callbacks.published.single().fat).isEqualTo(29.4f)
         assertThat(setup.callbacks.published.single().water).isEqualTo(50.3f)
-        assertThat(setup.callbacks.published.single().muscle).isEqualTo(0f)
+        assertThat(setup.callbacks.published.single().muscle).isEqualTo(67.1f)
         assertThat(setup.transport.writes.count {
             it.payload.contentEquals(KeepS3Protocol.buildAck(0x57))
         }).isEqualTo(2)
@@ -339,6 +339,7 @@ class KeepS3HandlerTest {
         val actual = setup.callbacks.published.single()
         assertThat(actual.fat).isEqualTo(expected.bodyFatPercent)
         assertThat(actual.water).isEqualTo(expected.waterPercent)
+        assertThat(actual.muscle).isEqualTo(expected.musclePercent)
         assertThat(actual.bone).isEqualTo(expected.boneKg)
         assertThat(actual.lbm).isEqualTo(expected.fatFreeMassKg)
     }

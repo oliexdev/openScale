@@ -600,11 +600,12 @@ class KeepS3Handler : ScaleDeviceHandler() {
                 lbm = composition.fatFreeMassKg
                 bmr = composition.basalMetabolicRateKcal.toFloat()
                 protein = composition.proteinPercent
-                // Not published — openScale has no measurement type for these. Note that the
-                // vendor's "muscle" is FFM minus bone, so it is lean soft tissue rather than
-                // openScale's MUSCLE metric and must not be mapped onto it.
+                // The vendor's "muscle" is fat-free mass minus bone. That is the same formula
+                // BodyMiScaleLib.getMuscleMass() uses, and MiScaleHandler publishes it as a
+                // percentage of body weight in MUSCLE, so this matches openScale's convention.
+                muscle = composition.musclePercent
+                // Not published — openScale has no measurement type for these.
                 // skeletalMuscle = composition.skeletalMusclePercent
-                // leanSoftTissue = composition.muscleKg
                 // subcutaneousFat = composition.subcutaneousFatPercent
                 // bodyAge = composition.bodyAge
                 // bmi22ReferenceWeight = composition.bmi22ReferenceWeightKg
