@@ -197,12 +197,22 @@ class KeepS3HandlerTest {
         assertThat(setup.callbacks.published.single().heartRate).isEqualTo(107)
         assertThat(setup.callbacks.published.single().fat).isEqualTo(29.5f)
         assertThat(setup.callbacks.published.single().water).isEqualTo(50.2f)
-        assertThat(setup.callbacks.published.single().muscle).isEqualTo(66.9f)
+        assertThat(setup.callbacks.published.single().muscle)
+            .isWithin(0.001f).of(38.42538f)
         assertThat(setup.callbacks.published.single().visceralFat).isEqualTo(12f)
         assertThat(setup.callbacks.published.single().protein).isEqualTo(12.7f)
         assertThat(setup.callbacks.published.single().bone).isEqualTo(3.0f)
         assertThat(setup.callbacks.published.single().lbm).isEqualTo(60.0f)
         assertThat(setup.callbacks.published.single().bmr).isEqualTo(1791f)
+
+        val storedDeviceImpedance = KeepS3Protocol.parseDeviceImpedance(
+            setup.settings.strings[KeepS3Protocol.deviceImpedanceSettingKey(setup.user.id)],
+        )!!
+        assertThat(storedDeviceImpedance.timestampSeconds).isEqualTo(
+            setup.callbacks.published.single().dateTime!!.time / 1000L,
+        )
+        assertThat(storedDeviceImpedance.weightRaw).isEqualTo(17020)
+        assertThat(storedDeviceImpedance.impedanceOhm).isEqualTo(301)
 
         val payloads = setup.transport.writes.map { it.payload }
         assertThat(payloads.count { it.contentEquals(KeepS3Protocol.buildAck(0x58)) }).isEqualTo(2)
@@ -213,7 +223,11 @@ class KeepS3HandlerTest {
         runCurrent()
         assertThat(setup.transport.disconnectCount).isEqualTo(0)
 
-        advanceTimeBy(800)
+        advanceTimeBy(5_999)
+        runCurrent()
+        assertThat(setup.transport.disconnectCount).isEqualTo(0)
+
+        advanceTimeBy(1)
         runCurrent()
         assertThat(setup.transport.disconnectCount).isEqualTo(1)
     }
@@ -246,7 +260,8 @@ class KeepS3HandlerTest {
         assertThat(setup.callbacks.published.single().impedanceLow).isEqualTo(502.0)
         assertThat(setup.callbacks.published.single().fat).isEqualTo(29.4f)
         assertThat(setup.callbacks.published.single().water).isEqualTo(50.3f)
-        assertThat(setup.callbacks.published.single().muscle).isEqualTo(67.1f)
+        assertThat(setup.callbacks.published.single().muscle)
+            .isWithin(0.001f).of(38.47059f)
         assertThat(setup.transport.writes.count {
             it.payload.contentEquals(KeepS3Protocol.buildAck(0x57))
         }).isEqualTo(2)
@@ -339,7 +354,7 @@ class KeepS3HandlerTest {
         val actual = setup.callbacks.published.single()
         assertThat(actual.fat).isEqualTo(expected.bodyFatPercent)
         assertThat(actual.water).isEqualTo(expected.waterPercent)
-        assertThat(actual.muscle).isEqualTo(expected.musclePercent)
+        assertThat(actual.muscle).isEqualTo(expected.skeletalMusclePercent)
         assertThat(actual.bone).isEqualTo(expected.boneKg)
         assertThat(actual.lbm).isEqualTo(expected.fatFreeMassKg)
     }
@@ -434,6 +449,26 @@ class KeepS3HandlerTest {
     }
 
     @Test
+    fun `persisted device impedance is accepted only for its source measurement`() {
+        val encoded = KeepS3Protocol.serializeDeviceImpedance(
+            timestampSeconds = 0x1234_5678L,
+            weightKg = 85.10f,
+            impedanceOhm = 301,
+        )!!
+        val stored = KeepS3Protocol.parseDeviceImpedance(encoded)!!
+
+        assertThat(stored.timestampSeconds).isEqualTo(0x1234_5678L)
+        assertThat(stored.weightRaw).isEqualTo(17020)
+        assertThat(stored.impedanceOhm).isEqualTo(301)
+        assertThat(KeepS3Protocol.deviceImpedanceMatches(stored, 0x1234_5678L, 85.10f)).isTrue()
+        assertThat(KeepS3Protocol.deviceImpedanceMatches(stored, 0x1234_5679L, 85.10f)).isFalse()
+        assertThat(KeepS3Protocol.deviceImpedanceMatches(stored, 0x1234_5678L, 85.00f)).isFalse()
+        assertThat(KeepS3Protocol.serializeDeviceImpedance(0L, 85.10f, 301)).isNull()
+        assertThat(KeepS3Protocol.serializeDeviceImpedance(0x1234_5678L, 0f, 301)).isNull()
+        assertThat(KeepS3Protocol.parseDeviceImpedance("invalid")).isNull()
+    }
+
+    @Test
     fun `generated token persists and reloads for the same user`() {
         val settings = InMemorySettings()
         val user = syntheticUser()
@@ -509,19 +544,66 @@ class KeepS3HandlerTest {
     }
 
     @Test
-    fun `profile carries the impedance of the previous Keep S3 record`() {
-        val previous = ScaleMeasurement(
-            userId = 7,
-            dateTime = Date(0x1234_5678L * 1000L),
-            weight = 85.10f,
-            impedance = 301.0,
+    fun `profile carries the persisted protocol impedance instead of either frequency band`() = runTest {
+        val settings = InMemorySettings()
+        val first = attachedHandler(previous = null, settings = settings, scope = this)
+        first.handler.handleConnected(first.user)
+        first.handler.handleNotification(
+            notifyCharacteristic,
+            bytes("03 53 57 00 08 29 42 68 00 00 01 2C 61"),
         )
-        val setup = attachedHandler(previous = previous)
+        first.handler.handleNotification(
+            notifyCharacteristic,
+            finalRecord(
+                weightRaw = 17000,
+                encodedImpedance50 = 0x8227E5,
+                encodedImpedance100 = 0x6C66AC,
+                phaseAngle50Raw = -77,
+                phaseAngle100Raw = -77,
+                heartRate = 97,
+            ),
+        )
+        val previous = first.callbacks.published.single()
+        assertThat(previous.impedance).isEqualTo(475.0)
+        assertThat(previous.impedanceLow).isEqualTo(502.0)
+
+        val setup = attachedHandler(previous = previous, settings = settings, scope = this)
 
         driveInitializationThroughProfile(setup)
 
         val profileRequest = setup.transport.writes.single { requestOpcode(it.payload) == 0x32 }.payload
-        assertThat(KeepS3Protocol.decodeU16BE(profileRequest, 5 + 54)).isEqualTo(301)
+        assertThat(KeepS3Protocol.decodeU16BE(profileRequest, 5 + 48)).isEqualTo(17000)
+        assertThat(KeepS3Protocol.decodeU32BE(profileRequest, 5 + 50)).isEqualTo(
+            previous.dateTime!!.time / 1000L,
+        )
+        assertThat(KeepS3Protocol.decodeU16BE(profileRequest, 5 + 54)).isEqualTo(300)
+    }
+
+    @Test
+    fun `profile uses all-zero record when persisted protocol impedance does not match`() {
+        val previous = ScaleMeasurement(
+            userId = 7,
+            dateTime = Date(0x1234_5678L * 1000L),
+            weight = 85.10f,
+            impedance = 478.0,
+            impedanceLow = 506.0,
+        )
+        val settings = InMemorySettings().apply {
+            putString(
+                KeepS3Protocol.deviceImpedanceSettingKey(previous.userId),
+                KeepS3Protocol.serializeDeviceImpedance(
+                    timestampSeconds = 0x1234_5677L,
+                    weightKg = 85.10f,
+                    impedanceOhm = 301,
+                )!!,
+            )
+        }
+        val setup = attachedHandler(previous = previous, settings = settings)
+
+        driveInitializationThroughProfile(setup)
+
+        val profileRequest = setup.transport.writes.single { requestOpcode(it.payload) == 0x32 }.payload
+        assertThat(profileRequest.copyOfRange(5 + 48, 5 + 58)).isEqualTo(ByteArray(10))
     }
 
     @Test

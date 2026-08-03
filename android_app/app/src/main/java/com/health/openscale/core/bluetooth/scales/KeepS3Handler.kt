@@ -89,6 +89,12 @@ internal object KeepS3Protocol {
         val impedanceOhm: Double = 0.0,
     )
 
+    data class PersistedDeviceImpedance(
+        val timestampSeconds: Long,
+        val weightRaw: Int,
+        val impedanceOhm: Int,
+    )
+
     /** Read only the non-sensitive frame identity. Payload validity is checked separately. */
     fun peekFrameHeader(frame: ByteArray): FrameHeader? {
         if (frame.size < 5) return null
@@ -225,6 +231,35 @@ internal object KeepS3Protocol {
     }
 
     fun tokenSettingKey(userId: Int): String = "id24-user-$userId"
+
+    fun deviceImpedanceSettingKey(userId: Int): String = "previous-device-impedance-user-$userId"
+
+    fun serializeDeviceImpedance(
+        timestampSeconds: Long,
+        weightKg: Float,
+        impedanceOhm: Int,
+    ): String? {
+        if (timestampSeconds !in 1L..0xFFFF_FFFFL || impedanceOhm !in 1..0xFFFF) return null
+        val weightRaw = encodeWeightRaw(weightKg).takeIf { it > 0 } ?: return null
+        return "$timestampSeconds:$weightRaw:$impedanceOhm"
+    }
+
+    fun parseDeviceImpedance(value: String?): PersistedDeviceImpedance? {
+        val fields = value?.split(':') ?: return null
+        if (fields.size != 3) return null
+        val timestampSeconds = fields[0].toLongOrNull()?.takeIf { it in 1L..0xFFFF_FFFFL }
+            ?: return null
+        val weightRaw = fields[1].toIntOrNull()?.takeIf { it in 1..0xFFFF } ?: return null
+        val impedanceOhm = fields[2].toIntOrNull()?.takeIf { it in 1..0xFFFF } ?: return null
+        return PersistedDeviceImpedance(timestampSeconds, weightRaw, impedanceOhm)
+    }
+
+    fun deviceImpedanceMatches(
+        stored: PersistedDeviceImpedance,
+        timestampSeconds: Long,
+        weightKg: Float,
+    ): Boolean = stored.timestampSeconds == timestampSeconds &&
+        stored.weightRaw == encodeWeightRaw(weightKg)
 
     fun encodeU16BE(target: ByteArray, offset: Int, value: Int) {
         require(offset >= 0 && offset + 2 <= target.size)
@@ -600,12 +635,13 @@ class KeepS3Handler : ScaleDeviceHandler() {
                 lbm = composition.fatFreeMassKg
                 bmr = composition.basalMetabolicRateKcal.toFloat()
                 protein = composition.proteinPercent
-                // The vendor's "muscle" is fat-free mass minus bone. That is the same formula
-                // BodyMiScaleLib.getMuscleMass() uses, and MiScaleHandler publishes it as a
-                // percentage of body weight in MUSCLE, so this matches openScale's convention.
-                muscle = composition.musclePercent
+                // openScale evaluates MUSCLE as a skeletal-muscle percentage (plausible range
+                // 15-60%). Keep's broader "muscle" value is FFM minus bone and can exceed that
+                // range, so publish the separately decoded skeletal-muscle percentage here.
+                muscle = composition.skeletalMusclePercent
+                // Keep's broader composition.musclePercent remains decoded by the model but is
+                // not published because openScale has no lean-soft-tissue measurement type.
                 // Not published — openScale has no measurement type for these.
-                // skeletalMuscle = composition.skeletalMusclePercent
                 // subcutaneousFat = composition.subcutaneousFatPercent
                 // bodyAge = composition.bodyAge
                 // bmi22ReferenceWeight = composition.bmi22ReferenceWeightKg
@@ -613,6 +649,7 @@ class KeepS3Handler : ScaleDeviceHandler() {
             }
         }
         publish(measurement)
+        rememberDeviceImpedance(user.id, measurement, deviceImpedanceOhm)
         published = true
     }
 
@@ -626,9 +663,10 @@ class KeepS3Handler : ScaleDeviceHandler() {
         writeTo(service, writeCharacteristic, stopRequest, withResponse = true)
 
         finishJob = scope.launch {
-            // A Keep S3 session can leave several 0x57 ACKs, the 0x58 ACK and both stop
-            // commands queued. The delay gives them time to drain before disconnecting;
-            // the stop command is sent twice so a dropped one is not fatal.
+            // The scale can emit more than 140 measurement events per session and leave a
+            // double-digit ACK backlog when the final record arrives. Allow that backlog, the
+            // 0x58 ACK and both stop commands to drain before disconnecting. The stop command
+            // is sent twice so a dropped one is not fatal.
             delay(DISCONNECT_DELAY_MS)
             requestDisconnect()
         }
@@ -644,23 +682,43 @@ class KeepS3Handler : ScaleDeviceHandler() {
             logI("No previous measurement for user ${user.id}; using all-zero previous record")
             return null
         }
+        val impedanceOhm = previousDeviceImpedance(user.id, previous)
+        if (impedanceOhm == null) {
+            // Reusing impedance/impedanceLow would send a decoded 100/50 kHz band, while the
+            // captured official-app profile uses the distinct impedance from the 0x57 event.
+            logW("No matching Keep S3 protocol impedance; using all-zero previous record")
+            return null
+        }
+        logI("Keep S3 previous record uses matched protocol impedance=${impedanceOhm.roundToInt()}Ω")
         return KeepS3Protocol.PreviousRecord(
             weightKg = previous.weight,
             timestampSeconds = (previous.dateTime?.time ?: 0L) / 1000L,
-            impedanceOhm = previousDeviceImpedance(previous),
+            impedanceOhm = impedanceOhm,
         )
     }
 
-    /**
-     * The vendor/protocol impedance is not stored by openScale, so the previous record reuses
-     * the high-frequency band saved with the last measurement. A Keep S3 also accepts an
-     * all-zero previous record, so a missing value is not fatal.
-     */
-    private fun previousDeviceImpedance(previous: ScaleMeasurement): Double {
-        if (previous.impedance.isFinite() && previous.impedance > 0.0) {
-            return previous.impedance
+    private fun rememberDeviceImpedance(
+        userId: Int,
+        measurement: ScaleMeasurement,
+        deviceImpedanceOhm: Int,
+    ) {
+        val timestampSeconds = measurement.dateTime?.time?.div(1000L) ?: return
+        val encoded = KeepS3Protocol.serializeDeviceImpedance(
+            timestampSeconds = timestampSeconds,
+            weightKg = measurement.weight,
+            impedanceOhm = deviceImpedanceOhm,
+        ) ?: return
+        settingsPutString(KeepS3Protocol.deviceImpedanceSettingKey(userId), encoded)
+    }
+
+    private fun previousDeviceImpedance(userId: Int, previous: ScaleMeasurement): Double? {
+        val timestampSeconds = previous.dateTime?.time?.div(1000L) ?: return null
+        val stored = KeepS3Protocol.parseDeviceImpedance(
+            settingsGetString(KeepS3Protocol.deviceImpedanceSettingKey(userId)),
+        ) ?: return null
+        return stored.impedanceOhm.toDouble().takeIf {
+            KeepS3Protocol.deviceImpedanceMatches(stored, timestampSeconds, previous.weight)
         }
-        return 0.0
     }
 
     private fun buildProfilePayload(user: ScaleUser): ByteArray {
@@ -724,7 +782,7 @@ class KeepS3Handler : ScaleDeviceHandler() {
     companion object {
         private const val DEVICE_NAME = "Keep_S3"
         private const val FINAL_RECORD_WAIT_MS = 2_000L
-        private const val DISCONNECT_DELAY_MS = 800L
+        private const val DISCONNECT_DELAY_MS = 6_000L
 
         private val DEVICE_SUPPORT = DeviceSupport(
             displayName = "Keep S3",
