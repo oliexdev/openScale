@@ -61,6 +61,7 @@ import com.health.openscale.core.bluetooth.scales.QNHandlerBroadcast
 import com.health.openscale.core.bluetooth.scales.RealmeSmartScaleHandler
 import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
 import com.health.openscale.core.bluetooth.scales.RenphoHandler
+import com.health.openscale.core.bluetooth.scales.RelaxmedicHandler
 import com.health.openscale.core.bluetooth.scales.RobiS9Handler
 import com.health.openscale.core.bluetooth.scales.RunstarR5Handler
 import com.health.openscale.core.bluetooth.scales.RunstarR6Handler
@@ -136,6 +137,7 @@ class ScaleFactory @Inject constructor(
         MiScaleHandler(),
         RunstarR6Handler(),
         RunstarR5Handler(),
+        RelaxmedicHandler(),
         RobiS9Handler(),
         VitafitVT701Handler(),
         EEBBLHandler(),
