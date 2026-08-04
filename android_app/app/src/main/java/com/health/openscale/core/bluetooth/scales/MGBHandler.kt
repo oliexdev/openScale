@@ -145,7 +145,22 @@ class MGBHandler : ScaleDeviceHandler() {
         if (characteristic != CHAR_CTRL) return
         when (data.size) {
             20 -> onCompositeFrame(data)
-            8 -> onStreamingFrame(data, user)
+            8 -> {
+                if (streamingPublished) return
+
+                parseFinalWeightRaw(data)?.let { raw ->
+                    streamingWeightRaw = raw
+                    logD("streaming final weight raw=$raw")
+                    tryPublishStreaming(user)
+                    return
+                }
+
+                parseImpedanceOhm(data)?.let { ohm ->
+                    streamingImpedanceOhm = ohm
+                    logD("streaming impedance=$ohm Ω")
+                    tryPublishStreaming(user)
+                }
+            }
             else -> return
         }
     }
@@ -176,23 +191,6 @@ class MGBHandler : ScaleDeviceHandler() {
     }
 
     // -- Streaming (8-byte) variant, e.g. Dr Trust Smart 505 --
-
-    private fun onStreamingFrame(data: ByteArray, user: ScaleUser) {
-        if (streamingPublished) return
-
-        parseFinalWeightRaw(data)?.let { raw ->
-            streamingWeightRaw = raw
-            logD("streaming final weight raw=$raw")
-            tryPublishStreaming(user)
-            return
-        }
-
-        parseImpedanceOhm(data)?.let { ohm ->
-            streamingImpedanceOhm = ohm
-            logD("streaming impedance=$ohm Ω")
-            tryPublishStreaming(user)
-        }
-    }
 
     private fun tryPublishStreaming(user: ScaleUser) {
         if (streamingPublished) return
