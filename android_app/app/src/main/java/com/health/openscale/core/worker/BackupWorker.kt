@@ -23,6 +23,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.health.openscale.core.data.AutoBackupError
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.utils.LogManager
@@ -66,7 +67,7 @@ class BackupWorker @AssistedInject constructor(
 
         if (parentDocumentFile == null || !parentDocumentFile.canWrite()) {
             LogManager.e(TAG, "Cannot write to backup location: $locationUriString. Permissions might be lost or URI invalid.")
-            settingsFacade.setAutoBackupLastSuccessfulTimestamp(0L)
+            settingsFacade.setAutoBackupLastError(AutoBackupError.LOCATION_INACCESSIBLE)
             return Result.failure()
         }
 
@@ -83,6 +84,7 @@ class BackupWorker @AssistedInject constructor(
                 } else {
                     if (!backupDocumentFile.delete()) {
                         LogManager.e(TAG, "Could not delete existing file $finalFileName for overwrite.")
+                        settingsFacade.setAutoBackupLastError(AutoBackupError.FILE_CREATION_FAILED)
                         return Result.failure()
                     }
                     backupDocumentFile = null
@@ -95,13 +97,18 @@ class BackupWorker @AssistedInject constructor(
 
             if (backupDocumentFile == null) {
                 LogManager.e(TAG, "Could not create backup file: $finalFileName in $locationUriString")
+                settingsFacade.setAutoBackupLastError(AutoBackupError.FILE_CREATION_FAILED)
                 return Result.failure()
             }
 
             applicationContext.contentResolver.openOutputStream(backupDocumentFile.uri)?.use { outputStream ->
                 ZipOutputStream(outputStream).use { zipOutputStream ->
                     val dbFile = applicationContext.getDatabasePath(dbName)
-                    val dbDir = dbFile.parentFile ?: return Result.failure()
+                    val dbDir = dbFile.parentFile ?: run {
+                        LogManager.e(TAG, "Database directory not resolvable for $dbName")
+                        settingsFacade.setAutoBackupLastError(AutoBackupError.WRITE_FAILED)
+                        return Result.failure()
+                    }
 
                     val filesToBackup = listOfNotNull(
                         dbFile,
@@ -120,15 +127,20 @@ class BackupWorker @AssistedInject constructor(
                         }
                     }
                 }
-            } ?: return Result.failure()
+            } ?: run {
+                LogManager.e(TAG, "Could not open output stream for ${backupDocumentFile.uri}")
+                settingsFacade.setAutoBackupLastError(AutoBackupError.WRITE_FAILED)
+                return Result.failure()
+            }
 
             LogManager.i(TAG, "Automatic backup successful to: ${backupDocumentFile.uri}")
             settingsFacade.setAutoBackupLastSuccessfulTimestamp(System.currentTimeMillis())
+            settingsFacade.setAutoBackupLastError(null)
             return Result.success()
 
         } catch (e: Exception) {
             LogManager.e(TAG, "Error during automatic backup", e)
-            settingsFacade.setAutoBackupLastSuccessfulTimestamp(0L)
+            settingsFacade.setAutoBackupLastError(AutoBackupError.WRITE_FAILED)
             return Result.failure()
         }
     }

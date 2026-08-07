@@ -24,6 +24,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.health.openscale.R
+import com.health.openscale.core.data.AutoBackupError
 import com.health.openscale.core.data.BackupInterval
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.User
@@ -211,6 +212,18 @@ class SettingsViewModel @Inject constructor(
 
     val autoBackupLastSuccessfulTimestamp =
         dataManagementFacade.autoBackupLastSuccessTimestamp.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0L)
+
+    val autoBackupLastError: StateFlow<AutoBackupError?> =
+        dataManagementFacade.autoBackupLastError.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    val autoBackupLastErrorTimestamp =
+        dataManagementFacade.autoBackupLastErrorTimestamp.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0L)
+
+    /** When the next automatic backup is due, or null if none is queued. */
+    val autoBackupNextRunAtMillis: StateFlow<Long?> =
+        dataManagementFacade.autoBackupNextRunAtMillis.stateIn(
+            viewModelScope, SharingStarted.WhileSubscribed(5_000), null
+        )
 
     fun setAutoBackupEnabled(enabled: Boolean) {
         viewModelScope.launch { dataManagementFacade.setAutoBackupEnabled(enabled) }
