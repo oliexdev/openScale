@@ -10,7 +10,6 @@
     <string name="placeholder_empty_value">-</string>
     <string name="theme_light">हल्का</string>
     <string name="theme_dark">गहरा</string>
-
     <!-- Generic UI Elements & Actions -->
     <string name="enable_button">सक्षम करें</string>
     <string name="cancel_button">रद्द करें</string>
@@ -29,17 +28,14 @@
     <string name="content_desc_selected">चयनित</string>
     <string name="derived_backfill_start">गणना की जा रही है …</string>
     <string name="derived_backfill_done">मूल्य सफलतापूर्वक अपडेट किए गए।</string>
-
     <!-- Generic error messages -->
     <string name="error_generic">त्रुटि हुई है।</string>
     <string name="error_loading_data">डेटा लोड करने में विफल।</string>
     <string name="error_try_again">कृपया पुनः प्रयास करें।</string>
-
     <!-- No data available messages -->
     <string name="no_data_available">कोई डेटा उपलब्ध नहीं है।</string>
     <string name="no_measurements_found">कोई माप नहीं मिला।</string>
     <string name="no_entries_found">कोई प्रविष्टि उपलब्ध नहीं है।</string>
-
     <!-- Route & Screen Titles -->
     <string name="route_title_overview">सिंहावलोकन</string>
     <string name="route_title_graph">चार्ट</string>
@@ -58,7 +54,6 @@
     <string name="user_detail_edit_user_title">उपयोगकर्ता संपादित करें</string>
     <string name="user_detail_add_user_title">उपयोगकर्ता जोड़ें</string>
     <string name="user_settings_title">उपयोगकर्ता</string>
-
     <!-- User Management & Details -->
     <string name="manage_users">उपयोगकर्ता प्रबंधन</string>
     <string name="content_desc_switch_user">उपयोगकर्ता बदलें। चयनित: %1$s</string>
@@ -105,13 +100,16 @@
     <string name="user_settings_content_description_delete">उपयोगकर्ता हटाएं</string>
     <string name="user_settings_content_description_add_user">नया उपयोगकर्ता जोड़ें</string>
     <string name="user_detail_content_description_change_unit">इकाई (यूनिट) बदलें</string>
-
-  <!-- Measurement CRUD & Operations -->
-    <string name="success_measurement_updated">माप अपडेट किया गया (%1$s)</string> <!-- %1$s is date/time -->
-    <string name="success_measurement_saved">माप सुरक्षित किया गया (%1$s)</string> <!-- %1$s is date/time -->
+    <!-- Measurement CRUD & Operations -->
+    <string name="success_measurement_updated">माप अपडेट किया गया (%1$s)</string>
+    <!-- %1$s is date/time -->
+    <string name="success_measurement_saved">माप सुरक्षित किया गया (%1$s)</string>
+    <!-- %1$s is date/time -->
     <string name="error_saving_measurement">माप सुरक्षित नहीं किया जा सका। कृपया पुनः प्रयास करें।</string>
-    <string name="error_duplicate_timestamp">सुरक्षित नहीं किया गया — %1$s पर एक माप पहले से मौजूद है।</string> <!-- %1$s is date/time -->
-    <string name="success_measurement_deleted">माप हटा दिया गया (%1$s)</string> <!-- %1$s is date/time -->
+    <string name="error_duplicate_timestamp">सुरक्षित नहीं किया गया — %1$s पर एक माप पहले से मौजूद है।</string>
+    <!-- %1$s is date/time -->
+    <string name="success_measurement_deleted">माप हटा दिया गया (%1$s)</string>
+    <!-- %1$s is date/time -->
     <string name="error_deleting_measurement">माप हटाया नहीं जा सका। कृपया पुनः प्रयास करें।</string>
     <string name="action_undo">पूर्ववत करें (अंडू)</string>
     <string name="cd_chart_handle_resize">चार्ट का आकार बदलने के लिए ड्रैग करें, या इसे छोटा करने के लिए टैप करें</string>
@@ -123,20 +121,20 @@
     <string name="action_save_measurement">माप सुरक्षित करें</string>
     <string name="action_add_measurement">माप जोड़ें</string>
     <string name="action_add_measurement_desc">नया माप जोड़ें</string>
-    <string name="action_edit_measurement_desc">%1$s से माप संपादित करें</string> <!-- %1$s is date -->
-    <string name="action_delete_measurement_desc">%1$s से माप हटाएं</string> <!-- %1$s is date -->
+    <string name="action_edit_measurement_desc">%1$s से माप संपादित करें</string>
+    <!-- %1$s is date -->
+    <string name="action_delete_measurement_desc">%1$s से माप हटाएं</string>
+    <!-- %1$s is date -->
     <string name="toast_duplicate_timestamp">यह समय-मुहर (टाइमस्टैम्प) आपके पिछले माप से मेल खाती है। कृपया दूसरा समय चुनें।</string>
     <string name="no_measurements_title">अभी तक कोई माप नहीं है</string>
     <string name="no_measurements_message">अपनी प्रगति को ट्रैक करना शुरू करने के लिए अपना पहला माप जोड़ें।</string>
     <string name="no_active_values_for_measurement">इस प्रविष्टि के लिए कोई सक्रिय माप मूल्य नहीं है।</string>
-
     <!-- Measurement Input & Validation Toasts -->
     <string name="toast_invalid_number_format">%1$s के लिए अमान्य संख्या: \'%2$s\'</string>
     <string name="toast_invalid_integer_format">%1$s के लिए अमान्य पूर्णांक (इंटीजर): \'%2$s\'</string>
     <string name="toast_invalid_number_format_short">%1$s के लिए अमान्य संख्या</string>
     <string name="toast_invalid_integer_format_short">%1$s के लिए अमान्य पूर्णांक (इंटीजर)</string>
     <string name="toast_enter_valid_data">कृपया मान्य डेटा दर्ज करें।</string>
-
     <!-- Dialogs (General & Measurement Edit) -->
     <string name="dialog_title_edit_value">%1$s संपादित करें</string>
     <string name="dialog_title_change_value">%1$s बदलें</string>
@@ -146,11 +144,9 @@
     <string name="dialog_title_input_text">इनपुट टेक्स्ट</string>
     <string name="dialog_title_hour">घंटा</string>
     <string name="dialog_title_minute">मिनट</string>
-
     <string name="label_date">दिनांक</string>
     <string name="label_time">समय</string>
-
-  <!-- Content Descriptions for Editing & Trends -->
+    <!-- Content Descriptions for Editing & Trends -->
     <string name="content_desc_increase_value">%1$s बढ़ाएं</string>
     <string name="content_desc_decrease_value">%1$s घटाएं</string>
     <string name="content_desc_edit_value">%1$s संपादित करें</string>
@@ -159,7 +155,6 @@
     <string name="trend_increased_desc">मूल्य में वृद्धि हुई</string>
     <string name="trend_decreased_desc">मूल्य में कमी हुई</string>
     <string name="trend_stable_desc">मूल्य स्थिर है या कोई बदलाव नहीं</string>
-
     <!-- Measurement Types -->
     <string name="measurement_type_icon_desc">%1$s का आइकन</string>
     <string name="measurement_type_icon_unknown_desc">अज्ञात माप प्रकार का आइकन: %1$s</string>
@@ -205,8 +200,7 @@
     <string name="measurement_type_time">समय</string>
     <string name="measurement_type_user">उपयोगकर्ता</string>
     <string name="measurement_type_custom_default_name">कस्टम प्रकार</string>
-
-  <!-- Measurement Type Settings -->
+    <!-- Measurement Type Settings -->
     <string name="measurement_type_label_enabled">सक्षम (इनेबल्ड)</string>
     <string name="measurement_type_label_name">नाम</string>
     <string name="measurement_type_label_color">रंग</string>
@@ -245,13 +239,12 @@
     <string name="measurement_type_updated_unit_changed_no_values_converted">प्रकार \'%1$s\' अपडेट किया गया। इकाई बदली गई, लेकिन किसी भी मौजूदा मूल्य को परिवर्तित करने की आवश्यकता नहीं पड़ी।</string>
     <string name="measurement_type_dialog_confirm_unit_change_title">इकाई परिवर्तन की पुष्टि करें</string>
     <string name="measurement_type_dialog_confirm_unit_change_message">\'%1$s\' के लिए इकाई को %2$s से %3$s में बदलने से सभी मौजूदा डेटा पॉइंट परिवर्तित हो जाएंगे। इस प्रक्रिया में कुछ समय लग सकता है और इसे आसानी से वापस नहीं बदला जा सकता। क्या आप आगे बढ़ना चाहते हैं?</string>
-
     <string name="formula_label_body_fat">बॉडी फैट फॉर्मूला</string>
     <string name="formula_label_body_water">बॉडी वॉटर फॉर्मूला</string>
     <string name="formula_label_lbm">लीन बॉडी मास फॉर्मूला</string>
     <string name="formula_warning_title">फॉर्मूला गणना</string>
     <string name="formula_warning_message">यह मीट्रिक केवल पढ़ने योग्य (रीड-ओनली) हो जाती है और स्वचालित रूप से इसकी गणना की जाती है। मूल मूल्यों में बदलाव होने पर यह अपडेट हो जाती है। यह नियम केवल नए या संपादित मापों पर लागू होता है; मौजूदा माप अपरिवर्तित रहेंगे।</string>
-  <string name="formula_off">बंद</string>
+    <string name="formula_off">बंद</string>
     <string name="formula_bf_deurenberg_1991">Deurenberg (1991)</string>
     <string name="formula_bf_deurenberg_1992">Deurenberg (1992)</string>
     <string name="formula_bf_eddy_1976">Eddy et al. (1976)</string>
@@ -265,7 +258,6 @@
     <string name="formula_lbm_hume_1966">Hume (1966)</string>
     <string name="formula_lbm_weight_minus_body_fat">वजन − बॉडी फैट</string>
     <string name="formula_bf_us_navy">U.S. Navy</string>
-
     <string name="formula_desc_off_short">कोई स्वचालित गणना नहीं</string>
     <string name="formula_desc_off_long">यह मीट्रिक स्वचालित रूप से परिकलित नहीं होती है। आप मान (वैल्यू) मैन्युअल रूप से दर्ज कर सकते हैं।</string>
     <string name="bf_deurenberg_1991_short">वयस्कों के लिए क्लासिक रीग्रेशन</string>
@@ -294,7 +286,6 @@
     <string name="lbm_weight_minus_bf_long">यह चुने गए बॉडी-फैट फॉर्मूले से प्राप्त वसा द्रव्यमान (फैट मास) को कुल वजन में से घटाकर LBM की गणना करता है। इसकी सटीकता बॉडी फैट (BF) के अनुमान पर निर्भर करती है।</string>
     <string name="bf_us_navy_short">U.S. Navy विधि</string>
     <string name="bf_us_navy_long">U.S. Navy मानक के अनुसार कमर, गर्दन और (महिलाओं के लिए) कूल्हों की परिधि के आधार पर शरीर की वसा प्रतिशत (बॉडी फैट परसेंटेज) की गणना करता है।</string>
-
     <string name="batch_update_status_report">%1$d: %2$s</string>
     <string name="dialog_title_confirm_generic">%1$s की पुष्टि करें?</string>
     <string name="dialog_text_confirm_generic_verb">क्या आप निश्चित रूप से %2$s को %1$d आइटम पर लागू करना चाहते हैं?</string>
@@ -310,8 +301,7 @@
     <string name="status_disabled">अक्षम किया गया</string>
     <string name="status_axis_right">दाएं अक्ष पर स्थानांतरित किया गया</string>
     <string name="status_axis_left">बाएं अक्ष पर स्थानांतरित किया गया</string>
-
-  <!-- Bluetooth -->
+    <!-- Bluetooth -->
     <string name="info_bluetooth_connection_error_scale_offline">स्केल से कनेक्ट नहीं किया जा सका, कृपया सुनिश्चित करें कि यह चालू है।</string>
     <string name="fallback_device_name_saved_scale">सुरक्षित किया गया स्केल</string>
     <string name="bluetooth_action_connecting_disconnecting_desc">ब्लूटूथ प्रोसेसिंग चल रही है</string>
@@ -365,10 +355,8 @@
     <string name="cap_battery">बैटरी</string>
     <string name="cap_state_implemented">लागू किया गया (इम्प्लीमेंटेड): %1$s</string>
     <string name="cap_state_supported_only">समर्थित (लागू नहीं): %1$s</string>
-    <string name="more_options_cd">अधिक विकल्प</string> 
-
-
-  <!-- Bluetooth Detail Screen -->
+    <string name="more_options_cd">अधिक विकल्प</string>
+    <!-- Bluetooth Detail Screen -->
     <string name="title_device_settings_for">"%1$s सेटिंग्स"</string>
     <string name="bluetooth_tuning_title">ब्लूटूथ ट्यूनिंग</string>
     <string name="tuning_profile_label">ट्यूनिंग प्रोफ़ाइल</string>
@@ -389,18 +377,15 @@
     <string name="developer_section_title">डेवलपर</string>
     <string name="danger_zone_title">खतरे का क्षेत्र (डेंजर ज़ोन)</string>
     <string name="auto_connect_on_startup_title">स्टार्टअप पर ऑटो-कनेक्ट करें</string>
-
     <!-- Scale Configuration (generic, shown when a handler declares config fields) -->
     <string name="scale_configuration_title">स्केल कॉन्फ़िगरेशन</string>
     <string name="no_special_configuration_available">इस डिवाइस के लिए कोई अतिरिक्त विशेष कॉन्फ़िगरेशन उपलब्ध नहीं है।</string>
-
     <!-- S400 Scale Configuration -->
     <string name="s400_bind_key_label">BLE बाइंड की (Bind Key)</string>
     <string name="s400_bind_key_placeholder">32-अक्षर की हेक्स की (Hex key)</string>
     <string name="s400_bind_key_description">Xiaomi S400 स्केल को डिक्रिप्शन के लिए एक BLE बाइंड की की आवश्यकता होती है। Xiaomi Cloud Tokens Extractor टूल का उपयोग करके इस की (key) को Xiaomi Cloud से निकालें।</string>
     <string name="s400_bind_key_error">बाइंड की (key) ठीक 32 हेक्स अक्षरों की होनी चाहिए</string>
     <string name="bt_s400_missing_bind_key">S400: बाइंड की (key) कॉन्फ़िगर नहीं है। अपनी BLE की दर्ज करने के लिए ब्लूटूथ सेटिंग्स में जाएं।</string>
-
     <!-- Bluetooth Connector -->
     <string name="bluetooth_connector_connected_to">%1$s से कनेक्टेड</string>
     <string name="bluetooth_connector_connection_failed">%1$s से कनेक्शन विफल रहा: %2$s</string>
@@ -415,7 +400,6 @@
     <string name="bluetooth_connector_device_message">%1$s: %2$s</string>
     <string name="bluetooth_connector_listening_for_device">%1$s की प्रतीक्षा की जा रही है (लिसनिंग)…</string>
     <string name="bluetooth_connector_broadcast_complete">%1$s से माप प्राप्त हुआ।</string>
-
     <!-- Bluetooth Permissions & Enable Cards -->
     <string name="permissions_required_icon_desc">अनुमतियाँ आवश्यक आइकन</string>
     <string name="permissions_required_title">अनुमतियाँ आवश्यक हैं</string>
@@ -430,8 +414,7 @@
     <string name="bluetooth_compatibility_disclaimer">openScale एक ओपन-सोर्स प्रोजेक्ट है, और हर एक स्केल मेरे पास उपलब्ध नहीं है। कृपया ध्यान दें कि सभी मामलों में अनुकूलता (कंपैटिबिलिटी) की गारंटी नहीं दी जा सकती है, क्योंकि ब्लूटूथ प्रोटोकॉल बदल सकते हैं या वे अनडॉक्यूमेंटेड हो सकते हैं।\n\nएक ओपन-सोर्स प्रोजेक्ट के रूप में, स्केल सपोर्ट को बेहतर बनाने के लिए पुल रिक्वेस्ट (PR) और योगदान का दिल से स्वागत है!</string>
     <string name="compatibility_dialog_confirm_button">स्वीकार करें और सुरक्षित करें</string>
     <string name="go_to_project_website_button">प्रोजेक्ट वेबसाइट पर जाएं</string>
-
-     <!-- LegacyScaleAdapter (Bluetooth Driver) -->
+    <!-- LegacyScaleAdapter (Bluetooth Driver) -->
     <string name="legacy_adapter_event_initializing">प्रारंभिकरण प्रक्रिया (इनिशियलाइजेशन)…</string>
     <string name="legacy_adapter_event_connection_lost">कनेक्शन टूट गया</string>
     <string name="legacy_adapter_event_connection_disconnected">कनेक्शन डिस्कनेक्ट हो गया</string>
@@ -451,7 +434,6 @@
     <string name="legacy_adapter_event_invalid_consent_data">त्रुटि: सहमति के लिए अमान्य डेटा प्राप्त हुआ।</string>
     <string name="legacy_adapter_event_missing_consent_data">त्रुटि: सहमति के लिए आवश्यक डेटा अनुपलब्ध है।</string>
     <string name="legacy_adapter_event_invalid_interaction_payload">त्रुटि: उपयोगकर्ता सहभागिता के लिए अमान्य डेटा पेलोड प्राप्त हुआ।</string>
-
     <!-- Charts (LineChart) -->
     <string name="content_description_time_range_icon">समय सीमा (टाइम रेंज) आइकन</string>
     <string name="content_description_filter_chart_data">चार्ट डेटा फ़िल्टर करें</string>
@@ -481,9 +463,7 @@
     <string name="line_chart_no_data_or_types_to_select">प्रदर्शित करने के लिए कोई डेटा नहीं है या चुनने के लिए प्रकार उपलब्ध नहीं हैं।</string>
     <string name="line_chart_no_data_for_selected_types">चयनित प्रकारों के लिए कोई डेटा उपलब्ध नहीं है।</string>
     <string name="menu_item_measurement_filter">माप फ़िल्टर दिखाएं/छिपाएं</string>
-
-
-  <!-- Table Screen -->
+    <!-- Table Screen -->
     <string name="table_header_date">दिनांक</string>
     <string name="table_message_no_columns_or_measurements">कोई कॉलम नहीं चुना गया या कोई माप उपलब्ध नहीं है।</string>
     <string name="table_message_no_columns_selected">दिखाने के लिए कोई कॉलम नहीं चुना गया।</string>
@@ -513,7 +493,6 @@
     <string name="snackbar_no_other_users_to_change_to">बदलने के लिए कोई अन्य उपयोगकर्ता उपलब्ध नहीं है।</string>
     <string name="snackbar_items_user_changed_successfully">%1$d माप स्थानांतरित (move) किए गए</string>
     <string name="snackbar_items_move_partial_failure">%2$d में से %1$d माप स्थानांतरित नहीं किए जा सके (उस उपयोगकर्ता के लिए पहले से मौजूद हैं)।</string>
-
     <!-- Insights Screen -->
     <string name="insights_confidence_low">सीमित डेटा</string>
     <string name="insights_section_measurement_analysis">आपका %1$s विश्लेषण</string>
@@ -576,7 +555,6 @@
     <string name="insights_chip_plateau_days">प्लेटो %1$d दिन</string>
     <string name="insights_short_term_trend">अल्पकालिक</string>
     <string name="insights_long_term_trend">दीर्घकालिक</string>
-
     <!-- Statistics Screen -->
     <string name="statistics_no_relevant_types">सांख्यिकी (statistics) के लिए कोई प्रासंगिक माप प्रकार उपलब्ध या कॉन्फ़िगर नहीं किया गया है।</string>
     <string name="statistics_label_min">न्यूनतम</string>
@@ -585,7 +563,6 @@
     <string name="statistics_content_desc_increase">बढ़ोतरी</string>
     <string name="statistics_content_desc_decrease">कमी</string>
     <string name="statistics_content_desc_no_change">कोई बदलाव नहीं</string>
-
     <!-- Settings Screen & Sub-screens -->
     <string name="settings_item_general">सामान्य</string>
     <string name="settings_item_user">उपयोगकर्ता</string>
@@ -594,8 +571,7 @@
     <string name="settings_item_chart">चार्ट (Chart)</string>
     <string name="settings_item_data_management">डेटा प्रबंधन</string>
     <string name="settings_item_about">ऐप के बारे में</string>
-
-  <!-- General Settings Screen -->
+    <!-- General Settings Screen -->
     <string name="settings_general_title">सामान्य सेटिंग्स</string>
     <string name="settings_language_label">भाषा</string>
     <string name="settings_reminder_title">रिमाइंडर (Reminder)</string>
@@ -613,7 +589,6 @@
     <string name="settings_appearance_title">रंग-रूप (Appearance)</string>
     <string name="settings_dynamic_color_label">डायनेमिक रंग (Dynamic colors)</string>
     <string name="settings_high_contrast_label">हाई कॉन्ट्रास्ट</string>
-
     <string name="monday_short">सोम</string>
     <string name="tuesday_short">मंगल</string>
     <string name="wednesday_short">बुध</string>
@@ -622,12 +597,10 @@
     <string name="saturday_short">शनि</string>
     <string name="sunday_short">रवि</string>
     <string name="all">सभी</string>
-
     <string name="settings_feedback_title">फीडबैक और रिस्पॉन्स</string>
     <string name="settings_haptics_label">नए माप पर वाइब्रेशन</string>
     <string name="settings_haptics_enabled_snackbar">माप पर वाइब्रेशन चालू किया गया</string>
     <string name="settings_haptics_disabled_snackbar">माप पर वाइब्रेशन बंद किया गया</string>
-
     <!-- Chart Settings Screen -->
     <string name="setting_show_chart_points">डेटा पॉइंट्स दिखाएं</string>
     <string name="setting_show_chart_goal_lines">लक्ष्य रेखाएं दिखाएं</string>
@@ -645,8 +618,7 @@
     <string name="poly_degree_linear">रैखिक</string>
     <string name="poly_degree_quadratic">द्विघात</string>
     <string name="poly_degree_cubic">त्रिघात</string>
-   
-   <!-- About Screen & Diagnostics -->
+    <!-- About Screen & Diagnostics -->
     <string name="version_info">वर्शन: %1$s (%2$s)</string>
     <string name="project_information_title">परियोजना की जानकारी (Project Info)</string>
     <string name="maintainer_label">मेंटेनर (मुरम्मतकर्ता)</string>
@@ -671,8 +643,7 @@
     <string name="log_export_cancelled">एक्सपोर्ट रद्द कर दिया गया।</string>
     <string name="log_export_no_app_error">फ़ाइल एक्सपोर्ट करने के लिए कोई उपयुक्त ऐप नहीं मिला।</string>
     <string name="export_log_file_button">लॉग फ़ाइल एक्सपोर्ट करें</string>
-    
- <!-- Developer Tools -->
+    <!-- Developer Tools -->
     <string name="dev_tools_title">डेवलपर टूल्स (Developer Tools)</string>
     <string name="dev_tools_scenario_label">परिदृश्य (Scenario)</string>
     <string name="dev_tools_time_range_label">समय सीमा (Time Range)</string>
@@ -701,8 +672,7 @@
     <string name="dev_tools_scenario_weekday_habits">साप्ताहिक आदतें (दैनिक क्रम)</string>
     <string name="dev_tools_scenario_sparse_metrics">सीमित मेट्रिक्स (केवल वजन)</string>
     <string name="dev_tools_scenario_with_gaps">अंतरालों के साथ (30 दिन+ का ब्रेक)</string>
-
-  <!-- Data Management (Export, Import, Backup, Restore, Delete) -->
+    <!-- Data Management (Export, Import, Backup, Restore, Delete) -->
     <string name="settings_export_measurements_csv">माप एक्सपोर्ट करें (CSV)</string>
     <string name="settings_import_measurements_csv">माप इम्पोर्ट करें (CSV)</string>
     <string name="settings_backup_database">डेटाबेस का बैकअप लें</string>
@@ -748,8 +718,7 @@
     <string name="interval_daily">दैनिक (Daily)</string>
     <string name="interval_weekly">साप्ताहिक (Weekly)</string>
     <string name="interval_monthly">मासिक (Monthly)</string>
-
-  <!-- Data Management Dialog Titles -->
+    <!-- Data Management Dialog Titles -->
     <string name="dialog_title_export_select_user">एक्सपोर्ट: उपयोगकर्ता चुनें</string>
     <string name="dialog_title_import_select_user">इम्पोर्ट: उपयोगकर्ता चुनें</string>
     <string name="dialog_title_delete_select_user">हटाएं: उपयोगकर्ता चुनें</string>
@@ -757,7 +726,6 @@
     <string name="dialog_title_delete_entire_database_confirmation">ध्यान दें! पूरा डेटाबेस हटाएं?</string>
     <string name="dialog_title_restore_database_confirmation">डेटाबेस रीस्टोर करें?</string>
     <string name="delete_db_confirmation_title">डेटाबेस हटाने की पुष्टि करें</string>
-
     <!-- Data Management Dialog Messages & Buttons -->
     <string name="dialog_message_delete_user_data_confirmation">क्या आप निश्चित रूप से उपयोगकर्ता \"%1$s\" का सभी माप डेटा स्थायी रूप से हटाना चाहते हैं? इस कार्रवाई को पूर्ववत नहीं किया जा सकता।</string>
     <string name="button_yes_delete_all">हाँ, सभी हटाएं</string>
@@ -765,7 +733,6 @@
     <string name="dialog_message_restore_database_confirmation">क्या आप निश्चित रूप से बैकअप फ़ाइल से वर्तमान डेटाबेस को बदलना (overwrite) चाहते हैं? वर्तमान का सारा असुरक्षित (unsaved) डेटा नष्ट हो जाएगा। रीस्टोर के बाद ऐप को रीस्टार्ट करने की आवश्यकता हो सकती है।</string>
     <string name="button_yes_restore">हाँ, रीस्टोर करें</string>
     <string name="delete_db_confirmation_message">क्या आप निश्चित रूप से पूरा डेटाबेस हटाना चाहते हैं? इससे सभी उपयोगकर्ता और सारा डेटा हटा दिया जाएगा और इसे वापस नहीं लाया जा सकता।</string>
-
     <!-- Data Export Messages -->
     <string name="export_successful">डेटा सफलतापूर्वक एक्सपोर्ट किया गया।</string>
     <string name="export_error_no_specific_fields">एक्सपोर्ट संभव नहीं है: एक्सपोर्ट के लिए कोई विशिष्ट डेटा फ़ील्ड परिभाषित नहीं है।</string>
@@ -774,7 +741,6 @@
     <string name="export_error_cannot_create_file">एक्सपोर्ट विफल रहा: फ़ाइल नहीं बनाई जा सकी।</string>
     <string name="export_error_generic">एक्सपोर्ट के दौरान त्रुटि हुई: %1$s</string>
     <string name="export_no_users_available">एक्सपोर्ट करने के लिए कोई उपयोगकर्ता उपलब्ध नहीं है।</string>
-
     <!-- Data Import Messages -->
     <string name="import_successful_records">"%1$d माप रिकॉर्ड सफलतापूर्वक इम्पोर्ट किए गए।"</string>
     <string name="import_successful_records_with_details">%1$d रिकॉर्ड सफलतापूर्वक इम्पोर्ट किए गए %2$s।</string>
@@ -788,36 +754,30 @@
     <string name="import_error_cannot_read_file">इम्पोर्ट विफल रहा: फ़ाइल को पढ़ा नहीं जा सका।</string>
     <string name="import_error_generic">इम्पोर्ट के दौरान त्रुटि हुई: %1$s</string>
     <string name="import_no_users_available">इम्पोर्ट करने के लिए कोई उपयोगकर्ता उपलब्ध नहीं है।</string>
-
-  <!-- Data Deletion Messages (User Specific) -->
+    <!-- Data Deletion Messages (User Specific) -->
     <string name="delete_data_no_users_available">हटाने के लिए कोई उपयोगकर्ता डेटा उपलब्ध नहीं है।</string>
     <string name="delete_data_user_successful">%1$s का सारा मापन डेटा हटा दिया गया है।</string>
     <string name="delete_data_user_no_data_found">%1$s के लिए कोई मापन डेटा नहीं मिला।</string>
     <string name="delete_data_user_error">%1$s का डेटा हटाने में त्रुटि हुई।</string>
     <string name="delete_data_error_no_user_selected">डेटा हटाने की प्रक्रिया शुरू नहीं की जा सकी: कोई उपयोगकर्ता नहीं चुना गया।</string>
-
     <!-- Database Backup Messages -->
     <string name="backup_error_db_name_not_retrieved">त्रुटि: डेटाबेस का नाम प्राप्त नहीं किया जा सका।</string>
     <string name="backup_error_main_db_not_found">त्रुटि: मुख्य डेटाबेस फ़ाइल \'%1$s\' नहीं मिली।</string>
     <string name="backup_error_no_output_stream">बैकअप विफल: चयनित स्थान पर बैकअप फ़ाइल नहीं बनाई जा सकी।</string>
     <string name="backup_error_generic">डेटाबेस बैकअप के दौरान त्रुटि: %1$s</string>
     <string name="backup_successful">डेटाबेस का बैकअप सफलतापूर्वक ले लिया गया है।</string>
-
     <!-- Database Restore Messages -->
     <string name="restore_error_no_input_stream">रिस्टोर विफल: बैकअप फ़ाइल को पढ़ा नहीं जा सका।</string>
     <string name="restore_error_zip_format">रिस्टोर विफल: बैकअप फ़ाइल वैध ZIP आर्काइव नहीं है या दूषित (corrupted) है।</string>
     <string name="restore_error_db_files_missing">रिस्टोर विफल: बैकअप में आवश्यक डेटाबेस फ़ाइलें नहीं मिलीं।</string>
     <string name="restore_error_generic">डेटाबेस रिस्टोर के दौरान त्रुटि: %1$s</string>
     <string name="restore_successful">डेटाबेस सफलतापूर्वक रिस्टोर हो गया है। कृपया ऐप को रीस्टार्ट करें।</string>
-
     <!-- Entire Database Deletion Messages -->
     <string name="delete_db_successful">संपूर्ण डेटाबेस हटा दिया गया है।</string>
     <string name="delete_db_error">संपूर्ण डेटाबेस हटाने में त्रुटि हुई।</string>
-
     <!-- Evaluation Messages -->
     <string name="eval_no_age_band">मूल्यांकन संभव नहीं: मापन के समय का कोई मिलान खाता आयु वर्ग नहीं मिला।</string>
     <string name="eval_out_of_plausible_range_percent">असामान्य मान: संभावित सीमा (%1$.0f–%2$.0f%%) से बाहर है।</string>
-
     <!-- Bluetooth Scales Messages -->
     <string name="bluetooth_scale_trisa_message_not_paired_instruction">यह वेइंग स्केल पेयर नहीं है!\n\nपेयरिंग मोड में जाने के लिए स्केल के नीचे दिए गए बटन को दबाकर रखें, और फिर डिवाइस का पासवर्ड प्राप्त करने के लिए दोबारा कनेक्ट करें।</string>
     <string name="bluetooth_scale_trisa_success_pairing">पेयरिंग सफल रही!\n\nमापन डेटा प्राप्त करने के लिए दोबारा कनेक्ट करें।</string>
@@ -826,10 +786,8 @@
     <string name="bluetooth_scale_info_step_on_for_reference">संदर्भ मापन (reference measurements) के लिए कृपया स्केल पर नंगे पैर खड़े हों</string>
     <string name="bluetooth_scale_info_measuring_weight">वजन मापा जा रहा है: %.2f</string>
     <string name="bluetooth_scale_error_max_users_reached">एक साथ स्केल का उपयोग करने वाले उपयोगकर्ताओं की अधिकतम संख्या पूरी हो चुकी है</string>
-
     <string name="permission_read_write_data_description">openScale डेटा को पढ़ना/लिखना, जिसमें उपयोगकर्ता की जानकारी और सभी सहेजे गए मापन शामिल हैं</string>
     <string name="permission_read_write_data_label">openScale डेटा को पढ़ें और लिखें</string>
-
     <string name="dialog_bt_interaction_title_choose_user">स्केल पर उपयोगकर्ता चुनें</string>
     <string name="dialog_bt_interaction_desc_choose_user_default">सूची में से अपना उपयोगकर्ता चुनें या एक नया बनाएं।</string>
     <string name="dialog_bt_icon_desc_choose_user">उपयोगकर्ता चयन</string>
@@ -841,13 +799,10 @@
     <string name="dialog_bt_error_loading_user_list_format">त्रुटि: उपयोगकर्ता डेटा ठीक से लोड नहीं किया जा सका।</string>
     <string name="dialog_bt_select_user_prompt">कृपया एक उपयोगकर्ता चुनें।</string>
     <string name="dialog_bt_enter_valid_code_prompt">कृपया एक वैध कोड दर्ज करें।</string>
-
     <string name="saved_measurements_message">%1$d मापन सहेजे गए</string>
-
     <!-- General info -->
     <string name="bt_info_step_on_scale">कृपया स्केल पर नंगे पैर खड़े हों</string>
-
-  <!-- Mapping / consent flows -->
+    <!-- Mapping / consent flows -->
     <string name="bt_info_using_existing_mapping">मौजूदा मैपिंग का उपयोग किया जा रहा है: ऐप उपयोगकर्ता %1$d ↔ स्केल स्लॉट %2$d।</string>
     <string name="bt_info_consent_needed">कृपया स्लॉट %1$d के लिए सहमति कोड (consent code) दर्ज करें।</string>
     <string name="bt_info_read_only_mode_no_consent">कोई सहमति कोड उपलब्ध नहीं है। मापन को पढ़ा जा सकता है, लेकिन उपयोगकर्ता सेटिंग्स को बदला नहीं जा सकता।</string>
@@ -856,7 +811,6 @@
     <string name="bt_info_no_mapping_creating_user">कोई उपयोगकर्ता मैपिंग नहीं मिली; स्केल पर एक नया उपयोगकर्ता बनाया जा रहा है…</string>
     <string name="bt_info_waiting_for_measurements">नोटिफिकेशन के माध्यम से मापन की प्रतीक्षा की जा रही है।</string>
     <string name="bt_info_linked_app_user_to_slot">ऐप उपयोगकर्ता %1$d को स्केल स्लॉट %2$d से लिंक कर दिया गया है।</string>
-
     <!-- Warnings -->
     <string name="bt_warn_low_battery">स्केल की बैटरी कम है (%1$d%%)।</string>
     <string name="bt_warn_register_failed_with_code">स्केल पर उपयोगकर्ता बनाने में विफलता (कोड %1$d)।</string>
@@ -865,13 +819,11 @@
     <string name="bt_warn_write_failed">%1$s पर लिखने में विफलता।</string>
     <string name="bt_warn_notify_state_failed">%1$s के लिए नोटिफिकेशन स्थिति बदलने में विफलता।</string>
     <string name="bt_warn_consent_wrong_retry">सहमति कोड स्वीकार नहीं किया गया। कृपया जांचें और पुन: प्रयास करें।</string>
-
     <!-- Errors -->
     <string name="bt_error_ucp_not_authorized">सहमति कोड स्वीकार नहीं किया गया। कृपया जांचें और पुन: प्रयास करें।</string>
     <string name="bt_error_delivery_user_feedback">उपयोगकर्ता फीडबैक भेजने में त्रुटि: %1$s</string>
     <string name="bt_info_reconnecting_try">पुनः कनेक्ट किया जा रहा है… (प्रयास %1$d/%2$d)</string>
     <string name="bt_info_waiting_for_measurement">नोटिफिकेशन के माध्यम से मापन की प्रतीक्षा की जा रही है।</string>
-
     <!-- Adapter: warnings/errors -->
     <string name="bt_warn_no_peripheral_for_setnotify">setNotifyOn(%1$s) के लिए कोई पेरिफेरल (peripheral) नहीं मिला</string>
     <string name="bt_warn_characteristic_not_found">विशेषता %1$s नहीं मिली</string>
@@ -879,11 +831,9 @@
     <string name="bt_warn_no_peripheral_for_read">read(%1$s) के लिए कोई पेरिफेरल नहीं मिला</string>
     <string name="bt_warn_write_failed_status">%1$s पर लिखना विफल रहा: %2$s</string>
     <string name="bt_warn_notify_state_failed_status">%1$s के लिए नोटिफिकेशन स्थिति विफल रही: %2$s</string>
-
     <!-- Adapter: generic errors -->
     <string name="bt_error_no_user_selected">कोई उपयोगकर्ता नहीं चुना गया</string>
     <string name="bt_error_generic">त्रुटि</string>
-
     <string name="bt_error_handler_connect_failed">कनेक्ट करने पर हैंडलर विफल रहा: %1$s</string>
     <string name="bt_error_handler_parse_error">%1$s के लिए हैंडलर पार्स त्रुटि: %2$s</string>
     <string name="bt_error_no_bluetooth_adapter">इस डिवाइस पर कोई ब्लूटूथ एडाप्टर नहीं मिला।</string>
@@ -894,12 +844,10 @@
     <string name="bt_error_uds_consent_failed">स्केल पर उपयोगकर्ता की पुष्टि करने में विफलता। त्रुटि: %1$s</string>
     <string name="bt_error_uds_list_users_failed">स्केल से उपयोगकर्ता सूची प्राप्त करने में विफलता। त्रुटि: %1$s</string>
     <string name="bt_error_user_setup_failed_no_list">उपयोगकर्ता सेटअप विफल। स्केल से उपयोगकर्ता सूची प्राप्त नहीं की जा सकी।</string>
-
     <string name="bluetooth_scale_info_create_user_instruction_uds">स्केल पर नया उपयोगकर्ता बनाएं (UDS असाइन किया गया स्लॉट)</string>
     <string name="bt_uds_choice_slot_current_user">स्लॉट P%1$d: %2$s (वर्तमान ऐप उपयोगकर्ता)</string>
     <string name="bt_uds_choice_slot_other_user">स्लॉट P%1$d: %2$s द्वारा उपयोग में (कब्जा लेने के लिए चुनें?)</string>
     <string name="bt_uds_choice_slot_occupied_unmapped">स्लॉट P%1$d: व्यस्त/भरा हुआ (अनमैप किया गया)</string>
-
     <!-- SBF72 Specific (can be in a general BT strings section or specific if needed later) -->
     <!-- These were requested for SanitasSbf72Handler, ensure they are distinct if used by both -->
     <string name="bt_sbf72_choice_slot_current_user">P%1$d: %2$s (वर्तमान)</string>
