@@ -87,7 +87,7 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.lowercase(Locale.ROOT)
-        val nameMatch = name == "ssw532" || name.startsWith("ssw") || name.contains("fg2211")
+        val nameMatch = name.startsWith("ssw532") || name.contains("fg2211")
         val serviceMatch = device.serviceUuids.any { it == SERVICE }
         if (!nameMatch || !serviceMatch) return null
 

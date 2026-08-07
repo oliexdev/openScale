@@ -46,6 +46,7 @@ import com.health.openscale.core.bluetooth.scales.HuaweiCH100SHandler
 import com.health.openscale.core.bluetooth.scales.HuaweiHagridWspHandler
 import com.health.openscale.core.bluetooth.scales.IHealthHS3Handler
 import com.health.openscale.core.bluetooth.scales.InlifeHandler
+import com.health.openscale.core.bluetooth.scales.LenovoHS10Handler
 import com.health.openscale.core.bluetooth.scales.KeepS3Handler
 import com.health.openscale.core.bluetooth.scales.LinkMode
 import com.health.openscale.core.bluetooth.scales.MGBHandler
@@ -73,6 +74,7 @@ import com.health.openscale.core.bluetooth.scales.SinocareHandler
 import com.health.openscale.core.bluetooth.scales.SoehnleHandler
 import com.health.openscale.core.bluetooth.scales.SppScaleAdapter
 import com.health.openscale.core.bluetooth.scales.TaylorBIAHandler
+import com.health.openscale.core.bluetooth.scales.DrTrustSSW526Handler
 import com.health.openscale.core.bluetooth.scales.DrTrustSSW532Handler
 import com.health.openscale.core.bluetooth.scales.EEBBLHandler
 import com.health.openscale.core.bluetooth.scales.StandardBeurerSanitasHandler
@@ -110,13 +112,15 @@ class ScaleFactory @Inject constructor(
 
     // List of modern Kotlin-based device handlers.
     // Order matters: createCommunicator() returns the FIRST handler whose supportFor() is non-null.
-    // TaylorBIAHandler and FitTrackDaraHandler must stay ahead of MGBHandler — all live on service
-    // 0xFFB0, which MGBHandler also matches, so a later position would let MGB wrongly claim them.
+    // Name-specific handlers for devices on shared services must stay ahead of MGBHandler — all
+    // live on service 0xFFB0, which MGBHandler also matches, so a later position would let MGB
+    // wrongly claim them.
     private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
         // Exact-name match must precede generic LeFu/0xFFF0 handlers (first match wins).
         KeepS3Handler(),
         BeurerBF450Handler(),
         TaylorBIAHandler(),
+        LenovoHS10Handler(),
         RyFitHandler(),
         CultSmartScaleProHandler(),
         RealmeSmartScaleHandler(),
@@ -145,6 +149,8 @@ class ScaleFactory @Inject constructor(
         VitafitVT701Handler(),
         EEBBLHandler(),
         FitTrackDaraHandler(),
+        DrTrustSSW526Handler(),
+        DrTrustSSW532Handler(),
         MGBHandler(),
         MedisanaBs44xHandler(),
         InlifeHandler(),
@@ -169,7 +175,6 @@ class ScaleFactory @Inject constructor(
         AAAxHandler(),
         ScaleupHandler(),
         ActiveEraBF06Handler(),
-        DrTrustSSW532Handler(),
         BodyConnectHandler(),
     )
 
