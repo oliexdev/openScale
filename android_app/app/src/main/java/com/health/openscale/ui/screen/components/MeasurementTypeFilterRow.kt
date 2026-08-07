@@ -92,8 +92,14 @@ fun MeasurementTypeFilterRow(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    val selectableTypes = remember(allMeasurementTypesProvider, filterLogic) {
-        filterLogic(allMeasurementTypesProvider())
+    // The provider is invoked during composition so that its state read is tracked here.
+    // Keying the remember on the lambda itself would never invalidate: the Compose compiler
+    // memoizes it, so it stays the same instance while the list behind it changes. The type
+    // list arrives asynchronously (empty on the very first frame after a fresh install), and
+    // an unkeyed selectableTypes would stay empty for the whole lifetime of the composition.
+    val allMeasurementTypes = allMeasurementTypesProvider()
+    val selectableTypes = remember(allMeasurementTypes, filterLogic) {
+        filterLogic(allMeasurementTypes)
     }
 
     val selectedTypeIdsFlow = remember(selectedTypeIdsFlowProvider) { selectedTypeIdsFlowProvider() }
@@ -156,18 +162,14 @@ fun MeasurementTypeFilterRow(
     }
 
     // Effect 2: React to changes from the Flow AFTER initialization.
-    LaunchedEffect(isInitialized, selectedTypeIdsFlow, allMeasurementTypesProvider, filterLogic) {
+    LaunchedEffect(isInitialized, selectedTypeIdsFlow, selectableTypes) {
         if (isInitialized) {
             selectedTypeIdsFlow
                 .distinctUntilChanged()
                 .collect { newPersistedSet ->
-                    // Recalculate selectable types in case they changed externally
-                    val currentAllTypes = allMeasurementTypesProvider()
-                    val currentAvailableTypesForFilter = filterLogic(currentAllTypes)
-
                     val newIdsFromFlow = newPersistedSet
                         .mapNotNull { it.toIntOrNull() }
-                        .filter { id -> currentAvailableTypesForFilter.any { type -> type.id == id } }
+                        .filter { id -> selectableTypes.any { type -> type.id == id } }
 
                     if (newIdsFromFlow.toSet() != displayedSelectedIds.toSet()) {
                         displayedSelectedIds = newIdsFromFlow

@@ -691,17 +691,18 @@ fun TableScreen(
                     }
                 },
                 defaultSelectionLogic = { availableFilteredTypes ->
+                    // Matched on MeasurementTypeKey, not on MeasurementTypeKey.id: the row id of a
+                    // MeasurementType is auto-generated on insert and does not match the enum id.
+                    val defaultKeys = setOf(
+                        MeasurementTypeKey.WEIGHT,
+                        MeasurementTypeKey.BMI,
+                        MeasurementTypeKey.BODY_FAT,
+                        MeasurementTypeKey.WATER,
+                        MeasurementTypeKey.MUSCLE,
+                        MeasurementTypeKey.COMMENT,
+                    )
                     availableFilteredTypes
-                        .filter {
-                            it.id in listOf(
-                                MeasurementTypeKey.WEIGHT.id,
-                                MeasurementTypeKey.BMI.id,
-                                MeasurementTypeKey.BODY_FAT.id,
-                                MeasurementTypeKey.WATER.id,
-                                MeasurementTypeKey.MUSCLE.id,
-                                MeasurementTypeKey.COMMENT.id,
-                            ) && it.isEnabled
-                        }
+                        .filter { it.key in defaultKeys && it.isEnabled }
                         .map { it.id }
                 },
                 onSelectionChanged = { newSelectedIds ->
