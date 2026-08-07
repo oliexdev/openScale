@@ -588,6 +588,28 @@ enum class BackupInterval {
     }
 }
 
+/**
+ * Reason why the last automatic backup attempt failed.
+ *
+ * Persisted by name, so entries must not be renamed without a migration.
+ */
+enum class AutoBackupError {
+    /** The configured folder is gone, or the persisted URI permission was revoked. */
+    LOCATION_INACCESSIBLE,
+    /** The folder is writable, but the backup file itself could not be created. */
+    FILE_CREATION_FAILED,
+    /** Writing the database into the backup file failed. */
+    WRITE_FAILED;
+
+    fun getDisplayName(context: Context): String {
+        return when (this) {
+            LOCATION_INACCESSIBLE -> context.getString(R.string.settings_backup_error_location_inaccessible)
+            FILE_CREATION_FAILED -> context.getString(R.string.settings_backup_error_file_creation_failed)
+            WRITE_FAILED -> context.getString(R.string.settings_backup_error_write_failed)
+        }
+    }
+}
+
 enum class EvaluationState {
     LOW,
     NORMAL,

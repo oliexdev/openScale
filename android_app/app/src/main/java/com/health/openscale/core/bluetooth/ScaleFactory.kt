@@ -47,6 +47,7 @@ import com.health.openscale.core.bluetooth.scales.HuaweiHagridWspHandler
 import com.health.openscale.core.bluetooth.scales.IHealthHS3Handler
 import com.health.openscale.core.bluetooth.scales.InlifeHandler
 import com.health.openscale.core.bluetooth.scales.LenovoHS10Handler
+import com.health.openscale.core.bluetooth.scales.KeepS3Handler
 import com.health.openscale.core.bluetooth.scales.LinkMode
 import com.health.openscale.core.bluetooth.scales.MGBHandler
 import com.health.openscale.core.bluetooth.scales.MedisanaBs44xHandler
@@ -62,6 +63,7 @@ import com.health.openscale.core.bluetooth.scales.QNHandlerBroadcast
 import com.health.openscale.core.bluetooth.scales.RealmeSmartScaleHandler
 import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
 import com.health.openscale.core.bluetooth.scales.RenphoHandler
+import com.health.openscale.core.bluetooth.scales.RelaxmedicHandler
 import com.health.openscale.core.bluetooth.scales.RobiS9Handler
 import com.health.openscale.core.bluetooth.scales.RunstarR5Handler
 import com.health.openscale.core.bluetooth.scales.RunstarR6Handler
@@ -114,6 +116,8 @@ class ScaleFactory @Inject constructor(
     // live on service 0xFFB0, which MGBHandler also matches, so a later position would let MGB
     // wrongly claim them.
     private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
+        // Exact-name match must precede generic LeFu/0xFFF0 handlers (first match wins).
+        KeepS3Handler(),
         BeurerBF450Handler(),
         TaylorBIAHandler(),
         LenovoHS10Handler(),
@@ -140,6 +144,7 @@ class ScaleFactory @Inject constructor(
         MiScaleHandler(),
         RunstarR6Handler(),
         RunstarR5Handler(),
+        RelaxmedicHandler(),
         RobiS9Handler(),
         VitafitVT701Handler(),
         EEBBLHandler(),

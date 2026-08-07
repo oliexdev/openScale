@@ -32,6 +32,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.health.openscale.core.data.AutoBackupError
 import com.health.openscale.core.data.BackupInterval
 import com.health.openscale.core.data.BodyFatFormulaOption
 import com.health.openscale.core.data.BodyWaterFormulaOption
@@ -110,6 +111,8 @@ object SettingsPreferenceKeys {
     val AUTO_BACKUP_INTERVAL = stringPreferencesKey("auto_backup_interval")
     val AUTO_BACKUP_CREATE_NEW_FILE = booleanPreferencesKey("auto_backup_create_new_file")
     val AUTO_BACKUP_LAST_SUCCESSFUL_TIMESTAMP = longPreferencesKey("auto_backup_last_successful_timestamp")
+    val AUTO_BACKUP_LAST_ERROR = stringPreferencesKey("auto_backup_last_error")
+    val AUTO_BACKUP_LAST_ERROR_TIMESTAMP = longPreferencesKey("auto_backup_last_error_timestamp")
 
     // --- Reminder Settings ---
     val REMINDER_ENABLED = booleanPreferencesKey("reminder_enabled")
@@ -251,6 +254,11 @@ interface SettingsFacade {
 
     val autoBackupLastSuccessfulTimestamp: Flow<Long>
     suspend fun setAutoBackupLastSuccessfulTimestamp(timestamp: Long)
+
+    /** Reason of the most recent failed backup attempt, or null if the last attempt succeeded. */
+    val autoBackupLastError: Flow<AutoBackupError?>
+    val autoBackupLastErrorTimestamp: Flow<Long>
+    suspend fun setAutoBackupLastError(error: AutoBackupError?)
 
     // --- Reminder Settings ---
     val reminderEnabled: Flow<Boolean>
@@ -866,6 +874,47 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun setAutoBackupLastSuccessfulTimestamp(timestamp: Long) {
         LogManager.d(TAG, "Setting autoBackupLastSuccessfulTimestamp to: $timestamp")
         saveSetting(SettingsPreferenceKeys.AUTO_BACKUP_LAST_SUCCESSFUL_TIMESTAMP.name, timestamp)
+    }
+
+    override val autoBackupLastError: Flow<AutoBackupError?> = dataStore.data
+        .catch { exception ->
+            LogManager.e(TAG, "Error reading autoBackupLastError from DataStore.", exception)
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            val errorName = preferences[SettingsPreferenceKeys.AUTO_BACKUP_LAST_ERROR]
+            try {
+                errorName?.let { AutoBackupError.valueOf(it) }
+            } catch (e: IllegalArgumentException) {
+                LogManager.w(TAG, "Invalid AutoBackupError name '$errorName' in DataStore.", e)
+                AutoBackupError.WRITE_FAILED
+            }
+        }
+        .distinctUntilChanged()
+
+    override val autoBackupLastErrorTimestamp: Flow<Long> = observeSetting(
+        SettingsPreferenceKeys.AUTO_BACKUP_LAST_ERROR_TIMESTAMP.name,
+        0L
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing autoBackupLastErrorTimestamp", exception)
+        emit(0L)
+    }
+
+    override suspend fun setAutoBackupLastError(error: AutoBackupError?) {
+        LogManager.d(TAG, "Setting autoBackupLastError to: ${error?.name ?: "none"}")
+        dataStore.edit { preferences ->
+            if (error != null) {
+                preferences[SettingsPreferenceKeys.AUTO_BACKUP_LAST_ERROR] = error.name
+                preferences[SettingsPreferenceKeys.AUTO_BACKUP_LAST_ERROR_TIMESTAMP] = System.currentTimeMillis()
+            } else {
+                preferences.remove(SettingsPreferenceKeys.AUTO_BACKUP_LAST_ERROR)
+                preferences.remove(SettingsPreferenceKeys.AUTO_BACKUP_LAST_ERROR_TIMESTAMP)
+            }
+        }
     }
 
     // --- Reminder Settings ---

@@ -20,6 +20,7 @@ package com.health.openscale.core.bluetooth.scales
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.LogManager
 import java.util.Date
@@ -45,10 +46,21 @@ import java.util.UUID
  *    - 0xFE 06 <unit> 00
  * 3) Ask user to step on the scale.
  *
- * Data frames (NOTIFY on 0xFFB2, 20 bytes):
+ * Two wire variants share this service/characteristic pair, distinguished by frame size:
+ *
+ * Composite frames (NOTIFY on 0xFFB2, 20 bytes):
  *  - First part:  header AC 02|03 FF … → contains weight, fat (and other fields we ignore)
  *  - Second part: header 01 00 …       → contains muscle, bone, water (+ misc)
  * We collect both parts to publish one complete ScaleMeasurement.
+ *
+ * Streaming frames (NOTIFY on 0xFFB2, 8 bytes, e.g. Dr Trust Smart 505):
+ *  `AC 02 [b2] [b3] [b4] [b5] [b6] [chk]`, checksum = (b2+b3+b4+b5+b6) & 0xFF. Byte 6 is a
+ *  type/state flag: 0xCE = live weight (settling, ignored), 0xCA = final weight (same payload as
+ *  the preceding 0xCE, flag flipped), 0xCB = impedance, 0xCC = config echo/status (ignored).
+ *  Weight is a big-endian u16 in b2:b3 (0.01 kg) with b4==0 && b5==0. Impedance is a big-endian
+ *  u16 in b4:b5, only valid when b2==0xFD && b3==0x01 (0xFD 0x00 opens the block, 0xFD 0xFF marks
+ *  impedance-unavailable; both are ignored). We latch weight and impedance as they stream in and
+ *  publish once both are present.
  */
 class MGBHandler : ScaleDeviceHandler() {
 
@@ -57,8 +69,13 @@ class MGBHandler : ScaleDeviceHandler() {
     private val CHAR_CFG: UUID = uuid16(0xFFB1)   // write
     private val CHAR_CTRL: UUID = uuid16(0xFFB2)  // notify
 
-    // Pending measurement until 2nd frame arrives
+    // Pending measurement until 2nd composite frame arrives
     private var pending: ScaleMeasurement? = null
+
+    // Streaming-variant session state, latched until both are present
+    private var streamingWeightRaw: Int? = null
+    private var streamingImpedanceOhm: Int? = null
+    private var streamingPublished = false
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.lowercase(Locale.ROOT)
@@ -126,8 +143,37 @@ class MGBHandler : ScaleDeviceHandler() {
     // -- Notifications --
     override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
         if (characteristic != CHAR_CTRL) return
-        if (data.size != 20) return
+        when (data.size) {
+            20 -> onCompositeFrame(data)
+            8 -> {
+                if (streamingPublished) return
 
+                parseFinalWeightRaw(data)?.let { raw ->
+                    streamingWeightRaw = raw
+                    logD("streaming final weight raw=$raw")
+                    tryPublishStreaming(user)
+                    return
+                }
+
+                parseImpedanceOhm(data)?.let { ohm ->
+                    streamingImpedanceOhm = ohm
+                    logD("streaming impedance=$ohm Ω")
+                    tryPublishStreaming(user)
+                }
+            }
+            else -> return
+        }
+    }
+
+    override fun onDisconnected() {
+        streamingWeightRaw = null
+        streamingImpedanceOhm = null
+        streamingPublished = false
+    }
+
+    // -- Composite (20-byte) variant --
+
+    private fun onCompositeFrame(data: ByteArray) {
         val b0 = data[0].toUByte().toInt()
         val b1 = data[1].toUByte().toInt()
         val b2 = data[2].toUByte().toInt()
@@ -142,6 +188,43 @@ class MGBHandler : ScaleDeviceHandler() {
         if (b0 == 0x01 && b1 == 0x00) {
             parseSecondFrameAndPublish(data)
         }
+    }
+
+    // -- Streaming (8-byte) variant, e.g. Dr Trust Smart 505 --
+
+    private fun tryPublishStreaming(user: ScaleUser) {
+        if (streamingPublished) return
+        val weightRaw = streamingWeightRaw ?: return
+        val impedanceOhm = streamingImpedanceOhm ?: return
+        streamingPublished = true
+
+        val weightKg = weightRaw / 100.0f
+        val m = ScaleMeasurement().apply {
+            userId = user.id
+            dateTime = Date()
+            weight = weightKg
+        }
+
+        // The scale reports only weight + raw impedance; derive body composition the same way
+        // VitafitVT701Handler does for its weight+impedance scales.
+        if (impedanceOhm in 1 until 1500) {
+            m.impedance = impedanceOhm.toDouble()
+            val lib = StandardImpedanceLib(
+                gender = user.gender,
+                age = user.age,
+                weightKg = weightKg.toDouble(),
+                heightM = user.bodyHeight / 100.0,
+                impedance = impedanceOhm.toDouble(),
+            )
+            m.fat = lib.totalFatPercentage.toFloat()
+            m.water = lib.totalBodyWaterPercentage.toFloat()
+            m.muscle = lib.skeletalMusclePercentage.toFloat()
+            m.bone = lib.boneMassKg.toFloat()
+            m.bmr = lib.basalMetabolicRate.toFloat()
+        }
+
+        publish(m)
+        logI("streaming publish weight=$weightKg kg impedance=$impedanceOhm Ω")
     }
 
     // -- Helpers: config writer, parsers, LE readers --
@@ -241,5 +324,51 @@ class MGBHandler : ScaleDeviceHandler() {
         val lo = d[off + 1].toUByte().toInt()
         val v = (hi shl 8) or lo
         return v / 10.0f
+    }
+
+    companion object {
+        private const val FLAG_LIVE_WEIGHT = 0xCE
+        private const val FLAG_FINAL_WEIGHT = 0xCA
+        private const val FLAG_IMPEDANCE = 0xCB
+
+        /**
+         * True if [frame] is a well-formed 8-byte streaming frame with a matching checksum.
+         *
+         * Layout: `AC 02 [b2] [b3] [b4] [b5] [b6] [chk]`, checksum = (b2+b3+b4+b5+b6) & 0xFF.
+         */
+        fun isValidStreamingFrame(frame: ByteArray): Boolean {
+            if (frame.size != 8) return false
+            if ((frame[0].toInt() and 0xFF) != 0xAC) return false
+            if ((frame[1].toInt() and 0xFF) != 0x02) return false
+            val sum = (2..6).sumOf { frame[it].toInt() and 0xFF } and 0xFF
+            return sum == (frame[7].toInt() and 0xFF)
+        }
+
+        private fun weightRaw(frame: ByteArray, flag: Int): Int? {
+            if (!isValidStreamingFrame(frame)) return null
+            if ((frame[6].toInt() and 0xFF) != flag) return null
+            if ((frame[4].toInt() and 0xFF) != 0 || (frame[5].toInt() and 0xFF) != 0) return null
+            return ((frame[2].toInt() and 0xFF) shl 8) or (frame[3].toInt() and 0xFF)
+        }
+
+        /** Raw weight in 0.01 kg units from a *final* (0xCA) streaming frame, or `null`. */
+        fun parseFinalWeightRaw(frame: ByteArray): Int? = weightRaw(frame, FLAG_FINAL_WEIGHT)
+
+        /** Raw weight in 0.01 kg units from a *live/settling* (0xCE) streaming frame, or `null`. */
+        fun parseLiveWeightRaw(frame: ByteArray): Int? = weightRaw(frame, FLAG_LIVE_WEIGHT)
+
+        /**
+         * Whole-body impedance in ohms from a `FD 01 [hi] [lo] CB [chk]` streaming frame, or
+         * `null`. `FD 00 …` (block open) and `FD FF …` (impedance-unavailable) are not values;
+         * config writes also use 0xFD in b2 (e.g. the date write), so the flag byte (0xCB, not
+         * 0xCC) is what distinguishes an impedance frame from a config echo.
+         */
+        fun parseImpedanceOhm(frame: ByteArray): Int? {
+            if (!isValidStreamingFrame(frame)) return null
+            if ((frame[6].toInt() and 0xFF) != FLAG_IMPEDANCE) return null
+            if ((frame[2].toInt() and 0xFF) != 0xFD) return null
+            if ((frame[3].toInt() and 0xFF) != 0x01) return null
+            return ((frame[4].toInt() and 0xFF) shl 8) or (frame[5].toInt() and 0xFF)
+        }
     }
 }

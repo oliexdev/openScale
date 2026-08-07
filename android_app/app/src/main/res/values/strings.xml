@@ -718,7 +718,7 @@
     <string name="settings_auto_backup_title">Automatic Backups</string>
     <string name="settings_enable_auto_backups">Enable automatic backups</string>
     <string name="content_desc_auto_backups_toggle">Toggle automatic backups</string>
-    <string name="settings_last_backup_status_label">Last backup status</string>
+    <string name="settings_last_backup_status_label">Backup status</string>
     <string name="content_desc_backup_status_icon">Backup status information</string>
     <string name="settings_backup_location_label">Backup location</string>
     <string name="content_desc_backup_location_icon">Backup location setting</string>
@@ -749,6 +749,12 @@
     <string name="settings_backup_location_selection_cancelled">Folder selection cancelled. Automatic backup not enabled.</string>
     <string name="settings_last_backup_status_successful">Last backup: %1$s</string>
     <string name="settings_last_backup_status_never">Last backup: Never</string>
+    <string name="settings_last_backup_status_failed">Last backup failed on %1$s: %2$s</string>
+    <string name="settings_next_backup_scheduled">Next backup: %1$s</string>
+    <string name="settings_next_backup_not_scheduled">Next backup: not scheduled</string>
+    <string name="settings_backup_error_location_inaccessible">The backup folder is no longer accessible. Please select it again.</string>
+    <string name="settings_backup_error_file_creation_failed">The backup file could not be created in the selected folder.</string>
+    <string name="settings_backup_error_write_failed">The database could not be written to the backup file.</string>
     <string name="interval_daily">Daily</string>
     <string name="interval_weekly">Weekly</string>
     <string name="interval_monthly">Monthly</string>

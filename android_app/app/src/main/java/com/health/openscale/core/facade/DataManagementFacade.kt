@@ -19,6 +19,7 @@ package com.health.openscale.core.facade
 
 import android.content.ContentResolver
 import android.net.Uri
+import com.health.openscale.core.data.AutoBackupError
 import com.health.openscale.core.data.BackupInterval
 import com.health.openscale.core.usecase.AutoBackupUseCases
 import com.health.openscale.core.usecase.BackupRestoreUseCases
@@ -52,6 +53,9 @@ class DataManagementFacade @Inject constructor(
     val autoBackupInterval: Flow<BackupInterval> get() = autoBackup.interval
     val isAutoBackupNewFileMode: Flow<Boolean> get() = autoBackup.createNewFile
     val autoBackupLastSuccessTimestamp: Flow<Long> get() = autoBackup.lastSuccessfulTimestamp
+    val autoBackupLastError: Flow<AutoBackupError?> get() = autoBackup.lastError
+    val autoBackupLastErrorTimestamp: Flow<Long> get() = autoBackup.lastErrorTimestamp
+    val autoBackupNextRunAtMillis: Flow<Long?> get() = autoBackup.nextBackupAtMillis
 
     // Mutations
     suspend fun setAutoBackupEnabled(enabled: Boolean) =
