@@ -203,6 +203,13 @@ class SyncUseCases @Inject constructor(
      */
     private fun startSyncService(pkgName: String, intent: Intent) {
         if (!isSyncAppInstalled(pkgName)) return
+
+        // Name ourselves on every op. Several openScale flavors can sit on one device and they all
+        // address the same sync app, but a measurement id only means something within one install —
+        // so the sync app has to be able to drop ops from the variant it is not synced with. Added
+        // here rather than in each trigger, so a future one cannot forget it.
+        intent.putExtra("package", application.packageName)
+
         try {
             ContextCompat.startForegroundService(application.applicationContext, intent)
         } catch (e: Exception) {
