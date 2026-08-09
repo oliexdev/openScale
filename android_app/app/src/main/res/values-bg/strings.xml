@@ -343,7 +343,6 @@
     <string name="settings_danger_zone">Опасна зона</string>
     <string name="settings_backup_location_selected_folder">Избрана директория</string>
     <string name="snackbar_developer_for_device_enable_logs">Режимът за програмисти е активиран за това устройство. Моля, активирайте лог файла: Настройки → Общи → Активиране на лог файла.</string>
-    <string name="snackbar_error_deleting_items">Грешка при изтриването на елементи.</string>
     <string name="developer_banner_active">Режимът за програмисти е активен — няма да се запазват никакви измервания.</string>
     <string name="developer_banner_enable_logs_hint">Моля, активирайте лог файла: Настройки → Общи → Активиране на лог файла.</string>
     <string name="cap_body_composition">Състав на тялото</string>
@@ -471,12 +470,8 @@
     <string name="dialog_title_select_user_for_assignment">Изберете потребител за задачата</string>
     <string name="snackbar_no_other_users_to_change_to">Няма други потребители за смяна.</string>
     <string name="snackbar_items_user_changed_successfully">%1$d измервания са преместени</string>
-    <string name="snackbar_error_user_changed_items">Грешка при промяната на потребителя за някои елементи.</string>
-    <string name="insights_section_body_shift">Твоя %1$s анализ</string>
-    <string name="insights_based_on">базирано на %1$d измервания</string>
     <string name="insights_short_term_trend">краткосрочна тенденция</string>
     <string name="insights_long_term_trend">дългосрочна тенденция</string>
-    <string name="insights_placeholder_body_shift">Нужни са поне %1$d измервания за анализ на промените в тялото с течение на времето.</string>
     <string name="insights_placeholder_weekday">Необходими са поне %1$d измервания на ден за откриване на седмични навици.</string>
     <string name="insights_placeholder_seasonal">Необходими са поне %1$d години данни, за да се открият сезонни модели.</string>
     <string name="insights_placeholder_anomalies">Необходими са поне %1$d измервания за откриване на необичайни стойности.</string>
@@ -490,7 +485,6 @@
     <string name="insights_volatility_high">Висока</string>
     <string name="insights_plateau_label">Стабилен период</string>
     <string name="insights_plateau_days">%1$d дни</string>
-    <string name="insights_best_period">Най-добър месец: %1$s %2$d (%3$s)</string>
     <string name="insights_section_weekday">Седмични навици</string>
     <string name="insights_weekday_summary_high">Има тенденция за високи измервания %1$s и ниски %2$s</string>
     <string name="insights_weekday_summary_low">Предварителен модел — измервайте по-редовно за надеждни резултати</string>
@@ -693,7 +687,6 @@
     <string name="dialog_title_select_backup_interval">Избор на интервал на резервното копие</string>
     <string name="bluetooth_scale_info_create_user_instruction_uds">Създаване на нов потребител в кантара (слот, зададен от UDS)</string>
     <string name="route_title_insights">Анализи</string>
-    <string name="insights_no_data">Все още няма достатъчно данни за изчисляване на прозрения. Продължете да измервате!</string>
     <string name="content_description_filter_chart_data">Филтриране на данните за диаграми</string>
     <string name="line_chart_no_plottable_types">Няма налични типове диаграми за начертаване.</string>
     <string name="line_chart_please_select_types">Моля, изберете видове измервания за диаграмата.</string>

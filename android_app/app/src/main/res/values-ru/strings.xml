@@ -388,11 +388,9 @@
     <string name="dialog_title_delete_type">Удалить тип?</string>
     <string name="dialog_text_delete_type">Вы уверены, что хотите удалить пользовательский тип данных \"%1$s\"? Все сопутствующие измерения так же будут безвозвратно удалены. Это действие необратимо.</string>
     <string name="snackbar_items_deleted_successfully">%1$d элементов успешно удалены</string>
-    <string name="snackbar_error_deleting_items">Не удалось удалить элементы.</string>
     <string name="dialog_title_select_user_for_assignment">Для присвоения выберите пользователя</string>
     <string name="snackbar_no_other_users_to_change_to">Нет пользователей, на которых можно было бы перейти.</string>
     <string name="snackbar_items_user_changed_successfully">%1$d измерений перемещены</string>
-    <string name="snackbar_error_user_changed_items">Не удалось изменить пользователя для некоторых элементов.</string>
     <string name="statistics_no_relevant_types">Соответствующие типы измерений для статистики недоступны или не настроены.</string>
     <string name="statistics_label_min">Мин</string>
     <string name="statistics_label_max">Макс</string>

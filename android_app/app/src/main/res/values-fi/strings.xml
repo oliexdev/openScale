@@ -376,11 +376,9 @@
     <string name="dialog_title_delete_type">Poista tyyppi?</string>
     <string name="dialog_text_delete_type">Haluatko varmasti poistaa mukautetun tyypin “%1$s”? Kaikki siihen liittyvät mittaukset poistetaan myös pysyvästi. Tätä toimintoa ei voi peruuttaa.</string>
     <string name="snackbar_items_deleted_successfully">%1$d kohteet poistettu onnistuneesti.</string>
-    <string name="snackbar_error_deleting_items">Virhe kohteiden poistamisessa.</string>
     <string name="dialog_title_select_user_for_assignment">Valitse käyttäjä tehtävää varten</string>
     <string name="snackbar_no_other_users_to_change_to">Ei muita käyttäjiä, joihin voi vaihtaa.</string>
     <string name="snackbar_items_user_changed_successfully">Käyttäjä on vaihdettu %1$d kohteille onnistuneesti.</string>
-    <string name="snackbar_error_user_changed_items">Virhe käyttäjän vaihtamisessa joissakin kohteissa.</string>
     <string name="statistics_no_relevant_types">Tilastoja varten ei ole käytettävissä tai määritettyjä relevantteja mittaustyyppejä.</string>
     <string name="statistics_label_min">min.</string>
     <string name="statistics_label_max">maks.</string>
