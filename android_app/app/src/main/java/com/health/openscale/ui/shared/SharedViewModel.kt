@@ -679,6 +679,13 @@ class SharedViewModel @Inject constructor(
             }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    /**
+     * The values to pre-fill an empty add-measurement form with — produced by the same carry-over a
+     * Bluetooth sync runs, so a manual entry starts out exactly where a scale sync would.
+     */
+    suspend fun prefillValuesForNewMeasurement(userId: Int, timestamp: Long): List<MeasurementValue> =
+        measurementFacade.prefillValuesForNewMeasurement(userId, timestamp)
+
     // -------------------------------------------------------------------------
     // CRUD
     // -------------------------------------------------------------------------

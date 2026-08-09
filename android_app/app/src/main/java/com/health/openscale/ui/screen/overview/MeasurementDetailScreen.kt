@@ -183,33 +183,23 @@ fun MeasurementDetailScreen(
             pendingUserId = null
             valuesState.clear()
 
-            // Preload values from the user's last measurement, if available and types are loaded.
-            if (allMeasurementTypes.isNotEmpty() && lastMeasurementToPreloadFrom != null) {
-                // Ensure the last measurement belongs to the current user.
-                if (lastMeasurementToPreloadFrom!!.measurement.userId == userId) {
-                    lastMeasurementToPreloadFrom!!.values.forEach { mvFromLast ->
-                        val correspondingType = allMeasurementTypes.find { it.id == mvFromLast.type.id }
-                        if (correspondingType != null &&
-                            correspondingType.isEnabled &&
-                            correspondingType.inputType != InputFieldType.DATE &&
-                            correspondingType.inputType != InputFieldType.TIME
-                        ) {
-                            val valueString = when (correspondingType.inputType) {
-                                InputFieldType.FLOAT -> mvFromLast.value.floatValue?.let { String.format(Locale.US, "%.2f", it) } ?: ""
-                                InputFieldType.INT -> mvFromLast.value.intValue?.toString() ?: ""
-                                InputFieldType.TEXT -> mvFromLast.value.textValue ?: ""
-                                else -> ""
-                            }
-                            if (valueString.isNotEmpty()) {
-                                valuesState[correspondingType.id] = valueString
-                            }
-                        }
+            // Pre-fill from the user's preceding measurement. Which values may be inherited is
+            // decided in one place for the whole app (MeasurementTransformationUseCase's
+            // applyValueInheritance), so a manual entry starts out exactly where a Bluetooth
+            // sync would — the form only formats what it gets back.
+            if (allMeasurementTypes.isNotEmpty()) {
+                sharedViewModel.prefillValuesForNewMeasurement(userId, measurementTimestampState)
+                    .forEach { inherited ->
+                        val correspondingType = allMeasurementTypes.find { it.id == inherited.typeId }
+                            ?: return@forEach
+                        val valueString = when (correspondingType.inputType) {
+                            InputFieldType.FLOAT -> inherited.floatValue?.let { String.format(Locale.US, "%.2f", it) }
+                            InputFieldType.INT -> inherited.intValue?.toString()
+                            else -> null
+                        } ?: return@forEach
+
+                        valuesState[correspondingType.id] = valueString
                     }
-                } else {
-                    // Log if preloading is skipped due to user mismatch (for debugging).
-                    // Consider using a formal logger if this becomes a common scenario to debug.
-                    println("DEBUG: lastMeasurementToPreloadFrom.userId (${lastMeasurementToPreloadFrom!!.measurement.userId}) != currentScreenUserId ($userId). Not preloading values.")
-                }
             }
         }
 

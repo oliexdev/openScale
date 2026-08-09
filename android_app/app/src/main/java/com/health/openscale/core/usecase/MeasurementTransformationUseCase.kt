@@ -20,6 +20,7 @@ package com.health.openscale.core.usecase
 import com.health.openscale.core.data.BodyFatFormulaOption
 import com.health.openscale.core.data.BodyWaterFormulaOption
 import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.LbmFormulaOption
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
@@ -354,6 +355,72 @@ class MeasurementTransformationUseCase @Inject constructor(
         }
 
         return out
+    }
+
+    /**
+     * Fills the gaps in [measurement] from the chronologically preceding measurement of the same
+     * user — the one and only inheritance rule in the app, used both when a scale delivers a
+     * measurement and when the "new measurement" form is pre-filled.
+     *
+     * A scale only reports what it can weigh, so everything the user keeps by hand — waist, hips,
+     * caliper values, custom types — would silently be absent on every sync. Those are taken from
+     * the last measurement **before** [measurement]'s timestamp, so a historic entry read from the
+     * scale's memory inherits the state of its own point in time and never that of a later one.
+     *
+     * Inherited are only **numeric** values (FLOAT/INT) that still carry information:
+     * - Values already in [values] win — only missing types are filled.
+     * - An empty predecessor (`null` or `0`) is dropped; `0` says nothing worth repeating.
+     * - TEXT, DATE, TIME and USER are dropped: a comment or a date is written about *that* one
+     *   weigh-in and would be wrong on the next.
+     * - Derived types (BMI, BMR, …) are dropped — they are recomputed from the raw values.
+     * - Internal (impedance) and disabled types are dropped: raw device input, stale the moment it
+     *   is copied.
+     *
+     * The weight needs no special case: every scale reports one, so on the sync path it is already
+     * in [values] and is left alone. Only the form pre-fill passes an empty [values] and therefore
+     * gets the previous weight as its starting point.
+     *
+     * No DB writes here; the caller persists via CRUD.
+     *
+     * @return [values] plus the inherited ones, or [values] unchanged if there is nothing to inherit.
+     */
+    suspend fun applyValueInheritance(
+        measurement: Measurement,
+        values: List<MeasurementValue>
+    ): List<MeasurementValue> {
+        // History is ordered newest → oldest, so the first strictly older entry is the predecessor.
+        val previous = query.getMeasurementsForUser(measurement.userId).first()
+            .firstOrNull {
+                it.measurement.id != measurement.id &&
+                    it.measurement.timestamp < measurement.timestamp
+            } ?: return values
+
+        val presentTypeIds = values.map { it.typeId }.toSet()
+
+        val carried = previous.values.mapNotNull { previousValue ->
+            val type = previousValue.type
+            if (type.id in presentTypeIds) return@mapNotNull null
+            if (type.isDerived || type.isInternal || !type.isEnabled) return@mapNotNull null
+
+            when (type.inputType) {
+                InputFieldType.FLOAT -> previousValue.value.floatValue
+                    ?.takeIf { it != 0f }
+                    ?.let { MeasurementValue(measurementId = 0, typeId = type.id, floatValue = it) }
+                InputFieldType.INT -> previousValue.value.intValue
+                    ?.takeIf { it != 0 }
+                    ?.let { MeasurementValue(measurementId = 0, typeId = type.id, intValue = it) }
+                InputFieldType.TEXT, InputFieldType.DATE,
+                InputFieldType.TIME, InputFieldType.USER -> null
+            }
+        }
+
+        if (carried.isEmpty()) return values
+
+        LogManager.i(
+            "MeasurementTransformation",
+            "Carry-over: inherited ${carried.size} value(s) from measurement ${previous.measurement.id}."
+        )
+        return values + carried
     }
 
     /**
