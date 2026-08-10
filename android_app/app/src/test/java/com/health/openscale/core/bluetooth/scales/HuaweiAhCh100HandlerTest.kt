@@ -304,10 +304,12 @@ class HuaweiAhCh100HandlerTest {
 
     @Test
     fun `real capture - the frame carries one byte beyond the documented layout`() {
-        // parseMeasurement documents 15 bytes; the hardware sends 16. The extra
-        // byte was 0x15 in both captures even though weight, fat and impedance
-        // all changed, so it is not a body-composition value. Pinned here so a
-        // future maintainer who works out what it means notices this test.
+        // parseMeasurement documents 15 bytes; the hardware sends 16, and we
+        // drop the extra one. It was 0x15 = 21 in both captures — but those two
+        // measurements were 0.1 kg apart, so that says nothing about whether it
+        // varies. Candidate: visceral fat level. Issue #547 reports 11.5 at BMI
+        // 24.8 and 14 at BMI 27.5 from the vendor app, and these captures are
+        // BMI 37. Pinned so whoever decodes it has to come here.
         val mac = HuaweiAhCh100Handler.macStringToBytes(CAPTURE_MAC)
         val mk = HuaweiAhCh100Handler.deriveMagicKey(
             HuaweiAhCh100Handler.buildAuthToken(1), mac
