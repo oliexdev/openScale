@@ -309,7 +309,8 @@ class HuaweiCH100SHandler : ScaleDeviceHandler() {
     private fun sendUserInfo(user: ScaleUser, weightTenthKg: Int?) {
         val sexBit = if (user.gender.isMale()) 0x00 else 0x80
         val age = user.age and 0x7F
-        val w = (weightTenthKg ?: (user.initialWeight * 10f).toInt()).coerceAtLeast(0)
+        // Never 0: same USER_CHANGED loop as the AH100/CH100 sibling handler.
+        val w = (weightTenthKg ?: (profileWeightKg(user) * 10f).toInt()).coerceAtLeast(1)
         val payload = ByteArrayOutputStream().apply {
             write(authCode)
             write((age or sexBit) and 0xFF)
