@@ -577,11 +577,15 @@ fun OverviewScreen(
                             ) {
                                 itemsIndexed(
                                     items = aggregatedItems,
+                                    // Must not depend on isAggregated: that flag comes from the
+                                    // settings flow while the items come from the data flow, so
+                                    // the two disagree for a frame after an aggregation change.
+                                    // Aggregated entries are synthetic and all carry id = -1,
+                                    // which then yields duplicate keys and crashes the list.
+                                    // id + timestamp is unique in both modes.
                                     key   = { _, item ->
-                                        if (isAggregated)
-                                            item.enriched.measurementWithValues.measurement.timestamp
-                                        else
-                                            item.enriched.measurementWithValues.measurement.id
+                                        val m = item.enriched.measurementWithValues.measurement
+                                        "${m.id}_${m.timestamp}"
                                     },
                                 ) { _, aggItem ->
                                     val enrichedItem = aggItem.enriched
