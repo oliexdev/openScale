@@ -437,7 +437,10 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
             logW("magicKey missing; dropping encrypted cmd 0x%02X".format(CMD_USER_INFO.toInt() and 0xFF))
             return
         }
-        val frame = buildEncryptedCommand(CMD_USER_INFO, payload, mk, macBytes())
+        // The 2-byte trailer is transmitted but not counted, as in the vendor app.
+        val frame = buildEncryptedCommand(
+            CMD_USER_INFO, payload, mk, macBytes(), explicitLen = payload.size - USER_INFO_TRAILER
+        )
         logD("→ CMD* 0x%02X len=%d (encrypted)".format(CMD_USER_INFO.toInt() and 0xFF, payload.size))
         writeTo(SERVICE, CHAR_TX, frame, withResponse = true)
     }
@@ -601,6 +604,9 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
         const val CMD_AUTH: Byte = 36
         const val CMD_BIND_USER: Byte = 37
 
+        /** Bytes of the USER_INFO payload that are sent but not counted in the length byte. */
+        const val USER_INFO_TRAILER = 2
+
         // ---------- Primitives -----------------------------------------------
 
         /**
@@ -690,18 +696,24 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
          * Build a host->scale AES-encrypted command frame (start byte
          * [FRAME_ENCRYPTED]).
          *
-         * Length byte equals plaintext payload size (matches v2.5.4's
-         * `lengthByte = payload.size + 0`).
+         * Length byte defaults to the plaintext payload size.
+         *
+         * @param explicitLen overrides it. USER_INFO needs this: the vendor app
+         *   declares 14 while transmitting 16, i.e. the trailing 2-byte constant
+         *   sits *outside* the declared length. v2.5.4's "Total = 14 bytes" note
+         *   describes the same thing — the 3.x port pulled the trailer into the
+         *   payload and shifted the length byte to 16 with it.
          */
         fun buildEncryptedCommand(
             cmd: Byte,
             payload: ByteArray,
             magicKey: ByteArray,
             mac: ByteArray,
-            iv: ByteArray = INITIAL_IV
+            iv: ByteArray = INITIAL_IV,
+            explicitLen: Int? = null
         ): ByteArray {
             val encrypted = aesCtr(payload, magicKey, iv)
-            val header = byteArrayOf(FRAME_ENCRYPTED, payload.size.toByte(), cmd)
+            val header = byteArrayOf(FRAME_ENCRYPTED, (explicitLen ?: payload.size).toByte(), cmd)
             return header + obfuscate(encrypted, mac)
         }
 

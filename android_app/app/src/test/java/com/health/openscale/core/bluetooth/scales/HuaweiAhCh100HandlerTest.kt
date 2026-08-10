@@ -305,11 +305,11 @@ class HuaweiAhCh100HandlerTest {
     @Test
     fun `real capture - the frame carries one byte beyond the documented layout`() {
         // parseMeasurement documents 15 bytes; the hardware sends 16, and we
-        // drop the extra one. It was 0x15 = 21 in both captures — but those two
-        // measurements were 0.1 kg apart, so that says nothing about whether it
-        // varies. Candidate: visceral fat level. Issue #547 reports 11.5 at BMI
-        // 24.8 and 14 at BMI 27.5 from the vendor app, and these captures are
-        // BMI 37. Pinned so whoever decodes it has to come here.
+        // drop the extra one. Dropping it is correct: the vendor-app captures
+        // attached to #547 decode to 13 measurements of one AH100 over 11 days,
+        // and this byte is 0x4E on every one of them while weight (87.3-93.2 kg),
+        // body fat (22.9-25.3 %) and impedance (373-451 Ω) all move. It is a
+        // per-device constant, not a body value.
         val mac = HuaweiAhCh100Handler.macStringToBytes(CAPTURE_MAC)
         val mk = HuaweiAhCh100Handler.deriveMagicKey(
             HuaweiAhCh100Handler.buildAuthToken(1), mac
@@ -319,6 +319,28 @@ class HuaweiAhCh100HandlerTest {
             assertThat(raw).hasLength(16)
             assertThat(raw[15]).isEqualTo(0x15.toByte())
         }
+    }
+
+    @Test
+    fun `real capture - USER_INFO declares 14 while transmitting 16, as the vendor app does`() {
+        // Huawei's own app sends "DC 0E 09" followed by 16 encrypted bytes: the
+        // trailing 2-byte constant is outside the declared length. Decoded from
+        // the btsnoop captures attached to issue #547.
+        val mac = HuaweiAhCh100Handler.macStringToBytes(CAPTURE_MAC)
+        val mk = HuaweiAhCh100Handler.deriveMagicKey(
+            HuaweiAhCh100Handler.buildAuthToken(1), mac
+        )
+        val payload = ByteArray(16)
+
+        val frame = HuaweiAhCh100Handler.buildEncryptedCommand(
+            HuaweiAhCh100Handler.CMD_USER_INFO, payload, mk, mac,
+            explicitLen = payload.size - HuaweiAhCh100Handler.USER_INFO_TRAILER
+        )
+
+        assertThat(frame[0]).isEqualTo(HuaweiAhCh100Handler.FRAME_ENCRYPTED)
+        assertThat(frame[1]).isEqualTo(0x0E.toByte())
+        assertThat(frame[2]).isEqualTo(HuaweiAhCh100Handler.CMD_USER_INFO)
+        assertThat(frame.size).isEqualTo(3 + 16)
     }
 
     // -- Helpers -------------------------------------------------------------
