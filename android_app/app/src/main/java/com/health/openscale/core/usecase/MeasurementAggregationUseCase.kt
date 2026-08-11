@@ -32,6 +32,7 @@ import java.time.temporal.WeekFields
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.roundToInt
 
 /**
  * Use case that aggregates a list of [EnrichedMeasurement] into a smaller list of
@@ -160,7 +161,14 @@ class MeasurementAggregationUseCase @Inject constructor() {
                 id            = -1,
                 measurementId = -1,
                 floatValue    = avg,
-                intValue      = null,
+                // The synthetic value keeps the original type, so consumers still switch on
+                // InputFieldType.INT and read intValue. Leaving it null made INT-typed
+                // measurements read as absent everywhere downstream.
+                intValue      = if (vwt.type.inputType == InputFieldType.INT) {
+                    avg.roundToInt()
+                } else {
+                    null
+                },
             )
             vwt.copy(value = syntheticVal)
         }
