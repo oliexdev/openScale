@@ -272,7 +272,7 @@ class CultSmartScaleProHandler : ScaleDeviceHandler() {
 
             m.fat        = lib.totalFatPercentage.toFloat().coerceIn(0f, 75f)
             m.water      = lib.totalBodyWaterPercentage.toFloat().coerceIn(0f, 80f)
-            m.muscle     = lib.skeletalMuscleMassKg.toFloat().coerceIn(0f, 100f)
+            m.muscle     = lib.skeletalMusclePercentage.toFloat().coerceIn(0f, 100f)
             m.bone       = lib.boneMassKg.toFloat().coerceIn(0f, 10f)
             m.lbm        = lib.fatFreeMassKg.toFloat().coerceIn(0f, 150f)
             m.bmr        = lib.basalMetabolicRate.toFloat().coerceIn(0f, 5000f)
@@ -280,12 +280,12 @@ class CultSmartScaleProHandler : ScaleDeviceHandler() {
 
             logI(
                 "body comp (StandardImpedanceLib, impedance=${pendingImpedance}Ω): " +
-                "fat=${m.fat}% water=${m.water}% muscle=${m.muscle}kg " +
+                "fat=${m.fat}% water=${m.water}% muscle=${m.muscle}% " +
                 "bone=${m.bone}kg lbm=${m.lbm}kg bmr=${m.bmr}kcal"
             )
         }
 
-        logI("publishing → weight=${m.weight}kg fat=${m.fat}% water=${m.water}% muscle=${m.muscle}kg bmr=${m.bmr}kcal impedance=${m.impedance}Ω")
+        logI("publishing → weight=${m.weight}kg fat=${m.fat}% water=${m.water}% muscle=${m.muscle}% bmr=${m.bmr}kcal impedance=${m.impedance}Ω")
         publish(m)
     }
 
