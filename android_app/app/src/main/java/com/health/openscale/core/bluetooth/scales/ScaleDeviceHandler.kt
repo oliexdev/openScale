@@ -113,33 +113,7 @@ abstract class ScaleDeviceHandler {
         // Pseudo UUIDs for Classic/SPP
         val CLASSIC_DATA_UUID: UUID =
             UUID.fromString("00000000-0000-0000-0000-00000000C1A5")
-
-        /**
-         * Pick the best known body weight in kg for a user record pushed to a scale.
-         *
-         * Never returns 0: a profile weight of zero is not "unknown" on the wire, it
-         * is a wrong value. The Huawei AH100 / CH100 rejects such a record and
-         * re-requests it in a tight USER_CHANGED loop (127 round trips observed in a
-         * single session), and any firmware that derives body composition from the
-         * pushed profile computes it against that garbage.
-         *
-         * Falls back to a BMI-22 estimate from body height, which is wrong but
-         * physiologically sane — and the first real measurement replaces it.
-         */
-        fun fallbackWeightKg(lastKg: Float?, initialKg: Float, heightCm: Float): Float {
-            lastKg?.takeIf { it.isFinite() && it > 0f }?.let { return it }
-            initialKg.takeIf { it.isFinite() && it > 0f }?.let { return it }
-            val heightM = heightCm / 100f
-            return if (heightM.isFinite() && heightM > 0.5f) 22f * heightM * heightM else 70f
-        }
     }
-
-    /** [fallbackWeightKg] for [user], using their last stored measurement. */
-    protected fun profileWeightKg(user: ScaleUser): Float = fallbackWeightKg(
-        lastKg = lastMeasurementFor(user.id)?.weight,
-        initialKg = user.initialWeight,
-        heightCm = user.bodyHeight
-    )
     /**
      * Identify whether this handler supports the given scanned device.
      * Return a [DeviceSupport] description if yes, or `null` if not.

@@ -390,8 +390,6 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
         val sexBit = if (user.gender.isMale()) 0x00 else 0x80
         val age = (user.age and 0xFF) or sexBit
         val height = user.bodyHeight.toInt() and 0xFF
-        // Never 0: the scale rejects a weightless user record and re-requests it
-        // in a USER_CHANGED loop. See ScaleDeviceHandler.fallbackWeightKg.
         val w = (weightTenthKg ?: (profileWeightKg(user) * 10f).toInt()).coerceAtLeast(1)
         val tail = ByteArrayOutputStream().apply {
             write(byteArrayOf(age.toByte(), height.toByte(), 0x00))
@@ -404,6 +402,22 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
 
         val full = authCode + tail
         sendCmdEncrypted(full)
+    }
+
+    /**
+     * Body weight in kg for the USER_INFO record, never 0.
+     *
+     * A zero weight is not "unknown" on the wire, it is a wrong value: the scale
+     * re-requests the record in a USER_CHANGED loop, and firmware that derives body
+     * composition from the pushed profile computes it against that. Prefers the last
+     * stored measurement, then the profile weight, then a BMI-22 estimate from body
+     * height — wrong but physiologically sane, and replaced by the first real reading.
+     */
+    private fun profileWeightKg(user: ScaleUser): Float {
+        lastMeasurementFor(user.id)?.weight?.takeIf { it.isFinite() && it > 0f }?.let { return it }
+        user.initialWeight.takeIf { it.isFinite() && it > 0f }?.let { return it }
+        val heightM = user.bodyHeight / 100f
+        return if (heightM.isFinite() && heightM > 0.5f) 22f * heightM * heightM else 70f
     }
 
     private fun sendGetVersion() = sendCmd(CMD_GET_VERSION, byteArrayOf())
