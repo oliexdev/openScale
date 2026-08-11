@@ -584,7 +584,7 @@
 <string name="insights_chip_volatility_stable">sabit</string>
 <string name="insights_chip_volatility_moderate">orta</string>
 <string name="insights_chip_volatility_high">oynak</string>
-<string name="insights_chip_plateau_days">%1$d günlük durağanlık</string>
+<string name="insights_chip_plateau_days">%1$d gün durağan</string>
 <string name="insights_short_term_trend">kısa vadeli</string>
 <string name="insights_long_term_trend">uzun vadeli</string>
 <string name="statistics_no_relevant_types">Sayımlamalar için uygun ya da yapılandırılmış ölçüm türü yok.</string>
