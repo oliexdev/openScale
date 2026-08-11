@@ -301,7 +301,7 @@
 <string name="measurement_type_update_error_conversion_failed">\'%1$s\' türünün değerleri dönüştürülürken hata oluştu. Tür tanımı güncellenmedi.</string>
 <string name="measurement_type_updated_unit_changed_no_values_converted">\'%1$s\' türü güncellendi. Birim değişti, ancak dönüştürülmesi gereken değer yoktu.</string>
 <string name="measurement_type_dialog_confirm_unit_change_title">Birim değişikliğini onaylayın</string>
-<string name="measurement_type_dialog_confirm_unit_change_message">\'%1$s\' türünün birimini %2$s biriminden %3$s birimine değiştirmek, var olan tüm veri noktalarını dönüştürecek. Bu işlem biraz sürebilir ve kolayca geri alınamaz. Sürdürmek istiyor musunuz?</string>
+<string name="measurement_type_dialog_confirm_unit_change_message">\'%1$s\' türünün birimini %2$s biriminden %3$s birimine değiştirmek, var olan tüm veri noktalarını dönüştürecek. Bu işlem biraz sürebilir ve kolayca geri alınamaz. Devam etmek istiyor musunuz?</string>
 <string name="formula_warning_message">Bu ölçüt salt okunur olur ve kendiliğinden hesaplanır. Temel değerler değiştiğinde güncellenir. Yeni ya da düzenlenen ölçümler için geçerlidir; var olan ölçümler değişmez.</string>
 <string name="formula_off">Kapalı</string>
 <string name="formula_bf_gallagher_2000_non_asian">Gallagher (2000) – Asyalı olmayan</string>
@@ -338,7 +338,7 @@
 <string name="bf_us_navy_long">Vücut yağ oranını, ABD Donanması standardına göre bel, boyun ve (kadınlarda) kalça çevresinden hesaplar.</string>
 <string name="batch_update_status_report">%1$d: %2$s</string>
 <string name="dialog_title_confirm_generic">%1$s onaylansın mı?</string>
-<string name="dialog_text_confirm_generic_verb">%1$d öğeyi %2$s işlemine sokmak istediğinizden emin misiniz?</string>
+<string name="dialog_text_confirm_generic_verb">%1$d öğe üzerinde %2$s işlemi yapılsın mı?</string>
 <string name="action_move_to_left_axis">sol eksene taşı</string>
 <string name="action_move_to_right_axis">sağ eksene taşı</string>
 <string name="status_axis_right">Sağ eksene taşındı</string>
@@ -443,7 +443,7 @@
 <string name="bluetooth_connector_broadcast_complete">%1$s aygıtından ölçüm alındı.</string>
 <string name="permissions_required_icon_desc">İzin gerekli simgesi</string>
 <string name="permissions_required_title">İzin gerekli</string>
-<string name="permissions_required_message_bluetooth">Tartı aramak için Bluetooth erişimine gereksinimimiz var.</string>
+<string name="permissions_required_message_bluetooth">Tartı aramak için Bluetooth erişimi gerekiyor.</string>
 <string name="grant_permissions_button">İzin ver</string>
 <string name="bluetooth_disabled_icon_desc">Bluetooth kapalı simgesi</string>
 <string name="bluetooth_disabled_title">Bluetooth kapalı</string>
