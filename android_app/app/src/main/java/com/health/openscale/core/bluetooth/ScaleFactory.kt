@@ -55,6 +55,7 @@ import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
 import com.health.openscale.core.bluetooth.scales.XiaomiS800Handler
 import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
+import com.health.openscale.core.bluetooth.scales.OmronWlcHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
 import com.health.openscale.core.bluetooth.scales.QNHandler
@@ -115,6 +116,7 @@ class ScaleFactory @Inject constructor(
     private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
         // Exact-name match must precede generic LeFu/0xFFF0 handlers (first match wins).
         KeepS3Handler(),
+        OmronWlcHandler(),
         BeurerBF450Handler(),
         TaylorBIAHandler(),
         RyFitHandler(),
