@@ -59,8 +59,8 @@ class BodyConnectHandler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name
-        if (!name.startsWith("1BODY CONNECT") && !name.startsWith("0BODY CONNECT") && !name.startsWith("0X-LINE")) return null
-        val displayName = if (name.contains("BODY CONNECT")) "1BODY CONNECT" else "X-LINE"
+        if (!name.startsWith("1BODY CONNECT") && !name.startsWith("0BODY CONNECT") && !name.startsWith("0X-LINE") && !name.startsWith("1X-LINE")) return null
+        val displayName = if (name.contains("BODY CONNECT")) "1BODY CONNECT" else "1X-LINE"
         return DeviceSupport(
             displayName = displayName,
             capabilities = setOf(DeviceCapability.BODY_COMPOSITION, DeviceCapability.TIME_SYNC, DeviceCapability.USER_SYNC, DeviceCapability.HISTORY_READ),
