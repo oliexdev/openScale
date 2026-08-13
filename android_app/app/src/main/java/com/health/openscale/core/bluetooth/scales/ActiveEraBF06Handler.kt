@@ -70,7 +70,6 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
     private var impedanceOhm: Double = 0.0
 
     private var pending: ScaleMeasurement? = null
-    private var hrBpm: Int? = null
 
     // --- Capability declaration ----------------------------------------------
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
@@ -105,7 +104,6 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
         supportsHR = false
         supportsPH = false
         impedanceOhm = 0.0
-        hrBpm = null
         pending = ScaleMeasurement()
 
         // Enable notifications then send configuration right away
@@ -299,8 +297,12 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
 
     /** D7: heart rate. */
     private fun handleHeartRate(pkt: ByteArray) {
-        hrBpm = pkt[0x03].toInt() and 0xFF
-        logI("Heart rate: ${hrBpm} bpm")
+        val hrBpm = pkt[0x03].toInt() and 0xFF
+        logI("Heart rate: $hrBpm bpm")
+        ensurePending().apply {
+            heartRate = hrBpm
+        }
+
         maybePublishIfComplete()
     }
 
@@ -325,12 +327,14 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
     private fun maybePublishIfComplete() {
         if (!weightStabilized) return
 
+        val m = ensurePending()
+
         val needHr = supportsHR
-        val haveHr = hrBpm != null
+        val haveHr = m.heartRate != 0
 
         if (needHr && !haveHr) return
 
-        val m = ensurePending().apply {
+        m.apply {
             // If we received balance or HR and you want to store them, extend ScaleMeasurement accordingly.
             // For now we publish standard fields.
             dateTime = java.util.Date() // now
