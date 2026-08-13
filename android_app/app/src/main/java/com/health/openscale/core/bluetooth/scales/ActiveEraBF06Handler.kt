@@ -25,6 +25,9 @@ import com.health.openscale.core.service.ScannedDeviceInfo
 import java.time.Instant
 import java.util.UUID
 import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.pow
 
 /**
@@ -75,22 +78,22 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         if (!device.name.equals(DEVICE_NAME, ignoreCase = true)) return null
 
-            return DeviceSupport(
-                displayName = "Active Era BF-06",
-                capabilities = setOf(
-                    DeviceCapability.LIVE_WEIGHT_STREAM,
+        return DeviceSupport(
+            displayName = "Active Era BF-06",
+            capabilities = setOf(
+                DeviceCapability.LIVE_WEIGHT_STREAM,
                 DeviceCapability.BODY_COMPOSITION,
-                    DeviceCapability.TIME_SYNC,
-                    DeviceCapability.HISTORY_READ // D8 packets
-                ),
-                implemented = setOf(
-                    DeviceCapability.LIVE_WEIGHT_STREAM,
-                    DeviceCapability.BODY_COMPOSITION,
-                    DeviceCapability.TIME_SYNC,
-                    DeviceCapability.HISTORY_READ
-                ),
-                linkMode = LinkMode.CONNECT_GATT
-            )
+                DeviceCapability.TIME_SYNC,
+                DeviceCapability.HISTORY_READ // D8 packets
+            ),
+            implemented = setOf(
+                DeviceCapability.LIVE_WEIGHT_STREAM,
+                DeviceCapability.BODY_COMPOSITION,
+                DeviceCapability.TIME_SYNC,
+                DeviceCapability.HISTORY_READ
+            ),
+            linkMode = LinkMode.CONNECT_GATT
+        )
     }
 
     // --- Connection lifecycle -------------------------------------------------
@@ -273,23 +276,47 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
         impedanceOhm = imp
         logI("Impedance: %.1f Ω".format(impedanceOhm))
 
-        if (impedanceOhm > 0.0 && stableWeightKg > 0f) {
-            // Simple BIA estimate (from legacy note). Replace once we have reverse-engineered vendor formulas.
-            val ffm = estimateFatFreeMass(
-                heightCm = user.bodyHeight.toInt(),
-                weightKg = stableWeightKg,
-                impedance = impedanceOhm,
-                age = user.age,
-                isMale = user.gender.isMale()
-            )
-            val fatKg = (stableWeightKg - ffm).coerceAtLeast(0.0)
-            val fatPct = if (stableWeightKg > 0) (fatKg / stableWeightKg) * 100.0 else 0.0
-            ensurePending().apply {
-                lbm = ffm.toFloat()
-                fat = fatPct.toFloat()
-                // Store the raw impedance so body composition can be recomputed later.
-                impedance = impedanceOhm
-                // Optional: rough water/muscle estimates could be added if desired
+        if (impedanceOhm > 10.0 && stableWeightKg > 0f) {
+            // scales report back the algorithm for calculating BIA data
+            val reportedAlg = pkt[0x11].toInt()
+            when (reportedAlg) {
+                0x07 -> {
+                    val calc = LibICBIACalculatorWLA07(stableWeightKg, user.bodyHeight.toInt(), impedanceOhm, user.age, user.gender.isMale())
+                    ensurePending().apply {
+                        val bodyFat = calc.bodyFatPercent.toFloat()
+                        fat = bodyFat
+                        muscle = calc.musclePercent.toFloat()
+                        visceralFat = calc.visceralFat.toFloat()
+                        bone = calc.boneMass.toFloat()
+                        water = calc.moisturePercent.toFloat()
+                        lbm = (stableWeightKg * (100.0 - bodyFat) / 100.0).toFloat()
+                        bmr = calc.bMR.toFloat()
+                        protein = calc.protein.toFloat()
+
+                        // Store the raw impedance so body composition can be recomputed later.
+                        impedance = impedanceOhm
+                    }
+                }
+                else -> {
+                    logW("unsupported alg=$reportedAlg. Fallback to estimating BIA")
+                    // Simple BIA estimate (from legacy note). Replace once we have reverse-engineered vendor formulas.
+                    val ffm = estimateFatFreeMass(
+                        heightCm = user.bodyHeight.toInt(),
+                        weightKg = stableWeightKg,
+                        impedance = impedanceOhm,
+                        age = user.age,
+                        isMale = user.gender.isMale()
+                    )
+                    val fatKg = (stableWeightKg - ffm).coerceAtLeast(0.0)
+                    val fatPct = if (stableWeightKg > 0) (fatKg / stableWeightKg) * 100.0 else 0.0
+                    ensurePending().apply {
+                        lbm = ffm.toFloat()
+                        fat = fatPct.toFloat()
+                        // Store the raw impedance so body composition can be recomputed later.
+                        impedance = impedanceOhm
+                        // Optional: rough water/muscle estimates could be added if desired
+                    }
+                }
             }
         }
         maybePublishIfComplete()
@@ -416,5 +443,232 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
                 0.134 * age +
                 4.83 * G -
                 6.83
+    }
+
+    /**
+     * Reverse-engineered from libICBodyFatAlgorithms.so, class
+     * ICBodyFatAlgorithmWLA07 (algType 6 mapped to ICBFATypeWLA07).
+     */
+    private class LibICBIACalculatorWLA07 constructor(
+        val weightKg: Float,
+        val heightCm: Int,
+        val impedanceOhm: Double,
+        val age: Int,
+        val isMale: Boolean
+    ) {
+        private val bfrRaw = bfrRaw()
+        private val muscleRaw = muscleRaw()
+
+        fun roundToOneDecimalPlace(value: Double): Double {
+            var fVar2 = (value % 1.0) * 10.0
+            if ((fVar2 % 1.0) > 0.5) {
+                fVar2 = ceil(fVar2)
+            } else {
+                fVar2 = floor(fVar2)
+            }
+            return (value.toInt()) + (fVar2 / 10.0)
+        }
+
+        fun clamp(value: Double, min: Double, max: Double): Double {
+            return min(max(value, min), max)
+        }
+
+        /** The shared 5-term regression: (height*A + weight*B + age*C + imp*D + E) / 10000  */
+        fun regress(row: Int, heightCm: Int, weightKg: Double, age: Int, impedanceOhm: Double): Double = TABLE[row].let {
+            (heightCm * it.heightCoef + weightKg * it.weightCoef + age * it.ageCoef + impedanceOhm * it.impCoef + it.const) / 10000.0
+        }
+
+        val bMI: Double
+            get() {
+                val bmi = (weightKg * 10000.0) / (heightCm * heightCm)
+                return clamp(bmi, 4.0, 185.5)
+            }
+
+        /** bfr regression clamped to [5,45].  */
+        fun bfrRaw(): Double {
+            val raw = (regress(
+                if (isMale) 1 else 0,
+                heightCm,
+                weightKg.toDouble(),
+                age,
+                impedanceOhm
+            ) / weightKg) * 100.0
+            if (raw <= 45.0) {
+                return max(raw, 5.0)
+            }
+            return 45.0
+        }
+
+        val bodyFatPercent: Double
+            get() = roundToOneDecimalPlace(bfrRaw)
+
+        fun getSubcutaneousFatPercent(bfrPercent: Double): Double {
+            return roundToOneDecimalPlace(bfrPercent * (-0.0002 * bfrPercent + 0.72))
+        }
+
+        /** Absolute (kg-ish) muscle mass from the row2/3 regression, with an FFM-residual correction band.  */
+        fun muscleRaw(): Double {
+            val bfr = clamp(bfrRaw, 5.0, 45.0)
+            val muscleRegression = regress(
+                if (isMale) 3 else 2,
+                heightCm,
+                weightKg.toDouble(),
+                age,
+                impedanceOhm
+            ) / 10.0
+            val ffmResidual = weightKg * (1.0 - bfr / 100.0) - muscleRegression
+            if (ffmResidual >= 4.0) {
+                return muscleRegression + ffmResidual - 4.0
+            }
+            if (ffmResidual > 1.0) {
+                return muscleRegression
+            }
+            return muscleRegression + ffmResidual - 1.0
+        }
+
+        val musclePercent: Double
+            get() = roundToOneDecimalPlace(muscleRaw / weightKg * 100.0)
+
+        val boneMass: Double
+            get() {
+                val muscle = muscleRaw
+                val bfr = clamp(bfrRaw, 5.0, 45.0)
+                val residual = weightKg - (bfr * weightKg) / 100.0 - muscle
+                return roundToOneDecimalPlace(clamp(residual, 1.0, 4.0))
+            }
+
+        val visceralFat: Double
+            /** Visceral fat uses its own quirky round-to-nearest-5 (not 0.1) step before the final clamp.  */
+            get() {
+                val raw = regress(
+                    if (isMale) 9 else 8,
+                    heightCm,
+                    weightKg.toDouble(),
+                    age,
+                    impedanceOhm
+                ) * 10.0
+                val truncated = raw.toInt()
+                val base = (truncated / 10) * 10
+                val rounded = if (truncated % 10 < 6) base else base + 5
+                return roundToOneDecimalPlace(clamp(rounded / 10.0, 1.0, 59.0))
+            }
+
+        val bMR: Int
+            get() {
+                val raw =
+                    regress(if (isMale) 7 else 6, heightCm, weightKg.toDouble(), age, impedanceOhm)
+                return Math.round(clamp(raw, 400.0, 3500.0)).toInt()
+            }
+
+        val physicalAge: Int
+            get() {
+                if (age <= 14) {
+                    return age
+                }
+                val raw = regress(
+                    if (isMale) 11 else 10,
+                    heightCm,
+                    weightKg.toDouble(),
+                    age,
+                    impedanceOhm
+                )
+                val physicalAge = clamp(raw, Double.NEGATIVE_INFINITY, 80.0).toInt()
+                return max(physicalAge, 15)
+            }
+
+        /** Shared by water% and protein%: row4/5 regression run through an FFM-residual correction band.  */
+        fun moistureCorrected(): Double {
+            val muscle = muscleRaw
+            val musclePercent = muscle / weightKg * 100.0
+            val raw = regress(
+                if (isMale) 5 else 4,
+                heightCm,
+                weightKg.toDouble(),
+                age,
+                impedanceOhm
+            ) / weightKg
+            val residual = musclePercent - raw
+            if (residual >= 32.0) {
+                return musclePercent - 32.0
+            }
+            if (residual > 5.0) {
+                return raw
+            }
+            return musclePercent - 5.0
+        }
+
+        val moisturePercent: Double
+            get() {
+                val corrected = moistureCorrected()
+                return roundToOneDecimalPlace(clamp(corrected, 20.0, 85.0))
+            }
+
+        val protein: Double
+            get() {
+                val muscle = muscleRaw
+                val waterRaw = clamp(
+                    regress(
+                        if (isMale) 5 else 4,
+                        heightCm,
+                        weightKg.toDouble(),
+                        age,
+                        impedanceOhm
+                    ) / weightKg, 20.0, 85.0
+                )
+                val protein = muscle / weightKg * 100.0 - waterRaw
+                return roundToOneDecimalPlace(clamp(protein, 5.0, 32.0))
+            }
+
+        val skeletalMuscleMass: Double
+            get() {
+                val muscle = muscleRaw
+                val sexFlag = if (isMale) 1.0 else 0.0
+                var raw =
+                    (impedanceOhm * -0.017 + weightKg * 0.1745 + heightCm * 0.2573 + sexFlag * 2.4269) - age * 0.0161 - 20.2165
+                val ratio = raw / muscle
+                if (ratio >= 0.7) {
+                    raw = muscle * 0.7
+                } else if (ratio <= 0.45) {
+                    raw = muscle * 0.45
+                }
+                return roundToOneDecimalPlace(raw / weightKg * 100.0)
+            }
+
+        companion object {
+            private data class TableRow(
+                val heightCoef: Int,
+                val weightCoef: Int,
+                val ageCoef: Int,
+                val impCoef: Int,
+                val const: Int,
+            )
+
+            private val TABLE = arrayOf(
+                /* row 0: bfr, female */
+                TableRow(-3332, 7509, 196, 72, 227193),
+                /* row 1: bfr, male */
+                TableRow(-3315, 6216, 183, 85, 225540),
+                /* row 2: muscleRaw, female */
+                TableRow(31860, 19340, -2060, -1320, -1645560),
+                /* row 3: muscleRaw, male */
+                TableRow(28670, 38940, -4080, -1235, -1576650),
+                /* row 4: water/protein, female */
+                TableRow(87700, 297300, 12800, -6030, 517500),
+                /* row 5: water/protein, male */
+                TableRow(93900, 375800, -3200, -6925, 97000),
+                /* row 6: bmr, female */
+                TableRow(75432, 99474, -34382, -3090, -2882821),
+                /* row 7: bmr, male */
+                TableRow(75037, 131523, -43376, -3486, -3117751),
+                /* row 8: visceralFat, female */
+                TableRow(-1651, 2628, 649, 24, 123445),
+                /* row 9: visceralFat, male   */
+                TableRow(-2675, 4200, 1462, 123, 139871),
+                /* row 10: physicalAge, female */
+                TableRow(-11165, 15784, 4615, 415, 832548),
+                /* row 11: physicalAge, male   */
+                TableRow(-7471, 9161, 4184, 517, 542267),
+            )
+        }
     }
 }
