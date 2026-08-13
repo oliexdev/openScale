@@ -831,6 +831,9 @@
     <!-- Bluetooth Scales Messages -->
     <string name="bluetooth_scale_trisa_message_not_paired_instruction">This scale has not been paired!\n\nHold the button on the bottom of the scale to switch it to pairing mode, and then reconnect to retrieve the device password.</string>
     <string name="bluetooth_scale_trisa_success_pairing">Pairing succeeded!\n\nReconnect to retrieve measurement data.</string>
+    <string name="bluetooth_scale_weightgurus_slot_empty">empty</string>
+    <string name="bluetooth_scale_weightgurus_slot">User %1$d - %2$s</string>
+    <string name="bluetooth_scale_weightgurus_slot_match">User %1$d - %2$s (matches your name)</string>
     <string name="bluetooth_scale_info_create_user_instruction">Create new user on scale.</string>
     <string name="bluetooth_scale_warning_low_battery">Low battery level (%d%%), please recharge or replace scale batteries</string>
     <string name="bluetooth_scale_info_step_on_for_reference">Please step barefoot on the scale for reference measurements</string>
