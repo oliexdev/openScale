@@ -25,14 +25,9 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
-import java.nio.ByteBuffer;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -52,6 +47,8 @@ public class BluetoothActiveEraBF06 extends BluetoothCommunication {
 
     private boolean weightStabilized = false;
     private float stableWeightKg = 0.0f;
+
+    private byte reportedAlg = 0xf;
 
     private boolean isSupportPH = false;
     private boolean isSupportHR = false;
@@ -209,11 +206,11 @@ public class BluetoothActiveEraBF06 extends BluetoothCommunication {
                 isSupportPH = isBitSet(flags, 3);
 
                 float weightKg = (Converters.fromUnsignedInt24Be(pkt, 3) & 0x3FFFF) / 1000.0f;
-                // TODO: test if it's always in grams ?
                 if (stabilized && !weightStabilized) {
                     weightStabilized = true;
                     stableWeightKg = weightKg;
-                    Timber.i("Measured weight (stable): %.3f", stableWeightKg);
+                    reportedAlg = pkt[0x11];
+                    Timber.i("Measured weight (stable): %.3f, alg: %x", stableWeightKg, reportedAlg);
                     scaleData.setWeight(weightKg);
                     resumeMachineState();
                 }
@@ -248,14 +245,12 @@ public class BluetoothActiveEraBF06 extends BluetoothCommunication {
                     Timber.i("Measured impedance: %.1f", impedance);
 
                     // calculate BIA using measure weight and impedance
-                    if (impedance > 0.0) {
+                    if (impedance >= 10.0) {
                         final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
                         int height = (int) Math.ceil(selectedUser.getBodyHeight());
                         int age = selectedUser.getAge();
-                        int gender = selectedUser.getGender() == Converters.Gender.FEMALE ? 0 : 1;
 
-                        calculateBIA(height, impedance, stableWeightKg, age, gender);
-                        // TODO: report results
+                        calculateBIA(reportedAlg, height, impedance, stableWeightKg, age, selectedUser.getGender());
                     }
 
                 } else {
@@ -288,39 +283,233 @@ public class BluetoothActiveEraBF06 extends BluetoothCommunication {
     }
 
     /**
-     * Calculate BIA parameters
-     * for now, using forumlas from
-     * <a href="https://isn.ucsd.edu/courses/beng186b/project/2021/Raj_Sunku_Tsujimoto_Measuring_body_composition_via_body_impedance.pdf">paper</a>
+     * Calculate and store BIA parameters if a supported algorithm is reported by scales.
      *
-     * TODO: replace with reverse-engineered library version
-     *
-     * @param heightCm
-     * @param impedanceOhm
-     * @param weightKg
-     * @param age - in years
-     * @param gender - 0 - female, 1 - male
+     * @param alg algorithm used on the scales
+     * @param heightCm height in cm
+     * @param impedanceOhm imp1, single impedance reading in Ohm
+     * @param weightKg weight in kg
+     * @param age in years
+     * @param gender the scale user's gender
      */
-    private void calculateBIA(int heightCm, double impedanceOhm, float weightKg, int age, int gender) {
-        // FFM = 0.36(H2/Z) + 0.162H + 0.289W − 0.134A + 4.83G − 6.83
-        double fatFreeMass = (0.36d * (Math.pow(heightCm, 2) / impedanceOhm))
-                + (0.162d * heightCm)
-                + (0.289d * weightKg)
-                - (0.134 * age)
-                + (4.83 * gender)
-                - 6.83;
+    private void calculateBIA(byte alg, int heightCm, double impedanceOhm, float weightKg, int age, Converters.Gender gender) {
+        if (alg != 0x07) {
+            Timber.w("Unsupported alg reported by scales: %d. Can't calculate BIA parameters", alg);
+            return;
+        }
 
-        double fatMass = weightKg - fatFreeMass;
-        double bodyFat = fatMass / weightKg * 100.0;
-        Timber.i("FFM: %.2f, FM: %.2f, BF: %.1f%%", fatFreeMass, fatMass, bodyFat);
+        LibICBIACalculatorWLA07 alg7 = new LibICBIACalculatorWLA07(weightKg, heightCm, impedanceOhm, age, gender == Converters.Gender.MALE);
+        double bmi = alg7.getBMI();
+        double bodyFat = alg7.getBodyFatPercent();
+        double muscle = alg7.getMusclePercent();
+        double subcut = alg7.getSubcutaneousFatPercent(bodyFat);
+        double visceralFat = alg7.getVisceralFat();
+        double boneMass = alg7.getBoneMass();
+        double water = alg7.getMoisturePercent();
+        double protein = alg7.getProtein();
+        double skeletalMuscleMass = alg7.getSkeletalMuscleMass();
+        int bmr = alg7.getBMR();
+        int bodyAge = alg7.getPhysicalAge();
+
+        Timber.i("[Alg7/WLA07] BMI: %.1f, bodyFat: %.1f%%, muscle: %.1f%%, subcut. fat: %.1f%%, visceral fat: %.1f, bone: %.2f kg, water: %.1f%%, protein: %.1f%%, SMM: %.1f%%, BMR: %d, physical age: %d",
+                bmi, bodyFat, muscle, subcut, visceralFat, boneMass, water, protein, skeletalMuscleMass, bmr, bodyAge);
+
+        scaleData.setFat((float) bodyFat);
+        scaleData.setWater((float) water);
+        scaleData.setMuscle((float) muscle);
+        scaleData.setVisceralFat((float) visceralFat);
+        scaleData.setBone((float) boneMass);
+        scaleData.setLbm((float) (weightKg * (100.0 - bodyFat) / 100.0));
+        scaleData.setCalories(bmr);
     }
 
     private void parseHistoricalPacket(byte[] pkt) {
+        int userId = pkt[0x02];
         Instant time = Instant.ofEpochSecond(Converters.fromUnsignedInt24Be(pkt, 3));
         float weight = (Converters.fromUnsignedInt24Be(pkt, 0x08) & 0x03FFFF) / 1000.0f;
         float weightLeft = Converters.fromUnsignedInt16Be(pkt, 0x0b) / 100.0f;
         int hr = pkt[0x0d] & 0xff;
         int adc = Converters.fromUnsignedInt16Be(pkt, 0x0f);
-        Timber.i("Historical measurement: %.3f kg, Weight Left: %.2f kg, HR: %d, ADC: %d", weight, weightLeft, hr, adc);
+        byte alg = pkt[0x11];
+        Timber.i(
+            "Historical measurement: [%d] %.3f kg, Weight Left: %.2f kg, HR: %d, ADC: %d, alg: %d",
+            userId, weight, weightLeft, hr, adc, alg
+        );
         // TODO: store historical results
+    }
+
+    /**
+     * Reverse-engineered from libICBodyFatAlgorithms.so, class
+     * ICBodyFatAlgorithmWLA07 (algType 6 mapped to ICBFATypeWLA07).
+     **/
+    private static class LibICBIACalculatorWLA07 {
+        // row layout: {heightCoef, weightCoef, ageCoef, impCoef, constant}
+        private static final int[][] TABLE = {
+                /* row 0: bfr, female  */ {-3332, 7509, 196, 72, 227193},
+                /* row 1: bfr, male    */ {-3315, 6216, 183, 85, 225540},
+                /* row 2: muscleRaw, female */ {31860, 19340, -2060, -1320, -1645560},
+                /* row 3: muscleRaw, male   */ {28670, 38940, -4080, -1235, -1576650},
+                /* row 4: water/protein, female */ {87700, 297300, 12800, -6030, 517500},
+                /* row 5: water/protein, male   */ {93900, 375800, -3200, -6925, 97000},
+                /* row 6: bmr, female  */ {75432, 99474, -34382, -3090, -2882821},
+                /* row 7: bmr, male    */ {75037, 131523, -43376, -3486, -3117751},
+                /* row 8: visceralFat, female */ {-1651, 2628, 649, 24, 123445},
+                /* row 9: visceralFat, male   */ {-2675, 4200, 1462, 123, 139871},
+                /* row 10: physicalAge, female */ {-11165, 15784, 4615, 415, 832548},
+                /* row 11: physicalAge, male   */ {-7471, 9161, 4184, 517, 542267},
+        };
+
+        private int heightCm = -1;
+        private double impedanceOhm = -1d;
+        private float weightKg = -1f;
+        private int age = -1;
+        private boolean isMale = false;
+
+        private double bfrRaw = -1d;
+        private double muscleRaw = -1d;
+
+        LibICBIACalculatorWLA07(float weightKg, int heightCm, double impedanceOhm, int age, boolean isMale) {
+            this.weightKg = weightKg;
+            this.heightCm = heightCm;
+            this.impedanceOhm = impedanceOhm;
+            this.age = age;
+            this.isMale = isMale;
+
+            this.bfrRaw = bfrRaw();
+            this.muscleRaw = muscleRaw();
+        }
+
+        private double roundToOneDecimalPlace(double value) {
+            double fVar2 = value % 1.0;
+            fVar2 = fVar2 * 10.0;
+            double fVar3 = fVar2 % 1.0;
+            if (fVar3 > 0.5) {
+                fVar2 = Math.ceil(fVar2);
+            } else {
+                fVar2 = Math.floor(fVar2);
+            }
+            return ((int) value) + (fVar2 / 10.0);
+        }
+
+        private double clamp(double value, double min, double max) {
+            return Math.min(Math.max(value, min), max);
+        }
+
+        /** The shared 5-term regression: (height*A + weight*B + age*C + imp*D + E) / 10000 */
+        private double regress(int row, int heightCm, double weightKg, int age, double impedanceOhm) {
+            int[] c = TABLE[row];
+            return (heightCm * c[0] + weightKg * c[1] + age * c[2] + impedanceOhm * c[3] + c[4]) / 10000.0;
+        }
+
+        double getBMI() {
+            double bmi = (weightKg * 10000.0) / (heightCm * heightCm);
+            return clamp(bmi, 4.0, 185.5);
+        }
+
+        /** bfr regression clamped to [5,45]. */
+        private double bfrRaw() {
+            double raw = (regress(isMale ? 1 : 0, heightCm, weightKg, age, impedanceOhm) / weightKg) * 100.0;
+            if (raw <= 45.0) {
+                return Math.max(raw, 5.0);
+            }
+            return 45.0;
+        }
+
+        double getBodyFatPercent() {
+            return roundToOneDecimalPlace(bfrRaw);
+        }
+
+        double getSubcutaneousFatPercent(double bfrPercent) {
+            return roundToOneDecimalPlace(bfrPercent * (-0.0002 * bfrPercent + 0.72));
+        }
+
+        /** Absolute (kg-ish) muscle mass from the row2/3 regression, with an FFM-residual correction band. */
+        private double muscleRaw() {
+            double bfr = clamp(bfrRaw, 5.0, 45.0);
+            double muscleRegression = regress(isMale ? 3 : 2, heightCm, weightKg, age, impedanceOhm) / 10.0;
+            double ffmResidual = weightKg * (1.0 - bfr / 100.0) - muscleRegression;
+            if (ffmResidual >= 4.0) {
+                return muscleRegression + ffmResidual - 4.0;
+            }
+            if (ffmResidual > 1.0) {
+                return muscleRegression;
+            }
+            return muscleRegression + ffmResidual - 1.0;
+        }
+
+        double getMusclePercent() {
+            return roundToOneDecimalPlace(muscleRaw / weightKg * 100.0);
+        }
+
+        double getBoneMass() {
+            double muscle = muscleRaw;
+            double bfr = clamp(bfrRaw, 5.0, 45.0);
+            double residual = weightKg - (bfr * weightKg) / 100.0 - muscle;
+            return roundToOneDecimalPlace(clamp(residual, 1.0, 4.0));
+        }
+
+        /** Visceral fat uses its own quirky round-to-nearest-5 (not 0.1) step before the final clamp. */
+        double getVisceralFat() {
+            double raw = regress(isMale ? 9 : 8, heightCm, weightKg, age, impedanceOhm) * 10.0;
+            int truncated = (int) raw;
+            int base = (truncated / 10) * 10;
+            int rounded = (truncated % 10 < 6) ? base : base + 5;
+            return roundToOneDecimalPlace(clamp(rounded / 10.0, 1.0, 59.0));
+        }
+
+        int getBMR() {
+            double raw = regress(isMale ? 7 : 6, heightCm, weightKg, age, impedanceOhm);
+            return (int) Math.round(clamp(raw, 400.0, 3500.0));
+        }
+
+        int getPhysicalAge() {
+            if (age <= 14) {
+                return age;
+            }
+            double raw = regress(isMale ? 11 : 10, heightCm, weightKg, age, impedanceOhm);
+            int physicalAge = (int) clamp(raw, Double.NEGATIVE_INFINITY, 80.0);
+            return Math.max(physicalAge, 15);
+        }
+
+        /** Shared by water% and protein%: row4/5 regression run through an FFM-residual correction band. */
+        private double moistureCorrected() {
+            double muscle = muscleRaw;
+            double musclePercent = muscle / weightKg * 100.0;
+            double raw = regress(isMale ? 5 : 4, heightCm, weightKg, age, impedanceOhm) / weightKg;
+            double residual = musclePercent - raw;
+            if (residual >= 32.0) {
+                return musclePercent - 32.0;
+            }
+            if (residual > 5.0) {
+                return raw;
+            }
+            return musclePercent - 5.0;
+        }
+
+        double getMoisturePercent() {
+            double corrected = moistureCorrected();
+            return roundToOneDecimalPlace(clamp(corrected, 20.0, 85.0));
+        }
+
+        double getProtein() {
+            double muscle = muscleRaw;
+            double waterRaw = clamp(regress(isMale ? 5 : 4, heightCm, weightKg, age, impedanceOhm) / weightKg, 20.0, 85.0);
+            double protein = muscle / weightKg * 100.0 - waterRaw;
+            return roundToOneDecimalPlace(clamp(protein, 5.0, 32.0));
+        }
+
+        double getSkeletalMuscleMass() {
+            double muscle = muscleRaw;
+            double sexFlag = isMale ? 1.0 : 0.0;
+            double raw = impedanceOhm * -0.017 + weightKg * 0.1745 + heightCm * 0.2573
+                    + sexFlag * 2.4269 - age * 0.0161 - 20.2165;
+            double ratio = raw / muscle;
+            if (ratio >= 0.7) {
+                raw = muscle * 0.7;
+            } else if (ratio <= 0.45) {
+                raw = muscle * 0.45;
+            }
+            return roundToOneDecimalPlace(raw / weightKg * 100.0);
+        }
     }
 }
