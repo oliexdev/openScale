@@ -45,6 +45,10 @@ import kotlin.math.pow
  */
 class ActiveEraBF06Handler : ScaleDeviceHandler() {
 
+    companion object {
+        private const val DEVICE_NAME = "AE BS-06"
+    }
+
     // --- GATT UUIDs -----------------------------------------------------------
     private val SERVICE: UUID = uuid16(0xFFB0)
     private val CHR_WRITE: UUID = uuid16(0xFFB1)
@@ -70,18 +74,13 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
 
     // --- Capability declaration ----------------------------------------------
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        // Match by name heuristics and/or advertised service UUID
-        val name = device.name.lowercase()
-        val hasSvc = device.serviceUuids.any { it == SERVICE }
-        if (
-            hasSvc ||
-            name.contains("AE BS-06".lowercase())
-        ) {
+        if (!device.name.equals(DEVICE_NAME, ignoreCase = true)) return null
+
             return DeviceSupport(
                 displayName = "Active Era BF-06",
                 capabilities = setOf(
                     DeviceCapability.LIVE_WEIGHT_STREAM,
-                    DeviceCapability.BODY_COMPOSITION, // we compute via simple BIA when possible
+                DeviceCapability.BODY_COMPOSITION,
                     DeviceCapability.TIME_SYNC,
                     DeviceCapability.HISTORY_READ // D8 packets
                 ),
@@ -93,8 +92,6 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
                 ),
                 linkMode = LinkMode.CONNECT_GATT
             )
-        }
-        return null
     }
 
     // --- Connection lifecycle -------------------------------------------------
