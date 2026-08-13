@@ -1,5 +1,0 @@
-* added an App introduction
-* added support for Soehnle Shape Sense scales
-* enhanced support for Yunmai scale
-* set CSV date format to ISO 8601:2004
-* fixed minor bugs

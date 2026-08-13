@@ -1,9 +1,0 @@
-- added support for Vigorun YG and Quanta QTBL10 scale
-- added fastlane support
-- integration of Androidx navigation component
-- replaced obsoleted preferences with Androidx preferences
-- replaced png file with svg files
-- integration of DayNight theme
-- use of live data to have always up-to-date measurements
-- added support for round launcher icons
-- fixed minor bug

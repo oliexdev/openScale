@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_logo_content_description">Aplikazioaren logoa</string>
+    <string name="text_none">Bat ere ez</string>
+    <string name="not_available">N/A</string>
+    <string name="placeholder_empty_value">-</string>
+    <string name="theme_light">Argia</string>
+    <string name="theme_dark">Iluna</string>
+    <string name="enable_button">Gaitu</string>
+    <string name="cancel_button">Ezeztatu</string>
+    <string name="clear_button">Garbitu</string>
+    <string name="confirm_button">Baieztatu</string>
+    <string name="dialog_ok">Ados</string>
+    <string name="saved">Gordeta</string>
+    <string name="open_link_content_description">Zabaldu esteka</string>
+</resources>

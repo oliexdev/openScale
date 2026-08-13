@@ -1,2 +1,0 @@
-- shows converted values in graph
-- fixed crash when marker is selected and measurement is deslected

@@ -1,4 +1,0 @@
-Version 2.3.4
-- fixed crash during startup if trendline is enabled
-- don't include zero measurements in the trendline calculation
-- catch error if context is lost during a Bluetooth search

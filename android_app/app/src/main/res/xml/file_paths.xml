@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!--
+        This path allows sharing files from the "logs" subdirectory
+        within your app's specific directory on external storage.
+        This corresponds to what context.getExternalFilesDir("logs") would point to.
+    -->
+    <external-files-path
+        name="log_files"
+        path="logs/" />
+</paths>

@@ -1,0 +1,10 @@
+This is a landmark update! openScale has been completely rewritten from the ground up to build a modern, stable, and faster foundation for the future.
+
+- **Complete App Rewrite:** The entire app is now built with Kotlin and Jetpack Compose for better performance and a refreshed user interface.
+- **New Bluetooth System:** A fully modernized Bluetooth stack improves connection reliability and makes it easier to support new scales.
+- **Modern Architecture:** Updated to the latest standards for a more robust and future-proof app.
+
+As this is a complete rewrite, you may encounter new bugs or regressions. Please report them via GitHub so we can fix them. Your patience and feedback are greatly appreciated!
+
+A huge thank you to our beta testers!
+

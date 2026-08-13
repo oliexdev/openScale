@@ -1,0 +1,184 @@
+/*
+ * openScale
+ * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package com.health.openscale.ui.screen.components
+
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLabelComponent
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.compose.cartesian.data.CartesianValueFormatter
+import com.patrykandpatrick.vico.compose.cartesian.data.columnModel
+import com.patrykandpatrick.vico.compose.cartesian.layer.ColumnCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarker
+import com.patrykandpatrick.vico.compose.cartesian.marker.CartesianMarkerController
+import com.patrykandpatrick.vico.compose.cartesian.marker.ColumnCartesianLayerMarkerTarget
+import com.patrykandpatrick.vico.compose.cartesian.marker.Interaction
+import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.common.Fill
+import com.patrykandpatrick.vico.compose.common.component.LineComponent
+import com.patrykandpatrick.vico.compose.common.data.ExtraStore
+import kotlin.collections.firstOrNull
+
+
+private val BottomAxisLabelKey = ExtraStore.Key<List<String>>()
+
+/**
+ * Data class representing a single period column in the chart.
+ *
+ * @property label Display label for the period (e.g., "Jan 25").
+ * @property count Value of the column.
+ * @property startTimestamp Start timestamp for the period.
+ * @property endTimestamp End timestamp for the period.
+ */
+data class PeriodDataPoint(
+    val label: String,
+    val count: Int,
+    val startTimestamp: Long,
+    val endTimestamp: Long
+)
+
+/**
+ * Composable displaying a selectable stacked column chart of periods.
+ *
+ * Selection/deselection triggers only on pointer release to prevent repeated firing
+ * when the mouse is held down.
+ *
+ * @param modifier Modifier for layout/styling
+ * @param data List of [PeriodDataPoint] to display
+ * @param selectedPeriod Currently selected period, or null
+ * @param onPeriodClick Callback when a period is selected or deselected
+ */
+@Composable
+fun PeriodChart(
+    modifier: Modifier = Modifier,
+    data: List<PeriodDataPoint>,
+    selectedPeriod: PeriodDataPoint?,
+    onPeriodClick: (PeriodDataPoint?) -> Unit
+) {
+    // Fill colors for unselected and selected bars
+    val unselectedColor = Fill(MaterialTheme.colorScheme.primaryContainer)
+    val selectedColor = Fill(MaterialTheme.colorScheme.primary)
+
+    // Chart model producer that holds and updates the dataset
+    val modelProducer = remember { CartesianChartModelProducer() }
+
+    // Define a stacked column layer: one series for unselected, one for selected items
+    val columnLayer = rememberColumnCartesianLayer(
+        ColumnCartesianLayer.ColumnProvider.series(
+            listOf(
+                LineComponent(fill = unselectedColor, thickness = 12.dp),
+                LineComponent(fill = selectedColor, thickness = 12.dp)
+            )
+        ),
+        mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
+    )
+
+    // Update the chart model when data or selected period changes
+    LaunchedEffect(data, selectedPeriod) {
+        if (data.isNotEmpty()) {
+            modelProducer.runTransaction {
+                columnModel {
+                    // First series: all unselected items
+                    series(data.map { if (it != selectedPeriod) it.count.toDouble() else 0.0 })
+                    // Second series: the selected item
+                    series(data.map { if (it == selectedPeriod) it.count.toDouble() else 0.0 })
+                    // Store labels for axis
+                    extras { it[BottomAxisLabelKey] = data.map { it.label } }
+                }
+            }
+        }
+    }
+
+    // Build the Cartesian chart with a bottom axis and marker
+    val chart = rememberCartesianChart(
+        columnLayer,
+        startAxis = null,
+        bottomAxis = HorizontalAxis.rememberBottom(
+            itemPlacer = HorizontalAxis.ItemPlacer.aligned(
+                addExtremeLabelPadding = true,
+            ),
+            valueFormatter = CartesianValueFormatter { context, x, _ ->
+                val labels = context.model.extraStore[BottomAxisLabelKey]
+                if (labels.isNotEmpty() && x.toInt() in labels.indices) labels[x.toInt()] else ""
+            },
+            guideline = null,
+            label = rememberAxisLabelComponent(
+                lineCount = 1,       // no wrap
+            )
+        ),
+        marker = rememberMarker(
+            { _, targets ->
+                val column = (targets.getOrNull(0) as? ColumnCartesianLayerMarkerTarget)
+                    ?.columns?.firstOrNull()
+                val hoveredIndex = column?.entry?.x?.toInt()
+                val hoveredData = hoveredIndex?.let { if (it in data.indices) data[it] else null }
+                hoveredData?.let { "${it.label} (${it.count})" } ?: ""
+            }
+        ),
+        markerController = remember(data, selectedPeriod) {
+            object : CartesianMarkerController {
+                override fun shouldAcceptInteraction(
+                    interaction: Interaction,
+                    targets: List<CartesianMarker.Target>
+                ): Boolean {
+                    return interaction is Interaction.Press || interaction is Interaction.Release
+                }
+
+                override fun shouldShowMarker(
+                    interaction: Interaction,
+                    targets: List<CartesianMarker.Target>
+                ): Boolean {
+                    when (interaction) {
+                        is Interaction.Press -> return true
+
+                        is Interaction.Release -> {
+                            val index = targets.firstOrNull()?.x?.toInt() ?: return false
+                            if (index in data.indices) {
+                                val clickedData = data[index]
+                                if (clickedData == selectedPeriod) {
+                                    onPeriodClick(null)
+                                } else {
+                                    onPeriodClick(clickedData)
+                                }
+                            }
+                            return false
+                        }
+
+                        else -> return false
+                    }
+                }
+            }
+        }
+    )
+
+    // Chart host that handles pointer interactions (tap to select/deselect).
+    // Forward the caller's modifier so the bars fill the available height (and thus grow with the
+    // splitter) instead of rendering at Vico's intrinsic default height.
+    CartesianChartHost(
+        chart = chart,
+        modelProducer = modelProducer,
+        modifier = modifier,
+    )
+}

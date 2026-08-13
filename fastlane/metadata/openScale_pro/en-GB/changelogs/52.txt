@@ -1,9 +1,0 @@
-Version 2.3.3
-- fixed background and image colour in dark mode
-- fixed a crash when selecting a Bluetooth device during the slideshow
-- fixed crash when disable and enable measurements with no data
-
-Version 2.3.2
-- added support for Libra like trendlines
-- updated some translations
-- fixed minor bug

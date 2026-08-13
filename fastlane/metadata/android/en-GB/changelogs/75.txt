@@ -1,0 +1,5 @@
+* New Insights screen with rich, data-driven analysis of your measurement history.
+* Expanded device support: Dr.Trust Smart Scale 532, Cult Smart Scale Pro, RyFit (YunYue) and Eufy C20, plus broadcast-mode support for QN-lineage scales.
+* Connectivity fixes for Huawei AH100/CH100, QN/RENPHO, Beurer/Sanitas and Mi Scale 2 (incl. dual impedance).
+* Enabled ECW, ICW, protein and BCM metrics; CSV import/export now covers internal types.
+* Backups are staged and validated before restoring.

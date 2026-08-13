@@ -1,6 +1,0 @@
-- basic support for Beurer BF105, BF600, BF850, BF950 and Silvercrest SBF77
-- add support for OKOK 1.1 scales
-- bring muscle mass eval sheet to proper ranges
-- fix body fat calculation for 1 byone scales
-- added support for Hoffen BBS-8107 scale
-- minor bug fixes

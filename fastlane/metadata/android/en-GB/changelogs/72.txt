@@ -1,0 +1,3 @@
+* Improved stability and reliability of Bluetooth connections
+* Fixed issues with measurement date/time handling and various minor bugs
+* Minor UI and data improvements (e.g. weekday display, updated BMI calculation)
