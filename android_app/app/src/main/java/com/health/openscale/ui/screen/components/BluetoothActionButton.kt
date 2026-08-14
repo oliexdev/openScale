@@ -1,4 +1,3 @@
-
 /*
  * openScale
  * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
@@ -58,11 +57,15 @@ fun rememberBluetoothActionButton(
     val TAG = "BluetoothActionButton"
     val context = LocalContext.current
 
-    // Launcher for Bluetooth permissions
+    // Launcher for Bluetooth permissions.
+    // Only BLUETOOTH_CONNECT is strictly required to connect to a saved device by address.
+    // BLUETOOTH_SCAN is requested alongside it so the system can grant it early (useful for
+    // the scan screen later), but the connect action must NOT be blocked if SCAN alone is denied.
     val permissionsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        if (permissions.values.all { it }) {
+        // Proceed as long as the critical CONNECT permission was granted.
+        if (permissions[Manifest.permission.BLUETOOTH_CONNECT] == true) {
             bluetoothViewModel.connectToSavedDevice()
         }
     }
@@ -141,18 +144,18 @@ fun rememberBluetoothActionButton(
                 icon = Icons.Filled.BluetoothDisabled,
                 contentDescription = context.getString(R.string.bluetooth_action_disconnect_desc, deviceName),
                 onClick = {
-                    // Check for BOTH permissions (Scan and Connect)
-                    val hasScanPerm = ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
-                    val hasConnectPerm = ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+                    // BLUETOOTH_CONNECT is the only permission needed to connect to a saved address.
+                    // BLUETOOTH_SCAN is only needed for discovery; denying it must not block connect.
+                    val hasConnectPerm = ContextCompat.checkSelfPermission(
+                        context, Manifest.permission.BLUETOOTH_CONNECT
+                    ) == PackageManager.PERMISSION_GRANTED
 
-                    val hasAllPermissions = hasScanPerm && hasConnectPerm
-
-                    if (!hasAllPermissions) {
-                        // Launch request for both permissions at once
+                    if (!hasConnectPerm) {
+                        // Request CONNECT (and SCAN opportunistically); callback only gates on CONNECT.
                         permissionsLauncher.launch(
                             arrayOf(
-                                Manifest.permission.BLUETOOTH_SCAN,
-                                Manifest.permission.BLUETOOTH_CONNECT
+                                Manifest.permission.BLUETOOTH_CONNECT,
+                                Manifest.permission.BLUETOOTH_SCAN
                             )
                         )
                     } else if (!bluetoothViewModel.isBluetoothEnabled()) {
@@ -166,7 +169,7 @@ fun rememberBluetoothActionButton(
                             message = context.getString(R.string.snackbar_bluetooth_attempting_connection, deviceName),
                             duration = SnackbarDuration.Short
                         )
-                        LogManager.d(TAG, "User clicked bluetooth icon connect → trying to connect to saved device $deviceName")
+                        LogManager.d(TAG, "User requested connection to saved Bluetooth device.")
 
                         sharedViewModel.setPendingReferenceUserForBle(null)
                         bluetoothViewModel.connectToSavedDevice()

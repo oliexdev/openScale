@@ -192,7 +192,7 @@ class BluetoothFacadeImpl @Inject constructor(
                 .collect { user ->
                     currentAppUser.value = user
                     currentBtScaleUser.value = user?.let { toScaleUser(it) }
-                    LogManager.i(TAG, "User context updated -> ${user?.name ?: "none"}")
+                    LogManager.d(TAG, "Bluetooth user context updated.")
                 }
         }
     }

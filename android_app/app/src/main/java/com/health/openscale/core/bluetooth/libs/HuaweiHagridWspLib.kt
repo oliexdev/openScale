@@ -98,6 +98,18 @@ object HuaweiHagridWspLib {
         val rawLength: Int,
         val weightKg: Float,
         val fatPercent: Float,
+        /** Skeletal muscle percentage (0 = not available). Decoded from bytes 4–5 of the
+         *  realtime payload (raw ÷ 10). Not present in history records. */
+        val musclePercent: Float = 0f,
+        /** Total body water percentage (0 = not available). Decoded from bytes 6–7 of the
+         *  realtime payload (raw ÷ 10). Not present in history records. */
+        val waterPercent: Float = 0f,
+        /** Bone mass in kg (0 = not available). Decoded from bytes 8–9 of the realtime
+         *  payload (raw ÷ 100). Not present in history records. */
+        val boneMassKg: Float = 0f,
+        /** Visceral fat level, 1–50 index (0 = not available). Decoded from bytes 10–11
+         *  of the realtime payload (raw ÷ 10). Not present in history records. */
+        val visceralFat: Float = 0f,
         val timestamp: Date?,
         val lowFrequencyImpedance: List<Int>,
         val highFrequencyImpedance: List<Int>,
@@ -271,54 +283,69 @@ object HuaweiHagridWspLib {
     }
 
     class FrameAccumulator(private val requireValidCrc: Boolean = true) {
+        private val lock = Any()
         private var expectedFrames: Int = 0
         private var encrypted: Boolean = false
-        private var allFramesCrcValid: Boolean = true
         private val chunks = mutableMapOf<Int, ByteArray>()
 
         var lastCompletedEncrypted: Boolean = false
             private set
 
-        fun ingest(rawFrame: ByteArray): ByteArray? {
+        fun ingest(rawFrame: ByteArray): ByteArray? = synchronized(lock) {
             val frame = parseNotificationFrame(rawFrame, requireValidCrc) ?: return null
             if (frame.totalFrames <= 1) {
                 lastCompletedEncrypted = frame.encrypted
-                reset()
+                resetLocked()
                 return frame.payload
             }
 
-            if (expectedFrames != frame.totalFrames || encrypted != frame.encrypted) {
-                reset()
+            // A frame index 0 always starts a new logical packet.
+            if (frame.frameIndex == 0) {
+                resetLocked()
                 expectedFrames = frame.totalFrames
                 encrypted = frame.encrypted
+            } else {
+                // Drop orphan continuation frames until we have a packet start.
+                if (expectedFrames == 0) {
+                    return null
+                }
+
+                // If packet metadata changes mid-stream, invalidate partial state.
+                if (expectedFrames != frame.totalFrames || encrypted != frame.encrypted) {
+                    resetLocked()
+                    return null
+                }
             }
 
-            allFramesCrcValid = allFramesCrcValid && frame.crcValid
-            chunks[frame.frameIndex] = frame.payload
+            chunks[frame.frameIndex] = frame.payload.copyOf()
             if (chunks.size < expectedFrames) return null
 
             val out = ByteArray(chunks.values.sumOf { it.size })
             var pos = 0
             for (i in 0 until expectedFrames) {
                 val chunk = chunks[i] ?: run {
-                    reset()
+                    resetLocked()
                     return null
                 }
                 chunk.copyInto(out, pos)
                 pos += chunk.size
             }
             lastCompletedEncrypted = encrypted
-            reset()
+            resetLocked()
             return out
         }
 
-        fun reset() {
+        fun reset() = synchronized(lock) {
+            resetLocked()
+        }
+
+        private fun resetLocked() {
             expectedFrames = 0
             encrypted = false
-            allFramesCrcValid = true
             chunks.clear()
         }
     }
+
 
     fun buildWriteFrames(payload: ByteArray, encrypted: Boolean = false): List<ByteArray> {
         require(payload.size <= MAX_SIMPLE_PAYLOAD_BYTES) {
@@ -848,6 +875,27 @@ object HuaweiHagridWspLib {
         } else {
             null
         }
+
+        // Bytes 4–11 carry body-composition metrics only in realtime payloads (no timestamp).
+        // In history payloads, those same bytes are occupied by the 7-byte timestamp and 1
+        // unknown byte, leaving no room for these four u16le fields.
+        // Layout (realtime only): muscle%(×10) | water%(×10) | bone_kg(×100) | visceral_fat(×10)
+        val musclePercent: Float
+        val waterPercent: Float
+        val boneMassKg: Float
+        val visceralFat: Float
+        if (!timestampPresent && payload.size >= 12) {
+            musclePercent = (u16le(payload, 4) / 10.0f).takeIf { it in 5f..85f } ?: 0f
+            waterPercent  = (u16le(payload, 6) / 10.0f).takeIf { it in 20f..80f } ?: 0f
+            boneMassKg    = (u16le(payload, 8) / 100.0f).takeIf { it in 0.1f..8.0f } ?: 0f
+            visceralFat   = (u16le(payload, 10) / 10.0f).takeIf { it in 1f..50f } ?: 0f
+        } else {
+            musclePercent = 0f
+            waterPercent  = 0f
+            boneMassKg    = 0f
+            visceralFat   = 0f
+        }
+
         val low = (0 until 6).map { u16le(payload, 12 + it * 2) }
         val high = if (highResistancePresent) {
             (0 until 6).map { u16le(payload, 26 + it * 2) }
@@ -876,6 +924,10 @@ object HuaweiHagridWspLib {
             rawLength = payload.size,
             weightKg = weightKg,
             fatPercent = fatPercent,
+            musclePercent = musclePercent,
+            waterPercent = waterPercent,
+            boneMassKg = boneMassKg,
+            visceralFat = visceralFat,
             timestamp = timestamp,
             lowFrequencyImpedance = low,
             highFrequencyImpedance = high,

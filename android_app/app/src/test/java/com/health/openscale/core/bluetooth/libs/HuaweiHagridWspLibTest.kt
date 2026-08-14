@@ -41,6 +41,40 @@ class HuaweiHagridWspLibTest {
     }
 
     @Test
+    fun `accumulator drops orphan continuation frame before packet start`() {
+        val payloadA = ByteArray(26) { (it + 1).toByte() }
+        val payloadB = ByteArray(26) { (it + 101).toByte() }
+        val framesA = HuaweiHagridWspLib.buildWriteFrames(payloadA)
+        val framesB = HuaweiHagridWspLib.buildWriteFrames(payloadB)
+        val accumulator = HuaweiHagridWspLib.FrameAccumulator()
+
+        val orphanSecondOfA = accumulator.ingest(toNotifyFrame(framesA[1]))
+        val firstOfB = accumulator.ingest(toNotifyFrame(framesB[0]))
+        val secondOfB = accumulator.ingest(toNotifyFrame(framesB[1]))
+
+        assertThat(orphanSecondOfA).isNull()
+        assertThat(firstOfB).isNull()
+        assertThat(secondOfB).isEqualTo(payloadB)
+    }
+
+    @Test
+    fun `accumulator resets when a new frame index zero arrives`() {
+        val payloadA = ByteArray(26) { (it + 11).toByte() }
+        val payloadB = ByteArray(26) { (it + 41).toByte() }
+        val framesA = HuaweiHagridWspLib.buildWriteFrames(payloadA)
+        val framesB = HuaweiHagridWspLib.buildWriteFrames(payloadB)
+        val accumulator = HuaweiHagridWspLib.FrameAccumulator()
+
+        val firstOfA = accumulator.ingest(toNotifyFrame(framesA[0]))
+        val firstOfB = accumulator.ingest(toNotifyFrame(framesB[0]))
+        val secondOfB = accumulator.ingest(toNotifyFrame(framesB[1]))
+
+        assertThat(firstOfA).isNull()
+        assertThat(firstOfB).isNull()
+        assertThat(secondOfB).isEqualTo(payloadB)
+    }
+
+    @Test
     fun `auth token validates expected scale response`() {
         val randA = ByteArray(16) { it.toByte() }
         val randB = ByteArray(16) { (it + 16).toByte() }
@@ -66,6 +100,45 @@ class HuaweiHagridWspLibTest {
 
         assertThat(encrypted.copyOfRange(0, 16)).isEqualTo(iv)
         assertThat(HuaweiHagridWspLib.decryptPayload(encrypted, key)).isEqualTo(plaintext)
+    }
+
+    @Test
+    fun `huawei scale 3 PoC capture decodes to the expected measurement`() {
+        val rootKey = HuaweiHagridWspLib.deriveHagridRootKey(
+            hexToBytes("CA4946D061C9FE534F6044F930EBB69B"),
+            hexToBytes("FBCE6E2B4BAF80ED969BA26B4A4B9325"),
+            HuaweiHagridWspLib.hagridC3FromBluetoothAddress("38:1E:C7:66:08:D3")
+        )
+        assertThat(rootKey).isEqualTo(hexToBytes("d680f0f3b50576a74c8815653e8b7243"))
+
+        val workKey = HuaweiHagridWspLib.decryptPayload(
+            deframe(
+                "dc12203b033efce70954e24a3a06ac75603b418e",
+                "dc12218a68cb34e5250a6c185813b62e6958c13f",
+                "dc0522a49ddc06",
+            ),
+            rootKey
+        )
+        assertThat(workKey).isEqualTo(hexToBytes("36697370363671706d64386733696b62"))
+
+        val plain = HuaweiHagridWspLib.decryptPayload(
+            deframe(
+                "cd1220ddae5ad500d352ad002d9ab60055a313f1",
+                "cd12216d4c5b1e4fa529d8fc4225d8db8b3726b3",
+                "cd0f222285c5b012308c6ee4a7829efa52",
+            ),
+            workKey
+        )
+
+        assertThat(plain).isEqualTo(
+            hexToBytes("b1212d01ea07080917271da0ea13000000000000000000006100")
+        )
+
+        val measurement = HuaweiHagridWspLib.parseRealtimeMeasurement(plain)
+        assertThat(measurement).isNotNull()
+        assertThat(measurement!!.weightKg).isWithin(0.0001f).of(86.25f)
+        assertThat(measurement.fatPercent).isWithin(0.0001f).of(30.1f)
+        assertThat(measurement.heartRateBpm).isEqualTo(97)
     }
 
     @Test
@@ -135,6 +208,31 @@ class HuaweiHagridWspLibTest {
         notifyFrame[notifyFrame.size - 2] = (crc and 0xFF).toByte()
         notifyFrame[notifyFrame.size - 1] = ((crc ushr 8) and 0xFF).toByte()
         return notifyFrame
+    }
+
+    private fun deframe(vararg frames: String): ByteArray {
+        val chunks = frames.map { framePayload(it) }
+        val totalSize = chunks.sumOf { it.size }
+        return ByteArray(totalSize).also { out ->
+            var pos = 0
+            chunks.forEach { chunk ->
+                chunk.copyInto(out, destinationOffset = pos)
+                pos += chunk.size
+            }
+        }
+    }
+
+    private fun framePayload(frameHex: String): ByteArray {
+        val frame = hexToBytes(frameHex)
+        return frame.copyOfRange(3, frame.size - 2)
+    }
+
+    private fun hexToBytes(hex: String): ByteArray {
+        require(hex.length % 2 == 0) { "Hex string must have an even length" }
+
+        return ByteArray(hex.length / 2) { index ->
+            hex.substring(index * 2, index * 2 + 2).toInt(16).toByte()
+        }
     }
 
     private fun realtimePayload(): ByteArray =

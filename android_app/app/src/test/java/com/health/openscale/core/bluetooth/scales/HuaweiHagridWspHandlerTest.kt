@@ -43,6 +43,7 @@ class HuaweiHagridWspHandlerTest {
     fun `claims known Huawei Hagrid devices without claiming generic BIA`() {
         val scale2 = HuaweiHagridWspHandler().supportFor(device("HUAWEI Scale 2 Pro"))
         val scale3Pro = HuaweiHagridWspHandler().supportFor(device("Hagrid-B29"))
+        val scale3 = HuaweiHagridWspHandler().supportFor(device("HUAWEI Scale 3"))
         val generic = HuaweiHagridWspHandler().supportFor(
             device("Generic BIA", services = intArrayOf(0x1805, 0x181B, 0x181C, 0x181D))
         )
@@ -51,6 +52,8 @@ class HuaweiHagridWspHandlerTest {
         assertThat(scale2!!.displayName).isEqualTo("HUAWEI Scale 2 Pro")
         assertThat(scale3Pro).isNotNull()
         assertThat(scale3Pro!!.displayName).isEqualTo("HUAWEI Scale 3 Pro")
+        assertThat(scale3).isNotNull()
+        assertThat(scale3!!.displayName).isEqualTo("HUAWEI Scale 3")
         assertThat(scale2.implemented).doesNotContain(DeviceCapability.USER_SYNC)
         assertThat(scale2.implemented).doesNotContain(DeviceCapability.UNIT_CONFIG)
         assertThat(generic).isNull()

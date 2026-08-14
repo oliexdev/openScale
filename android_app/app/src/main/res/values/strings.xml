@@ -328,6 +328,8 @@
     <string name="snackbar_bluetooth_retry_connection">Retrying connection to %1$s…</string>
     <string name="snackbar_bluetooth_error_check_settings">Bluetooth error. Please check settings.</string>
     <string name="snackbar_bluetooth_attempting_connection">Attempting to connect to %1$s…</string>
+    <string name="bluetooth_no_saved_device_to_connect">No scale saved. Please add a scale in Bluetooth settings.</string>
+    <string name="bluetooth_saved_device_not_supported">Saved scale &#8220;%1$s&#8221; is no longer recognised. Please re-add it in Bluetooth settings.</string>
     <string name="snackbar_bluetooth_check_settings">Please check Bluetooth settings.</string>
     <string name="bluetooth_enable_for_scan">Please enable Bluetooth to start scanning.</string>
     <string name="bluetooth_permissions_required_for_scan">Bluetooth permissions are required for scanning.</string>

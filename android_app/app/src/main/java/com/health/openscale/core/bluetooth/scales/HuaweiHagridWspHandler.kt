@@ -49,6 +49,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.security.SecureRandom
+import java.util.concurrent.ConcurrentHashMap
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
@@ -95,7 +96,7 @@ class HuaweiHagridWspHandler(
     private val chrRealtimeWeight = UUID.fromString("46797c17-d639-488d-9476-4789e8472878")
     private val chrHistoryWeight = UUID.fromString("0212f42a-5f19-4bc1-ba52-d7ec7ccb71a4")
 
-    private val accumulators = mutableMapOf<UUID, HuaweiHagridWspLib.FrameAccumulator>()
+    private val accumulators = ConcurrentHashMap<UUID, HuaweiHagridWspLib.FrameAccumulator>()
     private var pendingDeviceAddress: String? = null
     private var pendingProductProfile = HuaweiHagridWspLib.productProfileForMarker(null)
     private var pendingCapabilityBits: HuaweiHagridWspLib.HagridCapabilityBits? = null
@@ -284,10 +285,12 @@ class HuaweiHagridWspHandler(
 
     override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
         if (HuaweiHagridWspLib.hasNotificationFramePrefix(data)) {
-            val accumulator = accumulators.getOrPut(characteristic) {
+            val frameCopy = data.copyOf()
+            val accumulator = accumulators.computeIfAbsent(characteristic) {
                 HuaweiHagridWspLib.FrameAccumulator()
             }
-            val payload = accumulator.ingest(data) ?: return
+
+            val payload = accumulator.ingest(frameCopy) ?: return
             handleWspNotification(characteristic, payload, accumulator.lastCompletedEncrypted, user)
             return
         }
@@ -296,6 +299,7 @@ class HuaweiHagridWspHandler(
     }
 
     override fun onDisconnected() {
+        logI("Huawei Hagrid disconnected")
         stopMeasurementStatusPolling()
         accumulators.clear()
         pendingRandA = null
@@ -328,13 +332,13 @@ class HuaweiHagridWspHandler(
                 logW("Encrypted Hagrid notification before work key: chr=${characteristicLabel(characteristic)} len=${rawPayload.size}")
                 return
             }
-            runCatching { HuaweiHagridWspLib.decryptPayload(rawPayload, activeSession.workKey) }
+            runCatching { HuaweiHagridWspLib.decryptPayload(rawPayload.copyOf(), activeSession.workKey) }
                 .getOrElse { error ->
                     logW("Failed to decrypt Hagrid notification chr=${characteristicLabel(characteristic)}: ${error.message}")
                     return
                 }
         } else {
-            rawPayload
+            rawPayload.copyOf()
         }
 
         logD(
@@ -402,7 +406,7 @@ class HuaweiHagridWspHandler(
         handshakeState = HandshakeState.AUTH_TOKEN_SENT
 
         val authPayload = HuaweiHagridWspLib.buildAuthTokenPayload(payload, randB, secrets.cak)
-        logI("Sending Huawei Hagrid auth token (${authPayload.size} bytes)")
+        logI("Huawei Hagrid authentication started")
         writeWspPlainIfPresent(svcUserData, chrAuthToken, authPayload)
     }
 
@@ -447,7 +451,7 @@ class HuaweiHagridWspHandler(
         session = HuaweiHagridWspLib.HagridSession(randA.copyOf(), randB.copyOf(), rootKey, workKey.copyOf())
         handshakeState = HandshakeState.WORK_KEY_SENT
 
-        logI("Huawei Hagrid auth verified; sending encrypted work key")
+        logI("Huawei Hagrid authentication verified")
         writeWspFramesIfPresent(
             svcUserData,
             chrSendWorkKey,
@@ -463,7 +467,7 @@ class HuaweiHagridWspHandler(
             return
         }
 
-        logI("Huawei Hagrid work key accepted; syncing time and selected profile")
+        logI("Huawei Hagrid work key accepted")
         writeWspPlainIfPresent(svcCurrentTime, chrCurrentTime, HuaweiHagridWspLib.currentTimePayload())
         readManagerInfoBeforeProfileSync(user)
     }
@@ -532,6 +536,7 @@ class HuaweiHagridWspHandler(
             "Sending encrypted Huawei Hagrid user-info: userId=${user.id} " +
                 "payloadLen=${plaintext.size} huidPresent=${info.huid.isNotBlank()}"
         )
+        logI("Huawei Hagrid user profile sent")
         HuaweiHagridWspLib.buildEncryptedWriteFrames(plaintext, activeSession.workKey, iv)
             .forEach { frame -> writeTo(svcUserData, chrSetUserInfo, frame, withResponse = true) }
         return true
@@ -541,9 +546,9 @@ class HuaweiHagridWspHandler(
         val status = payload.firstOrNull()?.toInt()?.and(0xFF)
         val accepted = status == 0x00
         if (accepted) {
-            logI("Huawei Hagrid set-user-info accepted")
+            logI("Huawei Hagrid user profile accepted")
         } else {
-            logW("Huawei Hagrid set-user-info returned status=${status ?: -1}")
+            logW("Huawei Hagrid user profile rejected status=${status ?: -1}")
         }
 
         if (handshakeState == HandshakeState.USER_INFO_SENT) {
@@ -560,16 +565,31 @@ class HuaweiHagridWspHandler(
         writeWspPlainIfPresent(svcCurrentTime, chrGetWeightUnit, ByteArray(0))
         postStatusMeasurementReadsStarted = false
         realtimeReadRequestCount = 0
+        startMeasurementFlow()
+    }
+
+    private fun startMeasurementFlow() {
+        logI("Starting Huawei Hagrid realtime measurement flow")
+
+        writeWspPlainIfPresent(
+            svcBodyComposition,
+            chrRealtimeWeight,
+            ByteArray(0),
+            withResponse = true
+        )
+
         startMeasurementStatusPolling()
     }
 
     private fun buildUserInfo(user: ScaleUser): HuaweiHagridWspLib.HagridUserInfo {
         val lastWeight = lastMeasurementFor(user.id)?.weight
+
         val configuredWeight = when {
             lastWeight != null && lastWeight.isFinite() && lastWeight > 0f -> lastWeight
             user.initialWeight.isFinite() && user.initialWeight > 0f -> user.initialWeight
             else -> 0f
         }
+
         val heightCm = if (user.bodyHeight.isFinite() && user.bodyHeight > 0f) {
             user.bodyHeight.roundToInt().coerceIn(0, 0xFFFF)
         } else {
@@ -579,10 +599,12 @@ class HuaweiHagridWspHandler(
         return HuaweiHagridWspLib.HagridUserInfo(
             huid = lastManagerInfo?.huid?.takeIf { it.isNotBlank() } ?: localSyntheticHuid(),
             uid = "u:%08X".format(Locale.US, user.id),
-            gender = if (user.gender == GenderType.MALE) 0 else 1,
+            // Huawei encoding: 1 = male, 0 = female.
+            gender = if (user.gender == GenderType.MALE) 1 else 0,
             ageYears = user.age.coerceIn(0, 255),
             heightCm = heightCm,
             weightKg = configuredWeight,
+            userType = 0,
         )
     }
 
@@ -597,16 +619,21 @@ class HuaweiHagridWspHandler(
 
     private fun handleRealtimePayload(payload: ByteArray, user: ScaleUser) {
         val parsed = HuaweiHagridWspLib.parseRealtimeMeasurement(payload)
+
         if (parsed == null || parsed.weightKg <= 0f) {
             logD("Ignoring unsupported Hagrid realtime payload len=${payload.size}")
             return
         }
 
-        userInfo(R.string.bluetooth_scale_info_measuring_weight, parsed.weightKg)
-        logD(
-            "Hagrid realtime measurement parsed len=${parsed.rawLength} " +
-                "lowCount=${parsed.lowFrequencyImpedance.size} highCount=${parsed.highFrequencyImpedance.size} saved=false"
+        userInfo(
+            R.string.bluetooth_scale_info_measuring_weight,
+            parsed.weightKg
         )
+
+        logI("Huawei Hagrid measurement received")
+        logD("Huawei Hagrid measurement details weight=${parsed.weightKg} fat=${parsed.fatPercent}")
+
+        publishHagridMeasurement(parsed, user)
     }
 
     private fun handleHistoryWeightPayload(payload: ByteArray, user: ScaleUser) {
@@ -645,20 +672,45 @@ class HuaweiHagridWspHandler(
     ) {
         val low = parsed.representativeLowOhm ?: 0.0
         val high = parsed.representativeHighOhm ?: low
+
+        // Lean body mass (kg): weight × (1 − fat%)
+        val lbm = if (parsed.weightKg > 0f && parsed.fatPercent in 1f..79f) {
+            parsed.weightKg * (1f - parsed.fatPercent / 100f)
+        } else {
+            0f
+        }
+
+        // Basal Metabolic Rate via Mifflin-St Jeor equation (kcal/day)
+        val bmr = computeBmr(user, parsed.weightKg)
+
         val measurement = ScaleMeasurement(
             userId = user.id,
             dateTime = parsed.timestamp ?: Date(),
             weight = parsed.weightKg,
             fat = parsed.fatPercent.takeIf { it > 0f && it < 80f } ?: 0f,
+            muscle = parsed.musclePercent.takeIf { it > 0f } ?: 0f,
+            water = parsed.waterPercent.takeIf { it > 0f } ?: 0f,
+            bone = parsed.boneMassKg.takeIf { it > 0f } ?: 0f,
+            visceralFat = parsed.visceralFat.takeIf { it > 0f } ?: 0f,
+            lbm = lbm,
+            bmr = bmr,
             heartRate = parsed.heartRateBpm ?: 0,
             impedance = high,
             impedanceLow = low,
         )
-        logI(
-            "Publishing Huawei Hagrid measurement: lowCount=${parsed.lowFrequencyImpedance.size} " +
-                "highCount=${parsed.highFrequencyImpedance.size}"
-        )
         publish(measurement)
+    }
+
+    /**
+     * Mifflin-St Jeor BMR equation (kcal/day).
+     * Returns 0 if the user profile contains insufficient data.
+     */
+    private fun computeBmr(user: ScaleUser, weightKg: Float): Float {
+        val height = user.bodyHeight
+        val age = user.age
+        if (weightKg <= 0f || !height.isFinite() || height <= 0f || age <= 0) return 0f
+        val base = 10f * weightKg + 6.25f * height - 5f * age
+        return if (user.gender == GenderType.MALE) base + 5f else base - 161f
     }
 
     private fun handleStandardWeightPayload(payload: ByteArray, user: ScaleUser) {
@@ -744,12 +796,13 @@ class HuaweiHagridWspHandler(
     }
 
     private fun handleMeasurementStatusPayload(payload: ByteArray) {
-        val status = payload.firstOrNull()?.toInt()?.and(0xFF)
-        logD("Huawei Hagrid measurement-status len=${payload.size} status=${status ?: -1}")
-        if (status == 0x00) {
-            measurementStatusReady = true
-            sendMeasurementDataRequests()
+        if (payload.isEmpty()) {
+            return
         }
+
+
+        // Do not trigger realtime requests here.
+        // Huawei Health requested realtime before polling starts.
     }
 
     private fun startMeasurementStatusPolling() {
@@ -795,7 +848,7 @@ class HuaweiHagridWspHandler(
             svcCurrentTime,
             chrMeasurementStatusPoll,
             ByteArray(0),
-            withResponse = false
+            withResponse = true
         )
     }
 
@@ -935,6 +988,7 @@ class HuaweiHagridWspHandler(
             else -> characteristic.toString()
         }
 
+
     private enum class HandshakeState {
         IDLE,
         PROBE_ONLY,
@@ -945,6 +999,7 @@ class HuaweiHagridWspHandler(
         READY,
         AUTH_FAILED
     }
+
 
     companion object {
         const val SETTINGS_KEY_CAK_HEX = "ble/huawei_hagrid/cak_hex"
