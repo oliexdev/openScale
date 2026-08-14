@@ -55,6 +55,7 @@ import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
 import com.health.openscale.core.bluetooth.scales.XiaomiS800Handler
 import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
+import com.health.openscale.core.bluetooth.scales.OmronWlcHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
 import com.health.openscale.core.bluetooth.scales.QNHandler
@@ -117,6 +118,7 @@ class ScaleFactory @Inject constructor(
         // Exact-name match must precede generic LeFu/0xFFF0 handlers (first match wins).
         ActiveEraBF06Handler(),
         KeepS3Handler(),
+        OmronWlcHandler(),
         BeurerBF450Handler(),
         TaylorBIAHandler(),
         RyFitHandler(),
