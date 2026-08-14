@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth
 
 import android.content.Context
+import androidx.annotation.VisibleForTesting
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
@@ -110,72 +111,84 @@ class ScaleFactory @Inject constructor(
 ) {
     private val TAG = "ScaleHandlerFactory"
 
-    // List of modern Kotlin-based device handlers.
-    // Order matters: createCommunicator() returns the FIRST handler whose supportFor() is non-null.
-    // TaylorBIAHandler and FitTrackDaraHandler must stay ahead of MGBHandler — all live on service
-    // 0xFFB0, which MGBHandler also matches, so a later position would let MGB wrongly claim them.
-    private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
-        // Exact-name match must precede generic LeFu/0xFFF0 handlers (first match wins).
-        ActiveEraBF06Handler(),
-        KeepS3Handler(),
-        OmronWlcHandler(),
-        BeurerBF450Handler(),
-        TaylorBIAHandler(),
-        RyFitHandler(),
-        CultSmartScaleProHandler(),
-        RealmeSmartScaleHandler(),
-        YunmaiHandler(isMini = false),
-        YunmaiHandler(isMini = true),
-        YunmaiXHandler(),
-        TrisaBodyAnalyzeHandler(),
-        SanitasSbf72Handler(),
-        StandardBeurerSanitasHandler(),
-        SoehnleHandler(),
-        SinocareHandler(),
-        SenssunHandler(),
-        RenphoHandler(),
-        QNHandlerBroadcast(),
-        QNHandler(),
-        OneByoneHandler(),
-        OneByoneNewHandler(),
-        OkOkHandler(),
-        MiScaleS400Handler(),
-        XiaomiS800Handler(),
-        MiScaleHandler(),
-        RunstarR6Handler(),
-        RunstarR5Handler(),
-        RelaxmedicHandler(),
-        RobiS9Handler(),
-        VitafitVT701Handler(),
-        EEBBLHandler(),
-        FitTrackDaraHandler(),
-        MGBHandler(),
-        MedisanaBs44xHandler(),
-        InlifeHandler(),
-        IHealthHS3Handler(),
-        HuaweiAhCh100Handler(),
-        HuaweiCH100SHandler(),
-        HuaweiHagridWspHandler(),
-        HoffenBbs8107Handler(),
-        HesleyHandler(),
-        ExingtechY1Handler(),
-        EbelterBodyFatB2Handler(),
-        ExcelvanCF36xHandler(),
-        EtekcityESF551Handler(),
-        EufyC20Handler(),
-        EufyP2Handler(),
-        ESCS20MHandler(),
-        RenphoES26BBHandler(),
-        DigooDGSO38HHandler(),
-        DebugGattHandler(),
-        CustomOpenScaleHandler(),
-        BeurerSanitasHandler(),
-        AAAxHandler(),
-        ScaleupHandler(),
-        DrTrustSSW532Handler(),
-        BodyConnectHandler(),
-        WeightGurusA3Handler(),
-    )
+    private val modernKotlinHandlers: List<ScaleDeviceHandler> = createHandlers()
+
+    companion object {
+        /**
+         * Builds the list of modern Kotlin-based device handlers.
+         *
+         * Order matters: [createCommunicator] returns the FIRST handler whose [ScaleDeviceHandler.supportFor]
+         * is non-null. TaylorBIAHandler, FitTrackDaraHandler, RelaxmedicHandler, RobiS9Handler and
+         * DrTrustSSW532Handler must stay ahead of MGBHandler — all live on service 0xFFB0, which
+         * MGBHandler matches on its own, so a later position would let MGB wrongly claim them.
+         *
+         * Exposed so the registry (order, device claims, duplicates) can be asserted in unit tests
+         * without building the Hilt graph — see `ScaleFactoryTest`.
+         */
+        @VisibleForTesting
+        internal fun createHandlers(): List<ScaleDeviceHandler> = listOf(
+            // Exact-name match must precede generic LeFu/0xFFF0 handlers (first match wins).
+            ActiveEraBF06Handler(),
+            KeepS3Handler(),
+            OmronWlcHandler(),
+            BeurerBF450Handler(),
+            TaylorBIAHandler(),
+            RyFitHandler(),
+            CultSmartScaleProHandler(),
+            RealmeSmartScaleHandler(),
+            YunmaiHandler(isMini = false),
+            YunmaiHandler(isMini = true),
+            YunmaiXHandler(),
+            TrisaBodyAnalyzeHandler(),
+            SanitasSbf72Handler(),
+            StandardBeurerSanitasHandler(),
+            SoehnleHandler(),
+            SinocareHandler(),
+            SenssunHandler(),
+            RenphoHandler(),
+            QNHandlerBroadcast(),
+            QNHandler(),
+            OneByoneHandler(),
+            OneByoneNewHandler(),
+            OkOkHandler(),
+            MiScaleS400Handler(),
+            XiaomiS800Handler(),
+            MiScaleHandler(),
+            RunstarR6Handler(),
+            RunstarR5Handler(),
+            RelaxmedicHandler(),
+            RobiS9Handler(),
+            VitafitVT701Handler(),
+            EEBBLHandler(),
+            FitTrackDaraHandler(),
+            DrTrustSSW532Handler(),
+            MGBHandler(),
+            MedisanaBs44xHandler(),
+            InlifeHandler(),
+            IHealthHS3Handler(),
+            HuaweiAhCh100Handler(),
+            HuaweiCH100SHandler(),
+            HuaweiHagridWspHandler(),
+            HoffenBbs8107Handler(),
+            HesleyHandler(),
+            ExingtechY1Handler(),
+            EbelterBodyFatB2Handler(),
+            ExcelvanCF36xHandler(),
+            EtekcityESF551Handler(),
+            EufyC20Handler(),
+            EufyP2Handler(),
+            ESCS20MHandler(),
+            RenphoES26BBHandler(),
+            DigooDGSO38HHandler(),
+            DebugGattHandler(),
+            CustomOpenScaleHandler(),
+            BeurerSanitasHandler(),
+            AAAxHandler(),
+            ScaleupHandler(),
+            BodyConnectHandler(),
+            WeightGurusA3Handler(),
+        )
+    }
 
     /**
      * Creates a [ScaleCommunicator] based on a modern [ScaleDeviceHandler].
