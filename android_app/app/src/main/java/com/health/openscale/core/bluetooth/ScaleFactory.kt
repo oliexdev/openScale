@@ -115,6 +115,7 @@ class ScaleFactory @Inject constructor(
     // 0xFFB0, which MGBHandler also matches, so a later position would let MGB wrongly claim them.
     private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
         // Exact-name match must precede generic LeFu/0xFFF0 handlers (first match wins).
+        ActiveEraBF06Handler(),
         KeepS3Handler(),
         BeurerBF450Handler(),
         TaylorBIAHandler(),
@@ -169,7 +170,6 @@ class ScaleFactory @Inject constructor(
         BeurerSanitasHandler(),
         AAAxHandler(),
         ScaleupHandler(),
-        ActiveEraBF06Handler(),
         DrTrustSSW532Handler(),
         BodyConnectHandler(),
         WeightGurusA3Handler(),
