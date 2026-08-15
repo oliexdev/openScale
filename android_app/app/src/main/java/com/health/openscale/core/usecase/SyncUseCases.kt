@@ -36,6 +36,7 @@ import org.json.JSONObject
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.roundToInt
 
 /**
  * Bundles sync trigger use cases for the external SyncService.
@@ -285,26 +286,47 @@ object GenericValueJson {
     }
 
     /**
-     * Reverse of [build] (inbound): parse a generic value JSON into (typeId, valueInUserUnit) pairs.
+     * Reverse of [build] (inbound): parse a generic value JSON into (type, value) pairs, the value
+     * already in the user's unit and in the field the type's [MeasurementType.inputType] requires.
      * Predefined types are matched by [typesByKey] (enum name), custom by [typesById] (typeId).
+     *
+     * The returned [MeasurementValue]s carry `measurementId = 0` — the caller owns that.
+     *
+     * Filling the right field here rather than at the call sites is deliberate: consumers read
+     * only the field their input type designates, so a value in the wrong one reads as *absent*.
+     * Entries that carry nothing this type can hold are skipped.
      */
     fun parse(
         json: String,
         typesByKey: Map<String, MeasurementType>,
         typesById: Map<Int, MeasurementType>
-    ): List<Pair<Int, Float>> {
-        val out = mutableListOf<Pair<Int, Float>>()
+    ): List<Pair<MeasurementType, MeasurementValue>> {
+        val out = mutableListOf<Pair<MeasurementType, MeasurementValue>>()
         runCatching {
             val arr = JSONArray(json)
             for (i in 0 until arr.length()) {
                 val o = arr.getJSONObject(i)
-                if (!o.has("value")) continue
                 val key = o.optString("key", "")
                 val type = if (key == "CUSTOM") typesById[o.optInt("typeId", -1)] else typesByKey[key]
                 if (type == null) continue
-                val canonical = o.getDouble("value").toFloat()
-                val userValue = ConverterUtils.convertFloatValueUnit(canonical, canonicalUnit(type.unit), type.unit)
-                out.add(type.id to userValue)
+                val empty = MeasurementValue(measurementId = 0, typeId = type.id)
+                val parsed: MeasurementValue? = when (type.inputType) {
+                    InputFieldType.FLOAT, InputFieldType.INT -> {
+                        if (!o.has("value")) null else {
+                            val canonical = o.getDouble("value").toFloat()
+                            val userValue = ConverterUtils.convertFloatValueUnit(canonical, canonicalUnit(type.unit), type.unit)
+                            if (type.inputType == InputFieldType.FLOAT) empty.copy(floatValue = userValue)
+                            else empty.copy(intValue = userValue.roundToInt())
+                        }
+                    }
+                    InputFieldType.TEXT ->
+                        if (!o.has("text")) null else empty.copy(textValue = o.optString("text"))
+                    // build() sends dateValue verbatim as epoch millis in a decimal string.
+                    InputFieldType.DATE, InputFieldType.TIME ->
+                        o.optString("text", "").toLongOrNull()?.let { empty.copy(dateValue = it) }
+                    InputFieldType.USER -> null
+                }
+                if (parsed != null) out.add(type to parsed)
             }
         }
         return out

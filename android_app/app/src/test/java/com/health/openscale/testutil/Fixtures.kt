@@ -62,6 +62,13 @@ object Fixtures {
             type = type,
         )
 
+    /** As [valueWithType], but for a type whose [MeasurementType.inputType] is INT. */
+    fun intValueWithType(type: MeasurementType, value: Int, measurementId: Int = 0): MeasurementValueWithType =
+        MeasurementValueWithType(
+            value = MeasurementValue(measurementId = measurementId, typeId = type.id, intValue = value),
+            type = type,
+        )
+
     fun mwv(
         measurementId: Int,
         timestamp: Long,

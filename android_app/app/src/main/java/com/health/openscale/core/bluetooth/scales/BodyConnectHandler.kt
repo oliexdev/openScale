@@ -59,9 +59,10 @@ class BodyConnectHandler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name
-        if (!name.startsWith("1BODY CONNECT") && !name.startsWith("0BODY CONNECT")) return null
+        if (!name.startsWith("1BODY CONNECT") && !name.startsWith("0BODY CONNECT") && !name.startsWith("0X-LINE") && !name.startsWith("1X-LINE")) return null
+        val displayName = if (name.contains("BODY CONNECT")) "1BODY CONNECT" else "1X-LINE"
         return DeviceSupport(
-            displayName = "1BODY CONNECT",
+            displayName = displayName,
             capabilities = setOf(DeviceCapability.BODY_COMPOSITION, DeviceCapability.TIME_SYNC, DeviceCapability.USER_SYNC, DeviceCapability.HISTORY_READ),
             implemented = setOf(DeviceCapability.BODY_COMPOSITION, DeviceCapability.TIME_SYNC, DeviceCapability.HISTORY_READ),
             linkMode = LinkMode.CONNECT_GATT
@@ -96,6 +97,8 @@ class BodyConnectHandler : ScaleDeviceHandler() {
 
     // Timestamp base: 2010-01-01 00:00:00 UTC; device stores seconds since this epoch
     private val TS_OFFSET = 1262304000L
+    // The X-LINE returns a timestamp in seconds since 2020-01-01 only in the body composition response
+    private val ALT_TS_OFFSET = 315619200
 
     // --- Pairing state ---------------------------------------------------------
 
@@ -232,11 +235,16 @@ class BodyConnectHandler : ScaleDeviceHandler() {
         if (fat == null && water == null && muscle == null && bone == null) return
 
         val ts = ConverterUtils.fromSignedInt32Le(data, 1)
-        val weight = if (lastTS == ts) lastWeight else null
+        if (lastTS == null || (lastTS != ts && lastTS != ts + ALT_TS_OFFSET)) {
+            logW("Timestamps don't match: $ts; $lastTS")
+            return
+        }
+
+        val weight = lastWeight
         if (weight == null || weight <= 0f) return
 
         val m = ScaleMeasurement().apply {
-            dateTime = Date(deviceTimeToJava(ts))
+            dateTime = Date(deviceTimeToJava(lastTS!!))
             this.weight = weight
         }
         fat?.let { m.fat = it }
