@@ -328,8 +328,6 @@
     <string name="snackbar_bluetooth_retry_connection">Retrying connection to %1$s…</string>
     <string name="snackbar_bluetooth_error_check_settings">Bluetooth error. Please check settings.</string>
     <string name="snackbar_bluetooth_attempting_connection">Attempting to connect to %1$s…</string>
-    <string name="bluetooth_no_saved_device_to_connect">No scale saved. Please add a scale in Bluetooth settings.</string>
-    <string name="bluetooth_saved_device_not_supported">Saved scale &#8220;%1$s&#8221; is no longer recognised. Please re-add it in Bluetooth settings.</string>
     <string name="snackbar_bluetooth_check_settings">Please check Bluetooth settings.</string>
     <string name="bluetooth_enable_for_scan">Please enable Bluetooth to start scanning.</string>
     <string name="bluetooth_permissions_required_for_scan">Bluetooth permissions are required for scanning.</string>
@@ -833,6 +831,9 @@
     <!-- Bluetooth Scales Messages -->
     <string name="bluetooth_scale_trisa_message_not_paired_instruction">This scale has not been paired!\n\nHold the button on the bottom of the scale to switch it to pairing mode, and then reconnect to retrieve the device password.</string>
     <string name="bluetooth_scale_trisa_success_pairing">Pairing succeeded!\n\nReconnect to retrieve measurement data.</string>
+    <string name="bluetooth_scale_weightgurus_slot_empty">empty</string>
+    <string name="bluetooth_scale_weightgurus_slot">User %1$d - %2$s</string>
+    <string name="bluetooth_scale_weightgurus_slot_match">User %1$d - %2$s (matches your name)</string>
     <string name="bluetooth_scale_info_create_user_instruction">Create new user on scale.</string>
     <string name="bluetooth_scale_warning_low_battery">Low battery level (%d%%), please recharge or replace scale batteries</string>
     <string name="bluetooth_scale_info_step_on_for_reference">Please step barefoot on the scale for reference measurements</string>
@@ -868,6 +869,21 @@
     <string name="bt_info_no_mapping_creating_user">No user mapping found; creating a new user on the scale…</string>
     <string name="bt_info_waiting_for_measurements">Waiting for measurement via notifications.</string>
     <string name="bt_info_linked_app_user_to_slot">Linked app user %1$d to scale slot %2$d.</string>
+
+    <!-- Omron WLC scales (HBF-702T family) -->
+    <string name="bt_info_omron_pairing_mode_required">Hold the scale\'s Bluetooth button until it shows the blinking pairing indicator.</string>
+    <string name="bt_info_omron_paired">Scale paired with openScale.</string>
+    <string name="bt_info_omron_measurements_read">Read %1$d new measurement(s) from the scale.</string>
+    <string name="bt_info_omron_no_new_measurements">No new measurements stored on the scale.</string>
+    <string name="bt_omron_slot_with_measurement">Scale user %1$d — %2$.1f kg on %3$s</string>
+    <string name="bt_omron_slot_empty">Scale user %1$d — no measurements</string>
+    <string name="bt_error_omron_unknown_model">Unsupported Omron model \"%1$s\"; cannot decode its measurement records.</string>
+    <string name="bt_error_omron_service_missing">This device does not expose the Omron transfer service.</string>
+    <string name="bt_error_omron_pairing_mode_required">The scale is not in pairing mode. Hold its Bluetooth button until the pairing indicator blinks, then try again.</string>
+    <string name="bt_error_omron_pairing_failed">Could not store the pairing key on the scale.</string>
+    <string name="bt_error_omron_session_failed">The scale refused to start a data transfer.</string>
+    <string name="bt_error_omron_read_failed">Failed to read stored measurements from the scale.</string>
+    <string name="bt_error_omron_timeout">The scale stopped responding; the transfer was cancelled.</string>
 
     <!-- Warnings -->
     <string name="bt_warn_low_battery">Scale battery is low (%1$d%%).</string>
