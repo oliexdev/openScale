@@ -123,7 +123,7 @@ class HuaweiHagridWspHandlerTest {
     }
 
     @Test
-    fun `plain WSP realtime notification reports progress without publishing`() {
+    fun `plain WSP realtime notification reports progress and publishes measurement`() {
         val handler = HuaweiHagridWspHandler()
         val callbacks = CapturingCallbacks()
         handler.attach(
@@ -136,7 +136,9 @@ class HuaweiHagridWspHandlerTest {
 
         sendWspNotification(handler, CHR_REALTIME_WEIGHT, realtimePayload())
 
-        assertThat(callbacks.published).isEmpty()
+        assertThat(callbacks.published).hasSize(1)
+        assertThat(callbacks.published.single().weight).isWithin(0.0001f).of(77.32f)
+        assertThat(callbacks.published.single().fat).isWithin(0.0001f).of(18.5f)
         assertThat(callbacks.infos.map { it.resId })
             .contains(R.string.bluetooth_scale_info_measuring_weight)
         assertThat(callbacks.infos.single().args.single() as Float)
@@ -165,6 +167,8 @@ class HuaweiHagridWspHandlerTest {
         assertThat(measurement.heartRate).isEqualTo(72)
         assertThat(measurement.impedanceLow).isWithin(0.0001).of(500.0)
         assertThat(measurement.impedance).isWithin(0.0001).of(600.0)
+        assertThat(measurement.lbm).isEqualTo(0f)
+        assertThat(measurement.bmr).isEqualTo(0f)
         assertThat(transport.reassembleWriteMessagesTo(CHR_HISTORY_WEIGHT).last())
             .isEqualTo(byteArrayOf(0x00))
     }
@@ -209,7 +213,7 @@ class HuaweiHagridWspHandlerTest {
     }
 
     @Test
-    fun `configured fake Hagrid secrets authenticate and start measurement reads after status ready`() {
+    fun `configured fake Hagrid secrets authenticate and request realtime before status polling`() {
         val randA = ByteArray(16) { it.toByte() }
         val randB = ByteArray(16) { (it + 16).toByte() }
         val workKey = ByteArray(16) { (it + 32).toByte() }
@@ -282,7 +286,7 @@ class HuaweiHagridWspHandlerTest {
                     HuaweiHagridWspLib.HagridUserInfo(
                         huid = HAGRID_MANAGER_HUID,
                         uid = "u:00000007",
-                        gender = 1,
+                        gender = 0,
                         ageYears = user.age,
                         heightCm = 171,
                         weightKg = 83.2f,
@@ -305,15 +309,23 @@ class HuaweiHagridWspHandlerTest {
                 CHR_GET_MANAGER_INFO,
                 CHR_SCALE_VERSION,
                 CHR_GET_WEIGHT_UNIT,
+                CHR_REALTIME_WEIGHT,
                 CHR_MEASUREMENT_STATUS_POLL,
             )
         assertThat(transport.writes.map { it.characteristic }).doesNotContain(CHR_HISTORY_WEIGHT)
-        assertThat(transport.writes.map { it.characteristic }).doesNotContain(CHR_REALTIME_WEIGHT)
+
+        val realtimeWritesBeforeStatus = transport.writes.count { it.characteristic == CHR_REALTIME_WEIGHT }
+        val historyWritesBeforeStatus = transport.writes.count { it.characteristic == CHR_HISTORY_WEIGHT }
+        val pollWritesBeforeStatus = transport.writes.count { it.characteristic == CHR_MEASUREMENT_STATUS_POLL }
 
         sendWspNotification(handler, CHR_MEASUREMENT_STATUS_RESULT, byteArrayOf(0x00))
 
-        assertThat(transport.writes.map { it.characteristic })
-            .containsAtLeast(CHR_HISTORY_WEIGHT, CHR_REALTIME_WEIGHT)
+        assertThat(transport.writes.count { it.characteristic == CHR_REALTIME_WEIGHT })
+            .isEqualTo(realtimeWritesBeforeStatus)
+        assertThat(transport.writes.count { it.characteristic == CHR_HISTORY_WEIGHT })
+            .isEqualTo(historyWritesBeforeStatus)
+        assertThat(transport.writes.count { it.characteristic == CHR_MEASUREMENT_STATUS_POLL })
+            .isEqualTo(pollWritesBeforeStatus)
     }
 
     private fun device(

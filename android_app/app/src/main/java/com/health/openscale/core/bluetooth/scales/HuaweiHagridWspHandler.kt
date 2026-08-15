@@ -36,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
@@ -118,17 +119,16 @@ class HuaweiHagridWspHandler(
     private var measurementStatusPollJob: Job? = null
     private var measurementStatusReady = false
     private var postStatusMeasurementReadsStarted = false
-    private var realtimeReadRequestCount = 0
 
     @Composable
     override fun DeviceConfigurationUi() {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                text = "Huawei Hagrid WSP secrets",
+                text = stringResource(R.string.huawei_hagrid_secrets_title),
                 style = MaterialTheme.typography.titleSmall,
             )
             Text(
-                text = "Configure CAK, C1, and C2 as 32 hex characters each. Values stay in per-driver app settings.",
+                text = stringResource(R.string.huawei_hagrid_secrets_description),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -180,8 +180,8 @@ class HuaweiHagridWspHandler(
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = when {
-                            showError -> "Expected 32 hex characters"
-                            isSaved -> "Saved"
+                            showError -> stringResource(R.string.huawei_hagrid_secret_invalid)
+                            isSaved -> stringResource(R.string.huawei_hagrid_secret_saved)
                             else -> ""
                         },
                         color = if (showError) {
@@ -247,7 +247,6 @@ class HuaweiHagridWspHandler(
         historyReadCount = 0
         publishedHistoryKeys.clear()
         postStatusMeasurementReadsStarted = false
-        realtimeReadRequestCount = 0
         measurementStatusReady = false
 
         setNotifyIfPresent(svcUserData, chrRequestAuth)
@@ -315,7 +314,6 @@ class HuaweiHagridWspHandler(
         historyReadCount = 0
         publishedHistoryKeys.clear()
         postStatusMeasurementReadsStarted = false
-        realtimeReadRequestCount = 0
         measurementStatusReady = false
         handshakeState = HandshakeState.IDLE
     }
@@ -548,7 +546,7 @@ class HuaweiHagridWspHandler(
         if (accepted) {
             logI("Huawei Hagrid user profile accepted")
         } else {
-            logW("Huawei Hagrid user profile rejected status=${status ?: -1}")
+            logW("Huawei Hagrid user profile returned status=${status ?: -1}")
         }
 
         if (handshakeState == HandshakeState.USER_INFO_SENT) {
@@ -564,7 +562,6 @@ class HuaweiHagridWspHandler(
         writeWspPlainIfPresent(svcCurrentTime, chrScaleVersion, ByteArray(0))
         writeWspPlainIfPresent(svcCurrentTime, chrGetWeightUnit, ByteArray(0))
         postStatusMeasurementReadsStarted = false
-        realtimeReadRequestCount = 0
         startMeasurementFlow()
     }
 
@@ -673,16 +670,6 @@ class HuaweiHagridWspHandler(
         val low = parsed.representativeLowOhm ?: 0.0
         val high = parsed.representativeHighOhm ?: low
 
-        // Lean body mass (kg): weight × (1 − fat%)
-        val lbm = if (parsed.weightKg > 0f && parsed.fatPercent in 1f..79f) {
-            parsed.weightKg * (1f - parsed.fatPercent / 100f)
-        } else {
-            0f
-        }
-
-        // Basal Metabolic Rate via Mifflin-St Jeor equation (kcal/day)
-        val bmr = computeBmr(user, parsed.weightKg)
-
         val measurement = ScaleMeasurement(
             userId = user.id,
             dateTime = parsed.timestamp ?: Date(),
@@ -692,25 +679,11 @@ class HuaweiHagridWspHandler(
             water = parsed.waterPercent.takeIf { it > 0f } ?: 0f,
             bone = parsed.boneMassKg.takeIf { it > 0f } ?: 0f,
             visceralFat = parsed.visceralFat.takeIf { it > 0f } ?: 0f,
-            lbm = lbm,
-            bmr = bmr,
             heartRate = parsed.heartRateBpm ?: 0,
             impedance = high,
             impedanceLow = low,
         )
         publish(measurement)
-    }
-
-    /**
-     * Mifflin-St Jeor BMR equation (kcal/day).
-     * Returns 0 if the user profile contains insufficient data.
-     */
-    private fun computeBmr(user: ScaleUser, weightKg: Float): Float {
-        val height = user.bodyHeight
-        val age = user.age
-        if (weightKg <= 0f || !height.isFinite() || height <= 0f || age <= 0) return 0f
-        val base = 10f * weightKg + 6.25f * height - 5f * age
-        return if (user.gender == GenderType.MALE) base + 5f else base - 161f
     }
 
     private fun handleStandardWeightPayload(payload: ByteArray, user: ScaleUser) {
@@ -796,13 +769,13 @@ class HuaweiHagridWspHandler(
     }
 
     private fun handleMeasurementStatusPayload(payload: ByteArray) {
-        if (payload.isEmpty()) {
-            return
+        val status = payload.firstOrNull()?.toInt()?.and(0xFF) ?: return
+        logD("Huawei Hagrid measurement status=$status")
+
+        if (status == 0x00) {
+            measurementStatusReady = true
+            stopMeasurementStatusPolling()
         }
-
-
-        // Do not trigger realtime requests here.
-        // Huawei Health requested realtime before polling starts.
     }
 
     private fun startMeasurementStatusPolling() {
@@ -869,7 +842,6 @@ class HuaweiHagridWspHandler(
     }
 
     private fun sendRealtimeMeasurementRequest() {
-        realtimeReadRequestCount += 1
         writeWspPlainIfPresent(svcBodyComposition, chrRealtimeWeight, ByteArray(0))
     }
 
