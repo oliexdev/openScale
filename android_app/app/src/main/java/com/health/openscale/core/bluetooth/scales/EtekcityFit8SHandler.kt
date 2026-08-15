@@ -18,9 +18,6 @@
 package com.health.openscale.core.bluetooth.scales
 
 import android.bluetooth.le.ScanResult
-import android.util.SparseArray
-import androidx.core.util.isEmpty
-import androidx.core.util.size
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
@@ -54,6 +51,9 @@ class EtekcityFit8SHandler : ScaleDeviceHandler() {
     companion object {
         private const val MANUFACTURER_ID = 0x06D0
         private val SCALE_SERVICE = UUID.fromString("0000ffd0-0000-1000-8000-00805f9b34fb")
+
+        /** Bytes the layout documented above needs; shorter records are not a measurement. */
+        private const val PAYLOAD_SIZE = 20
     }
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
@@ -88,15 +88,16 @@ class EtekcityFit8SHandler : ScaleDeviceHandler() {
      * Handle a single advertisement; return a BroadcastAction to steer the adapter.
      */
     override fun onAdvertisement(result: ScanResult, user: ScaleUser): BroadcastAction {
-        val msgRaw = result.scanRecord?.manufacturerSpecificData ?: return BroadcastAction.IGNORED
+        val msd = result.scanRecord?.manufacturerSpecificData ?: return BroadcastAction.IGNORED
 
-        val msg = msgRaw as? SparseArray<*> ?: return BroadcastAction.IGNORED
-        
-        if (msg.isEmpty()) return BroadcastAction.IGNORED
-        
-        val values = (0 until msg.size).mapNotNull { msg.valueAt(it) as? ByteArray }
+        // Only the record under our own company id carries the layout documented above; any other
+        // record in the same advertisement is a different vendor's data and must not be parsed.
+        val payload = msd.get(MANUFACTURER_ID) ?: return BroadcastAction.IGNORED
 
-        val payload = values.firstOrNull { it.size >= 20} ?: return BroadcastAction.IGNORED
+        if (payload.size < PAYLOAD_SIZE) {
+            logD("Manufacturer record too short (${payload.size} bytes), ignoring")
+            return BroadcastAction.IGNORED
+        }
 
         if ((payload[15].toInt() and 0xFF) != 1) {
             logD("Measurement not stable yet. Continuing...")

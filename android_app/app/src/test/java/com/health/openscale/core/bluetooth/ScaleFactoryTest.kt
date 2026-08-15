@@ -17,10 +17,19 @@
  */
 package com.health.openscale.core.bluetooth
 
+import android.util.SparseArray
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.bluetooth.scales.DrTrustSSW532Handler
+import com.health.openscale.core.bluetooth.scales.EtekcityESF551Handler
+import com.health.openscale.core.bluetooth.scales.EtekcityFit8SHandler
+import com.health.openscale.core.bluetooth.scales.EufyC20Handler
 import com.health.openscale.core.bluetooth.scales.FitTrackDaraHandler
 import com.health.openscale.core.bluetooth.scales.MGBHandler
+import com.health.openscale.core.bluetooth.scales.OkOkHandler
+import com.health.openscale.core.bluetooth.scales.QNHandlerBroadcast
+import com.health.openscale.core.bluetooth.scales.ScaleupHandler
+import com.health.openscale.core.bluetooth.scales.SinocareHandler
+import com.health.openscale.core.bluetooth.scales.YunmaiXHandler
 import com.health.openscale.core.bluetooth.scales.RelaxmedicHandler
 import com.health.openscale.core.bluetooth.scales.RobiS9Handler
 import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler
@@ -74,6 +83,25 @@ class ScaleFactoryTest {
         rssi = -50,
         serviceUuids = services.toList(),
         manufacturerData = null,
+    )
+
+    /**
+     * A broadcast advertisement: name (often empty on broadcast-only scales), advertised services
+     * and the manufacturer-specific records, keyed by company id exactly like `ScanRecord` hands
+     * them to the scanner.
+     */
+    private fun advertisement(
+        name: String = "",
+        services: List<UUID> = emptyList(),
+        manufacturerData: List<Pair<Int, ByteArray>> = emptyList(),
+    ) = ScannedDeviceInfo(
+        name = name,
+        address = "C0:FF:EE:12:34:56",
+        rssi = -50,
+        serviceUuids = services,
+        manufacturerData = SparseArray<ByteArray>().apply {
+            manufacturerData.forEach { (id, data) -> put(id, data) }
+        },
     )
 
     private fun uuid16(short: Int): UUID =
@@ -247,6 +275,139 @@ class ScaleFactoryTest {
 
         val order = ScaleFactory.createHandlers().map { it.javaClass.simpleName }
         assertThat(order.indexOf("SanitasSbf72Handler")).isLessThan(order.indexOf("BeurerSanitasHandler"))
+    }
+
+    // --- Broadcast fingerprints -------------------------------------------------------------
+
+    /** Etekcity's company id — together with service 0xFFD0 the only fingerprint of the Fit 8S. */
+    private val ETEKCITY_COMPANY_ID = 0x06D0
+
+    /** Service 0xFFD0 — advertised by the Fit 8S alongside its manufacturer record. */
+    private val SERVICE_FFD0 = uuid16(0xFFD0)
+
+    /** A stable 75.500 kg / 500 Ω reading in the Fit 8S advertisement layout. */
+    private fun fit8sPayload(): ByteArray = ByteArray(20).apply {
+        this[0] = 0x01                              // header
+        this[10] = 0xEC.toByte()                    // weight 75500 g, 3-byte little-endian
+        this[11] = 0x26
+        this[12] = 0x01
+        this[13] = 0xF4.toByte()                    // impedance 500 Ω, 2-byte little-endian
+        this[14] = 0x01
+        this[15] = 0x01                             // stable
+    }
+
+    private fun fit8sAdvertisement() = advertisement(
+        name = "",                                  // the scale advertises no name at all
+        services = listOf(SERVICE_FFD0),
+        manufacturerData = listOf(ETEKCITY_COMPANY_ID to fit8sPayload()),
+    )
+
+    /**
+     * The Fit 8S is nameless, so it can only be recognised by company id plus service UUID. Both
+     * halves must be required: matching on either one alone would make the handler claim
+     * advertisements it cannot parse.
+     */
+    @Test
+    fun `the nameless Etekcity Fit 8S is claimed by its own handler`() {
+        assertClaimedBy(fit8sAdvertisement(), EtekcityFit8SHandler::class.java)
+
+        val fit8s = EtekcityFit8SHandler()
+        // Company id without the service…
+        assertThat(
+            fit8s.supportFor(
+                advertisement(manufacturerData = listOf(ETEKCITY_COMPANY_ID to fit8sPayload()))
+            )
+        ).isNull()
+        // …and the service without the company id.
+        assertThat(
+            fit8s.supportFor(
+                advertisement(
+                    services = listOf(SERVICE_FFD0),
+                    manufacturerData = listOf(0xFF64 to fit8sPayload()),
+                )
+            )
+        ).isNull()
+        // A scan result that carried no manufacturer data at all.
+        assertThat(fit8s.supportFor(device("", SERVICE_FFD0))).isNull()
+    }
+
+    /**
+     * ScaleupHandler claims *any* manufacturer record whose company-id low byte is 0xD0 or 0xE0 —
+     * and Etekcity's company id 0x06D0 ends in 0xD0, so both handlers answer for a Fit 8S. Only the
+     * list position keeps the device on the driver that can decode it.
+     */
+    @Test
+    fun `Etekcity Fit 8S is matched ahead of the low-byte Scaleup match`() {
+        val claimants = claimants(fit8sAdvertisement()).map { it.javaClass.simpleName }
+        assertThat(claimants).containsExactly("EtekcityFit8SHandler", "ScaleupHandler").inOrder()
+
+        val order = ScaleFactory.createHandlers().map { it.javaClass.simpleName }
+        assertThat(order.indexOf("EtekcityFit8SHandler")).isLessThan(order.indexOf("ScaleupHandler"))
+    }
+
+    /**
+     * The other direction of the same overlap: a Scaleup advertisement carries no 0xFFD0 service
+     * and a different company id, so the Fit 8S handler must keep its hands off it.
+     */
+    @Test
+    fun `Scaleup broadcasts are not swallowed by the Etekcity Fit 8S handler`() {
+        // key = (weight MSB shl 8) or flag → 75.50 kg (0x1D7E) while measuring (0xD0)
+        val scaleup = advertisement(manufacturerData = listOf(0x1DD0 to ByteArray(9)))
+
+        assertClaimedBy(scaleup, ScaleupHandler::class.java)
+        assertThat(EtekcityFit8SHandler().supportFor(scaleup)).isNull()
+    }
+
+    /**
+     * The connectable Etekcity ESF551 is the Fit 8S's closest neighbour — same vendor, so possibly
+     * the same company id. It identifies itself by name and must keep winning: the Fit 8S handler
+     * would otherwise downgrade it to broadcast-only.
+     */
+    @Test
+    fun `the named Etekcity ESF551 wins over the broadcast Fit 8S handler`() {
+        val esf551 = advertisement(
+            name = "Etekcity Smart Fitness Scale",
+            services = listOf(SERVICE_FFD0),
+            manufacturerData = listOf(ETEKCITY_COMPANY_ID to fit8sPayload()),
+        )
+
+        assertClaimedBy(esf551, EtekcityESF551Handler::class.java)
+
+        val order = ScaleFactory.createHandlers().map { it.javaClass.simpleName }
+        assertThat(order.indexOf("EtekcityESF551Handler"))
+            .isLessThan(order.indexOf("EtekcityFit8SHandler"))
+    }
+
+    /**
+     * The registry holds several handlers that identify a scale from its manufacturer record alone.
+     * Each must keep its own advertisement, and none of them may be answered by the Fit 8S handler.
+     */
+    @Test
+    fun `manufacturer-data broadcasts stay with their own handler`() {
+        val expectations: List<Pair<ScannedDeviceInfo, Class<out ScaleDeviceHandler>>> = listOf(
+            // Sinocare — company id 0xFF64
+            advertisement(manufacturerData = listOf(0xFF64 to ByteArray(12)))
+                    to SinocareHandler::class.java,
+            // QN broadcast variant — company id 0xFFFF with the AABB magic header
+            advertisement(
+                manufacturerData = listOf(
+                    0xFFFF to byteArrayOf(0xAA.toByte(), 0xBB.toByte(), 0x00, 0x00, 0x00, 0x00)
+                )
+            ) to QNHandlerBroadcast::class.java,
+            // Eufy C20 — company id 0xBC64
+            advertisement(manufacturerData = listOf(48228 to ByteArray(14)))
+                    to EufyC20Handler::class.java,
+            // OKOK V20 — company id 0x20CA behind one of the known names
+            advertisement(name = "ADV", manufacturerData = listOf(0x20CA to ByteArray(16)))
+                    to OkOkHandler::class.java,
+            // Yunmai X — recognised by its advertised 16-bit service 0x1320
+            advertisement(services = listOf(uuid16(0x1320))) to YunmaiXHandler::class.java,
+        )
+
+        for ((device, expected) in expectations) {
+            assertClaimedBy(device, expected)
+            assertThat(EtekcityFit8SHandler().supportFor(device)).isNull()
+        }
     }
 
     // --- Non-scales -------------------------------------------------------------------------
