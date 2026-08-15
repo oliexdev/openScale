@@ -191,9 +191,8 @@ class ScaleFactoryTest {
     // --- Ordering ---------------------------------------------------------------------------
 
     /**
-     * MGBHandler claims *any* device advertising service 0xFFB0, so every sibling on that service
-     * only wins by standing earlier in the list. This pins the documented order; moving MGBHandler
-     * up (or a sibling down) breaks these devices silently at runtime.
+     * Several unrelated handlers share service 0xFFB0. They must still claim their own names,
+     * and MGBHandler (swan/icomon/yg only) must not steal them via a service-only match.
      */
     @Test
     fun `0xFFB0 siblings are matched ahead of the generic MGB handler`() {
@@ -203,36 +202,28 @@ class ScaleFactoryTest {
         assertClaimedBy(device("robi", SERVICE_FFB0), RobiS9Handler::class.java)
         assertClaimedBy(device("SSW532", SERVICE_FFB0), DrTrustSSW532Handler::class.java)
 
-        // The generic member of the family keeps the devices nobody else claims.
         assertClaimedBy(device("swan", SERVICE_FFB0), MGBHandler::class.java)
 
-        val order = ScaleFactory.createHandlers().map { it.javaClass.simpleName }
-        val mgb = order.indexOf("MGBHandler")
-        val siblings = listOf(
-            "TaylorBIAHandler",
-            "FitTrackDaraHandler",
-            "RelaxmedicHandler",
-            "RobiS9Handler",
-            "DrTrustSSW532Handler",
-        )
-        for (sibling in siblings) {
-            assertThat(order.indexOf(sibling)).isLessThan(mgb)
-        }
+        // Unknown 0xFFB0 name: MGB must not claim it (service alone is not enough).
+        assertThat(MGBHandler().supportFor(device("SomeOtherFFB0Scale", SERVICE_FFB0))).isNull()
+        assertThat(claimants(device("SomeOtherFFB0Scale", SERVICE_FFB0)).map { it.javaClass.simpleName })
+            .doesNotContain("MGBHandler")
     }
 
     /**
-     * The Dr. Trust driver only claims a device when the name *and* the 0xFFB0 service match, so it
-     * can never take a device away from MGBHandler — but it sat behind MGB in the registry, which
-     * meant MGB (service-only match) swallowed every SSW-532. Pins both halves of that fix.
+     * Regression for #1470: MGB must not claim Dr. Trust SSW532 (shared 0xFFB0) by service alone.
+     * MGB is name-gated (swan/icomon/yg); DrTrust still needs name + service.
      */
     @Test
     fun `Dr Trust SSW532 is not swallowed by the service-only MGB match`() {
         assertClaimedBy(device("SSW532", SERVICE_FFB0), DrTrustSSW532Handler::class.java)
         assertClaimedBy(device("SSW-532 FG2211", SERVICE_FFB0), DrTrustSSW532Handler::class.java)
 
+        assertThat(MGBHandler().supportFor(device("SSW532", SERVICE_FFB0))).isNull()
+
         // Without the service the Dr. Trust handler must stay out of the way…
         assertThat(claimants(device("SSW532")).map { it.javaClass.simpleName }).isEmpty()
-        // …and without the name it must not touch MGB's own devices.
+        // …and MGB still owns its own names.
         assertClaimedBy(device("icomon", SERVICE_FFB0), MGBHandler::class.java)
         assertClaimedBy(device("yg", SERVICE_FFB0), MGBHandler::class.java)
     }

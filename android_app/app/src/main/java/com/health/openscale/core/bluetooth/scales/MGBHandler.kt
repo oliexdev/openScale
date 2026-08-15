@@ -79,11 +79,11 @@ class MGBHandler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.lowercase(Locale.ROOT)
+        // Name-only: service 0xFFB0 is shared by many unrelated OEM forks (Dr. Trust SSW532,
+        // FitTrack Dara, Taylor BIA, …). Matching on service alone let this catch-all steal
+        // those devices when it sat ahead of their handlers (see #1470).
         val nameMatch = name.startsWith("swan") || (name == "icomon") || (name == "yg")
-
-        val serviceMatch = device.serviceUuids.any { it == SERVICE }
-
-        if (!nameMatch && !serviceMatch) return null
+        if (!nameMatch) return null
 
         val caps = setOf(
             DeviceCapability.LIVE_WEIGHT_STREAM, // we get final (and sometimes intermediate) frames
