@@ -130,6 +130,11 @@ class HuaweiHagridWspLibTest {
             workKey
         )
 
+        // Payload: b1 21  2d 01  ea 07 08 09 17 27 1d a0  ea 13 00...  61 00
+        //          weight fat   ^bytes 4-11: timestamp (2026-08-09T23:39:29)^  hr
+        // Bytes 4–11 are timestamp data in this capture and are NOT decoded as
+        // body composition metrics (musclePercent / waterPercent / boneMassKg / visceralFat
+        // have been removed from HagridWeightMeasurement entirely).
         assertThat(plain).isEqualTo(
             hexToBytes("b1212d01ea07080917271da0ea13000000000000000000006100")
         )
@@ -139,6 +144,12 @@ class HuaweiHagridWspLibTest {
         assertThat(measurement!!.weightKg).isWithin(0.0001f).of(86.25f)
         assertThat(measurement.fatPercent).isWithin(0.0001f).of(30.1f)
         assertThat(measurement.heartRateBpm).isEqualTo(97)
+        // Bytes 4–10 decode to 2026-08-09T23:39:29; verify year and month (timezone-safe).
+        assertThat(measurement.timestamp).isNotNull()
+        val ts = Calendar.getInstance()
+        ts.time = measurement.timestamp!!
+        assertThat(ts.get(Calendar.YEAR)).isEqualTo(2026)
+        assertThat(ts.get(Calendar.MONTH)).isEqualTo(Calendar.AUGUST)
     }
 
     @Test

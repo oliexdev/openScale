@@ -98,18 +98,6 @@ object HuaweiHagridWspLib {
         val rawLength: Int,
         val weightKg: Float,
         val fatPercent: Float,
-        /** Skeletal muscle percentage (0 = not available). Decoded from bytes 4–5 of the
-         *  realtime payload (raw ÷ 10). Not present in history records. */
-        val musclePercent: Float = 0f,
-        /** Total body water percentage (0 = not available). Decoded from bytes 6–7 of the
-         *  realtime payload (raw ÷ 10). Not present in history records. */
-        val waterPercent: Float = 0f,
-        /** Bone mass in kg (0 = not available). Decoded from bytes 8–9 of the realtime
-         *  payload (raw ÷ 100). Not present in history records. */
-        val boneMassKg: Float = 0f,
-        /** Visceral fat level, 1–50 index (0 = not available). Decoded from bytes 10–11
-         *  of the realtime payload (raw ÷ 10). Not present in history records. */
-        val visceralFat: Float = 0f,
         val timestamp: Date?,
         val lowFrequencyImpedance: List<Int>,
         val highFrequencyImpedance: List<Int>,
@@ -346,7 +334,6 @@ object HuaweiHagridWspLib {
         }
     }
 
-
     fun buildWriteFrames(payload: ByteArray, encrypted: Boolean = false): List<ByteArray> {
         require(payload.size <= MAX_SIMPLE_PAYLOAD_BYTES) {
             "WSP long payloads > $MAX_SIMPLE_PAYLOAD_BYTES bytes are not implemented"
@@ -433,7 +420,9 @@ object HuaweiHagridWspLib {
         parseHagridWeightMeasurement(
             payload = payload,
             allowedLengths = setOf(26, 38),
-            timestampPresent = false
+            // Bytes 4–10 carry a valid timestamp in the Hagrid realtime payload,
+            // confirmed by the Huawei Scale 3 BLE capture (2026-08-09T23:39:29).
+            timestampPresent = true
         )
 
     fun parseHistoryMeasurement(payload: ByteArray): HagridWeightMeasurement? =
@@ -876,25 +865,6 @@ object HuaweiHagridWspLib {
             null
         }
 
-        // Bytes 4–11 carry body-composition metrics only in realtime payloads (no timestamp).
-        // In history payloads, those same bytes are occupied by the 7-byte timestamp and 1
-        // unknown byte, leaving no room for these four u16le fields.
-        // Layout (realtime only): muscle%(×10) | water%(×10) | bone_kg(×100) | visceral_fat(×10)
-        val musclePercent: Float
-        val waterPercent: Float
-        val boneMassKg: Float
-        val visceralFat: Float
-        if (!timestampPresent && payload.size >= 12) {
-            musclePercent = (u16le(payload, 4) / 10.0f).takeIf { it in 5f..85f } ?: 0f
-            waterPercent  = (u16le(payload, 6) / 10.0f).takeIf { it in 20f..80f } ?: 0f
-            boneMassKg    = (u16le(payload, 8) / 100.0f).takeIf { it in 0.1f..8.0f } ?: 0f
-            visceralFat   = (u16le(payload, 10) / 10.0f).takeIf { it in 1f..50f } ?: 0f
-        } else {
-            musclePercent = 0f
-            waterPercent  = 0f
-            boneMassKg    = 0f
-            visceralFat   = 0f
-        }
 
         val low = (0 until 6).map { u16le(payload, 12 + it * 2) }
         val high = if (highResistancePresent) {
@@ -924,10 +894,6 @@ object HuaweiHagridWspLib {
             rawLength = payload.size,
             weightKg = weightKg,
             fatPercent = fatPercent,
-            musclePercent = musclePercent,
-            waterPercent = waterPercent,
-            boneMassKg = boneMassKg,
-            visceralFat = visceralFat,
             timestamp = timestamp,
             lowFrequencyImpedance = low,
             highFrequencyImpedance = high,
@@ -1067,7 +1033,6 @@ object HuaweiHagridWspLib {
     private fun ByteArray.toHexString(): String =
         joinToString(separator = "") { "%02X".format(it.toInt() and 0xFF) }
 }
-
 
 /**
  * Replaceable source for Huawei Hagrid CAK/C1/C2 key material.
