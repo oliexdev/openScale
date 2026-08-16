@@ -1,0 +1,18 @@
+# Hand-written remarks for the generated scale catalog (see ScaleCatalog / ScaleCatalogTest).
+#
+# One entry per line:   <key> = <remark>
+# The key is the display name a handler reports (the "Scale" column of the generated table). A
+# handler class name works too and then covers every product that driver reports.
+# Lines starting with '#' are comments. Markdown (links included) is allowed in the remark.
+#
+# Everything else in the table — display name, connection type, capabilities — comes from the
+# handler's supportFor() and must be changed there, not here.
+
+Xiaomi Mi Scale v1 = No data on the scale is ever deleted
+Xiaomi Body Composition Scale S400 = See [#1297](https://github.com/oliexdev/openScale/pull/1297) for more details
+Sanitas SBF70 / SilverCrest SBF75 / Crane = The assigned user name on the scale and in openScale have to be the same, see [FAQ](Frequently-Asked-Questions-(FAQ)#how-do-i-get-the-body-metrics-water-muscle-fat-percentage-on-my-sbf70-scale)
+Digoo DG-SO38H (Mengii) = Initialisation process needs to be reverse engineered. Currently you have to use the vendor's app once to initialise the scale.
+ES-CS20M / ES-32MD = Uses the Trisa Body Analyze body measurement library until the original [QN scale library](https://github.com/oliexdev/openScale/issues/373) is fully reverse engineered
+Custom openScale = See [here](Custom-Bluetooth-Scale) for a tutorial
+Trisa Body Analyze 4.0 = See [Trisa Body Analyze](Trisa-Body-Analyze) for the protocol
+Debug = Not a scale: assign it to a device to record its GATT services for reverse engineering
