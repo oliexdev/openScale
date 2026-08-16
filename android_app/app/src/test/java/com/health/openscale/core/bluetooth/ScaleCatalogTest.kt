@@ -30,10 +30,10 @@ import java.io.File
  * The wiki page "Supported scales in openScale" used to be maintained by hand and drifted behind
  * the registry — scales were added to [ScaleFactory] for releases without ever reaching the table.
  * [ScaleCatalog] derives that table from `supportFor` instead; this test is the half that stops it
- * from going stale again: a handler nobody probes fails the build.
+ * from going stale again: a handler nobody lists a fixture for fails the build.
  *
  * Robolectric is required because some handlers touch the Android framework while being constructed
- * (e.g. QNHandler creates a main-looper Handler) and because the probes build `SparseArray`s.
+ * (e.g. QNHandler creates a main-looper Handler) and because the fixtures build `SparseArray`s.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -41,34 +41,22 @@ class ScaleCatalogTest {
 
     /**
      * The guard that matters: every registered handler must be reachable — it has to win at least
-     * one probe. A handler that wins nothing is either missing from [ScaleCatalog.probes] (the
+     * one fixture. A handler that wins nothing is either missing from [ScaleCatalog.fixtures] (the
      * table would silently omit the scale) or unreachable behind a broader matcher earlier in the
-     * list (the device would never reach its own driver).
+     * registry (the device would never reach its own driver).
      */
     @Test
-    fun `every registered handler is covered by a probe`() {
+    fun `every registered handler is covered by a fixture`() {
         val registered = ScaleFactory.createHandlers().map { it.javaClass.simpleName }.toSet()
         val covered = ScaleCatalog.rows().map { it.handler }.toSet()
 
         assertThat(registered - covered).isEmpty()
     }
 
-    /** A probe that no handler claims is dead weight and hides a matcher that has been narrowed. */
-    @Test
-    fun `every probe is claimed by a handler`() {
-        val orphans = ScaleCatalog.probes
-            .filter { ScaleCatalog.winner(it) == null }
-            .map { "${it.name.ifEmpty { "<nameless>" }} / services=${it.serviceUuids}" }
-
-        assertThat(orphans).isEmpty()
-    }
-
     /** Two rows with the same product name would publish a duplicate line in the wiki table. */
     @Test
     fun `catalog rows are unique per display name`() {
-        val rows = ScaleCatalog.rows()
-
-        assertThat(rows.map { it.displayName }).containsNoDuplicates()
+        assertThat(ScaleCatalog.rows().map { it.displayName }).containsNoDuplicates()
     }
 
     /**
@@ -81,6 +69,23 @@ class ScaleCatalogTest {
         for (row in ScaleCatalog.rows()) {
             assertThat(row.capabilities).containsAtLeastElementsIn(row.implemented)
         }
+    }
+
+    /**
+     * The table links every handler to its source file. The path is derived from the class name, so
+     * a driver whose file is named differently would publish a 404.
+     */
+    @Test
+    fun `every handler links to an existing source file`() {
+        // Unit tests run with the module directory (android_app/app) as the working directory.
+        val repositoryRoot = File("../..").canonicalFile
+        val missing = ScaleFactory.createHandlers()
+            .map { it.javaClass.simpleName }
+            .distinct()
+            .map { ScaleCatalog.sourcePath(it) }
+            .filterNot { File(repositoryRoot, it).isFile }
+
+        assertThat(missing).isEmpty()
     }
 
     /** Every remark must reach a row; a typo in a key would otherwise drop the note silently. */
@@ -116,7 +121,7 @@ class ScaleCatalogTest {
 
         println("Scale catalog: ${rows.size} scales written to ${target.absolutePath}")
 
-        assertThat(markdown).contains("| Scale | Connection |")
+        assertThat(markdown).contains("| Scale | Handler | Connection |")
         assertThat(rows).isNotEmpty()
     }
 }

@@ -18,34 +18,102 @@
 package com.health.openscale.core.bluetooth
 
 import android.util.SparseArray
+import com.health.openscale.core.bluetooth.scales.AAAxHandler
+import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
+import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
+import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
+import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
+import com.health.openscale.core.bluetooth.scales.CultSmartScaleProHandler
+import com.health.openscale.core.bluetooth.scales.CustomOpenScaleHandler
+import com.health.openscale.core.bluetooth.scales.DebugGattHandler
 import com.health.openscale.core.bluetooth.scales.DeviceCapability
+import com.health.openscale.core.bluetooth.scales.DigooDGSO38HHandler
+import com.health.openscale.core.bluetooth.scales.DrTrustSSW532Handler
+import com.health.openscale.core.bluetooth.scales.EEBBLHandler
+import com.health.openscale.core.bluetooth.scales.ESCS20MHandler
+import com.health.openscale.core.bluetooth.scales.EbelterBodyFatB2Handler
+import com.health.openscale.core.bluetooth.scales.EtekcityESF551Handler
+import com.health.openscale.core.bluetooth.scales.EtekcityFit8SHandler
+import com.health.openscale.core.bluetooth.scales.EufyC20Handler
+import com.health.openscale.core.bluetooth.scales.EufyP2Handler
+import com.health.openscale.core.bluetooth.scales.ExcelvanCF36xHandler
+import com.health.openscale.core.bluetooth.scales.ExingtechY1Handler
+import com.health.openscale.core.bluetooth.scales.FitTrackDaraHandler
+import com.health.openscale.core.bluetooth.scales.HesleyHandler
+import com.health.openscale.core.bluetooth.scales.HoffenBbs8107Handler
+import com.health.openscale.core.bluetooth.scales.HuaweiAhCh100Handler
+import com.health.openscale.core.bluetooth.scales.HuaweiCH100SHandler
+import com.health.openscale.core.bluetooth.scales.HuaweiHagridWspHandler
+import com.health.openscale.core.bluetooth.scales.IHealthHS3Handler
+import com.health.openscale.core.bluetooth.scales.InlifeHandler
+import com.health.openscale.core.bluetooth.scales.KeepS3Handler
 import com.health.openscale.core.bluetooth.scales.LinkMode
+import com.health.openscale.core.bluetooth.scales.MGBHandler
+import com.health.openscale.core.bluetooth.scales.MedisanaBs44xHandler
+import com.health.openscale.core.bluetooth.scales.MiScaleHandler
+import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
+import com.health.openscale.core.bluetooth.scales.OkOkHandler
+import com.health.openscale.core.bluetooth.scales.OmronWlcHandler
+import com.health.openscale.core.bluetooth.scales.OneByoneHandler
+import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
+import com.health.openscale.core.bluetooth.scales.QNHandler
+import com.health.openscale.core.bluetooth.scales.QNHandlerBroadcast
+import com.health.openscale.core.bluetooth.scales.RealmeSmartScaleHandler
+import com.health.openscale.core.bluetooth.scales.RelaxmedicHandler
+import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
+import com.health.openscale.core.bluetooth.scales.RenphoHandler
+import com.health.openscale.core.bluetooth.scales.RobiS9Handler
+import com.health.openscale.core.bluetooth.scales.RunstarR5Handler
+import com.health.openscale.core.bluetooth.scales.RunstarR6Handler
+import com.health.openscale.core.bluetooth.scales.RyFitHandler
+import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler
 import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
+import com.health.openscale.core.bluetooth.scales.ScaleupHandler
+import com.health.openscale.core.bluetooth.scales.SenssunHandler
+import com.health.openscale.core.bluetooth.scales.SinocareHandler
+import com.health.openscale.core.bluetooth.scales.SoehnleHandler
+import com.health.openscale.core.bluetooth.scales.StandardBeurerSanitasHandler
+import com.health.openscale.core.bluetooth.scales.TaylorBIAHandler
+import com.health.openscale.core.bluetooth.scales.TrisaBodyAnalyzeHandler
+import com.health.openscale.core.bluetooth.scales.VitafitVT701Handler
+import com.health.openscale.core.bluetooth.scales.WeightGurusA3Handler
+import com.health.openscale.core.bluetooth.scales.XiaomiS800Handler
+import com.health.openscale.core.bluetooth.scales.YunmaiHandler
+import com.health.openscale.core.bluetooth.scales.YunmaiXHandler
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.UUID
 
 /**
- * The scale catalog: the wiki's "Supported scales in openScale" table, derived from the code that
- * actually decides support.
+ * The one place a supported scale is written down.
  *
- * Every row is produced by asking the real registry — [ScaleFactory.createHandlers] in its real
- * order — what it makes of a synthetic advertisement, and then reading the returned
- * [com.health.openscale.core.bluetooth.scales.DeviceSupport]. Nothing about a scale is written down
- * twice: display name, link mode and the capability sets all come from `supportFor`, so a driver
- * that gains (or loses) a capability changes the published table on the next generator run.
+ * [fixtures] pairs a synthetic advertisement with the handler that must claim it, and serves two
+ * jobs at once:
  *
- * The one thing that cannot be derived is the input: `supportFor` only answers when it is handed an
- * advertisement it recognises. [probes] is that input — one synthetic advertisement per supported
- * device, built from the names and fingerprints documented in the handlers themselves, never from
- * personal captures. `ScaleCatalogTest` fails when a registered handler has no probe, which is what
- * keeps the table from silently falling behind the registry.
+ *  - `ScaleFactoryTest` asserts that the real registry — [ScaleFactory.createHandlers] in its real
+ *    order, first match wins — still routes each device to its own driver.
+ *  - `ScaleCatalogTest` asks the winning handler for its
+ *    [com.health.openscale.core.bluetooth.scales.DeviceSupport] and renders the wiki page
+ *    "Supported scales in openScale" from it.
  *
- * Human-written notes (the "Remarks" column) live in `src/test/resources/scale_catalog_remarks.txt`
- * and are merged in by display name — see [renderMarkdown].
+ * So adding a scale is one line here on top of the handler itself: the regression test and the
+ * published table follow automatically. Nothing about a device is written down twice — display
+ * name, link mode and capabilities all come from `supportFor`.
+ *
+ * Advertisements are built from the names and fingerprints documented in the handlers themselves,
+ * never from personal captures.
+ *
+ * Human-written notes for the table's "Remarks" column live in
+ * `src/test/resources/scale_catalog_remarks.txt`, the photo gallery in `scale_catalog_gallery.md`.
  */
 object ScaleCatalog {
 
-    // --- Probe construction ---------------------------------------------------------------
+    // --- Fixtures ---------------------------------------------------------------------------
+
+    /** An advertisement together with the handler that has to claim it. */
+    data class Fixture(
+        val device: ScannedDeviceInfo,
+        val handler: Class<out ScaleDeviceHandler>,
+    )
 
     fun uuid16(short: Int): UUID =
         UUID.fromString(String.format("0000%04x-0000-1000-8000-00805f9b34fb", short))
@@ -74,127 +142,151 @@ object ScaleCatalog {
         },
     )
 
-    /** Etekcity's company id; with service 0xFFD0 the only fingerprint of the nameless Fit 8S. */
-    private const val ETEKCITY_COMPANY_ID = 0x06D0
-
     /** Service 0xFFB0 — the LeFu-style service shared by a whole family of unrelated scales. */
     private val SERVICE_FFB0 = uuid16(0xFFB0)
 
+    /** Etekcity's company id; with service 0xFFD0 the only fingerprint of the nameless Fit 8S. */
+    private const val ETEKCITY_COMPANY_ID = 0x06D0
+
+    private infix fun ScannedDeviceInfo.claimedBy(handler: Class<out ScaleDeviceHandler>) =
+        Fixture(this, handler)
+
     /**
-     * One synthetic advertisement per supported device.
-     *
-     * Where a handler reports different products under different names (Beurer, Medisana, Omron,
-     * 1byone, Huawei, …) every product gets its own probe, because each yields its own catalog row.
+     * One entry per supported device. Where a handler reports several products under different
+     * names (Beurer, Medisana, Omron, Huawei, 1byone, …) each product gets its own fixture, because
+     * each is its own row in the published table.
      */
-    val probes: List<ScannedDeviceInfo> = listOf(
+    val fixtures: List<Fixture> = listOf(
         // --- Matched by advertised name ---
-        device("AE BS-06"),                              // ActiveEraBF06Handler
-        device("Keep_S3"),                               // KeepS3Handler
-        device("Beurer BF450"),                          // BeurerBF450Handler
-        device("BIA SCALE", SERVICE_FFB0),               // TaylorBIAHandler
-        device("RYFIT"),                                 // RyFitHandler
-        device("CULT Smart Scale Pro"),                  // CultSmartScaleProHandler
-        device("realme Smart Scale"),                    // RealmeSmartScaleHandler
-        device("YUNMAI-ISSE-1234"),                      // YunmaiHandler(isMini = false)
-        device("YUNMAI-SIGNAL-1234"),                    // YunmaiHandler(isMini = true)
-        device("01257B1234"),                            // TrisaBodyAnalyzeHandler
-        device("SANITAS SBF72"),                         // SanitasSbf72Handler
-        device("SANITAS SBF73"),                         // …
-        device("Beurer BF915"),                          // …
-        device("Beurer BF105"),                          // StandardBeurerSanitasHandler
-        device("Beurer BF500"),                          // …
-        device("Beurer BF600"),                          // …
-        device("Beurer BF950"),                          // …
-        device("Shape200"),                              // SoehnleHandler
-        device("Weight Scale"),                          // SinocareHandler
-        device("SENSSUN FAT"),                           // SenssunHandler
-        device("RENPHO-SCALE-1234"),                     // RenphoHandler (no QN service → not QNHandler)
-        device("QN-Scale", uuid16(0xFFE0)),              // QNHandler
-        device("Health Scale"),                          // OneByoneHandler (1byone classic)
-        device("eufy T9146"),                            // … Eufy C1
-        device("eufy T9147"),                            // … Eufy P1
-        device("eufy T9120"),                            // … Eufy A1
-        device("1byone scale"),                          // OneByoneNewHandler
-        device("XMTZC14HM"),                             // MiScaleS400Handler
-        device("MIJIA SCALE S800"),                      // XiaomiS800Handler
-        device("MI_SCALE"),                              // MiScaleHandler (v1)
-        device("MIBFS"),                                 // MiScaleHandler (v2)
-        device("runstar-r6"),                            // RunstarR6Handler
-        device("RUNSTAR-R5"),                            // RunstarR5Handler
-        device("relaxmedic"),                            // RelaxmedicHandler
-        device("robi"),                                  // RobiS9Handler
-        device("Vitafit VT701"),                         // VitafitVT701Handler
-        device("EEBBL"),                                 // EEBBLHandler
-        device("FITTRACK Dara"),                         // FitTrackDaraHandler
-        device("SSW532", SERVICE_FFB0),                  // DrTrustSSW532Handler
-        device("swan", SERVICE_FFB0),                    // MGBHandler
-        device("0203B1234"),                             // MedisanaBs44xHandler (BS430)
-        device("0131971234"),                            // … (BS444/BS440)
-        device("000fatscale01"),                         // InlifeHandler
-        device("IHEALTH HS3"),                           // IHealthHS3Handler
-        device("HUAWEI AH100"),                          // HuaweiAhCh100Handler
-        device("HUAWEI CH100"),                          // …
-        device("CH100S"),                                // HuaweiCH100SHandler
-        device("HUAWEI Scale 2 Pro"),                    // HuaweiHagridWspHandler
-        device("Hagrid-B29"),                            // … Scale 3 Pro
-        device("HUAWEI Scale 3"),                        // … Scale 3
-        device("Hoffen BS-8107"),                        // HoffenBbs8107Handler
-        device("yunchen"),                               // HesleyHandler
-        device("vscale"),                                // ExingtechY1Handler
-        device("Body Fat-B2"),                           // EbelterBodyFatB2Handler
-        device("Electronic Scale"),                      // ExcelvanCF36xHandler
-        device("Etekcity Smart Fitness Scale"),          // EtekcityESF551Handler
-        device("EUFY C20"),                              // EufyC20Handler
-        device("eufy T9148"),                            // EufyP2Handler
-        device("ES-CS20M"),                              // ESCS20MHandler
-        device("ES-26BB-B"),                             // RenphoES26BBHandler
-        device("Mengii"),                                // DigooDGSO38HHandler
-        device("debug"),                                 // DebugGattHandler
-        device("openScale"),                             // CustomOpenScaleHandler
-        device("BEURER BF700"),                          // BeurerSanitasHandler (BF700/800/Libra)
-        device("BEURER BF710"),                          // … BF710
-        device("SANITAS SBF70"),                         // … SBF70/SBF75/Crane
-        device("AAA002"),                                // AAAxHandler
-        device("1BODY CONNECT"),                         // BodyConnectHandler
-        device("1X-LINE"),                               // … Terraillon X-LINE
-        device("10376BAA"),                              // WeightGurusA3Handler
+        device("AE BS-06") claimedBy ActiveEraBF06Handler::class.java,
+        device("Keep_S3") claimedBy KeepS3Handler::class.java,
+        device("Beurer BF450") claimedBy BeurerBF450Handler::class.java,
+        device("BIA SCALE", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
+        device("RYFIT") claimedBy RyFitHandler::class.java,
+        device("CULT Smart Scale Pro") claimedBy CultSmartScaleProHandler::class.java,
+        device("realme Smart Scale") claimedBy RealmeSmartScaleHandler::class.java,
+        device("YUNMAI-ISSE-1234") claimedBy YunmaiHandler::class.java,
+        device("YUNMAI-SIGNAL-1234") claimedBy YunmaiHandler::class.java,
+        device("01257B1234") claimedBy TrisaBodyAnalyzeHandler::class.java,
+        device("SANITAS SBF72") claimedBy SanitasSbf72Handler::class.java,
+        device("SANITAS SBF73") claimedBy SanitasSbf72Handler::class.java,
+        device("Beurer BF915") claimedBy SanitasSbf72Handler::class.java,
+        device("Beurer BF105") claimedBy StandardBeurerSanitasHandler::class.java,
+        device("Beurer BF500") claimedBy StandardBeurerSanitasHandler::class.java,
+        device("Beurer BF600") claimedBy StandardBeurerSanitasHandler::class.java,
+        device("Beurer BF950") claimedBy StandardBeurerSanitasHandler::class.java,
+        device("Shape200") claimedBy SoehnleHandler::class.java,
+        device("Weight Scale") claimedBy SinocareHandler::class.java,
+        device("SENSSUN FAT") claimedBy SenssunHandler::class.java,
+        // No QN service advertised, so the QN driver must not take it.
+        device("RENPHO-SCALE-1234") claimedBy RenphoHandler::class.java,
+        device("QN-Scale", uuid16(0xFFE0)) claimedBy QNHandler::class.java,
+        device("Health Scale") claimedBy OneByoneHandler::class.java,
+        device("eufy T9146") claimedBy OneByoneHandler::class.java,
+        device("eufy T9147") claimedBy OneByoneHandler::class.java,
+        device("eufy T9120") claimedBy OneByoneHandler::class.java,
+        device("1byone scale") claimedBy OneByoneNewHandler::class.java,
+        device("XMTZC14HM") claimedBy MiScaleS400Handler::class.java,
+        device("MIJIA SCALE S800") claimedBy XiaomiS800Handler::class.java,
+        device("MI_SCALE") claimedBy MiScaleHandler::class.java,
+        device("MIBFS") claimedBy MiScaleHandler::class.java,
+        device("runstar-r6") claimedBy RunstarR6Handler::class.java,
+        device("RUNSTAR-R5") claimedBy RunstarR5Handler::class.java,
+        device("relaxmedic") claimedBy RelaxmedicHandler::class.java,
+        device("robi") claimedBy RobiS9Handler::class.java,
+        device("Vitafit VT701") claimedBy VitafitVT701Handler::class.java,
+        device("EEBBL") claimedBy EEBBLHandler::class.java,
+        device("FITTRACK Dara") claimedBy FitTrackDaraHandler::class.java,
+        device("SSW532", SERVICE_FFB0) claimedBy DrTrustSSW532Handler::class.java,
+        device("swan", SERVICE_FFB0) claimedBy MGBHandler::class.java,
+        device("0203B1234") claimedBy MedisanaBs44xHandler::class.java,
+        device("0131971234") claimedBy MedisanaBs44xHandler::class.java,
+        device("000fatscale01") claimedBy InlifeHandler::class.java,
+        device("IHEALTH HS3") claimedBy IHealthHS3Handler::class.java,
+        device("HUAWEI AH100") claimedBy HuaweiAhCh100Handler::class.java,
+        device("HUAWEI CH100") claimedBy HuaweiAhCh100Handler::class.java,
+        device("CH100S") claimedBy HuaweiCH100SHandler::class.java,
+        device("HUAWEI Scale 2 Pro") claimedBy HuaweiHagridWspHandler::class.java,
+        device("Hagrid-B29") claimedBy HuaweiHagridWspHandler::class.java,
+        device("HUAWEI Scale 3") claimedBy HuaweiHagridWspHandler::class.java,
+        device("Hoffen BS-8107") claimedBy HoffenBbs8107Handler::class.java,
+        device("yunchen") claimedBy HesleyHandler::class.java,
+        device("vscale") claimedBy ExingtechY1Handler::class.java,
+        device("Body Fat-B2") claimedBy EbelterBodyFatB2Handler::class.java,
+        device("Electronic Scale") claimedBy ExcelvanCF36xHandler::class.java,
+        device("Etekcity Smart Fitness Scale") claimedBy EtekcityESF551Handler::class.java,
+        device("EUFY C20") claimedBy EufyC20Handler::class.java,
+        device("eufy T9148") claimedBy EufyP2Handler::class.java,
+        device("ES-CS20M") claimedBy ESCS20MHandler::class.java,
+        device("ES-26BB-B") claimedBy RenphoES26BBHandler::class.java,
+        device("Mengii") claimedBy DigooDGSO38HHandler::class.java,
+        device("debug") claimedBy DebugGattHandler::class.java,
+        device("openScale") claimedBy CustomOpenScaleHandler::class.java,
+        device("BEURER BF700") claimedBy BeurerSanitasHandler::class.java,
+        device("BEURER BF710") claimedBy BeurerSanitasHandler::class.java,
+        device("SANITAS SBF70") claimedBy BeurerSanitasHandler::class.java,
+        device("AAA002") claimedBy AAAxHandler::class.java,
+        device("1BODY CONNECT") claimedBy BodyConnectHandler::class.java,
+        device("1X-LINE") claimedBy BodyConnectHandler::class.java,
+        device("10376BAA") claimedBy WeightGurusA3Handler::class.java,
 
         // Omron reports its model as the GAP name once bonded; advertised local names carry the
         // model id instead (see OmronWlcHandler.MODELS_BY_ADVERTISED_ID).
-        device("HBF-702T"),
-        device("KRD-703T"),
-        device("HBF-227T"),
-        device("HBF-228T"),
-        device("HBF-230T"),
-        device("HBF-222T"),
-        device("BCM-500"),
-        device("VIVA"),
+        device("HBF-702T") claimedBy OmronWlcHandler::class.java,
+        device("KRD-703T") claimedBy OmronWlcHandler::class.java,
+        device("HBF-227T") claimedBy OmronWlcHandler::class.java,
+        device("HBF-228T") claimedBy OmronWlcHandler::class.java,
+        device("HBF-230T") claimedBy OmronWlcHandler::class.java,
+        device("HBF-222T") claimedBy OmronWlcHandler::class.java,
+        device("BCM-500") claimedBy OmronWlcHandler::class.java,
+        device("VIVA") claimedBy OmronWlcHandler::class.java,
+        device("BLEsmart_0001000C0080E1A2B3C4") claimedBy OmronWlcHandler::class.java,
 
         // --- Matched by advertisement fingerprint, not by name ---
         // Yunmai X: advertised service 0x1320.
-        advertisement(services = listOf(uuid16(0x1320))),
+        advertisement(services = listOf(uuid16(0x1320))) claimedBy YunmaiXHandler::class.java,
         // QN broadcast variant: company id 0xFFFF with the AABB magic header.
         advertisement(
             manufacturerData = listOf(
                 0xFFFF to byteArrayOf(0xAA.toByte(), 0xBB.toByte(), 0x00, 0x00, 0x00, 0x00)
             )
-        ),
+        ) claimedBy QNHandlerBroadcast::class.java,
         // OKOK: company id behind one of the known names.
-        advertisement(name = "ADV", manufacturerData = listOf(0x20CA to ByteArray(16))),
-        advertisement(name = "ADV", manufacturerData = listOf(0x11CA to ByteArray(16))),
-        advertisement(name = "ADV", manufacturerData = listOf(0xF0FF to ByteArray(16))),
+        advertisement(name = "ADV", manufacturerData = listOf(0x20CA to ByteArray(16)))
+            claimedBy OkOkHandler::class.java,
+        advertisement(name = "ADV", manufacturerData = listOf(0x11CA to ByteArray(16)))
+            claimedBy OkOkHandler::class.java,
+        advertisement(name = "ADV", manufacturerData = listOf(0xF0FF to ByteArray(16)))
+            claimedBy OkOkHandler::class.java,
         // Etekcity Fit 8S: nameless, company id 0x06D0 plus service 0xFFD0.
         advertisement(
             services = listOf(uuid16(0xFFD0)),
             manufacturerData = listOf(ETEKCITY_COMPANY_ID to ByteArray(20)),
-        ),
+        ) claimedBy EtekcityFit8SHandler::class.java,
         // Scaleup: any manufacturer record whose company-id low byte is 0xD0 (measuring) or 0xE0.
-        advertisement(manufacturerData = listOf(0x1DD0 to ByteArray(9))),
+        advertisement(manufacturerData = listOf(0x1DD0 to ByteArray(9)))
+            claimedBy ScaleupHandler::class.java,
     )
+
+    // --- Registry queries -------------------------------------------------------------------
+
+    /**
+     * The handler [ScaleFactory.createCommunicator] would pick for [device], or null.
+     *
+     * A fresh registry per call: several handlers stash state in `supportFor` (e.g.
+     * StandardBeurerSanitasHandler remembers the matched model), so a shared instance would let one
+     * fixture bleed into the next.
+     */
+    fun winner(device: ScannedDeviceInfo): ScaleDeviceHandler? =
+        ScaleFactory.createHandlers().firstOrNull { it.supportFor(device) != null }
+
+    /** Every handler that claims [device] — more than one means two drivers overlap. */
+    fun claimants(device: ScannedDeviceInfo): List<ScaleDeviceHandler> =
+        ScaleFactory.createHandlers().filter { it.supportFor(device) != null }
 
     // --- Catalog ----------------------------------------------------------------------------
 
-    /** One published row: what the registry reports for one probe. */
+    /** One published row: what the winning handler reports for one fixture. */
     data class Row(
         val displayName: String,
         val handler: String,
@@ -203,18 +295,11 @@ object ScaleCatalog {
         val implemented: Set<DeviceCapability>,
     )
 
-    /**
-     * Runs every probe through the registry and collects what the *winning* handler reports —
-     * first match wins, exactly as [ScaleFactory.createCommunicator] resolves a real scan result.
-     *
-     * A fresh registry per probe: several handlers stash state in `supportFor` (e.g.
-     * StandardBeurerSanitasHandler remembers the matched model), so a shared instance would let one
-     * probe bleed into the next.
-     */
+    /** Runs every fixture through the registry and collects what the winning handler reports. */
     fun rows(): List<Row> =
-        probes.mapNotNull { probe ->
+        fixtures.mapNotNull { fixture ->
             ScaleFactory.createHandlers().firstNotNullOfOrNull { handler ->
-                handler.supportFor(probe)?.let { support ->
+                handler.supportFor(fixture.device)?.let { support ->
                     Row(
                         displayName = support.displayName,
                         handler = handler.javaClass.simpleName,
@@ -228,11 +313,13 @@ object ScaleCatalog {
             .distinctBy { it.displayName }
             .sortedBy { it.displayName.lowercase() }
 
-    /** The handler that claims [probe], or null — the same first-match-wins rule the factory uses. */
-    fun winner(probe: ScannedDeviceInfo): ScaleDeviceHandler? =
-        ScaleFactory.createHandlers().firstOrNull { it.supportFor(probe) != null }
-
     // --- Rendering --------------------------------------------------------------------------
+
+    /** Where a handler's source file lives, relative to the repository root. */
+    fun sourcePath(handler: String): String =
+        "android_app/app/src/main/java/com/health/openscale/core/bluetooth/scales/$handler.kt"
+
+    private const val SOURCE_BASE_URL = "https://github.com/oliexdev/openScale/blob/master"
 
     /** A literal pipe in a display name or remark would split the markdown cell. */
     private fun cell(text: String): String = text.replace("|", "\\|")
@@ -244,38 +331,27 @@ object ScaleCatalog {
     }
 
     private fun linkLabel(mode: LinkMode): String = when (mode) {
-        LinkMode.CONNECT_GATT -> "BLE (connect)"
-        LinkMode.BROADCAST_ONLY -> "BLE (broadcast)"
-        LinkMode.CLASSIC_SPP -> "Bluetooth Classic"
+        LinkMode.CONNECT_GATT -> "BLE GATT"
+        LinkMode.BROADCAST_ONLY -> "BLE Broadcast"
+        // SPP runs over RFCOMM on Bluetooth Classic (BR/EDR), not over BLE — the distinction
+        // matters to users because those scales pair differently.
+        LinkMode.CLASSIC_SPP -> "Classic SPP"
     }
 
-    /** Capabilities that get their own column; everything else is listed in "Other capabilities". */
-    private val COLUMNS = listOf(
-        DeviceCapability.BODY_COMPOSITION,
-        DeviceCapability.HISTORY_READ,
-        DeviceCapability.LIVE_WEIGHT_STREAM,
+    /** The capability columns, in the order they appear in the table. */
+    private val CAPABILITY_COLUMNS = listOf(
+        DeviceCapability.BODY_COMPOSITION to "Body metrics",
+        DeviceCapability.HISTORY_READ to "History data",
+        DeviceCapability.LIVE_WEIGHT_STREAM to "Live weight",
+        DeviceCapability.TIME_SYNC to "Time sync",
+        DeviceCapability.USER_SYNC to "User sync",
+        DeviceCapability.UNIT_CONFIG to "Unit config",
+        DeviceCapability.BATTERY_LEVEL to "Battery",
     )
-
-    private fun otherCapabilities(row: Row): String {
-        val labels = DeviceCapability.entries
-            .filter { it !in COLUMNS }
-            .filter { it in row.capabilities }
-            .map { capability ->
-                val name = when (capability) {
-                    DeviceCapability.TIME_SYNC -> "time sync"
-                    DeviceCapability.USER_SYNC -> "user sync"
-                    DeviceCapability.UNIT_CONFIG -> "unit config"
-                    DeviceCapability.BATTERY_LEVEL -> "battery"
-                    else -> capability.name.lowercase()
-                }
-                if (capability in row.implemented) name else "$name (o)"
-            }
-        return if (labels.isEmpty()) "-" else labels.joinToString(", ")
-    }
 
     /**
      * Renders the wiki page. [remarks] is keyed by display name, falling back to the handler class
-     * name so a note can cover every product a driver reports.
+     * name so one note can cover every product a driver reports.
      */
     fun renderMarkdown(rows: List<Row>, remarks: Map<String, String>): String = buildString {
         appendLine("## Scale support overview")
@@ -302,20 +378,24 @@ object ScaleCatalog {
         appendLine("> [!NOTE]")
         appendLine("> If you want to help support your Bluetooth scale, please read [How to support a new scale](How-to-support-a-new-scale) for further information.")
         appendLine()
-        appendLine("| Scale | Connection | Body metrics | History data | Live weight | Other capabilities | Remarks |")
-        appendLine("|---|---|---|---|---|---|---|")
+
+        val header = listOf("Scale", "Handler", "Connection") +
+            CAPABILITY_COLUMNS.map { it.second } +
+            listOf("Remarks")
+        appendLine(header.joinToString(" | ", prefix = "| ", postfix = " |"))
+        appendLine(header.joinToString("|", prefix = "|", postfix = "|") { "---" })
+
         for (row in rows) {
             val remark = remarks[row.displayName] ?: remarks[row.handler] ?: "-"
-            appendLine(
-                "| ${cell(row.displayName)} " +
-                    "| ${linkLabel(row.linkMode)} " +
-                    "| ${mark(row, DeviceCapability.BODY_COMPOSITION)} " +
-                    "| ${mark(row, DeviceCapability.HISTORY_READ)} " +
-                    "| ${mark(row, DeviceCapability.LIVE_WEIGHT_STREAM)} " +
-                    "| ${otherCapabilities(row)} " +
-                    "| ${cell(remark)} |"
-            )
+            val cells = listOf(
+                cell(row.displayName),
+                "[${row.handler}]($SOURCE_BASE_URL/${sourcePath(row.handler)})",
+                linkLabel(row.linkMode),
+            ) + CAPABILITY_COLUMNS.map { (capability, _) -> mark(row, capability) } +
+                listOf(cell(remark))
+            appendLine(cells.joinToString(" | ", prefix = "| ", postfix = " |"))
         }
+
         appendLine()
         appendLine("&#10003; : supported in openScale <br>")
         appendLine("o : supported by the scale but still needs to be reverse engineered<br>")

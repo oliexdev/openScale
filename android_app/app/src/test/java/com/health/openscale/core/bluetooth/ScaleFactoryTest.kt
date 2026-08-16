@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth
 
 import android.util.SparseArray
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import com.health.openscale.core.bluetooth.scales.DrTrustSSW532Handler
 import com.health.openscale.core.bluetooth.scales.EtekcityESF551Handler
 import com.health.openscale.core.bluetooth.scales.EtekcityFit8SHandler
@@ -52,8 +53,10 @@ import java.util.UUID
  * These tests close that gap by probing the whole ordered registry — the same list and the
  * same first-match-wins rule [ScaleFactory.createCommunicator] uses.
  *
- * Fixtures are synthetic advertisements built from the advertised names/services documented in
- * the handlers themselves, not from personal captures.
+ * The devices themselves live in [ScaleCatalog.fixtures], shared with `ScaleCatalogTest`, which
+ * renders the published scale table from the same list — a supported scale is written down once.
+ * Advertisements are synthetic, built from the names/services documented in the handlers
+ * themselves, not from personal captures.
  *
  * Robolectric is required because some handlers touch the Android framework while being
  * constructed (e.g. QNHandler creates a main-looper Handler).
@@ -65,47 +68,20 @@ class ScaleFactoryTest {
     /** Service 0xFFB0 — the LeFu-style service shared by a whole family of unrelated scales. */
     private val SERVICE_FFB0 = uuid16(0xFFB0)
 
-    /**
-     * A fresh registry per probe: several handlers stash state in `supportFor` (e.g.
-     * StandardBeurerSanitasHandler remembers the matched model), so a shared instance would let
-     * one fixture bleed into the next.
-     */
-    private fun claimants(device: ScannedDeviceInfo): List<ScaleDeviceHandler> =
-        ScaleFactory.createHandlers().filter { it.supportFor(device) != null }
+    // Device construction and registry queries are shared with the catalog; see [ScaleCatalog].
+    private fun claimants(device: ScannedDeviceInfo) = ScaleCatalog.claimants(device)
 
-    /** The handler [ScaleFactory.createCommunicator] would pick for [device], or null. */
-    private fun winner(device: ScannedDeviceInfo): ScaleDeviceHandler? =
-        ScaleFactory.createHandlers().firstOrNull { it.supportFor(device) != null }
+    private fun winner(device: ScannedDeviceInfo) = ScaleCatalog.winner(device)
 
-    private fun device(name: String, vararg services: UUID) = ScannedDeviceInfo(
-        name = name,
-        address = "C0:FF:EE:12:34:56",
-        rssi = -50,
-        serviceUuids = services.toList(),
-        manufacturerData = null,
-    )
+    private fun device(name: String, vararg services: UUID) = ScaleCatalog.device(name, *services)
 
-    /**
-     * A broadcast advertisement: name (often empty on broadcast-only scales), advertised services
-     * and the manufacturer-specific records, keyed by company id exactly like `ScanRecord` hands
-     * them to the scanner.
-     */
     private fun advertisement(
         name: String = "",
         services: List<UUID> = emptyList(),
         manufacturerData: List<Pair<Int, ByteArray>> = emptyList(),
-    ) = ScannedDeviceInfo(
-        name = name,
-        address = "C0:FF:EE:12:34:56",
-        rssi = -50,
-        serviceUuids = services,
-        manufacturerData = SparseArray<ByteArray>().apply {
-            manufacturerData.forEach { (id, data) -> put(id, data) }
-        },
-    )
+    ) = ScaleCatalog.advertisement(name, services, manufacturerData)
 
-    private fun uuid16(short: Int): UUID =
-        UUID.fromString(String.format("0000%04x-0000-1000-8000-00805f9b34fb", short))
+    private fun uuid16(short: Int) = ScaleCatalog.uuid16(short)
 
     private fun assertClaimedBy(device: ScannedDeviceInfo, expected: Class<out ScaleDeviceHandler>) {
         val winner = winner(device)
@@ -116,57 +92,21 @@ class ScaleFactoryTest {
     // --- Device claims ----------------------------------------------------------------------
 
     /**
-     * The regression guard that matters: for a spread of known advertised names, the registry must
-     * still resolve to the handler that owns that device. A new (or reordered) handler that starts
-     * matching one of these names fails here.
+     * The regression guard that matters: every device in [ScaleCatalog.fixtures] must still resolve
+     * to the handler that owns it. A new (or reordered) handler that starts matching one of these
+     * advertisements fails here.
+     *
+     * The fixtures are shared with `ScaleCatalogTest`, which renders the published scale table from
+     * the very same list — so a scale is described in exactly one place.
      */
     @Test
-    fun `known advertised names resolve to their own handler`() {
-        val expectations: List<Pair<String, String>> = listOf(
-            // name (as advertised)               expected handler class
-            "openScale" to "CustomOpenScaleHandler",
-            "MIBFS" to "MiScaleHandler",
-            "MI_SCALE" to "MiScaleHandler",
-            "XMTZC14HM" to "MiScaleS400Handler",
-            "MIJIA SCALE S800" to "XiaomiS800Handler",
-            "BLEsmart_0001000C0080E1A2B3C4" to "OmronWlcHandler",
-            "Keep_S3" to "KeepS3Handler",
-            "AE BS-06" to "ActiveEraBF06Handler",
-            "Shape200" to "SoehnleHandler",
-            "YUNMAI-ISSE-1234" to "YunmaiHandler",
-            "YUNMAI-SIGNAL-1234" to "YunmaiHandler",
-            "01257B1234" to "TrisaBodyAnalyzeHandler",
-            "Etekcity Smart Fitness Scale" to "EtekcityESF551Handler",
-            "Vitafit VT701" to "VitafitVT701Handler",
-            "SENSSUN FAT" to "SenssunHandler",
-            "Weight Scale" to "SinocareHandler",
-            "Electronic Scale" to "ExcelvanCF36xHandler",
-            "ES-26BB-B" to "RenphoES26BBHandler",
-            "Health Scale" to "OneByoneHandler",
-            "1byone scale" to "OneByoneNewHandler",
-            "CH100S" to "HuaweiCH100SHandler",
-            "Hoffen BS-8107" to "HoffenBbs8107Handler",
-            "RUNSTAR-R5" to "RunstarR5Handler",
-            "runstar-r6" to "RunstarR6Handler",
-            "Beurer BF450" to "BeurerBF450Handler",
-            "Beurer BF105" to "StandardBeurerSanitasHandler",
-            "BEURER BF700" to "BeurerSanitasHandler",
-            "000fatscale01" to "InlifeHandler",
-            "10376BAA" to "WeightGurusA3Handler",
-            "Mengii" to "DigooDGSO38HHandler",
-            "yunchen" to "HesleyHandler",
-            "vscale" to "ExingtechY1Handler",
-            "IHEALTH HS3" to "IHealthHS3Handler",
-            "CULT Smart Scale Pro" to "CultSmartScaleProHandler",
-            "AAA002" to "AAAxHandler",
-            "eufy T9148" to "EufyP2Handler",
-            "EUFY C20" to "EufyC20Handler",
-            "debug" to "DebugGattHandler",
-        )
+    fun `catalog fixtures resolve to their own handler`() {
+        for (fixture in ScaleCatalog.fixtures) {
+            val winner = winner(fixture.device)
 
-        for ((name, expected) in expectations) {
-            val winner = winner(device(name))
-            assertThat(winner?.javaClass?.simpleName).isEqualTo(expected)
+            assertWithMessage("device '${fixture.device.name.ifEmpty { "<nameless>" }}'")
+                .that(winner?.javaClass?.simpleName)
+                .isEqualTo(fixture.handler.simpleName)
         }
     }
 
