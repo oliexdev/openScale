@@ -18,9 +18,6 @@
 package com.health.openscale.core.bluetooth.libs
 
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.Calendar
 import java.util.TimeZone
@@ -227,9 +224,9 @@ class HuaweiHagridWspLibTest {
 
         val parsed = HuaweiHagridWspLib.parseRealtimeMeasurement(payload)
 
-        assertNotNull(parsed)
-        assertNull(parsed!!.timestamp)
-        assertTrue(parsed.weightKg > 0f)
+        assertThat(parsed).isNotNull()
+        assertThat(parsed!!.timestamp).isNull()
+        assertThat(parsed.weightKg).isGreaterThan(0f)
     }
 
     @Test
@@ -240,7 +237,7 @@ class HuaweiHagridWspLibTest {
         payload[5] = 0x00
         payload[6] = 0x00
 
-        assertNull(HuaweiHagridWspLib.parseHistoryMeasurement(payload))
+        assertThat(HuaweiHagridWspLib.parseHistoryMeasurement(payload)).isNull()
     }
 
     private fun toNotifyFrame(writeFrame: ByteArray): ByteArray {
