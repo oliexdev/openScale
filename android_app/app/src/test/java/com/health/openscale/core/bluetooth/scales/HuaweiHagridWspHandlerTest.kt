@@ -43,6 +43,7 @@ class HuaweiHagridWspHandlerTest {
     fun `claims known Huawei Hagrid devices without claiming generic BIA`() {
         val scale2 = HuaweiHagridWspHandler().supportFor(device("HUAWEI Scale 2 Pro"))
         val scale3Pro = HuaweiHagridWspHandler().supportFor(device("Hagrid-B29"))
+        val scale3 = HuaweiHagridWspHandler().supportFor(device("HUAWEI Scale 3"))
         val generic = HuaweiHagridWspHandler().supportFor(
             device("Generic BIA", services = intArrayOf(0x1805, 0x181B, 0x181C, 0x181D))
         )
@@ -51,6 +52,8 @@ class HuaweiHagridWspHandlerTest {
         assertThat(scale2!!.displayName).isEqualTo("HUAWEI Scale 2 Pro")
         assertThat(scale3Pro).isNotNull()
         assertThat(scale3Pro!!.displayName).isEqualTo("HUAWEI Scale 3 Pro")
+        assertThat(scale3).isNotNull()
+        assertThat(scale3!!.displayName).isEqualTo("HUAWEI Scale 3")
         assertThat(scale2.implemented).doesNotContain(DeviceCapability.USER_SYNC)
         assertThat(scale2.implemented).doesNotContain(DeviceCapability.UNIT_CONFIG)
         assertThat(generic).isNull()
@@ -120,7 +123,8 @@ class HuaweiHagridWspHandlerTest {
     }
 
     @Test
-    fun `plain WSP realtime notification reports progress without publishing`() {
+    fun `non Scale 3 Hagrid realtime notification is never published`() {
+        // Default profile is UNKNOWN (no supportFor call) → not SCALE_3 → always progress-only.
         val handler = HuaweiHagridWspHandler()
         val callbacks = CapturingCallbacks()
         handler.attach(
@@ -138,6 +142,106 @@ class HuaweiHagridWspHandlerTest {
             .contains(R.string.bluetooth_scale_info_measuring_weight)
         assertThat(callbacks.infos.single().args.single() as Float)
             .isWithin(0.0001f).of(77.32f)
+    }
+
+    @Test
+    fun `non Scale 3 Hagrid realtime notification is not published even after status=0`() {
+        // Explicitly verify that measurementStatusReady=true does not enable realtime
+        // persistence on non-SCALE_3 families.
+        val handler = HuaweiHagridWspHandler()
+        val callbacks = CapturingCallbacks()
+        handler.supportFor(device("HUAWEI Scale 2 Pro"))
+        handler.attach(
+            transport = NoopTransport(),
+            callbacks = callbacks,
+            settings = InMemorySettings(),
+            data = FixedDataProvider(ScaleUser(id = 7)),
+            scope = CoroutineScope(EmptyCoroutineContext),
+        )
+
+        sendWspNotification(handler, CHR_MEASUREMENT_STATUS_RESULT, byteArrayOf(0x00))
+        sendWspNotification(handler, CHR_REALTIME_WEIGHT, realtimePayload())
+
+        assertThat(callbacks.published).isEmpty()
+    }
+
+    @Test
+    fun `Scale 3 realtime notification before status=0 is not published`() {
+        val handler = HuaweiHagridWspHandler()
+        val callbacks = CapturingCallbacks()
+        handler.supportFor(device("HUAWEI Scale 3"))
+        handler.attach(
+            transport = NoopTransport(),
+            callbacks = callbacks,
+            settings = InMemorySettings(),
+            data = FixedDataProvider(ScaleUser(id = 7)),
+            scope = CoroutineScope(EmptyCoroutineContext),
+        )
+
+        sendWspNotification(handler, CHR_REALTIME_WEIGHT, realtimePayload())
+
+        assertThat(callbacks.published).isEmpty()
+        assertThat(callbacks.infos.map { it.resId })
+            .contains(R.string.bluetooth_scale_info_measuring_weight)
+    }
+
+    @Test
+    fun `Scale 3 realtime notification after status=0 is published exactly once`() {
+        val handler = HuaweiHagridWspHandler()
+        val callbacks = CapturingCallbacks()
+        handler.supportFor(device("HUAWEI Scale 3"))
+        handler.attach(
+            transport = NoopTransport(),
+            callbacks = callbacks,
+            settings = InMemorySettings(),
+            data = FixedDataProvider(ScaleUser(id = 7)),
+            scope = CoroutineScope(EmptyCoroutineContext),
+        )
+
+        sendWspNotification(handler, CHR_MEASUREMENT_STATUS_RESULT, byteArrayOf(0x00))
+
+        // First post-status-0 realtime notification: saved.
+        sendWspNotification(handler, CHR_REALTIME_WEIGHT, realtimePayload())
+        assertThat(callbacks.published).hasSize(1)
+        assertThat(callbacks.published.single().weight).isWithin(0.0001f).of(77.32f)
+        assertThat(callbacks.published.single().fat).isWithin(0.0001f).of(18.5f)
+
+        // Subsequent realtime notifications in the same session: ignored for persistence.
+        sendWspNotification(handler, CHR_REALTIME_WEIGHT, realtimePayload())
+        assertThat(callbacks.published).hasSize(1)
+    }
+
+    @Test
+    fun `Scale 3 realtime before status=0 is cached and published when status=0 arrives`() {
+        // Common real-world sequence: the scale sends the final stable realtime notification
+        // BEFORE it sends measurement status=0. The cached value must be published on status=0,
+        // not discarded.
+        val handler = HuaweiHagridWspHandler()
+        val callbacks = CapturingCallbacks()
+        handler.supportFor(device("HUAWEI Scale 3"))
+        handler.attach(
+            transport = NoopTransport(),
+            callbacks = callbacks,
+            settings = InMemorySettings(),
+            data = FixedDataProvider(ScaleUser(id = 7)),
+            scope = CoroutineScope(EmptyCoroutineContext),
+        )
+
+        // Realtime arrives first – must NOT be published yet.
+        sendWspNotification(handler, CHR_REALTIME_WEIGHT, realtimePayload())
+        assertThat(callbacks.published).isEmpty()
+        assertThat(callbacks.infos.map { it.resId })
+            .contains(R.string.bluetooth_scale_info_measuring_weight)
+
+        // Status=0 arrives – cached realtime is published exactly once.
+        sendWspNotification(handler, CHR_MEASUREMENT_STATUS_RESULT, byteArrayOf(0x00))
+        assertThat(callbacks.published).hasSize(1)
+        assertThat(callbacks.published.single().weight).isWithin(0.0001f).of(77.32f)
+        assertThat(callbacks.published.single().fat).isWithin(0.0001f).of(18.5f)
+
+        // Any further realtime notifications in the same session are ignored.
+        sendWspNotification(handler, CHR_REALTIME_WEIGHT, realtimePayload())
+        assertThat(callbacks.published).hasSize(1)
     }
 
     @Test
@@ -162,6 +266,8 @@ class HuaweiHagridWspHandlerTest {
         assertThat(measurement.heartRate).isEqualTo(72)
         assertThat(measurement.impedanceLow).isWithin(0.0001).of(500.0)
         assertThat(measurement.impedance).isWithin(0.0001).of(600.0)
+        assertThat(measurement.lbm).isEqualTo(0f)
+        assertThat(measurement.bmr).isEqualTo(0f)
         assertThat(transport.reassembleWriteMessagesTo(CHR_HISTORY_WEIGHT).last())
             .isEqualTo(byteArrayOf(0x00))
     }
@@ -206,7 +312,7 @@ class HuaweiHagridWspHandlerTest {
     }
 
     @Test
-    fun `configured fake Hagrid secrets authenticate and start measurement reads after status ready`() {
+    fun `configured fake Hagrid secrets authenticate and request realtime before status polling`() {
         val randA = ByteArray(16) { it.toByte() }
         val randB = ByteArray(16) { (it + 16).toByte() }
         val workKey = ByteArray(16) { (it + 32).toByte() }
@@ -279,7 +385,7 @@ class HuaweiHagridWspHandlerTest {
                     HuaweiHagridWspLib.HagridUserInfo(
                         huid = HAGRID_MANAGER_HUID,
                         uid = "u:00000007",
-                        gender = 1,
+                        gender = 1, // Scale 2 Pro: else branch → male=0, female=1 → female=1
                         ageYears = user.age,
                         heightCm = 171,
                         weightKg = 83.2f,
@@ -302,15 +408,121 @@ class HuaweiHagridWspHandlerTest {
                 CHR_GET_MANAGER_INFO,
                 CHR_SCALE_VERSION,
                 CHR_GET_WEIGHT_UNIT,
+                CHR_REALTIME_WEIGHT,
                 CHR_MEASUREMENT_STATUS_POLL,
             )
         assertThat(transport.writes.map { it.characteristic }).doesNotContain(CHR_HISTORY_WEIGHT)
-        assertThat(transport.writes.map { it.characteristic }).doesNotContain(CHR_REALTIME_WEIGHT)
+
+        val realtimeWritesBeforeStatus = transport.writes.count { it.characteristic == CHR_REALTIME_WEIGHT }
+        val historyWritesBeforeStatus = transport.writes.count { it.characteristic == CHR_HISTORY_WEIGHT }
+        val pollWritesBeforeStatus = transport.writes.count { it.characteristic == CHR_MEASUREMENT_STATUS_POLL }
 
         sendWspNotification(handler, CHR_MEASUREMENT_STATUS_RESULT, byteArrayOf(0x00))
 
-        assertThat(transport.writes.map { it.characteristic })
-            .containsAtLeast(CHR_HISTORY_WEIGHT, CHR_REALTIME_WEIGHT)
+        // Scale 2 Pro is not SCALE_3: sendPostMeasurementReads does NOT send a second
+        // realtime request, so the write count stays the same.
+        assertThat(transport.writes.count { it.characteristic == CHR_REALTIME_WEIGHT })
+            .isEqualTo(realtimeWritesBeforeStatus)
+        // sendPostMeasurementReads() kicks off one history read.
+        assertThat(transport.writes.count { it.characteristic == CHR_HISTORY_WEIGHT })
+            .isEqualTo(historyWritesBeforeStatus + 1)
+        // Polling is stopped; no more poll writes.
+        assertThat(transport.writes.count { it.characteristic == CHR_MEASUREMENT_STATUS_POLL })
+            .isEqualTo(pollWritesBeforeStatus)
+    }
+
+    @Test
+    fun `Scale 3 gender encoding is male=1 female=0 per BLE capture`() {
+        val genderByte = runAuthFlowAndGetUserInfoByte62(
+            deviceName = "HUAWEI Scale 3",
+            gender = GenderType.MALE,
+        )
+        assertThat(genderByte).isEqualTo(1)
+    }
+
+    @Test
+    fun `non-Scale-3 Hagrid families retain original male=0 female=1 gender encoding`() {
+        val genderByteMale = runAuthFlowAndGetUserInfoByte62(
+            deviceName = "HUAWEI Scale 2 Pro",
+            gender = GenderType.MALE,
+        )
+        val genderByteFemale = runAuthFlowAndGetUserInfoByte62(
+            deviceName = "HUAWEI Scale 2 Pro",
+            gender = GenderType.FEMALE,
+        )
+        assertThat(genderByteMale).isEqualTo(0)
+        assertThat(genderByteFemale).isEqualTo(1)
+    }
+
+    @Test
+    fun `sendPostMeasurementReads sends second realtime request only for Scale 3`() {
+        fun realtimeWritesAfterStatus(deviceName: String): Int {
+            val handler = HuaweiHagridWspHandler()
+            handler.supportFor(device(deviceName))
+            val transport = CapturingTransport(
+                setOf(
+                    SVC_BODY_COMPOSITION to CHR_REALTIME_WEIGHT,
+                    SVC_BODY_COMPOSITION to CHR_HISTORY_WEIGHT,
+                    SVC_CURRENT_TIME to CHR_MEASUREMENT_STATUS_POLL,
+                    SVC_CURRENT_TIME to CHR_MEASUREMENT_STATUS_RESULT,
+                )
+            )
+            handler.attach(
+                transport = transport,
+                callbacks = CapturingCallbacks(),
+                settings = InMemorySettings(),
+                data = FixedDataProvider(ScaleUser(id = 1)),
+                scope = CoroutineScope(EmptyCoroutineContext),
+            )
+            val before = transport.writes.count { it.characteristic == CHR_REALTIME_WEIGHT }
+            sendWspNotification(handler, CHR_MEASUREMENT_STATUS_RESULT, byteArrayOf(0x00))
+            return transport.writes.count { it.characteristic == CHR_REALTIME_WEIGHT } - before
+        }
+
+        assertThat(realtimeWritesAfterStatus("HUAWEI Scale 3")).isEqualTo(1)
+        assertThat(realtimeWritesAfterStatus("HUAWEI Scale 2 Pro")).isEqualTo(0)
+        assertThat(realtimeWritesAfterStatus("Hagrid-B29")).isEqualTo(0) // Scale 3 Pro
+    }
+
+    /** Runs the auth flow up to SetUserInfo and returns the gender byte (payload[62]). */
+    private fun runAuthFlowAndGetUserInfoByte62(deviceName: String, gender: GenderType): Int {
+        val randA = ByteArray(16) { it.toByte() }
+        val randB = ByteArray(16) { (it + 16).toByte() }
+        val workKey = ByteArray(16) { (it + 32).toByte() }
+        val workKeyIv = ByteArray(16) { (it + 48).toByte() }
+        val cak = ByteArray(16) { (it + 64).toByte() }
+        val c1 = ByteArray(16) { (it + 80).toByte() }
+        val c2 = ByteArray(16) { (it + 96).toByte() }
+        val userInfoIv = ByteArray(16) { (it + 112).toByte() }
+        val user = ScaleUser(id = 1, gender = gender, bodyHeight = 175f, initialWeight = 80f)
+        val randomValues = ArrayDeque(listOf(randB, workKey, workKeyIv, userInfoIv))
+        val handler = HuaweiHagridWspHandler(randomBytes = { randomValues.removeFirst() })
+        val settings = InMemorySettings().apply {
+            putString(HuaweiHagridWspHandler.SETTINGS_KEY_CAK_HEX, cak.toHex())
+            putString(HuaweiHagridWspHandler.SETTINGS_KEY_C1_HEX, c1.toHex())
+            putString(HuaweiHagridWspHandler.SETTINGS_KEY_C2_HEX, c2.toHex())
+        }
+        val transport = CapturingTransport.allHagrid()
+        handler.supportFor(device(deviceName, address = HAGRID_ADDRESS))
+        handler.attach(
+            transport = transport,
+            callbacks = CapturingCallbacks(),
+            settings = settings,
+            data = FixedDataProvider(user),
+            scope = CoroutineScope(EmptyCoroutineContext),
+        )
+        handler.handleConnected(user)
+        sendWspNotification(handler, CHR_REQUEST_AUTH, randA)
+        sendWspNotification(
+            handler, CHR_AUTH_TOKEN,
+            HuaweiHagridWspLib.expectedAuthResponsePayload(randA, randB, cak)
+        )
+        sendWspNotification(handler, CHR_SEND_WORK_KEY, byteArrayOf(0x00))
+        sendWspNotification(handler, CHR_GET_MANAGER_INFO, managerInfoPayload())
+
+        val encryptedPayload = transport.reassembleWritesTo(CHR_SET_USER_INFO)
+        val plain = HuaweiHagridWspLib.decryptPayload(encryptedPayload, workKey)
+        return plain[62].toInt() and 0xFF
     }
 
     private fun device(

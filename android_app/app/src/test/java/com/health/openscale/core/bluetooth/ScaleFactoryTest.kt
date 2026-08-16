@@ -141,6 +141,7 @@ class ScaleFactoryTest {
             "SENSSUN FAT",
             "ES-26BB-B",
             "CH100S",
+            "HUAWEI Scale 3",
             "Hoffen BS-8107",
             "RUNSTAR-R5",
             "000fatscale01",

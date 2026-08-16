@@ -407,6 +407,12 @@
     <string name="s400_bind_key_error">Bind key must be exactly 32 hex characters</string>
     <string name="bt_s400_missing_bind_key">S400: Bind key not configured. Go to Bluetooth settings to enter your BLE key.</string>
 
+    <!-- Huawei Hagrid Scale Configuration -->
+    <string name="huawei_hagrid_secrets_title">Huawei Hagrid WSP secrets</string>
+    <string name="huawei_hagrid_secrets_description">Configure CAK, C1, and C2 as 32 hex characters each. Values stay in per-driver app settings.</string>
+    <string name="huawei_hagrid_secret_invalid">Expected 32 hex characters</string>
+    <string name="huawei_hagrid_secret_saved">Saved</string>
+
     <!-- Bluetooth Connector -->
     <string name="bluetooth_connector_connected_to">Connected to %1$s</string>
     <string name="bluetooth_connector_connection_failed">Connection to %1$s failed: %2$s</string>

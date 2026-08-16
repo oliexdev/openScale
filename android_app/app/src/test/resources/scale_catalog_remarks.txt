@@ -17,3 +17,4 @@ Custom openScale = See [here](Custom-Bluetooth-Scale) for a tutorial
 Trisa Body Analyze 4.0 = See [Trisa Body Analyze](Trisa-Body-Analyze) for the protocol
 Debug = Not a scale: assign it to a device to record its GATT services for reverse engineering
 ProfiCare PC-PW 3008 BT = Same Chipsea "WeChat scale" firmware as the Hoffen BBS-8107, so it is driven by the same handler
+HuaweiHagridWspHandler = The scale only answers after a Huawei Hagrid handshake, so CAK, C1 and C2 (32 hex characters each) have to be entered in the device settings first
