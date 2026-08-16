@@ -25,9 +25,11 @@ import javax.crypto.Cipher
 import javax.crypto.Mac
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
+import kotlin.collections.sumOf
 import kotlin.math.ceil
 import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.require
 
 /**
  * Huawei Hagrid / WSP framing, authentication and payload helpers.
@@ -422,14 +424,20 @@ object HuaweiHagridWspLib {
             allowedLengths = setOf(26, 38),
             // Bytes 4–10 carry a valid timestamp in the Hagrid realtime payload,
             // confirmed by the Huawei Scale 3 BLE capture (2026-08-09T23:39:29).
-            timestampPresent = true
+            timestampPresent = true,
+            // Realtime: read the timestamp when present, but never reject the
+            // measurement if the bytes don't decode (Scale 2 Pro / 3 Pro / HONOR
+            // may carry something else there during a live weighing).
+            timestampRequired = false
         )
 
     fun parseHistoryMeasurement(payload: ByteArray): HagridWeightMeasurement? =
         parseHagridWeightMeasurement(
             payload = payload,
             allowedLengths = setOf(27, 28, 39, 40),
-            timestampPresent = true
+            timestampPresent = true,
+            // History records must have a valid timestamp; reject corrupt packets.
+            timestampRequired = true
         )
 
     fun parseScaleVersion(payload: ByteArray): HagridScaleVersion? {
@@ -851,7 +859,8 @@ object HuaweiHagridWspLib {
     private fun parseHagridWeightMeasurement(
         payload: ByteArray,
         allowedLengths: Set<Int>,
-        timestampPresent: Boolean
+        timestampPresent: Boolean,
+        timestampRequired: Boolean = timestampPresent
     ): HagridWeightMeasurement? {
         if (payload.size !in allowedLengths) return null
 
@@ -860,11 +869,12 @@ object HuaweiHagridWspLib {
         val weightKg = u16le(payload, 0) / 100.0f
         val fatPercent = u16le(payload, 2) / 10.0f
         val timestamp = if (timestampPresent) {
-            readTimestamp(payload, 4) ?: return null
+            val ts = readTimestamp(payload, 4)
+            if (ts == null && timestampRequired) return null
+            ts
         } else {
             null
         }
-
 
         val low = (0 until 6).map { u16le(payload, 12 + it * 2) }
         val high = if (highResistancePresent) {

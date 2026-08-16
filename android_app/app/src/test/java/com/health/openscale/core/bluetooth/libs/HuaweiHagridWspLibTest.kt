@@ -18,6 +18,9 @@
 package com.health.openscale.core.bluetooth.libs
 
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.Calendar
 import java.util.TimeZone
@@ -212,6 +215,34 @@ class HuaweiHagridWspLibTest {
         assertThat(payload[67].toInt() and 0xFF).isEqualTo(0x20)
     }
 
+    @Test
+    fun `realtime with invalid timestamp still parses`() {
+        val payload = realtimePayload().copyOf()
+
+        // Zero out the year bytes (offset 4-5) so readTimestamp returns null
+        // (year 0 < 2000 fails the validity check).
+        payload[4] = 0x00
+        payload[5] = 0x00
+        payload[6] = 0x00
+
+        val parsed = HuaweiHagridWspLib.parseRealtimeMeasurement(payload)
+
+        assertNotNull(parsed)
+        assertNull(parsed!!.timestamp)
+        assertTrue(parsed.weightKg > 0f)
+    }
+
+    @Test
+    fun `history with invalid timestamp is rejected`() {
+        val payload = historyPayload().copyOf()
+
+        payload[4] = 0x00
+        payload[5] = 0x00
+        payload[6] = 0x00
+
+        assertNull(HuaweiHagridWspLib.parseHistoryMeasurement(payload))
+    }
+
     private fun toNotifyFrame(writeFrame: ByteArray): ByteArray {
         val notifyFrame = writeFrame.copyOf()
         notifyFrame[0] = HuaweiHagridWspLib.FRAME_NOTIFY_PLAIN.toByte()
@@ -258,6 +289,6 @@ class HuaweiHagridWspLibTest {
             0x5B, 0x02, 0x5C, 0x02, 0x5D, 0x02,
         )
 
-    private fun historyPayload(completeFlag: Int): ByteArray =
+    private fun historyPayload(completeFlag: Int = 0x00): ByteArray =
         realtimePayload() + byteArrayOf(0x01, completeFlag.toByte())
 }
