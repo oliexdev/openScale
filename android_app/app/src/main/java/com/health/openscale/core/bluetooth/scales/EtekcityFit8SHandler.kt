@@ -34,6 +34,7 @@ import java.util.UUID
  * advertisement with key `0x06D0` for "Etekcity Corporation". It also adds `SCALE_SERIVCE` 
  * uuid defined below.
  *
+ * Measurement data is always 20 bytes. Device does not advertise any other data format.
  * Data structure (from ronnnnnnnnnnnnn code):
  * - `[0]`    : header byte (`0x01`) (ignored)
  * - `[1:7]`   : device MAC address, little-endian (ignored)
@@ -94,7 +95,7 @@ class EtekcityFit8SHandler : ScaleDeviceHandler() {
         // record in the same advertisement is a different vendor's data and must not be parsed.
         val payload = msd.get(MANUFACTURER_ID) ?: return BroadcastAction.IGNORED
 
-        if (payload.size < PAYLOAD_SIZE) {
+        if (payload.size != PAYLOAD_SIZE) {
             logD("Manufacturer record too short (${payload.size} bytes), ignoring")
             return BroadcastAction.IGNORED
         }
