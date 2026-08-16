@@ -69,6 +69,11 @@ class ImportExportUseCases @Inject constructor(
 
     private val TAG = "ImportExportUseCase"
 
+    // Only ISO 8601 is accepted on import; spreadsheets tend to rewrite these columns
+    // in the device locale (e.g. "8:30:00 AM"), so name the expected format in the log.
+    private val DATE_FORMAT_HINT = "yyyy-MM-dd"
+    private val TIME_FORMAT_HINT = "HH:mm[:ss], 24h, zero-padded"
+
     // Shared formatters (same semantics wie in deinem VM)
     private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
     private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_TIME
@@ -294,12 +299,18 @@ class ImportExportUseCases @Inject constructor(
                         try {
                             parsedDate = LocalDate.parse(d, dateFormatter)
                         } catch (_: DateTimeParseException) {
+                            LogManager.w(
+                                TAG,
+                                "Line ${rowIndex + 1}: cannot parse date '$d', expected ISO 8601 " +
+                                        "($DATE_FORMAT_HINT). Skipping this line."
+                            )
                             linesSkippedDateParseError++
                             return@forEachIndexed
                         }
                     }
 
                     if (parsedDate == null) {
+                        LogManager.w(TAG, "Line ${rowIndex + 1}: no date column value. Skipping this line.")
                         linesSkippedMissingDate++
                         return@forEachIndexed
                     }
@@ -311,8 +322,16 @@ class ImportExportUseCases @Inject constructor(
                             try {
                                 LocalTime.parse(t, timeFormatter)
                             } catch (_: DateTimeParseException) {
-                                try { LocalTime.parse(t, flexibleTimeFormatter) }
-                                catch (_: DateTimeParseException) { LocalTime.NOON }
+                                try {
+                                    LocalTime.parse(t, flexibleTimeFormatter)
+                                } catch (_: DateTimeParseException) {
+                                    LogManager.w(
+                                        TAG,
+                                        "Line ${rowIndex + 1}: cannot parse time '$t', expected ISO 8601 " +
+                                                "($TIME_FORMAT_HINT). Falling back to 12:00."
+                                    )
+                                    LocalTime.NOON
+                                }
                             }
                         }
                     }

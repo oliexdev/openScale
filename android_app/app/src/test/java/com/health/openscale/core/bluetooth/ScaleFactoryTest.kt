@@ -17,10 +17,20 @@
  */
 package com.health.openscale.core.bluetooth
 
+import android.util.SparseArray
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import com.health.openscale.core.bluetooth.scales.DrTrustSSW532Handler
+import com.health.openscale.core.bluetooth.scales.EtekcityESF551Handler
+import com.health.openscale.core.bluetooth.scales.EtekcityFit8SHandler
+import com.health.openscale.core.bluetooth.scales.EufyC20Handler
 import com.health.openscale.core.bluetooth.scales.FitTrackDaraHandler
 import com.health.openscale.core.bluetooth.scales.MGBHandler
+import com.health.openscale.core.bluetooth.scales.OkOkHandler
+import com.health.openscale.core.bluetooth.scales.QNHandlerBroadcast
+import com.health.openscale.core.bluetooth.scales.ScaleupHandler
+import com.health.openscale.core.bluetooth.scales.SinocareHandler
+import com.health.openscale.core.bluetooth.scales.YunmaiXHandler
 import com.health.openscale.core.bluetooth.scales.RelaxmedicHandler
 import com.health.openscale.core.bluetooth.scales.RobiS9Handler
 import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler
@@ -43,8 +53,10 @@ import java.util.UUID
  * These tests close that gap by probing the whole ordered registry — the same list and the
  * same first-match-wins rule [ScaleFactory.createCommunicator] uses.
  *
- * Fixtures are synthetic advertisements built from the advertised names/services documented in
- * the handlers themselves, not from personal captures.
+ * The devices themselves live in [ScaleCatalog.fixtures], shared with `ScaleCatalogTest`, which
+ * renders the published scale table from the same list — a supported scale is written down once.
+ * Advertisements are synthetic, built from the names/services documented in the handlers
+ * themselves, not from personal captures.
  *
  * Robolectric is required because some handlers touch the Android framework while being
  * constructed (e.g. QNHandler creates a main-looper Handler).
@@ -56,28 +68,20 @@ class ScaleFactoryTest {
     /** Service 0xFFB0 — the LeFu-style service shared by a whole family of unrelated scales. */
     private val SERVICE_FFB0 = uuid16(0xFFB0)
 
-    /**
-     * A fresh registry per probe: several handlers stash state in `supportFor` (e.g.
-     * StandardBeurerSanitasHandler remembers the matched model), so a shared instance would let
-     * one fixture bleed into the next.
-     */
-    private fun claimants(device: ScannedDeviceInfo): List<ScaleDeviceHandler> =
-        ScaleFactory.createHandlers().filter { it.supportFor(device) != null }
+    // Device construction and registry queries are shared with the catalog; see [ScaleCatalog].
+    private fun claimants(device: ScannedDeviceInfo) = ScaleCatalog.claimants(device)
 
-    /** The handler [ScaleFactory.createCommunicator] would pick for [device], or null. */
-    private fun winner(device: ScannedDeviceInfo): ScaleDeviceHandler? =
-        ScaleFactory.createHandlers().firstOrNull { it.supportFor(device) != null }
+    private fun winner(device: ScannedDeviceInfo) = ScaleCatalog.winner(device)
 
-    private fun device(name: String, vararg services: UUID) = ScannedDeviceInfo(
-        name = name,
-        address = "C0:FF:EE:12:34:56",
-        rssi = -50,
-        serviceUuids = services.toList(),
-        manufacturerData = null,
-    )
+    private fun device(name: String, vararg services: UUID) = ScaleCatalog.device(name, *services)
 
-    private fun uuid16(short: Int): UUID =
-        UUID.fromString(String.format("0000%04x-0000-1000-8000-00805f9b34fb", short))
+    private fun advertisement(
+        name: String = "",
+        services: List<UUID> = emptyList(),
+        manufacturerData: List<Pair<Int, ByteArray>> = emptyList(),
+    ) = ScaleCatalog.advertisement(name, services, manufacturerData)
+
+    private fun uuid16(short: Int) = ScaleCatalog.uuid16(short)
 
     private fun assertClaimedBy(device: ScannedDeviceInfo, expected: Class<out ScaleDeviceHandler>) {
         val winner = winner(device)
@@ -88,60 +92,21 @@ class ScaleFactoryTest {
     // --- Device claims ----------------------------------------------------------------------
 
     /**
-     * The regression guard that matters: for a spread of known advertised names, the registry must
-     * still resolve to the handler that owns that device. A new (or reordered) handler that starts
-     * matching one of these names fails here.
+     * The regression guard that matters: every device in [ScaleCatalog.fixtures] must still resolve
+     * to the handler that owns it. A new (or reordered) handler that starts matching one of these
+     * advertisements fails here.
+     *
+     * The fixtures are shared with `ScaleCatalogTest`, which renders the published scale table from
+     * the very same list — so a scale is described in exactly one place.
      */
     @Test
-    fun `known advertised names resolve to their own handler`() {
-        val expectations: List<Pair<String, String>> = listOf(
-            // name (as advertised)               expected handler class
-            "openScale" to "CustomOpenScaleHandler",
-            "MIBFS" to "MiScaleHandler",
-            "MI_SCALE" to "MiScaleHandler",
-            "XMTZC14HM" to "MiScaleS400Handler",
-            "MIJIA SCALE S800" to "XiaomiS800Handler",
-            "BLEsmart_0001000C0080E1A2B3C4" to "OmronWlcHandler",
-            "Keep_S3" to "KeepS3Handler",
-            "AE BS-06" to "ActiveEraBF06Handler",
-            "Shape200" to "SoehnleHandler",
-            "YUNMAI-ISSE-1234" to "YunmaiHandler",
-            "YUNMAI-SIGNAL-1234" to "YunmaiHandler",
-            "01257B1234" to "TrisaBodyAnalyzeHandler",
-            "Etekcity Smart Fitness Scale" to "EtekcityESF551Handler",
-            "Vitafit VT701" to "VitafitVT701Handler",
-            "SENSSUN FAT" to "SenssunHandler",
-            "Weight Scale" to "SinocareHandler",
-            "Electronic Scale" to "ExcelvanCF36xHandler",
-            "ES-26BB-B" to "RenphoES26BBHandler",
-            "Health Scale" to "OneByoneHandler",
-            "1byone scale" to "OneByoneNewHandler",
-            "CH100S" to "HuaweiCH100SHandler",
-            "HUAWEI Scale 3" to "HuaweiHagridWspHandler",
-            "HUAWEI Scale 3 Pro" to "HuaweiHagridWspHandler",
-            "Hagrid-B29" to "HuaweiHagridWspHandler",
-            "Hoffen BS-8107" to "HoffenBbs8107Handler",
-            "RUNSTAR-R5" to "RunstarR5Handler",
-            "runstar-r6" to "RunstarR6Handler",
-            "Beurer BF450" to "BeurerBF450Handler",
-            "Beurer BF105" to "StandardBeurerSanitasHandler",
-            "BEURER BF700" to "BeurerSanitasHandler",
-            "000fatscale01" to "InlifeHandler",
-            "10376BAA" to "WeightGurusA3Handler",
-            "Mengii" to "DigooDGSO38HHandler",
-            "yunchen" to "HesleyHandler",
-            "vscale" to "ExingtechY1Handler",
-            "IHEALTH HS3" to "IHealthHS3Handler",
-            "CULT Smart Scale Pro" to "CultSmartScaleProHandler",
-            "AAA002" to "AAAxHandler",
-            "eufy T9148" to "EufyP2Handler",
-            "EUFY C20" to "EufyC20Handler",
-            "debug" to "DebugGattHandler",
-        )
+    fun `catalog fixtures resolve to their own handler`() {
+        for (fixture in ScaleCatalog.fixtures) {
+            val winner = winner(fixture.device)
 
-        for ((name, expected) in expectations) {
-            val winner = winner(device(name))
-            assertThat(winner?.javaClass?.simpleName).isEqualTo(expected)
+            assertWithMessage("device '${fixture.device.name.ifEmpty { "<nameless>" }}'")
+                .that(winner?.javaClass?.simpleName)
+                .isEqualTo(fixture.handler.simpleName)
         }
     }
 
@@ -251,6 +216,139 @@ class ScaleFactoryTest {
 
         val order = ScaleFactory.createHandlers().map { it.javaClass.simpleName }
         assertThat(order.indexOf("SanitasSbf72Handler")).isLessThan(order.indexOf("BeurerSanitasHandler"))
+    }
+
+    // --- Broadcast fingerprints -------------------------------------------------------------
+
+    /** Etekcity's company id — together with service 0xFFD0 the only fingerprint of the Fit 8S. */
+    private val ETEKCITY_COMPANY_ID = 0x06D0
+
+    /** Service 0xFFD0 — advertised by the Fit 8S alongside its manufacturer record. */
+    private val SERVICE_FFD0 = uuid16(0xFFD0)
+
+    /** A stable 75.500 kg / 500 Ω reading in the Fit 8S advertisement layout. */
+    private fun fit8sPayload(): ByteArray = ByteArray(20).apply {
+        this[0] = 0x01                              // header
+        this[10] = 0xEC.toByte()                    // weight 75500 g, 3-byte little-endian
+        this[11] = 0x26
+        this[12] = 0x01
+        this[13] = 0xF4.toByte()                    // impedance 500 Ω, 2-byte little-endian
+        this[14] = 0x01
+        this[15] = 0x01                             // stable
+    }
+
+    private fun fit8sAdvertisement() = advertisement(
+        name = "",                                  // the scale advertises no name at all
+        services = listOf(SERVICE_FFD0),
+        manufacturerData = listOf(ETEKCITY_COMPANY_ID to fit8sPayload()),
+    )
+
+    /**
+     * The Fit 8S is nameless, so it can only be recognised by company id plus service UUID. Both
+     * halves must be required: matching on either one alone would make the handler claim
+     * advertisements it cannot parse.
+     */
+    @Test
+    fun `the nameless Etekcity Fit 8S is claimed by its own handler`() {
+        assertClaimedBy(fit8sAdvertisement(), EtekcityFit8SHandler::class.java)
+
+        val fit8s = EtekcityFit8SHandler()
+        // Company id without the service…
+        assertThat(
+            fit8s.supportFor(
+                advertisement(manufacturerData = listOf(ETEKCITY_COMPANY_ID to fit8sPayload()))
+            )
+        ).isNull()
+        // …and the service without the company id.
+        assertThat(
+            fit8s.supportFor(
+                advertisement(
+                    services = listOf(SERVICE_FFD0),
+                    manufacturerData = listOf(0xFF64 to fit8sPayload()),
+                )
+            )
+        ).isNull()
+        // A scan result that carried no manufacturer data at all.
+        assertThat(fit8s.supportFor(device("", SERVICE_FFD0))).isNull()
+    }
+
+    /**
+     * ScaleupHandler claims *any* manufacturer record whose company-id low byte is 0xD0 or 0xE0 —
+     * and Etekcity's company id 0x06D0 ends in 0xD0, so both handlers answer for a Fit 8S. Only the
+     * list position keeps the device on the driver that can decode it.
+     */
+    @Test
+    fun `Etekcity Fit 8S is matched ahead of the low-byte Scaleup match`() {
+        val claimants = claimants(fit8sAdvertisement()).map { it.javaClass.simpleName }
+        assertThat(claimants).containsExactly("EtekcityFit8SHandler", "ScaleupHandler").inOrder()
+
+        val order = ScaleFactory.createHandlers().map { it.javaClass.simpleName }
+        assertThat(order.indexOf("EtekcityFit8SHandler")).isLessThan(order.indexOf("ScaleupHandler"))
+    }
+
+    /**
+     * The other direction of the same overlap: a Scaleup advertisement carries no 0xFFD0 service
+     * and a different company id, so the Fit 8S handler must keep its hands off it.
+     */
+    @Test
+    fun `Scaleup broadcasts are not swallowed by the Etekcity Fit 8S handler`() {
+        // key = (weight MSB shl 8) or flag → 75.50 kg (0x1D7E) while measuring (0xD0)
+        val scaleup = advertisement(manufacturerData = listOf(0x1DD0 to ByteArray(9)))
+
+        assertClaimedBy(scaleup, ScaleupHandler::class.java)
+        assertThat(EtekcityFit8SHandler().supportFor(scaleup)).isNull()
+    }
+
+    /**
+     * The connectable Etekcity ESF551 is the Fit 8S's closest neighbour — same vendor, so possibly
+     * the same company id. It identifies itself by name and must keep winning: the Fit 8S handler
+     * would otherwise downgrade it to broadcast-only.
+     */
+    @Test
+    fun `the named Etekcity ESF551 wins over the broadcast Fit 8S handler`() {
+        val esf551 = advertisement(
+            name = "Etekcity Smart Fitness Scale",
+            services = listOf(SERVICE_FFD0),
+            manufacturerData = listOf(ETEKCITY_COMPANY_ID to fit8sPayload()),
+        )
+
+        assertClaimedBy(esf551, EtekcityESF551Handler::class.java)
+
+        val order = ScaleFactory.createHandlers().map { it.javaClass.simpleName }
+        assertThat(order.indexOf("EtekcityESF551Handler"))
+            .isLessThan(order.indexOf("EtekcityFit8SHandler"))
+    }
+
+    /**
+     * The registry holds several handlers that identify a scale from its manufacturer record alone.
+     * Each must keep its own advertisement, and none of them may be answered by the Fit 8S handler.
+     */
+    @Test
+    fun `manufacturer-data broadcasts stay with their own handler`() {
+        val expectations: List<Pair<ScannedDeviceInfo, Class<out ScaleDeviceHandler>>> = listOf(
+            // Sinocare — company id 0xFF64
+            advertisement(manufacturerData = listOf(0xFF64 to ByteArray(12)))
+                    to SinocareHandler::class.java,
+            // QN broadcast variant — company id 0xFFFF with the AABB magic header
+            advertisement(
+                manufacturerData = listOf(
+                    0xFFFF to byteArrayOf(0xAA.toByte(), 0xBB.toByte(), 0x00, 0x00, 0x00, 0x00)
+                )
+            ) to QNHandlerBroadcast::class.java,
+            // Eufy C20 — company id 0xBC64
+            advertisement(manufacturerData = listOf(48228 to ByteArray(14)))
+                    to EufyC20Handler::class.java,
+            // OKOK V20 — company id 0x20CA behind one of the known names
+            advertisement(name = "ADV", manufacturerData = listOf(0x20CA to ByteArray(16)))
+                    to OkOkHandler::class.java,
+            // Yunmai X — recognised by its advertised 16-bit service 0x1320
+            advertisement(services = listOf(uuid16(0x1320))) to YunmaiXHandler::class.java,
+        )
+
+        for ((device, expected) in expectations) {
+            assertClaimedBy(device, expected)
+            assertThat(EtekcityFit8SHandler().supportFor(device)).isNull()
+        }
     }
 
     // --- Non-scales -------------------------------------------------------------------------

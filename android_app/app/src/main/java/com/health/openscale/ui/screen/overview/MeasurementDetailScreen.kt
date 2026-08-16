@@ -17,8 +17,10 @@
  */
 package com.health.openscale.ui.screen.overview
 
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +45,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -100,6 +103,16 @@ fun MeasurementDetailScreen(
     userId: Int,
     sharedViewModel: SharedViewModel
 ) {
+    // Entering values while standing on the scale means not touching the phone for a while, so
+    // keep the display awake. The flag is cleared on dispose, so it only affects this screen (and
+    // the system drops it anyway once the activity leaves the foreground).
+    LocalActivity.current?.window?.let { window ->
+        DisposableEffect(window) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            onDispose { window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
+        }
+    }
+
     val context = LocalContext.current
     val resources = LocalResources.current
 
