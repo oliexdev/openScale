@@ -30,12 +30,17 @@ import java.util.UUID
 import kotlin.math.max
 
 /**
- * Handler for the Hoffen BBS-8107 scale.
+ * Handler for the Hoffen BBS-8107 and its rebrands.
  *
  * Protocol (single custom characteristic):
  *  - Service 0xFFB0, Characteristic 0xFFB2 (notify + write with response)
  *  - Packets start with 0xFA, then `cmdOrResp`, `len`, `payload`, `checksum`
  *  - Checksum = XOR of bytes 1..(n-2); some final measurement frames deliver checksum in a follow-up notify.
+ *
+ * This is the Chipsea "WeChat scale" protocol: the same firmware is sold under several brands,
+ * all advertising the WeChat service 0xFEE7 alongside the 0xFFB0 service they actually talk on.
+ * Verified against the stock "Dr.Curve+" app (`com.yilai.DrCurvePlus`), whose `onWeixinFatScale`
+ * routine decodes exactly the offsets [parseFinalMeasurement] uses.
  */
 class HoffenBbs8107Handler : ScaleDeviceHandler() {
 
@@ -46,9 +51,20 @@ class HoffenBbs8107Handler : ScaleDeviceHandler() {
 
     // --- DeviceSupport --------------------------------------------------------
 
+    /**
+     * Advertised name (lowercased) → name to show in the UI.
+     *
+     * Matched by exact name on purpose. These scales also advertise service 0xFEE7, but that is
+     * the generic WeChat BLE service used by all kinds of unrelated devices, so claiming it
+     * outright would produce false positives in the scan list.
+     */
+    private val KNOWN_DEVICES = mapOf(
+        "hoffen bs-8107" to "Hoffen BBS-8107",
+        "pc-pw 3008 bt" to "ProfiCare PC-PW 3008 BT",
+    )
+
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = device.name.lowercase(Locale.US)
-        if (name != "hoffen bs-8107") return null
+        val displayName = KNOWN_DEVICES[device.name.trim().lowercase(Locale.US)] ?: return null
 
         val caps = setOf(
             DeviceCapability.BODY_COMPOSITION,
@@ -57,7 +73,7 @@ class HoffenBbs8107Handler : ScaleDeviceHandler() {
         )
         // We implement everything we claim above.
         return DeviceSupport(
-            displayName = "Hoffen BBS-8107",
+            displayName = displayName,
             capabilities = caps,
             implemented = caps,
             linkMode = LinkMode.CONNECT_GATT

@@ -210,6 +210,7 @@ object ScaleCatalog {
         device("Hagrid-B29") claimedBy HuaweiHagridWspHandler::class.java,
         device("HUAWEI Scale 3") claimedBy HuaweiHagridWspHandler::class.java,
         device("Hoffen BS-8107") claimedBy HoffenBbs8107Handler::class.java,
+        device("PC-PW 3008 BT") claimedBy HoffenBbs8107Handler::class.java,
         device("yunchen") claimedBy HesleyHandler::class.java,
         device("vscale") claimedBy ExingtechY1Handler::class.java,
         device("Body Fat-B2") claimedBy EbelterBodyFatB2Handler::class.java,
