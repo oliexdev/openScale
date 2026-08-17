@@ -92,6 +92,7 @@ import com.health.openscale.core.utils.LogManager
 import com.health.openscale.core.service.ScannedDeviceInfo
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -182,7 +183,6 @@ class ScaleFactory @Inject constructor(
             ESCS20MHandler(),
             RenphoES26BBHandler(),
             DigooDGSO38HHandler(),
-            DebugGattHandler(),
             CustomOpenScaleHandler(),
             BeurerSanitasHandler(),
             AAAxHandler(),
@@ -191,6 +191,19 @@ class ScaleFactory @Inject constructor(
             WeightGurusA3Handler(),
         )
     }
+
+    /**
+     * Reads the current value of a settings [Flow] from a non-suspending context.
+     *
+     * Communicator creation happens on the caller's thread, so the few settings needed here are
+     * read with a short timeout rather than restructuring every call site; `null` means the value
+     * was unavailable in time and the caller falls back to its default.
+     */
+    private fun <T> readSettingBlocking(flow: Flow<T>): T? = runCatching {
+        runBlocking(Dispatchers.IO) {
+            withTimeout(250.milliseconds) { flow.firstOrNull() }
+        }
+    }.getOrNull()
 
     /**
      * Creates a [ScaleCommunicator] based on a modern [ScaleDeviceHandler].
@@ -207,13 +220,7 @@ class ScaleFactory @Inject constructor(
     ): ScaleCommunicator? {
         // Resolve effective tuning: prefer user-saved value, fall back to handler default
         val effectiveTuning: TuningProfile = run {
-            val saved: String? = runCatching {
-                runBlocking(Dispatchers.IO) {
-                    withTimeout(250.milliseconds) {
-                        settingsFacade.savedBluetoothTuneProfile.firstOrNull()
-                    }
-                }
-            }.getOrNull()
+            val saved: String? = readSettingBlocking(settingsFacade.savedBluetoothTuneProfile)
 
             saved?.let { runCatching { TuningProfile.valueOf(it) }.getOrNull() }
                 ?: support.tuningProfile
@@ -261,6 +268,13 @@ class ScaleFactory @Inject constructor(
     fun createCommunicator(deviceInfo: ScannedDeviceInfo): ScaleCommunicator? {
         val primaryIdentifier = deviceInfo.name
         LogManager.d(TAG, "createCommunicator: Searching for communicator for '${primaryIdentifier}' (${deviceInfo.address}). Handler hint: '${deviceInfo.determinedHandlerDisplayName}'")
+
+        // 0. Developer mode wins over every registered handler: route to the diagnostic handler,
+        //    which dumps the GATT tree and logs notifications but stores nothing.
+        if (readSettingBlocking(settingsFacade.developerModeEnabled) == true) {
+            LogManager.i(TAG, "Developer mode active → routing '$primaryIdentifier' to DebugGattHandler. No measurement will be stored.")
+            return createModernCommunicator(DebugGattHandler(), DebugGattHandler.SUPPORT)
+        }
 
         // 1. Check if a modern Kotlin handler explicitly supports the device.
         for (handler in modernKotlinHandlers) {

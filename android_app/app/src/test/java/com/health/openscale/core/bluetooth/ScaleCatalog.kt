@@ -25,7 +25,6 @@ import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
 import com.health.openscale.core.bluetooth.scales.CultSmartScaleProHandler
 import com.health.openscale.core.bluetooth.scales.CustomOpenScaleHandler
-import com.health.openscale.core.bluetooth.scales.DebugGattHandler
 import com.health.openscale.core.bluetooth.scales.DeviceCapability
 import com.health.openscale.core.bluetooth.scales.DigooDGSO38HHandler
 import com.health.openscale.core.bluetooth.scales.DrTrustSSW532Handler
@@ -221,7 +220,6 @@ object ScaleCatalog {
         device("ES-CS20M") claimedBy ESCS20MHandler::class.java,
         device("ES-26BB-B") claimedBy RenphoES26BBHandler::class.java,
         device("Mengii") claimedBy DigooDGSO38HHandler::class.java,
-        device("debug") claimedBy DebugGattHandler::class.java,
         device("openScale") claimedBy CustomOpenScaleHandler::class.java,
         device("BEURER BF700") claimedBy BeurerSanitasHandler::class.java,
         device("BEURER BF710") claimedBy BeurerSanitasHandler::class.java,

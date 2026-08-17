@@ -73,7 +73,6 @@ import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.UnitType
-import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.ui.screen.dialog.NumberInputDialog
 import com.health.openscale.ui.shared.SharedViewModel
 import kotlinx.coroutines.launch
@@ -95,7 +94,7 @@ fun BluetoothDetailScreen(
     val savedDevice by bluetoothViewModel.savedDevice.collectAsStateWithLifecycle()
     val savedSupport by bluetoothViewModel.savedDeviceSupport.collectAsStateWithLifecycle()
     val currentTuningProfile = savedSupport?.tuningProfile ?: TuningProfile.Balanced
-    val isDeveloperActive = (savedDevice?.name.orEmpty() == "Debug")
+    val isDeveloperActive by bluetoothViewModel.developerModeEnabled.collectAsStateWithLifecycle(false)
 
     // --- Observe Smart Assignment Settings ---
     val isSmartAssignmentEnabled by bluetoothViewModel.isSmartAssignmentEnabled.collectAsStateWithLifecycle(false)
@@ -255,22 +254,9 @@ fun BluetoothDetailScreen(
                 SettingsRow(
                     label = stringResource(R.string.bluetooth_developer_mode),
                     icon = Icons.Default.BugReport,
-                    onClick = {
-                        val currentDevice = savedDevice
-                        if (currentDevice != null) {
-                            if (isDeveloperActive) {
-                                // Deactivating Debug Mode: Restore original name and handler.
-                                bluetoothViewModel.saveDeviceAsPreferred(
-                                    ScannedDeviceInfo(name = currentDevice.determinedHandlerDisplayName!!, address = currentDevice.address, rssi = 0, serviceUuids = currentDevice.serviceUuids, manufacturerData = currentDevice.manufacturerData, isSupported = true, determinedHandlerDisplayName = currentDevice.determinedHandlerDisplayName)
-                                )
-                            } else {
-                                // Activating Debug Mode: Change name and handler, but keep the address.
-                                bluetoothViewModel.saveDeviceAsPreferred(
-                                    ScannedDeviceInfo(name = "Debug", address = currentDevice.address, rssi = 0, serviceUuids = currentDevice.serviceUuids, manufacturerData = currentDevice.manufacturerData, isSupported = true, determinedHandlerDisplayName = currentDevice.name)
-                                )
-                            }
-                        }
-                    }
+                    // Toggling only flips the setting – the saved device snapshot stays untouched,
+                    // so switching back and forth can never lose the scale's identity.
+                    onClick = { bluetoothViewModel.setDeveloperMode(!isDeveloperActive) }
                 ) {
                     Switch(
                         checked = isDeveloperActive,

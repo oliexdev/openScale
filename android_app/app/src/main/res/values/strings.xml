@@ -355,6 +355,11 @@
     <string name="snackbar_developer_for_device_enable_logs">Developer mode enabled for this device. Please enable log file: Settings → General → Enable log file.</string>
     <string name="developer_banner_active">Developer mode is active — no measurements will be saved.</string>
     <string name="developer_banner_enable_logs_hint">Please enable log file: Settings → General → Enable log file.</string>
+    <string name="developer_mode_dialog_title">Enable developer mode?</string>
+    <string name="developer_mode_dialog_message">openScale will only log the Bluetooth traffic of %1$s for diagnostics. As long as developer mode is active, no measurement is saved. You can switch it off again on the Bluetooth screen or in the device settings.</string>
+    <string name="developer_mode_dialog_confirm_button">Enable</string>
+    <string name="developer_mode_disable_action">Disable</string>
+    <string name="developer_mode_active_icon_desc">Developer mode is active</string>
     <string name="capabilities_header">Capabilities</string>
     <string name="cap_body_composition">Body composition</string>
     <string name="cap_time_sync">Time sync</string>
