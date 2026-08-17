@@ -388,6 +388,9 @@ fun BluetoothScreen(
         deviceToDebug?.let { device ->
             DeveloperModeAlertDialog(
                 deviceName = device.name.ifEmpty { stringResource(R.string.unknown_device) },
+                replacedDeviceName = savedDevice
+                    ?.takeIf { it.address != device.address }
+                    ?.let { it.name.ifEmpty { stringResource(R.string.unknown_device) } },
                 onConfirm = {
                     // The device is stored with its real identity; only the setting marks the
                     // developer session, so turning it off later restores normal operation.
@@ -548,6 +551,7 @@ private fun CompatibilityAlertDialog(
 @Composable
 private fun DeveloperModeAlertDialog(
     deviceName: String,
+    replacedDeviceName: String?,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -555,7 +559,19 @@ private fun DeveloperModeAlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Default.BugReport, contentDescription = null) },
         title = { Text(stringResource(R.string.developer_mode_dialog_title)) },
-        text = { Text(stringResource(R.string.developer_mode_dialog_message, deviceName)) },
+        text = {
+            Column {
+                Text(stringResource(R.string.developer_mode_dialog_message, deviceName))
+                // Picking a different scale here silently swapped the saved one before.
+                replacedDeviceName?.let { replaced ->
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(R.string.developer_mode_dialog_replaces, deviceName, replaced),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        },
         confirmButton = {
             TextButton(
                 onClick = {

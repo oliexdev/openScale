@@ -367,7 +367,11 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                             val contentDesc = action.contentDescriptionResId?.let { stringResource(id = it) }
                                 ?: action.contentDescription
                             IconButton(onClick = action.onClick) {
-                                Icon(imageVector = action.icon, contentDescription = contentDesc)
+                                Icon(
+                                    imageVector = action.icon,
+                                    contentDescription = contentDesc,
+                                    tint = action.tint ?: LocalContentColor.current
+                                )
                             }
                             // If the action has associated dropdown content, invoke it here.
                             // This allows TopAppBar actions to also host DropdownMenus.
