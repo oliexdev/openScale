@@ -150,6 +150,13 @@ class OneByoneHandler : ScaleDeviceHandler() {
         userInfo(R.string.bt_info_step_on_scale)
     }
 
+    /** Stop the pending prompt: it is no longer useful, or never was. */
+    private fun suppressStepOnPrompt() {
+        clockAckFallbackJob?.cancel()
+        clockAckFallbackJob = null
+        promptedForMeasurement = true
+    }
+
     override fun onDisconnected() {
         clockAckFallbackJob?.cancel()
         clockAckFallbackJob = null
@@ -203,6 +210,9 @@ class OneByoneHandler : ScaleDeviceHandler() {
 
         // CF ... frames carry weight/impedance (+ optional timestamp if length >= 18)
         if (data.isNotEmpty() && data[0] == 0xCF.toByte() && data.size >= 11) {
+            // A measurement frame means the user is already standing on the scale, so the
+            // "step on the scale" fallback would arrive too late to be anything but confusing.
+            suppressStepOnPrompt()
             if (historicMode) historyCount++
             parseMeasurementFrame(data, user, isHistoric = historicMode)
         } else {
