@@ -226,20 +226,8 @@ class OneByoneHandler : ScaleDeviceHandler() {
         // Historic entries include a timestamp at bytes 11..17 (length >= 18)
         val hasTimestamp = hasHistoryTimestamp(bytes)
 
-        // A history entry without its timestamp cannot be placed on the graph, so drop it.
-        if (isHistoric && !hasTimestamp) return
-
-        // Only record settled readings. Byte 9 is the lock status: 0x00 and 0x36 mean the scale has
-        // finished weighing, anything else is still in progress. Historic entries are settled by
-        // definition, so the gate applies to live frames only.
-        if (!isHistoric && !isFinalReading(bytes)) {
-            logD("Ignoring in-progress frame (status=0x%02X, %.2f kg)"
-                .format(bytes[9].toInt() and 0xFF, weightKg))
-            return
-        }
-
-        // Frames with no usable weight carry nothing worth saving.
-        if (weightKg <= 0f) return
+        // Discard unwanted frames: history without time, or anything without impedance
+        if (!impedancePresent || (isHistoric && !hasTimestamp)) return
 
         // Timestamp (BE year + plain month/day/time), used when provided
         val whenCal = Calendar.getInstance()
@@ -275,33 +263,24 @@ class OneByoneHandler : ScaleDeviceHandler() {
             dateTime = if (hasTimestamp) whenCal.time else Calendar.getInstance().time
             weight = weightKg
             // Store the raw impedance so body composition can be recomputed later.
-            if (impedancePresent) impedance = impedanceOhm.toDouble()
+            impedance = impedanceOhm.toDouble()
         }
 
-        // Body composition needs impedance. The scale reports zero when it could not run the
-        // bioimpedance measurement (socks or shoes, poor foot contact, a weight-only model), and
-        // the weight is still perfectly good — record it rather than losing the weigh-in entirely.
-        if (impedancePresent) {
-            try {
-                val fatPct = lib.getBodyFat(m.weight, impedanceOhm)
-                m.fat = fatPct
-                m.water = lib.getWater(fatPct)
-                m.bone = lib.getBoneMass(m.weight, impedanceOhm)
-                m.visceralFat = lib.getVisceralFat(m.weight)
-                m.muscle = lib.getMuscle(m.weight, impedanceOhm)
-                m.lbm = lib.getLBM(m.weight, m.fat)
-            } catch (t: Throwable) {
-                // If the library throws on impossible inputs, keep the weight and drop the rest.
-                logW("OneByoneLib failed, publishing weight only: ${t.message}")
-            }
-        } else {
-            // No user-facing notice here on purpose: a snackbar emitted at this point is dismissed
-            // by BleConnector's saved-measurement snackbar ~700 ms later, so it never really shows.
-            // Surfacing this properly needs a change in the save path; tracked separately.
-            logI("No impedance in frame - publishing weight only (%.2f kg)".format(weightKg))
-        }
+        try {
+            // Derivations
+            val fatPct = lib.getBodyFat(m.weight, impedanceOhm)
+            m.fat = fatPct
+            m.water = lib.getWater(fatPct)
+            m.bone = lib.getBoneMass(m.weight, impedanceOhm)
+            m.visceralFat = lib.getVisceralFat(m.weight)
+            m.muscle = lib.getMuscle(m.weight, impedanceOhm)
+            m.lbm = lib.getLBM(m.weight, m.fat)
 
-        publish(m)
+            publish(m)
+        } catch (t: Throwable) {
+            // If library throws on impossible inputs, just log & ignore this frame
+            logW("OneByoneLib failed: ${t.message}")
+        }
     }
 
     // --- Command builders ------------------------------------------------------
@@ -369,18 +348,6 @@ class OneByoneHandler : ScaleDeviceHandler() {
          */
         fun isLiveFrame(bytes: ByteArray): Boolean =
             bytes.size >= LIVE_FRAME_LEN && bytes[10] == xorChecksum(bytes, 10)
-
-        /**
-         * True when byte 9 marks the reading as settled ("locked" in the vendor app, which treats
-         * 0x00 and 0x36 as final and everything else as still in progress).
-         */
-        fun isFinalReading(bytes: ByteArray): Boolean {
-            if (bytes.size < LIVE_FRAME_LEN) return false
-            return when (bytes[9].toInt() and 0xFF) {
-                0x00, 0x36 -> true
-                else -> false
-            }
-        }
 
         /**
          * True when [bytes] carries a history timestamp in bytes 11..17.
