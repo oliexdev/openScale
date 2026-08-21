@@ -530,6 +530,16 @@ abstract class ModernScaleAdapter(
         valueOf(MeasurementTypeKey.WATER)?.let { m.water = it.floatValue ?: 0f }
         valueOf(MeasurementTypeKey.MUSCLE)?.let { m.muscle = it.floatValue ?: 0f }
         valueOf(MeasurementTypeKey.VISCERAL_FAT)?.let { m.visceralFat = it.floatValue ?: 0f }
+        valueOf(MeasurementTypeKey.BODY_FAT_LEFT_ARM)?.let { m.fatLeftArm = it.floatValue ?: 0f }
+        valueOf(MeasurementTypeKey.BODY_FAT_RIGHT_ARM)?.let { m.fatRightArm = it.floatValue ?: 0f }
+        valueOf(MeasurementTypeKey.BODY_FAT_TORSO)?.let { m.fatTorso = it.floatValue ?: 0f }
+        valueOf(MeasurementTypeKey.BODY_FAT_LEFT_LEG)?.let { m.fatLeftLeg = it.floatValue ?: 0f }
+        valueOf(MeasurementTypeKey.BODY_FAT_RIGHT_LEG)?.let { m.fatRightLeg = it.floatValue ?: 0f }
+        valueOf(MeasurementTypeKey.MUSCLE_LEFT_ARM)?.let { m.muscleLeftArm = it.floatValue ?: 0f }
+        valueOf(MeasurementTypeKey.MUSCLE_RIGHT_ARM)?.let { m.muscleRightArm = it.floatValue ?: 0f }
+        valueOf(MeasurementTypeKey.MUSCLE_TORSO)?.let { m.muscleTorso = it.floatValue ?: 0f }
+        valueOf(MeasurementTypeKey.MUSCLE_LEFT_LEG)?.let { m.muscleLeftLeg = it.floatValue ?: 0f }
+        valueOf(MeasurementTypeKey.MUSCLE_RIGHT_LEG)?.let { m.muscleRightLeg = it.floatValue ?: 0f }
         valueOf(MeasurementTypeKey.LBM)?.let { m.lbm = it.floatValue ?: 0f }
         valueOf(MeasurementTypeKey.BONE)?.let { m.bone = it.floatValue ?: 0f }
 

@@ -421,7 +421,7 @@ class BleConnector(
      *
      * ### Raw units assumed for ScaleMeasurement
      * - WEIGHT, BONE, LBM  → **KG**
-     * - BODY_FAT, WATER, MUSCLE, VISCERAL_FAT → **PERCENT**
+     * - BODY_FAT, WATER, MUSCLE, VISCERAL_FAT and segmental fat/muscle → **PERCENT**
      *
      * Other fields in `ScaleMeasurement` (if added later) should be appended here with the correct raw unit.
      *
@@ -478,6 +478,16 @@ class BleConnector(
                 MeasurementTypeKey.WATER        to UnitType.PERCENT,
                 MeasurementTypeKey.MUSCLE       to UnitType.PERCENT,
                 MeasurementTypeKey.VISCERAL_FAT to UnitType.PERCENT,
+                MeasurementTypeKey.BODY_FAT_LEFT_ARM to UnitType.PERCENT,
+                MeasurementTypeKey.BODY_FAT_RIGHT_ARM to UnitType.PERCENT,
+                MeasurementTypeKey.BODY_FAT_TORSO to UnitType.PERCENT,
+                MeasurementTypeKey.BODY_FAT_LEFT_LEG to UnitType.PERCENT,
+                MeasurementTypeKey.BODY_FAT_RIGHT_LEG to UnitType.PERCENT,
+                MeasurementTypeKey.MUSCLE_LEFT_ARM to UnitType.PERCENT,
+                MeasurementTypeKey.MUSCLE_RIGHT_ARM to UnitType.PERCENT,
+                MeasurementTypeKey.MUSCLE_TORSO to UnitType.PERCENT,
+                MeasurementTypeKey.MUSCLE_LEFT_LEG to UnitType.PERCENT,
+                MeasurementTypeKey.MUSCLE_RIGHT_LEG to UnitType.PERCENT,
                 MeasurementTypeKey.BONE         to UnitType.KG,
                 MeasurementTypeKey.LBM          to UnitType.KG,
                 MeasurementTypeKey.HEART_RATE   to UnitType.BPM,
@@ -557,6 +567,16 @@ class BleConnector(
             addConvertedIfValid(measurementData.water,        MeasurementTypeKey.WATER)
             addConvertedIfValid(measurementData.muscle,       MeasurementTypeKey.MUSCLE)
             addConvertedIfValid(measurementData.visceralFat,  MeasurementTypeKey.VISCERAL_FAT)
+            addConvertedIfValid(measurementData.fatLeftArm,   MeasurementTypeKey.BODY_FAT_LEFT_ARM)
+            addConvertedIfValid(measurementData.fatRightArm,  MeasurementTypeKey.BODY_FAT_RIGHT_ARM)
+            addConvertedIfValid(measurementData.fatTorso,     MeasurementTypeKey.BODY_FAT_TORSO)
+            addConvertedIfValid(measurementData.fatLeftLeg,   MeasurementTypeKey.BODY_FAT_LEFT_LEG)
+            addConvertedIfValid(measurementData.fatRightLeg,  MeasurementTypeKey.BODY_FAT_RIGHT_LEG)
+            addConvertedIfValid(measurementData.muscleLeftArm, MeasurementTypeKey.MUSCLE_LEFT_ARM)
+            addConvertedIfValid(measurementData.muscleRightArm, MeasurementTypeKey.MUSCLE_RIGHT_ARM)
+            addConvertedIfValid(measurementData.muscleTorso,  MeasurementTypeKey.MUSCLE_TORSO)
+            addConvertedIfValid(measurementData.muscleLeftLeg, MeasurementTypeKey.MUSCLE_LEFT_LEG)
+            addConvertedIfValid(measurementData.muscleRightLeg, MeasurementTypeKey.MUSCLE_RIGHT_LEG)
             addConvertedIfValid(measurementData.bone,         MeasurementTypeKey.BONE)
             addConvertedIfValid(measurementData.lbm,          MeasurementTypeKey.LBM)
             addConvertedIfValid(measurementData.heartRate, MeasurementTypeKey.HEART_RATE)
