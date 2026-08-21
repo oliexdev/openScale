@@ -41,6 +41,16 @@ data class ScaleMeasurement(
     var icw: Float = 0.0f, // Intracellular water, % of body weight
     var protein: Float = 0.0f, // Protein, % of body weight
     var bcm: Float = 0.0f, // Body cell mass, kg
+    var fatLeftArm: Float = 0.0f, // must be in percentage
+    var fatRightArm: Float = 0.0f, // must be in percentage
+    var fatTorso: Float = 0.0f, // must be in percentage
+    var fatLeftLeg: Float = 0.0f, // must be in percentage
+    var fatRightLeg: Float = 0.0f, // must be in percentage
+    var muscleLeftArm: Float = 0.0f, // must be in percentage
+    var muscleRightArm: Float = 0.0f, // must be in percentage
+    var muscleTorso: Float = 0.0f, // must be in percentage
+    var muscleLeftLeg: Float = 0.0f, // must be in percentage
+    var muscleRightLeg: Float = 0.0f, // must be in percentage
 ) {
 
     // --- Utility methods ---
@@ -53,6 +63,16 @@ data class ScaleMeasurement(
         if (other.water > 0f && this.water <= 0f) this.water = other.water
         if (other.muscle > 0f && this.muscle <= 0f) this.muscle = other.muscle
         if (other.visceralFat > 0f && this.visceralFat <= 0f) this.visceralFat = other.visceralFat
+        if (other.fatLeftArm > 0f && this.fatLeftArm <= 0f) this.fatLeftArm = other.fatLeftArm
+        if (other.fatRightArm > 0f && this.fatRightArm <= 0f) this.fatRightArm = other.fatRightArm
+        if (other.fatTorso > 0f && this.fatTorso <= 0f) this.fatTorso = other.fatTorso
+        if (other.fatLeftLeg > 0f && this.fatLeftLeg <= 0f) this.fatLeftLeg = other.fatLeftLeg
+        if (other.fatRightLeg > 0f && this.fatRightLeg <= 0f) this.fatRightLeg = other.fatRightLeg
+        if (other.muscleLeftArm > 0f && this.muscleLeftArm <= 0f) this.muscleLeftArm = other.muscleLeftArm
+        if (other.muscleRightArm > 0f && this.muscleRightArm <= 0f) this.muscleRightArm = other.muscleRightArm
+        if (other.muscleTorso > 0f && this.muscleTorso <= 0f) this.muscleTorso = other.muscleTorso
+        if (other.muscleLeftLeg > 0f && this.muscleLeftLeg <= 0f) this.muscleLeftLeg = other.muscleLeftLeg
+        if (other.muscleRightLeg > 0f && this.muscleRightLeg <= 0f) this.muscleRightLeg = other.muscleRightLeg
         if (other.bone > 0f && this.bone <= 0f) this.bone = other.bone
         if (other.lbm > 0f && this.lbm <= 0f) this.lbm = other.lbm
         if (other.bmr > 0f && this.bmr <= 0f) this.bmr = other.bmr

@@ -22,6 +22,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -35,7 +36,7 @@ import kotlin.math.abs
 /**
  * Exercises the full migration chain end-to-end on the JVM (Robolectric): a hand-built
  * legacy schema-v6 database is opened with all migrations, running MIGRATION_6_7 (the risky
- * legacy rewrite) through MIGRATION_14_15 in sequence. Verifies the enum mapping and that
+ * legacy rewrite) through MIGRATION_15_16 in sequence. Verifies the enum mapping and that
  * data survives — the highest data-loss risk in the app.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -59,7 +60,7 @@ class MigrationTest {
 
         RoomTestSupport.writeLegacyV6Database(dbFile)
 
-        // Opening with the full migration chain runs MIGRATION_6_7 .. MIGRATION_14_15 in order.
+        // Opening with the full migration chain runs MIGRATION_6_7 .. MIGRATION_15_16 in order.
         val opened = RoomTestSupport.onDisk(context).also { db = it }
         val repo = RoomTestSupport.repositoryFor(opened)
 
@@ -78,8 +79,21 @@ class MigrationTest {
             .firstOrNull { abs(it - 72.5f) < 0.1f }
         assertThat(weight).isNotNull()
 
-        // The rewrite seeds the default measurement types.
-        assertThat(repo.getAllMeasurementTypes().first()).isNotEmpty()
+        // The rewrite seeds the default measurement types, including later segmental BF1000 types.
+        assertThat(repo.getAllMeasurementTypes().first().map { it.key }).containsAtLeastElementsIn(
+            listOf(
+                MeasurementTypeKey.BODY_FAT_LEFT_ARM,
+                MeasurementTypeKey.BODY_FAT_RIGHT_ARM,
+                MeasurementTypeKey.BODY_FAT_TORSO,
+                MeasurementTypeKey.BODY_FAT_LEFT_LEG,
+                MeasurementTypeKey.BODY_FAT_RIGHT_LEG,
+                MeasurementTypeKey.MUSCLE_LEFT_ARM,
+                MeasurementTypeKey.MUSCLE_RIGHT_ARM,
+                MeasurementTypeKey.MUSCLE_TORSO,
+                MeasurementTypeKey.MUSCLE_LEFT_LEG,
+                MeasurementTypeKey.MUSCLE_RIGHT_LEG,
+            )
+        )
     }
 
     /**
@@ -96,7 +110,7 @@ class MigrationTest {
 
         RoomTestSupport.writeLegacyV1Database(dbFile)
 
-        // Opening with the full migration chain runs MIGRATION_1_2 .. MIGRATION_14_15 in order.
+        // Opening with the full migration chain runs MIGRATION_1_2 .. MIGRATION_15_16 in order.
         val opened = RoomTestSupport.onDisk(context).also { db = it }
         val repo = RoomTestSupport.repositoryFor(opened)
 
@@ -114,6 +128,19 @@ class MigrationTest {
             .firstOrNull { abs(it - 80.5f) < 0.1f }
         assertThat(weight).isNotNull()
 
-        assertThat(repo.getAllMeasurementTypes().first()).isNotEmpty()
+        assertThat(repo.getAllMeasurementTypes().first().map { it.key }).containsAtLeastElementsIn(
+            listOf(
+                MeasurementTypeKey.BODY_FAT_LEFT_ARM,
+                MeasurementTypeKey.BODY_FAT_RIGHT_ARM,
+                MeasurementTypeKey.BODY_FAT_TORSO,
+                MeasurementTypeKey.BODY_FAT_LEFT_LEG,
+                MeasurementTypeKey.BODY_FAT_RIGHT_LEG,
+                MeasurementTypeKey.MUSCLE_LEFT_ARM,
+                MeasurementTypeKey.MUSCLE_RIGHT_ARM,
+                MeasurementTypeKey.MUSCLE_TORSO,
+                MeasurementTypeKey.MUSCLE_LEFT_LEG,
+                MeasurementTypeKey.MUSCLE_RIGHT_LEG,
+            )
+        )
     }
 }

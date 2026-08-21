@@ -405,6 +405,16 @@ enum class MeasurementTypeKey(
     ICW(32, R.string.measurement_type_icw, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     PROTEIN(33, R.string.measurement_type_protein, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     BCM(34, R.string.measurement_type_bcm, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
+    BODY_FAT_LEFT_ARM(35, R.string.measurement_type_body_fat_left_arm, listOf(UnitType.PERCENT), listOf(InputFieldType.FLOAT)),
+    BODY_FAT_RIGHT_ARM(36, R.string.measurement_type_body_fat_right_arm, listOf(UnitType.PERCENT), listOf(InputFieldType.FLOAT)),
+    BODY_FAT_TORSO(37, R.string.measurement_type_body_fat_torso, listOf(UnitType.PERCENT), listOf(InputFieldType.FLOAT)),
+    BODY_FAT_LEFT_LEG(38, R.string.measurement_type_body_fat_left_leg, listOf(UnitType.PERCENT), listOf(InputFieldType.FLOAT)),
+    BODY_FAT_RIGHT_LEG(39, R.string.measurement_type_body_fat_right_leg, listOf(UnitType.PERCENT), listOf(InputFieldType.FLOAT)),
+    MUSCLE_LEFT_ARM(40, R.string.measurement_type_muscle_left_arm, listOf(UnitType.PERCENT), listOf(InputFieldType.FLOAT)),
+    MUSCLE_RIGHT_ARM(41, R.string.measurement_type_muscle_right_arm, listOf(UnitType.PERCENT), listOf(InputFieldType.FLOAT)),
+    MUSCLE_TORSO(42, R.string.measurement_type_muscle_torso, listOf(UnitType.PERCENT), listOf(InputFieldType.FLOAT)),
+    MUSCLE_LEFT_LEG(43, R.string.measurement_type_muscle_left_leg, listOf(UnitType.PERCENT), listOf(InputFieldType.FLOAT)),
+    MUSCLE_RIGHT_LEG(44, R.string.measurement_type_muscle_right_leg, listOf(UnitType.PERCENT), listOf(InputFieldType.FLOAT)),
     CUSTOM(99, R.string.measurement_type_custom_default_name, UnitType.entries.toList(), listOf(InputFieldType.FLOAT, InputFieldType.INT, InputFieldType.TEXT, InputFieldType.DATE, InputFieldType.TIME));
 }
 

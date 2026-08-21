@@ -124,8 +124,18 @@ class MeasurementEvaluationUseCases @Inject constructor() {
     fun plausiblePercentRangeFor(typeKey: MeasurementTypeKey): ClosedFloatingPointRange<Float>? =
         when (typeKey) {
             MeasurementTypeKey.WATER    -> 35f..75f
-            MeasurementTypeKey.BODY_FAT -> 3f..70f
-            MeasurementTypeKey.MUSCLE   -> 15f..60f
+            MeasurementTypeKey.BODY_FAT,
+            MeasurementTypeKey.BODY_FAT_LEFT_ARM,
+            MeasurementTypeKey.BODY_FAT_RIGHT_ARM,
+            MeasurementTypeKey.BODY_FAT_TORSO,
+            MeasurementTypeKey.BODY_FAT_LEFT_LEG,
+            MeasurementTypeKey.BODY_FAT_RIGHT_LEG -> 3f..70f
+            MeasurementTypeKey.MUSCLE,
+            MeasurementTypeKey.MUSCLE_LEFT_ARM,
+            MeasurementTypeKey.MUSCLE_RIGHT_ARM,
+            MeasurementTypeKey.MUSCLE_TORSO,
+            MeasurementTypeKey.MUSCLE_LEFT_LEG,
+            MeasurementTypeKey.MUSCLE_RIGHT_LEG -> 15f..60f
             else -> null
         }
 }
