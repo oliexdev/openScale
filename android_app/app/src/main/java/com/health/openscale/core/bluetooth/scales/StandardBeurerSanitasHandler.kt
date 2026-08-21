@@ -17,7 +17,9 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
+import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.bluetooth.libs.BeurerBf1000Lib
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -32,7 +34,7 @@ import java.util.UUID
  */
 class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
 
-    private enum class Model { BEURER_BF105, BEURER_BF950, BEURER_BF500, BEURER_BF600 }
+    private enum class Model { BEURER_BF105, BEURER_BF1000, BEURER_BF950, BEURER_BF500, BEURER_BF600 }
     private val scaleUserList = mutableListOf<ScaleUser>()
 
     private data class Profile(
@@ -47,9 +49,22 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
     private var activeModel: Model? = null
     private var friendlyName: String? = null
     private var profile: Profile? = null
+    private var pendingBf1000Measurement: ScaleMeasurement? = null
+
+    private val bf1000WeightMeasurement = uuid16(0x2A9D)
+    private val bf1000BodyCompositionMeasurement = uuid16(0x2A9C)
+    private val bf1000MeasurementStatus = uuid16(0x0006)
+    private val bf1000SegmentalFatMeasurement = uuid16(0x0009)
+    private val bf1000SegmentalMuscleMeasurement = uuid16(0x000A)
+    private val bf1000CustomMeasurementChars = listOf(
+        bf1000MeasurementStatus,
+        bf1000SegmentalFatMeasurement,
+        bf1000SegmentalMuscleMeasurement
+    )
 
     private fun pFor(m: Model) = when (m) {
-        Model.BEURER_BF105 -> Profile(
+        Model.BEURER_BF105,
+        Model.BEURER_BF1000 -> Profile(
             service = uuid16(0xFFFF),
             chrUserList = uuid16(0x0001),
             chrActivity = uuid16(0x0004),
@@ -85,6 +100,7 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
 
     private fun nameFor(m: Model) = when (m) {
         Model.BEURER_BF105 -> "Beurer BF105/720"
+        Model.BEURER_BF1000 -> "Beurer BF1000"
         Model.BEURER_BF950 -> "Beurer BF950"
         Model.BEURER_BF500 -> "Beurer BF500"
         Model.BEURER_BF600 -> "Beurer BF600"
@@ -98,6 +114,7 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
 
         val model = when {
             "bf105" in name || "bf720" in name -> Model.BEURER_BF105
+            "bf1000" in name                   -> Model.BEURER_BF1000
             "bf950" in name || "sbf77" in name || "sbf76" in name -> Model.BEURER_BF950
             "bf500" in name                    -> Model.BEURER_BF500
             "bf600" in name || "bf850" in name -> Model.BEURER_BF600
@@ -145,6 +162,10 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
                 }
             }
         }
+
+        if (activeModel == Model.BEURER_BF1000) {
+            enableBf1000CustomMeasurements()
+        }
     }
 
     override fun writeUserDataToScale() {
@@ -176,13 +197,30 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             return
         }
 
-        when (characteristic) {
-            p.chrUserList       -> {
+        when {
+            activeModel == Model.BEURER_BF1000 && characteristic == bf1000WeightMeasurement -> {
+                handleBf1000WeightMeasurement(data)
+            }
+            activeModel == Model.BEURER_BF1000 && characteristic == bf1000BodyCompositionMeasurement -> {
+                handleBf1000BodyCompositionMeasurement(data)
+            }
+            characteristic == p.chrUserList -> {
                 handleUserList(data, user)
+            }
+            activeModel == Model.BEURER_BF1000 && isBf1000CustomMeasurementCharacteristic(characteristic) -> {
+                handleBf1000CustomMeasurementData(characteristic, data)
             }
             else ->
                 super.onNotification(characteristic, data, user)
         }
+    }
+
+    override fun onDisconnected() {
+        if (activeModel == Model.BEURER_BF1000) {
+            publishPendingBf1000Measurement("disconnect")
+        }
+
+        super.onDisconnected()
     }
 
     override fun onRequestMeasurement() {
@@ -193,6 +231,180 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
     }
 
     // ---- Vendor write helpers -------------------------------------------------
+
+    private fun enableBf1000CustomMeasurements() {
+        val p = profile ?: return
+
+        logD("Enabling BF1000 custom measurement characteristics")
+        bf1000CustomMeasurementChars.forEach { chr ->
+            setNotifyOn(p.service, chr)
+        }
+    }
+
+    private fun handleBf1000WeightMeasurement(data: ByteArray) {
+        logD("BF1000 standard weight len=${data.size} ${data.toHexPreview(64)}")
+        val decoded = BeurerBf1000Lib.parseWeightMeasurement(data)
+        if (decoded == null) {
+            logW("BF1000 standard weight packet could not be decoded")
+            return
+        }
+
+        val measurement = ScaleMeasurement().apply {
+            weight = decoded.weightKg
+            dateTime = decoded.dateTime
+        }
+
+        decoded.scaleUserIndex?.let { scaleUserIndex ->
+            val appId = loadUserIdForScaleIndex(scaleUserIndex)
+            if (appId != -1) measurement.userId = appId
+            logD(
+                "BF1000 weight: idx=$scaleUserIndex mappedAppId=$appId " +
+                    "kg=${decoded.isKg} value=${measurement.weight}"
+            )
+        }
+        decoded.bmi?.let {
+            logD("BF1000 BMI=$it height(m)=${decoded.heightMeters}")
+        }
+
+        mergePendingBf1000Measurement(measurement, "standard weight")
+    }
+
+    private fun handleBf1000BodyCompositionMeasurement(data: ByteArray) {
+        logD("BF1000 standard body composition len=${data.size} ${data.toHexPreview(64)}")
+        val decoded = BeurerBf1000Lib.parseBodyCompositionMeasurement(
+            data,
+            fallbackWeightKg = pendingBf1000Measurement?.weight?.takeIf { it > 0f }
+        )
+        if (decoded == null) {
+            logW("BF1000 standard body composition packet could not be decoded")
+            return
+        }
+
+        val measurement = ScaleMeasurement().apply {
+            fat = decoded.bodyFatPercent
+            dateTime = decoded.dateTime
+            decoded.bmrKcal?.let { bmr = it }
+            decoded.musclePercent?.let { muscle = it }
+            decoded.waterMassKg?.let { water = it }
+            decoded.impedanceOhm?.let { impedance = it }
+            decoded.weightKg?.let { weight = it }
+            decoded.leanBodyMassKg?.let { lbm = it }
+            decoded.boneMassKg?.let { bone = it }
+        }
+
+        decoded.scaleUserIndex?.let { scaleUserIndex ->
+            val appId = loadUserIdForScaleIndex(scaleUserIndex)
+            if (appId != -1) measurement.userId = appId
+            logD("BF1000 body composition: idx=$scaleUserIndex mappedAppId=$appId fat=${measurement.fat}%")
+        }
+        decoded.bmrKcal?.let { logD("BF1000 BMR ~= $it kcal") }
+        decoded.softLeanMassKg?.let { logD("BF1000 soft lean mass=$it kg") }
+        decoded.impedanceOhm?.let { logD("BF1000 impedance=$it ohm") }
+        decoded.boneMassKg?.let { logD("BF1000 bone mass=$it kg") }
+        if (decoded.isMultiPacket) {
+            logW("BF1000 body composition: multi-packet measurement not supported")
+        }
+
+        mergePendingBf1000Measurement(measurement, "standard body composition")
+    }
+
+    private fun handleBf1000CustomMeasurementData(characteristic: UUID, data: ByteArray) {
+        logD("BF1000 custom chr=${characteristic.shortId()} len=${data.size} ${data.toHexPreview(64)}")
+
+        when {
+            characteristic == bf1000SegmentalFatMeasurement -> {
+                val decoded = BeurerBf1000Lib.parseSegmentalFatMeasurement(data)
+                if (decoded == null) {
+                    logW("BF1000 segmental fat packet could not be decoded")
+                    return
+                }
+                val measurement = ScaleMeasurement().apply {
+                    visceralFat = decoded.visceralFat
+                    fatLeftArm = decoded.leftArm
+                    fatRightArm = decoded.rightArm
+                    fatTorso = decoded.torso
+                    fatLeftLeg = decoded.leftLeg
+                    fatRightLeg = decoded.rightLeg
+                }
+
+                logD(
+                    "BF1000 segmental fat: visceral=${measurement.visceralFat} " +
+                        "leftArm=${measurement.fatLeftArm}% rightArm=${measurement.fatRightArm}% " +
+                        "torso=${measurement.fatTorso}% leftLeg=${measurement.fatLeftLeg}% " +
+                        "rightLeg=${measurement.fatRightLeg}%"
+                )
+                mergePendingBf1000Measurement(measurement, "segmental fat")
+            }
+            characteristic == bf1000SegmentalMuscleMeasurement -> {
+                val decoded = BeurerBf1000Lib.parseSegmentalMuscleMeasurement(data)
+                if (decoded == null) {
+                    logW("BF1000 segmental muscle packet could not be decoded")
+                    return
+                }
+                val measurement = ScaleMeasurement().apply {
+                    muscleLeftArm = decoded.leftArm
+                    muscleRightArm = decoded.rightArm
+                    muscleTorso = decoded.torso
+                    muscleLeftLeg = decoded.leftLeg
+                    muscleRightLeg = decoded.rightLeg
+                }
+
+                logD(
+                    "BF1000 segmental muscle: leftArm=${measurement.muscleLeftArm}% " +
+                        "rightArm=${measurement.muscleRightArm}% torso=${measurement.muscleTorso}% " +
+                        "leftLeg=${measurement.muscleLeftLeg}% rightLeg=${measurement.muscleRightLeg}%"
+                )
+                mergePendingBf1000Measurement(measurement, "segmental muscle")
+            }
+        }
+
+        if (characteristic == bf1000MeasurementStatus &&
+            data.firstOrNull()?.toInt()?.and(0xFF) == 0x01) {
+            logD("BF1000 measurement-complete status received")
+            publishPendingBf1000Measurement("measurement complete")
+        }
+    }
+
+    private fun isBf1000CustomMeasurementCharacteristic(characteristic: UUID): Boolean =
+        characteristic in bf1000CustomMeasurementChars
+
+    private fun mergePendingBf1000Measurement(measurement: ScaleMeasurement, source: String) {
+        val current = pendingBf1000Measurement
+        if (current == null) {
+            pendingBf1000Measurement = measurement
+        } else if (canMergeBf1000(current, measurement)) {
+            current.mergeWith(measurement)
+        } else {
+            publishPendingBf1000Measurement("new BF1000 user packet before $source")
+            pendingBf1000Measurement = measurement
+        }
+
+        pendingBf1000Measurement?.let {
+            if (it.weight > 0f && it.fat > 0f && it.lbm <= 0f) {
+                it.lbm = it.weight * (1f - it.fat / 100f)
+            }
+        }
+
+        logD("BF1000 pending after $source: $pendingBf1000Measurement")
+    }
+
+    private fun canMergeBf1000(left: ScaleMeasurement, right: ScaleMeasurement): Boolean =
+        left.userId == 0xFF ||
+            right.userId == 0xFF ||
+            left.userId == right.userId
+
+    private fun publishPendingBf1000Measurement(reason: String) {
+        val measurement = pendingBf1000Measurement ?: return
+        if (!measurement.hasWeight()) {
+            logW("Dropping BF1000 pending measurement on $reason because it has no weight: $measurement")
+            pendingBf1000Measurement = null
+            return
+        }
+
+        pendingBf1000Measurement = null
+        logD("Publishing BF1000 measurement on $reason: $measurement")
+        publish(transformBeforePublish(measurement))
+    }
 
     private fun handleUserList(data: ByteArray, user : ScaleUser) {
         val parser = BluetoothBytesParser(data)
@@ -294,4 +506,7 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             }
         }
     }
+
+    private fun UUID.shortId(): String =
+        String.format("0x%04x", (mostSignificantBits shr 32) and 0xFFFF)
 }
