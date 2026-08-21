@@ -395,6 +395,16 @@ class MeasurementDemoUseCase @Inject constructor(
                         MeasurementTypeKey.WATER        -> (100f - f - noise(1f, 4f)).coerceIn(40f, 75f)
                         MeasurementTypeKey.BONE         -> (w * 0.04f + noise(-0.2f, 0.2f)).coerceIn(1f, 10f)
                         MeasurementTypeKey.VISCERAL_FAT -> (f / 3f + noise(-1f, 1f)).coerceIn(1f, 20f)
+                        MeasurementTypeKey.BODY_FAT_LEFT_ARM,
+                        MeasurementTypeKey.BODY_FAT_RIGHT_ARM,
+                        MeasurementTypeKey.BODY_FAT_TORSO,
+                        MeasurementTypeKey.BODY_FAT_LEFT_LEG,
+                        MeasurementTypeKey.BODY_FAT_RIGHT_LEG -> (f + noise(-1.5f, 1.5f)).coerceIn(3f, 70f)
+                        MeasurementTypeKey.MUSCLE_LEFT_ARM,
+                        MeasurementTypeKey.MUSCLE_RIGHT_ARM,
+                        MeasurementTypeKey.MUSCLE_TORSO,
+                        MeasurementTypeKey.MUSCLE_LEFT_LEG,
+                        MeasurementTypeKey.MUSCLE_RIGHT_LEG -> (m + noise(-2f, 2f)).coerceIn(15f, 60f)
                         MeasurementTypeKey.WAIST,
                         MeasurementTypeKey.HIPS,
                         MeasurementTypeKey.CHEST,

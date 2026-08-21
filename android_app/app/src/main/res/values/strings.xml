@@ -191,6 +191,16 @@
     <string name="measurement_type_icw">Intracellular water</string>
     <string name="measurement_type_protein">Protein</string>
     <string name="measurement_type_bcm">Body cell mass</string>
+    <string name="measurement_type_body_fat_left_arm">Body Fat Left Arm</string>
+    <string name="measurement_type_body_fat_right_arm">Body Fat Right Arm</string>
+    <string name="measurement_type_body_fat_torso">Body Fat Torso</string>
+    <string name="measurement_type_body_fat_left_leg">Body Fat Left Leg</string>
+    <string name="measurement_type_body_fat_right_leg">Body Fat Right Leg</string>
+    <string name="measurement_type_muscle_left_arm">Muscle Left Arm</string>
+    <string name="measurement_type_muscle_right_arm">Muscle Right Arm</string>
+    <string name="measurement_type_muscle_torso">Muscle Torso</string>
+    <string name="measurement_type_muscle_left_leg">Muscle Left Leg</string>
+    <string name="measurement_type_muscle_right_leg">Muscle Right Leg</string>
     <string name="s400_bone_formula_label">Bone formula</string>
     <string name="s400_bone_formula_mi_legacy">Impedance-based regression (Legacy)</string>
     <string name="s400_bone_formula_heymsfield">Heymsfield (anthropometric)</string>
