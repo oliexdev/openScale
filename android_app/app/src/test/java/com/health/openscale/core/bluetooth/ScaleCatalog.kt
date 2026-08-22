@@ -20,6 +20,7 @@ package com.health.openscale.core.bluetooth
 import android.util.SparseArray
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
+import com.health.openscale.core.bluetooth.scales.AfuB1Handler
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
@@ -158,6 +159,7 @@ object ScaleCatalog {
     val fixtures: List<Fixture> = listOf(
         // --- Matched by advertised name ---
         device("AE BS-06") claimedBy ActiveEraBF06Handler::class.java,
+        device("AFU-BH-TZ-B1", uuid16(0xFC50)) claimedBy AfuB1Handler::class.java,
         device("Keep_S3") claimedBy KeepS3Handler::class.java,
         device("Beurer BF450") claimedBy BeurerBF450Handler::class.java,
         device("BIA SCALE", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
