@@ -58,6 +58,7 @@ import com.health.openscale.core.bluetooth.scales.XiaomiS800Handler
 import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
 import com.health.openscale.core.bluetooth.scales.OmronWlcHandler
+import com.health.openscale.core.bluetooth.scales.PicoocHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
 import com.health.openscale.core.bluetooth.scales.QNHandler
@@ -130,6 +131,10 @@ class ScaleFactory @Inject constructor(
         @VisibleForTesting
         internal fun createHandlers(): List<ScaleDeviceHandler> = listOf(
             // Exact-name match must precede generic LeFu/0xFFF0 handlers (first match wins).
+            // PicoocHandler matches only "PICOOC-*"/"Latin-*" names, but has to stay ahead of
+            // ScaleupHandler, which claims any device whose manufacturer data carries a
+            // 0xD0/0xE0 key regardless of name.
+            PicoocHandler(),
             ActiveEraBF06Handler(),
             KeepS3Handler(),
             OmronWlcHandler(),
