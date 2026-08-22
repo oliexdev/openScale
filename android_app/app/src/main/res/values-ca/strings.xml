@@ -32,7 +32,7 @@
     <string name="no_measurements_found">No s’ha trobat cap mesura.</string>
     <string name="no_entries_found">No hi ha cap element disponible.</string>
     <string name="route_title_overview">Visió general</string>
-    <string name="route_title_graph">Gràfiques</string>
+    <string name="route_title_graph">Gràfics</string>
     <string name="route_title_table">Taula</string>
     <string name="route_title_statistics">Estadístiques</string>
     <string name="route_title_insights">Anàlisis</string>
