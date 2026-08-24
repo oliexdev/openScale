@@ -46,6 +46,7 @@ import com.health.openscale.core.bluetooth.scales.HoffenBbs8107Handler
 import com.health.openscale.core.bluetooth.scales.HuaweiAhCh100Handler
 import com.health.openscale.core.bluetooth.scales.HuaweiCH100SHandler
 import com.health.openscale.core.bluetooth.scales.HuaweiHagridWspHandler
+import com.health.openscale.core.bluetooth.scales.HumeDara2Handler
 import com.health.openscale.core.bluetooth.scales.IHealthHS3Handler
 import com.health.openscale.core.bluetooth.scales.InlifeHandler
 import com.health.openscale.core.bluetooth.scales.KeepS3Handler
@@ -175,6 +176,10 @@ class ScaleFactory @Inject constructor(
             HesleyHandler(),
             ExingtechY1Handler(),
             EbelterBodyFatB2Handler(),
+            // Same LeFu/0xFFF0 chip family; kept as siblings, not merged, since neither name
+            // ("Dara 2.0" / "Electronic Scale") collides with the other — see HumeDara2Handler's
+            // class doc for why it isn't FitTrackDaraHandler's differently-branded "Dara" either.
+            HumeDara2Handler(),
             ExcelvanCF36xHandler(),
             EtekcityESF551Handler(),
             EtekcityFit8SHandler(),
