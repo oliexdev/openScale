@@ -65,6 +65,13 @@ class MeasurementValueInheritanceTest {
     private var waistId = 0
     private var hipsId = 0
     private var heartRateId = 0
+    private var bodyFatId = 0
+    private var waterId = 0
+    private var muscleId = 0
+    private var boneId = 0
+    private var visceralFatId = 0
+    private var lbmId = 0
+    private var proteinId = 0
     private var commentId = 0
     private var bmiId = 0
     private var impedanceId = 0
@@ -90,6 +97,13 @@ class MeasurementValueInheritanceTest {
         waistId = types.first { it.key == MeasurementTypeKey.WAIST }.id
         hipsId = types.first { it.key == MeasurementTypeKey.HIPS }.id
         heartRateId = types.first { it.key == MeasurementTypeKey.HEART_RATE }.id
+        bodyFatId = types.first { it.key == MeasurementTypeKey.BODY_FAT }.id
+        waterId = types.first { it.key == MeasurementTypeKey.WATER }.id
+        muscleId = types.first { it.key == MeasurementTypeKey.MUSCLE }.id
+        boneId = types.first { it.key == MeasurementTypeKey.BONE }.id
+        visceralFatId = types.first { it.key == MeasurementTypeKey.VISCERAL_FAT }.id
+        lbmId = types.first { it.key == MeasurementTypeKey.LBM }.id
+        proteinId = types.first { it.key == MeasurementTypeKey.PROTEIN }.id
         commentId = types.first { it.key == MeasurementTypeKey.COMMENT }.id
         bmiId = types.first { it.key == MeasurementTypeKey.BMI }.id
         impedanceId = types.first { it.key == MeasurementTypeKey.IMPEDANCE }.id
@@ -121,12 +135,11 @@ class MeasurementValueInheritanceTest {
         firstOrNull { it.typeId == typeId }?.floatValue
 
     @Test
-    fun inherits_fillsNumericTypesTheScaleDoesNotReport() = runBlocking {
+    fun inherits_fillsManualNumericTypesTheScaleDoesNotReport() = runBlocking {
         insertHistory(
             1_000L,
             float(weightId, 70f),
             float(waistId, 90f),
-            MeasurementValue(measurementId = 0, typeId = heartRateId, intValue = 60),
         )
 
         val result = transformation.applyValueInheritance(
@@ -134,7 +147,36 @@ class MeasurementValueInheritanceTest {
         )
 
         assertThat(result.floatOf(waistId)).isEqualTo(90f)
-        assertThat(result.first { it.typeId == heartRateId }.intValue).isEqualTo(60)
+    }
+
+    @Test
+    fun inherits_doesNotCarryForwardPerWeighInPhysiology() = runBlocking {
+        insertHistory(
+            1_000L,
+            float(weightId, 70f),
+            float(bodyFatId, 22f),
+            float(waterId, 55f),
+            float(muscleId, 40f),
+            float(boneId, 3.2f),
+            float(visceralFatId, 9f),
+            float(lbmId, 54f),
+            float(proteinId, 17f),
+            MeasurementValue(measurementId = 0, typeId = heartRateId, intValue = 68),
+            float(waistId, 90f),
+        )
+
+        // Simulates an interrupted BIA weigh-in: the scale produced weight only.
+        val result = transformation.applyValueInheritance(
+            incoming(2_000L), listOf(float(weightId, 71f))
+        )
+
+        assertThat(result.floatOf(weightId)).isEqualTo(71f)
+        assertThat(result.floatOf(waistId)).isEqualTo(90f)
+
+        val perWeighInIds = setOf(
+            bodyFatId, waterId, muscleId, boneId, visceralFatId, lbmId, proteinId, heartRateId
+        )
+        assertThat(result.none { it.typeId in perWeighInIds }).isTrue()
     }
 
     @Test

@@ -119,11 +119,12 @@ class HuaweiHagridWspHandler(
     private var measurementStatusPollJob: Job? = null
     private var measurementStatusReady = false
     private var postStatusMeasurementReadsStarted = false
-    private var realtimeFinalPublished = false
-    // Scale 3: cache the last valid realtime measurement so it can be published
-    // on status=0 if it arrived before the status notification (the common case).
-    private var lastValidScale3Realtime: HuaweiHagridWspLib.HagridWeightMeasurement? = null
-    private var lastKnownUser: ScaleUser? = null
+    private var pendingRealtimeMeasurement: HuaweiHagridWspLib.HagridWeightMeasurement? = null
+    private var pendingRealtimeUser: ScaleUser? = null
+    private var measurementCycleCompleted = false
+    private var measurementPublished = false
+    private var rearmPollingJob: Job? = null
+    private var rearmPollOutstanding = false
 
     @Composable
     override fun DeviceConfigurationUi() {
@@ -237,6 +238,7 @@ class HuaweiHagridWspHandler(
         pendingRandB = null
         session = null
         stopMeasurementStatusPolling()
+        stopRearmPolling()
         configuredSecrets = loadConfiguredSecrets()
         handshakeState = if (configuredSecrets == null) {
             HandshakeState.PROBE_ONLY
@@ -252,10 +254,11 @@ class HuaweiHagridWspHandler(
         historyReadCount = 0
         publishedHistoryKeys.clear()
         postStatusMeasurementReadsStarted = false
+        pendingRealtimeMeasurement = null
+        pendingRealtimeUser = null
+        measurementCycleCompleted = false
+        measurementPublished = false
         measurementStatusReady = false
-        realtimeFinalPublished = false
-        lastValidScale3Realtime = null
-        lastKnownUser = null
 
         setNotifyIfPresent(svcUserData, chrRequestAuth)
         setNotifyIfPresent(svcUserData, chrAuthToken)
@@ -308,6 +311,7 @@ class HuaweiHagridWspHandler(
     override fun onDisconnected() {
         logI("Huawei Hagrid disconnected")
         stopMeasurementStatusPolling()
+        stopRearmPolling()
         accumulators.clear()
         pendingRandA = null
         pendingRandB = null
@@ -322,10 +326,10 @@ class HuaweiHagridWspHandler(
         historyReadCount = 0
         publishedHistoryKeys.clear()
         postStatusMeasurementReadsStarted = false
+        pendingRealtimeMeasurement = null
+        pendingRealtimeUser = null
+        measurementCycleCompleted = false
         measurementStatusReady = false
-        realtimeFinalPublished = false
-        lastValidScale3Realtime = null
-        lastKnownUser = null
         handshakeState = HandshakeState.IDLE
     }
 
@@ -370,7 +374,7 @@ class HuaweiHagridWspHandler(
             chrScaleVersion -> handleScaleVersionPayload(payload)
             chrGetWeightUnit -> handleWeightUnitPayload(payload)
             chrMeasurementStatusPoll,
-            chrMeasurementStatusResult -> handleMeasurementStatusPayload(payload)
+            chrMeasurementStatusResult -> handleMeasurementStatusPayload(payload, user)
             chrHistoryWeight -> handleHistoryWeightPayload(payload, user)
             chrCurrentTime -> logD("Huawei Hagrid time-sync ack len=${payload.size}")
             else -> logD("Unhandled Hagrid WSP notification chr=${characteristicLabel(characteristic)} len=${payload.size}")
@@ -389,7 +393,7 @@ class HuaweiHagridWspHandler(
             chrScaleVersion -> handleScaleVersionPayload(payload)
             chrGetWeightUnit -> handleWeightUnitPayload(payload)
             chrMeasurementStatusPoll,
-            chrMeasurementStatusResult -> handleMeasurementStatusPayload(payload)
+            chrMeasurementStatusResult -> handleMeasurementStatusPayload(payload, user)
             chrHistoryWeight -> handleHistoryWeightPayload(payload, user)
             else -> logD("Unhandled Hagrid raw notification chr=${characteristicLabel(characteristic)} len=${payload.size}")
         }
@@ -415,7 +419,7 @@ class HuaweiHagridWspHandler(
         handshakeState = HandshakeState.AUTH_TOKEN_SENT
 
         val authPayload = HuaweiHagridWspLib.buildAuthTokenPayload(payload, randB, secrets.cak)
-        logI("Huawei Hagrid authentication started")
+        logI("Sending Huawei Hagrid auth token (${authPayload.size} bytes)")
         writeWspPlainIfPresent(svcUserData, chrAuthToken, authPayload)
     }
 
@@ -460,7 +464,7 @@ class HuaweiHagridWspHandler(
         session = HuaweiHagridWspLib.HagridSession(randA.copyOf(), randB.copyOf(), rootKey, workKey.copyOf())
         handshakeState = HandshakeState.WORK_KEY_SENT
 
-        logI("Huawei Hagrid authentication verified")
+        logI("Huawei Hagrid auth verified; sending encrypted work key")
         writeWspFramesIfPresent(
             svcUserData,
             chrSendWorkKey,
@@ -476,7 +480,7 @@ class HuaweiHagridWspHandler(
             return
         }
 
-        logI("Huawei Hagrid work key accepted")
+        logI("Huawei Hagrid work key accepted; syncing time and selected profile")
         writeWspPlainIfPresent(svcCurrentTime, chrCurrentTime, HuaweiHagridWspLib.currentTimePayload())
         readManagerInfoBeforeProfileSync(user)
     }
@@ -545,7 +549,6 @@ class HuaweiHagridWspHandler(
             "Sending encrypted Huawei Hagrid user-info: userId=${user.id} " +
                 "payloadLen=${plaintext.size} huidPresent=${info.huid.isNotBlank()}"
         )
-        logI("Huawei Hagrid user profile sent")
         HuaweiHagridWspLib.buildEncryptedWriteFrames(plaintext, activeSession.workKey, iv)
             .forEach { frame -> writeTo(svcUserData, chrSetUserInfo, frame, withResponse = true) }
         return true
@@ -555,9 +558,9 @@ class HuaweiHagridWspHandler(
         val status = payload.firstOrNull()?.toInt()?.and(0xFF)
         val accepted = status == 0x00
         if (accepted) {
-            logI("Huawei Hagrid user profile accepted")
+            logI("Huawei Hagrid set-user-info accepted")
         } else {
-            logW("Huawei Hagrid user profile returned status=${status ?: -1}")
+            logW("Huawei Hagrid set-user-info returned status=${status ?: -1}")
         }
 
         if (handshakeState == HandshakeState.USER_INFO_SENT) {
@@ -568,57 +571,48 @@ class HuaweiHagridWspHandler(
     }
 
     private fun sendPostUserReads() {
+        postStatusMeasurementReadsStarted = false
+        measurementStatusReady = false
+        measurementCycleCompleted = false
+        pendingRealtimeMeasurement = null
+        pendingRealtimeUser = null
+
+        // Start realtime acquisition as soon as the authenticated profile is ready.
+        logI("Huawei Hagrid: starting realtime-weight stream after profile sync")
+        sendRealtimeMeasurementRequest()
+        startMeasurementStatusPolling()
+
         writeWspPlainIfPresent(svcCurrentTime, chrProductInfo, ByteArray(0))
         writeWspPlainIfPresent(svcUserData, chrGetManagerInfo, ByteArray(0))
         writeWspPlainIfPresent(svcCurrentTime, chrScaleVersion, ByteArray(0))
         writeWspPlainIfPresent(svcCurrentTime, chrGetWeightUnit, ByteArray(0))
-        postStatusMeasurementReadsStarted = false
-        realtimeFinalPublished = false
-        lastValidScale3Realtime = null
-        startMeasurementFlow()
-    }
-
-    private fun startMeasurementFlow() {
-        logI("Starting Huawei Hagrid realtime measurement flow")
-
-        writeWspPlainIfPresent(
-            svcBodyComposition,
-            chrRealtimeWeight,
-            ByteArray(0),
-            withResponse = true
-        )
-
-        startMeasurementStatusPolling()
     }
 
     private fun buildUserInfo(user: ScaleUser): HuaweiHagridWspLib.HagridUserInfo {
         val lastWeight = lastMeasurementFor(user.id)?.weight
-
         val configuredWeight = when {
             lastWeight != null && lastWeight.isFinite() && lastWeight > 0f -> lastWeight
             user.initialWeight.isFinite() && user.initialWeight > 0f -> user.initialWeight
             else -> 0f
         }
-
         val heightCm = if (user.bodyHeight.isFinite() && user.bodyHeight > 0f) {
             user.bodyHeight.roundToInt().coerceIn(0, 0xFFFF)
         } else {
             0
         }
 
-        // Scale 3 uses inverted gender encoding (male=1, female=0) confirmed by Huawei Health
-        // BLE capture. All other Hagrid families retain the original encoding (male=0, female=1).
-        val genderCode = when (pendingProductProfile.family) {
-            HuaweiHagridWspLib.HagridProductFamily.SCALE_3 ->
-                if (user.gender == GenderType.MALE) 1 else 0
-            else ->
-                if (user.gender == GenderType.MALE) 0 else 1
+        // Scale 3 uses inverted gender encoding (male=1, female=0), while the
+        // other Hagrid families retain the original encoding (male=0, female=1).
+        val gender = if (isScale3Profile()) {
+            if (user.gender == GenderType.MALE) 1 else 0
+        } else {
+            if (user.gender == GenderType.MALE) 0 else 1
         }
 
         return HuaweiHagridWspLib.HagridUserInfo(
             huid = lastManagerInfo?.huid?.takeIf { it.isNotBlank() } ?: localSyntheticHuid(),
             uid = "u:%08X".format(Locale.US, user.id),
-            gender = genderCode,
+            gender = gender,
             ageYears = user.age.coerceIn(0, 255),
             heightCm = heightCm,
             weightKg = configuredWeight,
@@ -636,40 +630,81 @@ class HuaweiHagridWspHandler(
 
     private fun handleRealtimePayload(payload: ByteArray, user: ScaleUser) {
         val parsed = HuaweiHagridWspLib.parseRealtimeMeasurement(payload)
-
         if (parsed == null || parsed.weightKg <= 0f) {
             logD("Ignoring unsupported Hagrid realtime payload len=${payload.size}")
             return
         }
 
-        lastKnownUser = user
+        userInfo(R.string.bluetooth_scale_info_measuring_weight, parsed.weightKg)
 
-        userInfo(
-            R.string.bluetooth_scale_info_measuring_weight,
-            parsed.weightKg
+        // Other Hagrid families keep realtime notifications progress-only.
+        if (!isScale3Profile()) {
+            return
+        }
+
+        if (measurementCycleCompleted) {
+            return
+        }
+
+        pendingRealtimeMeasurement = parsed
+        pendingRealtimeUser = user
+
+        val publishedNow = publishPendingRealtimeMeasurement()
+        logD(
+            "Hagrid realtime measurement parsed len=${parsed.rawLength} " +
+                "lowCount=${parsed.lowFrequencyImpedance.size} highCount=${parsed.highFrequencyImpedance.size} " +
+                "saved=${if (measurementPublished) "published" else "pending"}"
         )
 
-        // Other Hagrid families persist via history only; realtime is UI-only for them.
-        if (pendingProductProfile.family != HuaweiHagridWspLib.HagridProductFamily.SCALE_3) {
-            return
+        // Normally status=0 arrives ~20-25 s later. If it raced ahead of the
+        // realtime packet, complete the protocol cycle now.
+        if (publishedNow && measurementStatusReady) {
+            finishMeasurementCycle()
+        }
+    }
+
+    private fun publishPendingRealtimeMeasurement(): Boolean {
+        if (measurementPublished) {
+            return false
         }
 
-        // Scale 3 current measurements are persisted from the realtime channel.
-        // Cache every valid realtime reading so it is available when status=0 arrives,
-        // since the final stable notification typically precedes the status notification.
-        lastValidScale3Realtime = parsed
+        val parsed = pendingRealtimeMeasurement ?: return false
+        val user = pendingRealtimeUser ?: return false
 
-        if (!measurementStatusReady || realtimeFinalPublished) {
-            logD(
-                "Huawei Scale 3 realtime weight=${parsed.weightKg} " +
-                    "measurementReady=$measurementStatusReady"
-            )
-            return
+        measurementPublished = true
+        logI(
+            "Huawei Hagrid: publishing complete realtime payload immediately " +
+                "weight=${"%.2f".format(Locale.US, parsed.weightKg)}"
+        )
+
+        // Realtime packets belong to the current session; use receive time.
+        publishHagridMeasurement(parsed, user, dateTimeOverride = Date())
+        return true
+    }
+
+    private fun finishMeasurementCycle() {
+        if (measurementCycleCompleted) return
+
+        measurementCycleCompleted = true
+        measurementStatusReady = true
+        pendingRealtimeMeasurement = null
+        pendingRealtimeUser = null
+        stopMeasurementStatusPolling()
+        logI("Huawei Hagrid: measurement cycle completed")
+        startRearmPolling()
+
+        // History is optional; request it once after publishing the live result.
+        if (hasCharacteristic(svcBodyComposition, chrHistoryWeight)) {
+            historyReadActive = true
+            historyReadCount = 0
+            scope.launch {
+                delay(250L)
+                if (handshakeState == HandshakeState.READY && measurementCycleCompleted) {
+                    logD("Huawei Hagrid: requesting history after completed measurement")
+                    writeWspPlainIfPresent(svcBodyComposition, chrHistoryWeight, ByteArray(0))
+                }
+            }
         }
-
-        realtimeFinalPublished = true
-        logI("Huawei Scale 3 final realtime measurement received")
-        publishHagridMeasurement(parsed, user)
     }
 
     private fun handleHistoryWeightPayload(payload: ByteArray, user: ScaleUser) {
@@ -704,19 +739,79 @@ class HuaweiHagridWspHandler(
 
     private fun publishHagridMeasurement(
         parsed: HuaweiHagridWspLib.HagridWeightMeasurement,
-        user: ScaleUser
+        user: ScaleUser,
+        dateTimeOverride: Date? = null
     ) {
+        val rawLowImpedance = parsed.representativeLowOhm ?: 0.0
+        val impedanceOhm = rawLowImpedance / 10.0
+
+        val isScale3 = isScale3Profile()
+        val sex = when (user.gender) {
+            GenderType.MALE -> HuaweiScale3BodyComposition.Sex.MALE
+            GenderType.FEMALE -> HuaweiScale3BodyComposition.Sex.FEMALE
+        }
+
+        val composition = if (isScale3) {
+            HuaweiScale3BodyComposition.calculate(
+                heightCm = user.bodyHeight,
+                weightKg = parsed.weightKg,
+                ageYears = user.age,
+                sex = sex,
+                impedanceOhm = impedanceOhm,
+            )
+        } else {
+            null
+        }
+
+        when {
+            composition != null -> {
+                logI(
+                    "Huawei Scale 3 composition: z=${"%.1f".format(Locale.US, composition.impedanceOhm)} " +
+                        "fat=${"%.1f".format(Locale.US, composition.bodyFatPercent)} " +
+                        "water=${"%.1f".format(Locale.US, composition.waterPercent)} " +
+                        "smmKg=${"%.2f".format(Locale.US, composition.skeletalMuscleKg)} " +
+                        "bone=${"%.2f".format(Locale.US, composition.boneMineralKg)} " +
+                        "lbm=${"%.2f".format(Locale.US, composition.leanBodyMassKg)} " +
+                        "protein=${"%.1f".format(Locale.US, composition.proteinPercent)} " +
+                        "bmr=${composition.bmrKcal.toInt()} " +
+                        "vfl=${composition.visceralFatLevel.toInt()}"
+                )
+            }
+            !isScale3 -> {
+                logD(
+                    "Huawei Hagrid body-composition model skipped for family=${pendingProductProfile.family}"
+                )
+            }
+            else -> {
+                logW("Huawei Scale 3 composition unavailable for current profile/measurement")
+            }
+        }
+
         val low = parsed.representativeLowOhm ?: 0.0
         val high = parsed.representativeHighOhm ?: low
 
         val measurement = ScaleMeasurement(
             userId = user.id,
-            dateTime = parsed.timestamp ?: Date(),
+            dateTime = dateTimeOverride ?: parsed.timestamp ?: Date(),
             weight = parsed.weightKg,
-            fat = parsed.fatPercent.takeIf { it > 0f && it < 80f } ?: 0f,
+            fat = composition?.bodyFatPercent
+                ?: parsed.fatPercent.takeIf { it > 0f && it < 80f }
+                ?: 0f,
+            water = composition?.waterPercent ?: 0f,
+            muscle = composition?.skeletalMusclePercent ?: 0f,
+            visceralFat = composition?.visceralFatLevel ?: 0f,
+            bone = composition?.boneMineralKg ?: 0f,
+            lbm = composition?.leanBodyMassKg ?: 0f,
+            bmr = composition?.bmrKcal ?: 0f,
             heartRate = parsed.heartRateBpm ?: 0,
-            impedance = high,
-            impedanceLow = low,
+            impedance = composition?.impedanceOhm ?: high,
+            impedanceLow = composition?.impedanceOhm ?: low,
+            protein = composition?.proteinPercent ?: 0f,
+        )
+
+        logI(
+            "Publishing Huawei Hagrid measurement: lowCount=${parsed.lowFrequencyImpedance.size} " +
+                "highCount=${parsed.highFrequencyImpedance.size}"
         )
         publish(measurement)
     }
@@ -803,35 +898,109 @@ class HuaweiHagridWspHandler(
         logD("Huawei Hagrid weight unit=${parsed.label} raw=${parsed.raw}")
     }
 
-    private fun handleMeasurementStatusPayload(payload: ByteArray) {
-        val status = payload.firstOrNull()?.toInt()?.and(0xFF) ?: return
-        logD("Huawei Hagrid measurement status=$status")
+    private fun handleMeasurementStatusPayload(payload: ByteArray, user: ScaleUser) {
+        val status = payload.firstOrNull()?.toInt()?.and(0xFF)
+        logD("Huawei Hagrid measurement-status len=${payload.size} status=${status ?: -1}")
 
-        if (status == 0x00) {
-            measurementStatusReady = true
+        if (handshakeState != HandshakeState.READY) {
+            return
+        }
 
-            // Scale 3: the final realtime notification typically arrives before status=0.
-            // Publish the cached measurement now if handleRealtimePayload has not already
-            // done so (i.e. the notification came after this status update).
-            if (pendingProductProfile.family == HuaweiHagridWspLib.HagridProductFamily.SCALE_3 &&
-                !realtimeFinalPublished
-            ) {
-                val cached = lastValidScale3Realtime
-                val user = lastKnownUser
-                if (cached != null && user != null) {
-                    realtimeFinalPublished = true
-                    logI("Huawei Scale 3 final realtime measurement published from cache on status=0")
-                    publishHagridMeasurement(cached, user)
+        if (measurementCycleCompleted) {
+            rearmPollOutstanding = false
+
+            when (status) {
+                0x01 -> {
+                    logI("Huawei Hagrid: new measurement activity detected; rearming current BLE session")
+                    rearmMeasurementCycle(user)
+                }
+
+                0x00 -> {
+                    logD("Huawei Hagrid: scale remains idle after completed measurement")
+                }
+            }
+            return
+        }
+
+        when (status) {
+            0x00 -> {
+                measurementStatusReady = true
+
+                if (!isScale3Profile()) {
+                    stopMeasurementStatusPolling()
+                    sendPostMeasurementReads()
+                    return
+                }
+
+                if (measurementPublished) {
+                    logI("Huawei Hagrid: measurement completion confirmed after realtime publish")
+                    finishMeasurementCycle()
+                } else if (publishPendingRealtimeMeasurement()) {
+                    logI("Huawei Hagrid: fallback publish at measurement completion")
+                    finishMeasurementCycle()
+                } else {
+                    // Ready can race ahead of the realtime notification.
+                    sendPostMeasurementReads()
                 }
             }
 
-            sendPostMeasurementReads()
+            0x01 -> {
+                measurementStatusReady = false
+            }
         }
+    }
+
+    private fun startRearmPolling() {
+        if (!hasCharacteristic(svcCurrentTime, chrMeasurementStatusPoll)) {
+            return
+        }
+
+        stopRearmPolling()
+        rearmPollingJob = scope.launch {
+            while (
+                handshakeState == HandshakeState.READY &&
+                measurementCycleCompleted
+            ) {
+                if (!rearmPollOutstanding) {
+                    rearmPollOutstanding = true
+                    writeWspPlainIfPresent(
+                        svcCurrentTime,
+                        chrMeasurementStatusPoll,
+                        ByteArray(0),
+                        withResponse = true
+                    )
+                }
+                delay(3_000L)
+            }
+        }
+    }
+
+    private fun stopRearmPolling() {
+        rearmPollingJob?.cancel()
+        rearmPollingJob = null
+        rearmPollOutstanding = false
+    }
+
+    private fun rearmMeasurementCycle(user: ScaleUser) {
+        stopRearmPolling()
+
+        measurementCycleCompleted = false
+        measurementPublished = false
+        measurementStatusReady = false
+        postStatusMeasurementReadsStarted = false
+        pendingRealtimeMeasurement = null
+        pendingRealtimeUser = null
+        historyReadActive = false
+        historyReadCount = 0
+
+        userInfo(R.string.bt_info_step_on_scale)
+        sendRealtimeMeasurementRequest()
+        startMeasurementStatusPolling()
     }
 
     private fun startMeasurementStatusPolling() {
         if (!hasCharacteristic(svcCurrentTime, chrMeasurementStatusPoll)) {
-            sendPostMeasurementReads()
+            sendMeasurementDataRequests()
             return
         }
 
@@ -853,8 +1022,8 @@ class HuaweiHagridWspHandler(
                 }
             }
             if (measurementStatusPollingActive && !measurementStatusReady) {
-                logW("Huawei Hagrid measurement status timed out; continuing with post-measurement reads")
-                sendPostMeasurementReads()
+                logW("Huawei Hagrid measurement status timed out; requesting measurements directly")
+                sendMeasurementDataRequests()
             }
         }
     }
@@ -876,29 +1045,47 @@ class HuaweiHagridWspHandler(
         )
     }
 
-    private fun sendPostMeasurementReads() {
+    private fun sendMeasurementDataRequests() {
         stopMeasurementStatusPolling()
 
+        if (handshakeState != HandshakeState.READY || measurementCycleCompleted) {
+            return
+        }
+
+        sendPostMeasurementReads()
+    }
+
+    private fun sendPostMeasurementReads() {
+        if (handshakeState != HandshakeState.READY || measurementCycleCompleted) {
+            return
+        }
         if (postStatusMeasurementReadsStarted) {
             return
         }
 
         postStatusMeasurementReadsStarted = true
+
+        if (isScale3Profile()) {
+            logI("Huawei Hagrid: measurement ready; requesting final realtime weight")
+            sendRealtimeMeasurementRequest()
+        }
+
         if (hasCharacteristic(svcBodyComposition, chrHistoryWeight)) {
             historyReadActive = true
             historyReadCount = 0
             writeWspPlainIfPresent(svcBodyComposition, chrHistoryWeight, ByteArray(0))
         }
-        // Scale 3 needs a follow-up realtime request so the scale delivers the final
-        // confirmed measurement on chrRealtimeWeight after measurementStatusReady=true.
-        if (pendingProductProfile.family == HuaweiHagridWspLib.HagridProductFamily.SCALE_3) {
-            writeWspPlainIfPresent(
-                svcBodyComposition,
-                chrRealtimeWeight,
-                ByteArray(0),
-                withResponse = true
-            )
+    }
+
+    private fun sendRealtimeMeasurementRequest() {
+        if (handshakeState != HandshakeState.READY) {
+            return
         }
+        if (measurementCycleCompleted) {
+            return
+        }
+
+        writeWspPlainIfPresent(svcBodyComposition, chrRealtimeWeight, ByteArray(0))
     }
 
     private fun setNotifyIfPresent(service: UUID, characteristic: UUID) {
@@ -936,6 +1123,9 @@ class HuaweiHagridWspHandler(
         }
             .onFailure { logW("Invalid Huawei Hagrid secret settings: ${it.message}") }
             .getOrNull()
+
+    private fun isScale3Profile(): Boolean =
+        pendingProductProfile.family == HuaweiHagridWspLib.HagridProductFamily.SCALE_3
 
     private fun logDeviceProfile(source: String) {
         val highFrequency = pendingCapabilityBits?.supportsHighFrequencyImpedance
@@ -1026,7 +1216,6 @@ class HuaweiHagridWspHandler(
         READY,
         AUTH_FAILED
     }
-
 
     companion object {
         const val SETTINGS_KEY_CAK_HEX = "ble/huawei_hagrid/cak_hex"
