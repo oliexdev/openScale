@@ -218,10 +218,47 @@ class MiScaleHandler : ScaleDeviceHandler() {
         )
     }
 
+    /**
+     * Authoritative variant detection from the discovered GATT table, probing for the
+     * Mi history characteristic (0x2A2F vendor UUID) under each candidate primary service.
+     *
+     * Returns true if a usable primary service was found (variant updated accordingly),
+     * false if the history characteristic exists under neither 0x181B nor 0x181D —
+     * in which case the connect sequence cannot work and should abort loudly instead
+     * of waiting forever for notifications that will never arrive.
+     */
+    private fun detectVariantFromGatt(): Boolean {
+        val detected = when {
+            hasCharacteristic(SERVICE_BODY_COMP, CHAR_MI_HISTORY) -> Variant.V2
+            hasCharacteristic(SERVICE_WEIGHT, CHAR_MI_HISTORY) -> Variant.V1
+            else -> {
+                logW("Mi history characteristic found under neither 0x181B nor 0x181D; unsupported device or failed discovery")
+                return false
+            }
+        }
+
+        if (detected != variant) {
+            logI("Variant corrected by GATT table: scan-time ${variant.name} → ${detected.name}")
+            variant = detected
+        }
+        return true
+    }
+
     // ----- Connect sequence -----
 
     override fun onConnected(user: ScaleUser) {
         logI("Connected (${variant.name}); init sequence")
+
+        // Re-validate the variant against the actual GATT table. The advertised name is
+        // ambiguous: the weight-only Mi Smart Scale 2 (XMTZC04HM) advertises "MI SCALE2"
+        // and even carries the 0x1530 vendor service, but serves only 0x181D — no 0x181B.
+        // Trusting the scan-time heuristic there makes v2 mode subscribe/write against a
+        // non-existent service and hang forever in "waiting for measurement".
+        if (!detectVariantFromGatt()) {
+            userError(R.string.bt_error_mi_scale_service_missing)
+            requestDisconnect()
+            return
+        }
 
         // Choose primary/alternate by variant to avoid cross-service chatter.
         val svcPrimary   = if (variant == Variant.V2) SERVICE_BODY_COMP else SERVICE_WEIGHT

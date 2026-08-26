@@ -896,6 +896,7 @@
     <string name="bt_error_omron_session_failed">The scale refused to start a data transfer.</string>
     <string name="bt_error_omron_read_failed">Failed to read stored measurements from the scale.</string>
     <string name="bt_error_omron_timeout">The scale stopped responding; the transfer was cancelled.</string>
+    <string name="bt_error_mi_scale_service_missing">This device exposes neither the Body Composition (0x181B) nor the Weight Scale (0x181D) service, so no measurements can be read from it.</string>
 
     <!-- Warnings -->
     <string name="bt_warn_low_battery">Scale battery is low (%1$d%%).</string>
