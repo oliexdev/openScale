@@ -67,11 +67,20 @@ import java.util.UUID
  * - v2 (Mi Body Composition Scale): history/time under 0x181B (Body Composition Service).
  * - Vendor config (0x1530/0x1542) for unit setting exists only on v2.
  * - 0x2A9D (Weight Measurement) is often absent on Mi → optional.
+ * - Clones may omit the vendor history characteristic entirely and deliver live weight
+ *   only via the standard 0x2A9D characteristic.
  */
 class MiScaleHandler : ScaleDeviceHandler() {
 
     // ----- Variant detection -----
     private enum class Variant { V1, V2 }
+
+    /**
+     * Protocol variant of the current GATT session. Owned by [onConnected], which derives it
+     * from the discovered GATT table via [detectVariantFromGatt]. Never write it from scan-time
+     * paths: the handler is a shared singleton, and [supportFor] runs concurrently with a live
+     * session whenever the UI re-queries device support.
+     */
     private var variant: Variant = Variant.V1
 
     // GATT UUIDs
@@ -79,6 +88,7 @@ class MiScaleHandler : ScaleDeviceHandler() {
     private val SERVICE_WEIGHT    = uuid16(0x181D)
     private val CHAR_CURRENT_TIME = uuid16(0x2A2B)
     private val CHAR_WEIGHT_MEAS  = uuid16(0x2A9D) // usually absent on Mi
+    private val CHAR_BODY_COMP_MEAS = uuid16(0x2A9C) // service-presence probe only
 
     // Mi vendor service (v2 only)
     private val SERVICE_MI_CFG    = UUID.fromString("00001530-0000-3512-2118-0009af100700")
@@ -191,11 +201,14 @@ class MiScaleHandler : ScaleDeviceHandler() {
 
         val looksV2 = services.any { it == SERVICE_MI_CFG } ||
                 name == "MIBCS" || name == "MIBFS" || name == "MI SCALE2"
-        variant = if (looksV2) Variant.V2 else Variant.V1
+        // A variant learned from a previous connection's GATT table beats the name heuristic:
+        // the weight-only XMTZC04HM advertises "MI SCALE2" exactly like a real v2 does.
+        val scanVariant = persistedVariantFor(device.address)
+            ?: if (looksV2) Variant.V2 else Variant.V1
 
-        val display = if (variant == Variant.V2) "Xiaomi Mi Scale v2" else "Xiaomi Mi Scale v1"
+        val display = if (scanVariant == Variant.V2) "Xiaomi Mi Scale v2" else "Xiaomi Mi Scale v1"
 
-        val capabilities = when (variant) {
+        val capabilities = when (scanVariant) {
             Variant.V1 -> setOf(
                 DeviceCapability.LIVE_WEIGHT_STREAM,
                 DeviceCapability.HISTORY_READ,
@@ -219,46 +232,58 @@ class MiScaleHandler : ScaleDeviceHandler() {
     }
 
     /**
-     * Authoritative variant detection from the discovered GATT table, probing for the
-     * Mi history characteristic (0x2A2F vendor UUID) under each candidate primary service.
+     * Authoritative variant detection from the discovered GATT table.
      *
-     * Returns true if a usable primary service was found (variant updated accordingly),
-     * false if the history characteristic exists under neither 0x181B nor 0x181D —
-     * in which case the connect sequence cannot work and should abort loudly instead
-     * of waiting forever for notifications that will never arrive.
+     * The preferred probe is the Mi history characteristic (0x2A2F vendor UUID) under each
+     * candidate primary service. Clones may omit the vendor characteristic while still serving
+     * the standard service (live weight then arrives via 0x2A9D), so plain service presence
+     * acts as a fallback. Returns null only when neither the Body Composition (0x181B) nor
+     * the Weight Scale (0x181D) service exists — the connect sequence cannot work then and
+     * should abort loudly instead of waiting forever for notifications that never arrive.
      */
-    private fun detectVariantFromGatt(): Boolean {
-        val detected = when {
-            hasCharacteristic(SERVICE_BODY_COMP, CHAR_MI_HISTORY) -> Variant.V2
-            hasCharacteristic(SERVICE_WEIGHT, CHAR_MI_HISTORY) -> Variant.V1
-            else -> {
-                logW("Mi history characteristic found under neither 0x181B nor 0x181D; unsupported device or failed discovery")
-                return false
-            }
+    private fun detectVariantFromGatt(): Variant? = when {
+        hasCharacteristic(SERVICE_BODY_COMP, CHAR_MI_HISTORY) -> Variant.V2
+        hasCharacteristic(SERVICE_WEIGHT, CHAR_MI_HISTORY) -> Variant.V1
+        serviceIsPresent(SERVICE_BODY_COMP) -> {
+            logW("0x181B present but without the Mi history characteristic; assuming v2 clone (history import unavailable)")
+            Variant.V2
         }
+        serviceIsPresent(SERVICE_WEIGHT) -> {
+            logW("0x181D present but without the Mi history characteristic; assuming v1 clone (history import unavailable)")
+            Variant.V1
+        }
+        else -> null
+    }
 
-        if (detected != variant) {
-            logI("Variant corrected by GATT table: scan-time ${variant.name} → ${detected.name}")
-            variant = detected
-        }
-        return true
+    /**
+     * Best-effort service presence. The transport only exposes characteristic lookup, so probe
+     * the standard characteristics a Mi (or clone) may serve under [service], then fall back to
+     * the raw GATT table when the peripheral is accessible.
+     */
+    private fun serviceIsPresent(service: UUID): Boolean {
+        val knownChars = listOf(CHAR_MI_HISTORY, CHAR_CURRENT_TIME, CHAR_WEIGHT_MEAS, CHAR_BODY_COMP_MEAS)
+        if (knownChars.any { hasCharacteristic(service, it) }) return true
+        return getPeripheral()?.services?.any { it.uuid == service } == true
     }
 
     // ----- Connect sequence -----
 
     override fun onConnected(user: ScaleUser) {
-        logI("Connected (${variant.name}); init sequence")
-
-        // Re-validate the variant against the actual GATT table. The advertised name is
+        // Derive the variant from the actual GATT table before any I/O. The advertised name is
         // ambiguous: the weight-only Mi Smart Scale 2 (XMTZC04HM) advertises "MI SCALE2"
         // and even carries the 0x1530 vendor service, but serves only 0x181D — no 0x181B.
         // Trusting the scan-time heuristic there makes v2 mode subscribe/write against a
         // non-existent service and hang forever in "waiting for measurement".
-        if (!detectVariantFromGatt()) {
+        val detected = detectVariantFromGatt()
+        if (detected == null) {
+            logW("Neither the 0x181B nor the 0x181D service is present; unsupported device or failed discovery")
             userError(R.string.bt_error_mi_scale_service_missing)
             requestDisconnect()
             return
         }
+        variant = detected
+        rememberDetectedVariant(detected)
+        logI("Connected (${variant.name} from GATT table); init sequence")
 
         // Choose primary/alternate by variant to avoid cross-service chatter.
         val svcPrimary   = if (variant == Variant.V2) SERVICE_BODY_COMP else SERVICE_WEIGHT
@@ -670,6 +695,29 @@ class MiScaleHandler : ScaleDeviceHandler() {
         }
     }
 
+
+    // ----- Persisted per-device variant -----
+
+    private val SETTINGS_KEY_GATT_VARIANT_PREFIX = "gatt_variant_"
+
+    /**
+     * Variant learned from a previous connection's GATT table, keyed by device address, or null
+     * when the device never connected. Scan-time [supportFor] may also run before any adapter
+     * has attached driver settings; the runCatching swallows that uninitialized access.
+     */
+    private fun persistedVariantFor(address: String): Variant? =
+        runCatching { settingsGetString(SETTINGS_KEY_GATT_VARIANT_PREFIX + address) }
+            .getOrNull()
+            ?.let { stored -> runCatching { Variant.valueOf(stored) }.getOrNull() }
+
+    /**
+     * Persist the GATT-detected variant so scan-time support queries stop promising v2
+     * capabilities (body composition, unit config) a downgraded device cannot deliver.
+     */
+    private fun rememberDetectedVariant(detected: Variant) {
+        val address = getPeripheral()?.address ?: return
+        settingsPutString(SETTINGS_KEY_GATT_VARIANT_PREFIX + address, detected.name)
+    }
 
     private fun getLastImportedTimestamp(userId: Int): Int {
         return settingsGetInt("last_imported_ts_$userId", 0)

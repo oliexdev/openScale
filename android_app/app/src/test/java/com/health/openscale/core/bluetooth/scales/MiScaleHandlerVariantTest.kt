@@ -22,6 +22,7 @@ import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import java.util.Calendar
 import java.util.UUID
@@ -44,6 +45,7 @@ class MiScaleHandlerVariantTest {
     private val serviceWeight = uuid16(0x181D)
     private val charMiHistory = UUID.fromString("00002a2f-0000-3512-2118-0009af100700")
     private val serviceMiCfg = UUID.fromString("00001530-0000-3512-2118-0009af100700")
+    private val charWeightMeas = uuid16(0x2A9D)
 
     @Test
     fun `MI SCALE2 name maps to v2 support at scan time`() {
@@ -53,12 +55,13 @@ class MiScaleHandlerVariantTest {
     }
 
     @Test
-    fun `weight-only XMTZC04HM is downgraded to v1 on connect and inits against 0x181D`() {
+    fun `weight-only XMTZC04HM is downgraded to v1 on connect and inits against 0x181D`() = runTest {
         // GATT shape of the real device: history char under 0x181D only, vendor cfg present.
         val setup = attachedHandler(
             gatt = setOf(
                 serviceWeight to charMiHistory,
-            )
+            ),
+            scope = this,
         )
         // Scan-time classification says V2 (name match).
         setup.handler.supportFor(device("MI SCALE2", serviceMiCfg))
@@ -72,14 +75,17 @@ class MiScaleHandlerVariantTest {
         assertThat(touchedServices).doesNotContain(serviceBodyComp)
         assertThat(setup.transport.disconnectCount).isEqualTo(0)
         assertThat(setup.callbacks.errors).isEmpty()
+
+        setup.handler.handleDisconnected()
     }
 
     @Test
-    fun `genuine v2 with 0x181B stays v2`() {
+    fun `genuine v2 with 0x181B stays v2`() = runTest {
         val setup = attachedHandler(
             gatt = setOf(
                 serviceBodyComp to charMiHistory,
-            )
+            ),
+            scope = this,
         )
         setup.handler.supportFor(device("MIBFS", serviceMiCfg))
         setup.handler.handleConnected(syntheticUser())
@@ -89,10 +95,12 @@ class MiScaleHandlerVariantTest {
                 .toSet()
         assertThat(touchedServices).contains(serviceBodyComp)
         assertThat(setup.transport.disconnectCount).isEqualTo(0)
+
+        setup.handler.handleDisconnected()
     }
 
     @Test
-    fun `device without history characteristic under either service aborts with error`() {
+    fun `device without either candidate service aborts with error`() {
         val setup = attachedHandler(gatt = emptySet())
         setup.handler.supportFor(device("MI SCALE2"))
         setup.handler.handleConnected(syntheticUser())
@@ -103,6 +111,66 @@ class MiScaleHandlerVariantTest {
         assertThat(setup.transport.writes).isEmpty()
     }
 
+    @Test
+    fun `clone without the vendor history characteristic still connects and parses live weight`() = runTest {
+        // Clone GATT shape: standard Weight Scale service with the standard Weight Measurement
+        // characteristic only — no Mi history characteristic anywhere. Live weight arrives as
+        // 10-byte frames on 0x2A9D; such devices worked before GATT-based detection and the
+        // fail-fast must not reject them.
+        val setup = attachedHandler(
+            gatt = setOf(
+                serviceWeight to charWeightMeas,
+            ),
+            scope = this,
+        )
+        setup.handler.supportFor(device("MI_SCALE"))
+        setup.handler.handleConnected(syntheticUser())
+
+        assertThat(setup.transport.disconnectCount).isEqualTo(0)
+        assertThat(setup.callbacks.errors).isEmpty()
+
+        setup.handler.handleNotification(charWeightMeas, history10Frame(weightKg = 70f))
+        assertThat(setup.callbacks.published).hasSize(1)
+        assertThat(setup.callbacks.published.single().weight).isWithin(0.0001f).of(70f)
+
+        setup.handler.handleDisconnected()
+    }
+
+    @Test
+    fun `scan-time support query does not clobber the GATT-detected session variant`() = runTest {
+        val setup = attachedHandler(
+            gatt = setOf(
+                serviceWeight to charMiHistory,
+            ),
+            scope = this,
+        )
+        setup.handler.supportFor(device("MI SCALE2", serviceMiCfg))
+        setup.handler.handleConnected(syntheticUser()) // GATT downgrades the session to v1.
+
+        // The handler is a shared singleton: the UI re-queries device support at any time
+        // (saved-device screens, scan results) while a session is live.
+        setup.handler.supportFor(device("MI SCALE2", serviceMiCfg))
+
+        // The live v1 frame on 0x2A9D must still be parsed afterwards.
+        setup.handler.handleNotification(charWeightMeas, history10Frame(weightKg = 70f))
+        assertThat(setup.callbacks.published).hasSize(1)
+
+        setup.handler.handleDisconnected()
+    }
+
+    @Test
+    fun `variant learned from a previous connection overrides the scan-time name heuristic`() {
+        val handler = MiScaleHandler()
+        val settings = InMemorySettings()
+        settings.putString("gatt_variant_00:11:22:33:44:55", "V1")
+        handler.attachSettings(settings)
+
+        val support = handler.supportFor(device("MI SCALE2"))!!
+        assertThat(support.displayName).isEqualTo("Xiaomi Mi Scale v1")
+        assertThat(support.capabilities).doesNotContain(DeviceCapability.BODY_COMPOSITION)
+        assertThat(support.capabilities).doesNotContain(DeviceCapability.UNIT_CONFIG)
+    }
+
     // ----- Harness (same pattern as KeepS3HandlerTest) -----
 
     private class Setup(
@@ -111,7 +179,10 @@ class MiScaleHandlerVariantTest {
         val callbacks: CapturingCallbacks,
     )
 
-    private fun attachedHandler(gatt: Set<Pair<UUID, UUID>>): Setup {
+    private fun attachedHandler(
+        gatt: Set<Pair<UUID, UUID>>,
+        scope: CoroutineScope = CoroutineScope(EmptyCoroutineContext),
+    ): Setup {
         val handler = MiScaleHandler()
         val transport = CapturingTransport(gatt)
         val callbacks = CapturingCallbacks()
@@ -120,9 +191,26 @@ class MiScaleHandlerVariantTest {
             callbacks = callbacks,
             settings = InMemorySettings(),
             data = FixedDataProvider(syntheticUser()),
-            scope = CoroutineScope(EmptyCoroutineContext),
+            scope = scope,
         )
         return Setup(handler, transport, callbacks)
+    }
+
+    /** Stable 10-byte v1 weight frame (kg unit) timestamped now. */
+    private fun history10Frame(weightKg: Float): ByteArray {
+        val now = Calendar.getInstance()
+        val raw = (weightKg * 200).toInt()
+        val year = now.get(Calendar.YEAR)
+        return byteArrayOf(
+            0x20, // stable, kg, not removed
+            (raw and 0xFF).toByte(), ((raw shr 8) and 0xFF).toByte(),
+            (year and 0xFF).toByte(), ((year shr 8) and 0xFF).toByte(),
+            (now.get(Calendar.MONTH) + 1).toByte(),
+            now.get(Calendar.DAY_OF_MONTH).toByte(),
+            now.get(Calendar.HOUR_OF_DAY).toByte(),
+            now.get(Calendar.MINUTE).toByte(),
+            now.get(Calendar.SECOND).toByte(),
+        )
     }
 
     private fun syntheticUser(): ScaleUser {
