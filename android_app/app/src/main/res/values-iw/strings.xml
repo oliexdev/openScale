@@ -135,4 +135,5 @@
     <string name="measurement_type_hips">ירכיים</string>
     <string name="measurement_type_visceral_fat">שומן בטני</string>
     <string name="measurement_type_chest">חזה</string>
+    <string name="sync_app_open_action">פתיחה</string>
 </resources>
