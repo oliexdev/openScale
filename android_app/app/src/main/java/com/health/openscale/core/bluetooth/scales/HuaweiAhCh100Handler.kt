@@ -334,7 +334,7 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
                 this.impedance = m.impedanceOhm.toDouble()
 
                 val heightM = user.bodyHeight / 100.0
-                if (heightM > 0.0 && user.age > 0 && m.impedanceOhm in 1 until 1500) {
+                if (heightM > 0.0 && user.age > 0 && m.weightKg > 0f && m.impedanceOhm in 1 until 1500) {
                     val lib = StandardImpedanceLib(
                         gender = user.gender,
                         age = user.age,
