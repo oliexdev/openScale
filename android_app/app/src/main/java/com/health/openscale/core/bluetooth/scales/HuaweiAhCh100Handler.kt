@@ -325,35 +325,32 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
         lastMeasuredWeightTenthKg = (m.weightKg * 10f).toInt()
 
         val sm = ScaleMeasurement().apply {
-            this.userId = m.userId
+            // FIX: Use openScale's internal app user ID, not the scale's hardware slot
+            this.userId = user.id
             this.dateTime = m.dateTime ?: Date()
             this.weight = m.weightKg
             this.fat = m.fatPct
             
             if (m.impedanceOhm in 1..3999) {
                 this.impedance = m.impedanceOhm.toDouble()
-
-                val heightM = user.bodyHeight / 100.0
-                if (heightM > 0.0 && user.age > 0 && m.weightKg > 0f && m.impedanceOhm in 1 until 1500) {
-                    val lib = StandardImpedanceLib(
-                        gender = user.gender,
-                        age = user.age,
-                        weightKg = m.weightKg.toDouble(),
-                        heightM = heightM,
-                        impedance = m.impedanceOhm.toDouble(),
-                    )
-                    this.water = lib.totalBodyWaterPercentage.toFloat()
-                    this.muscle = lib.skeletalMusclePercentage.toFloat()
-                    this.bone = lib.boneMassKg.toFloat()
-                    this.bmr = lib.basalMetabolicRate.toFloat()
-                    this.lbm = lib.fatFreeMassKg.toFloat()
-                }
+                val lib = StandardImpedanceLib(
+                    gender = user.gender,
+                    age = user.age,
+                    weightKg = m.weightKg.toDouble(),
+                    heightM = user.bodyHeight / 100.0,
+                    impedance = m.impedanceOhm.toDouble(),
+                )
+                this.water = lib.totalBodyWaterPercentage.toFloat()
+                this.muscle = lib.skeletalMusclePercentage.toFloat()
+                this.bone = lib.boneMassKg.toFloat()
+                this.bmr = lib.basalMetabolicRate.toFloat()
+                this.lbm = lib.fatFreeMassKg.toFloat()
             }
         }
         publish(sm)
         logI(
             "Measurement: ${m.weightKg} kg, fat=${m.fatPct}%, impedance=${m.impedanceOhm} Ω, " +
-                "userId=${m.userId} @ ${m.dateTime?.let(::ts) ?: "now"} " +
+                "scaleSlot=${m.userId} appUser=${user.id} @ ${m.dateTime?.let(::ts) ?: "now"} " +
                 "(${if (viaSingleFrame) "single-frame" else "paired"})"
         )
 
@@ -731,7 +728,7 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
          *
          * Layout (little-endian unless noted):
          * ```
-         * [0]      userId (1..10)
+         * [0]     userId (1..10)
          * [1..2]   weight in tenth-kg (uint16 LE)
          * [3..4]   fat in tenth-percent (uint16 LE)
          * [5..6]   year (uint16 LE)
@@ -760,11 +757,15 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
             val impedance = u16le(decrypted, 13)
 
             val date: Date? = try {
-                val cal = Calendar.getInstance().apply {
-                    clear()
-                    set(year, month - 1, day, hour, minute, second)
+                if (year < 2015) {
+                    null // Fix: Prevent 2 BC time travel from dead batteries
+                } else {
+                    val cal = Calendar.getInstance().apply {
+                        clear()
+                        set(year, month - 1, day, hour, minute, second)
+                    }
+                    cal.time
                 }
-                cal.time
             } catch (_: Throwable) {
                 null
             }
