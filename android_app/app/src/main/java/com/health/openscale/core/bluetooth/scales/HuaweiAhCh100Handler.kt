@@ -20,6 +20,7 @@ package com.health.openscale.core.bluetooth.scales
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.io.ByteArrayOutputStream
 import java.security.GeneralSecurityException
@@ -247,7 +248,7 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
                     // tuning sometimes packs the whole composition into one fat
                     // notification because the negotiated MTU is large enough.
                     if (deobfTail.size >= 15) {
-                        tryDecodeFirstHalfImmediately(op)
+                        tryDecodeFirstHalfImmediately(op, user)
                     }
                 }
             }
@@ -259,7 +260,7 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
                     pendingFirst = null
                     pendingType = 0x00
                     if (first != null) {
-                        decodeAndPublish(first, type)
+                        decodeAndPublish(first, type, user)
                     }
                 }
             }
@@ -284,12 +285,12 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
         }
     }
 
-    private fun tryDecodeFirstHalfImmediately(type: Byte) {
+    private fun tryDecodeFirstHalfImmediately(type: Byte, user: ScaleUser) {
         val first = pendingFirst ?: return
         val mk = magicKey ?: return
         try {
             val m = decodeFirstHalf(first, mk, macBytes())
-            publishMeasurement(m, viaSingleFrame = true)
+            publishMeasurement(m, user, viaSingleFrame = true)
             // We've consumed the data; if the second half ever arrives the
             // 0x8E branch will see pendingFirst = null and silently drop it.
             pendingFirst = null
@@ -302,14 +303,14 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
         }
     }
 
-    private fun decodeAndPublish(first: ByteArray, type: Byte) {
+    private fun decodeAndPublish(first: ByteArray, type: Byte, user: ScaleUser) {
         val mk = magicKey ?: run {
             logW("magicKey missing; dropping measurement")
             return
         }
         try {
             val m = decodeFirstHalf(first, mk, macBytes())
-            publishMeasurement(m, viaSingleFrame = false)
+            publishMeasurement(m, user, viaSingleFrame = false)
         } catch (e: GeneralSecurityException) {
             logW("AES-CTR failed on measurement: ${e.message}")
             return
@@ -320,7 +321,7 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
         if (type == NTFY_HISTORY_RECORD) sendGetHistoryNext()
     }
 
-    private fun publishMeasurement(m: Measurement, viaSingleFrame: Boolean) {
+    private fun publishMeasurement(m: Measurement, user: ScaleUser, viaSingleFrame: Boolean) {
         lastMeasuredWeightTenthKg = (m.weightKg * 10f).toInt()
 
         val sm = ScaleMeasurement().apply {
@@ -328,11 +329,21 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
             this.dateTime = m.dateTime ?: Date()
             this.weight = m.weightKg
             this.fat = m.fatPct
-            // The scale reports impedance but the v2.5.4 reference doesn't
-            // derive water/muscle/bone from it; openScale's existing
-            // StandardImpedanceLib can be wired in later for that.
+            
             if (m.impedanceOhm in 1..3999) {
                 this.impedance = m.impedanceOhm.toDouble()
+                val lib = StandardImpedanceLib(
+                    gender = user.gender,
+                    age = user.age,
+                    weightKg = m.weightKg.toDouble(),
+                    heightM = user.bodyHeight / 100.0,
+                    impedance = m.impedanceOhm.toDouble(),
+                )
+                this.water = lib.totalBodyWaterPercentage.toFloat()
+                this.muscle = lib.skeletalMusclePercentage.toFloat()
+                this.bone = lib.boneMassKg.toFloat()
+                this.bmr = lib.basalMetabolicRate.toFloat()
+                this.lbm = lib.fatFreeMassKg.toFloat()
             }
         }
         publish(sm)
