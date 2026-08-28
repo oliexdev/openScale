@@ -332,18 +332,22 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
             
             if (m.impedanceOhm in 1..3999) {
                 this.impedance = m.impedanceOhm.toDouble()
-                val lib = StandardImpedanceLib(
-                    gender = user.gender,
-                    age = user.age,
-                    weightKg = m.weightKg.toDouble(),
-                    heightM = user.bodyHeight / 100.0,
-                    impedance = m.impedanceOhm.toDouble(),
-                )
-                this.water = lib.totalBodyWaterPercentage.toFloat()
-                this.muscle = lib.skeletalMusclePercentage.toFloat()
-                this.bone = lib.boneMassKg.toFloat()
-                this.bmr = lib.basalMetabolicRate.toFloat()
-                this.lbm = lib.fatFreeMassKg.toFloat()
+
+                val heightM = user.bodyHeight / 100.0
+                if (heightM > 0.0 && user.age > 0 && m.impedanceOhm in 1 until 1500) {
+                    val lib = StandardImpedanceLib(
+                        gender = user.gender,
+                        age = user.age,
+                        weightKg = m.weightKg.toDouble(),
+                        heightM = heightM,
+                        impedance = m.impedanceOhm.toDouble(),
+                    )
+                    this.water = lib.totalBodyWaterPercentage.toFloat()
+                    this.muscle = lib.skeletalMusclePercentage.toFloat()
+                    this.bone = lib.boneMassKg.toFloat()
+                    this.bmr = lib.basalMetabolicRate.toFloat()
+                    this.lbm = lib.fatFreeMassKg.toFloat()
+                }
             }
         }
         publish(sm)
