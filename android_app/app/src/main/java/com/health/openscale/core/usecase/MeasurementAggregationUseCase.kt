@@ -29,7 +29,6 @@ import com.health.openscale.core.model.ValueWithDifference
 import java.time.Instant
 import java.time.ZoneId
 import java.time.temporal.WeekFields
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.roundToInt
@@ -83,8 +82,7 @@ class MeasurementAggregationUseCase @Inject constructor() {
             }
         }
 
-        // Hoist WeekFields outside the groupBy lambda (locale lookup is not free)
-        val weekFields = if (level == AggregationLevel.WEEK) WeekFields.of(Locale.getDefault()) else null
+        val weekFields = if (level == AggregationLevel.WEEK) WeekFields.ISO else null
 
         // Group by period key — reuses the same logic as periodKey() extension
         val grouped: Map<String, List<EnrichedMeasurement>> = measurements

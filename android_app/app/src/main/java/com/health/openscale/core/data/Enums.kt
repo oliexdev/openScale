@@ -508,7 +508,7 @@ enum class AggregationLevel(@param:StringRes val displayNameResId: Int) {
             NONE,
             DAY   -> date.toString()
             WEEK  -> {
-                val wf = WeekFields.of(Locale.getDefault())
+                val wf = WeekFields.ISO
                 "${date.get(wf.weekBasedYear())}-W${date.get(wf.weekOfWeekBasedYear())}"
             }
             MONTH -> "${date.year}-${date.monthValue}"
@@ -517,10 +517,10 @@ enum class AggregationLevel(@param:StringRes val displayNameResId: Int) {
     }
 
     /**
-     * Returns a human-readable, locale-sensitive label for the period containing [timestamp].
+     * Returns a human-readable label for the period containing [timestamp].
      *
-     * Intentionally separate from [periodKey] — labels are locale-dependent and must
-     * not be used as stable identifiers.
+     * Intentionally separate from [periodKey] — labels may use locale-sensitive
+     * presentation, but [WEEK] period identity remains ISO/device-independent.
      *
      * @param calendarWeekAbbrev Localised abbreviation for "calendar week" (e.g. "CW" / "KW").
      *                           Only used for [WEEK].
@@ -538,7 +538,7 @@ enum class AggregationLevel(@param:StringRes val displayNameResId: Int) {
                 DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
             )
             WEEK  -> {
-                val wf = WeekFields.of(locale)
+                val wf = WeekFields.ISO
                 "${date.get(wf.weekBasedYear())} – $calendarWeekAbbrev ${date.get(wf.weekOfWeekBasedYear())}"
             }
             MONTH -> date.format(DateTimeFormatter.ofPattern("MMMM yyyy", locale))

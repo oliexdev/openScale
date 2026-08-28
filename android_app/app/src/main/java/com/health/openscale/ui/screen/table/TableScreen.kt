@@ -406,7 +406,7 @@ fun TableScreen(
                     AggregationLevel.NONE  -> ""
                     AggregationLevel.DAY   -> dateFormatterDate.format(Date(timestamp))
                     AggregationLevel.WEEK  -> {
-                        val wf = WeekFields.of(locale)
+                        val wf = WeekFields.ISO
                         "${date.get(wf.weekBasedYear())} – $calendarWeekAbbrev ${date.get(wf.weekOfWeekBasedYear())}"
                     }
                     AggregationLevel.MONTH ->
@@ -583,7 +583,7 @@ fun TableScreen(
         val label = when {
             spanDays <= 1  -> dateFormatterDate.format(Date(drillDownStartMillis))
             spanDays <= 8  -> {
-                val wf = WeekFields.of(locale)
+                val wf = WeekFields.ISO
                 "${date.get(wf.weekBasedYear())} – $calendarWeekAbbrev ${date.get(wf.weekOfWeekBasedYear())}"
             }
             spanDays <= 32 -> date.format(DateTimeFormatter.ofPattern("MMMM yyyy", locale))
