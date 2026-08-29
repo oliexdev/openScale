@@ -327,11 +327,9 @@
     <string name="dialog_title_delete_type">タイプを削除しますか?</string>
     <string name="dialog_text_delete_type">カスタムタイプ「%1$s」を削除してもよろしいですか？関連するすべての測定値も完全に削除されます。この操作は元に戻せません。</string>
     <string name="snackbar_items_deleted_successfully">%1$d 個のアイテムが正常に削除されました。</string>
-    <string name="snackbar_error_deleting_items">アイテムの削除中にエラーが発生しました。</string>
     <string name="dialog_title_select_user_for_assignment">割り当てるユーザーを選択</string>
     <string name="snackbar_no_other_users_to_change_to">変更できる他のユーザーはいません。</string>
     <string name="snackbar_items_user_changed_successfully">%1$d 個のアイテムのユーザーが正常に変更されました。</string>
-    <string name="snackbar_error_user_changed_items">一部のアイテムのユーザー変更中にエラーが発生しました。</string>
     <string name="statistics_no_relevant_types">統計に関連する測定タイプは利用できない、または設定されていません。</string>
     <string name="statistics_label_min">最低</string>
     <string name="statistics_label_max">最大</string>

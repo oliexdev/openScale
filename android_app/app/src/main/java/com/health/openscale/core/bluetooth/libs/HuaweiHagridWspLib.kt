@@ -25,9 +25,11 @@ import javax.crypto.Cipher
 import javax.crypto.Mac
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
+import kotlin.collections.sumOf
 import kotlin.math.ceil
 import kotlin.math.min
 import kotlin.math.roundToInt
+import kotlin.require
 
 /**
  * Huawei Hagrid / WSP framing, authentication and payload helpers.
@@ -271,51 +273,65 @@ object HuaweiHagridWspLib {
     }
 
     class FrameAccumulator(private val requireValidCrc: Boolean = true) {
+        private val lock = Any()
         private var expectedFrames: Int = 0
         private var encrypted: Boolean = false
-        private var allFramesCrcValid: Boolean = true
         private val chunks = mutableMapOf<Int, ByteArray>()
 
         var lastCompletedEncrypted: Boolean = false
             private set
 
-        fun ingest(rawFrame: ByteArray): ByteArray? {
+        fun ingest(rawFrame: ByteArray): ByteArray? = synchronized(lock) {
             val frame = parseNotificationFrame(rawFrame, requireValidCrc) ?: return null
             if (frame.totalFrames <= 1) {
                 lastCompletedEncrypted = frame.encrypted
-                reset()
+                resetLocked()
                 return frame.payload
             }
 
-            if (expectedFrames != frame.totalFrames || encrypted != frame.encrypted) {
-                reset()
+            // A frame index 0 always starts a new logical packet.
+            if (frame.frameIndex == 0) {
+                resetLocked()
                 expectedFrames = frame.totalFrames
                 encrypted = frame.encrypted
+            } else {
+                // Drop orphan continuation frames until we have a packet start.
+                if (expectedFrames == 0) {
+                    return null
+                }
+
+                // If packet metadata changes mid-stream, invalidate partial state.
+                if (expectedFrames != frame.totalFrames || encrypted != frame.encrypted) {
+                    resetLocked()
+                    return null
+                }
             }
 
-            allFramesCrcValid = allFramesCrcValid && frame.crcValid
-            chunks[frame.frameIndex] = frame.payload
+            chunks[frame.frameIndex] = frame.payload.copyOf()
             if (chunks.size < expectedFrames) return null
 
             val out = ByteArray(chunks.values.sumOf { it.size })
             var pos = 0
             for (i in 0 until expectedFrames) {
                 val chunk = chunks[i] ?: run {
-                    reset()
+                    resetLocked()
                     return null
                 }
                 chunk.copyInto(out, pos)
                 pos += chunk.size
             }
             lastCompletedEncrypted = encrypted
-            reset()
+            resetLocked()
             return out
         }
 
-        fun reset() {
+        fun reset() = synchronized(lock) {
+            resetLocked()
+        }
+
+        private fun resetLocked() {
             expectedFrames = 0
             encrypted = false
-            allFramesCrcValid = true
             chunks.clear()
         }
     }
@@ -406,14 +422,22 @@ object HuaweiHagridWspLib {
         parseHagridWeightMeasurement(
             payload = payload,
             allowedLengths = setOf(26, 38),
-            timestampPresent = false
+            // Bytes 4–10 carry a valid timestamp in the Hagrid realtime payload,
+            // confirmed by the Huawei Scale 3 BLE capture (2026-08-09T23:39:29).
+            timestampPresent = true,
+            // Realtime: read the timestamp when present, but never reject the
+            // measurement if the bytes don't decode (Scale 2 Pro / 3 Pro / HONOR
+            // may carry something else there during a live weighing).
+            timestampRequired = false
         )
 
     fun parseHistoryMeasurement(payload: ByteArray): HagridWeightMeasurement? =
         parseHagridWeightMeasurement(
             payload = payload,
             allowedLengths = setOf(27, 28, 39, 40),
-            timestampPresent = true
+            timestampPresent = true,
+            // History records must have a valid timestamp; reject corrupt packets.
+            timestampRequired = true
         )
 
     fun parseScaleVersion(payload: ByteArray): HagridScaleVersion? {
@@ -835,7 +859,8 @@ object HuaweiHagridWspLib {
     private fun parseHagridWeightMeasurement(
         payload: ByteArray,
         allowedLengths: Set<Int>,
-        timestampPresent: Boolean
+        timestampPresent: Boolean,
+        timestampRequired: Boolean = timestampPresent
     ): HagridWeightMeasurement? {
         if (payload.size !in allowedLengths) return null
 
@@ -844,10 +869,13 @@ object HuaweiHagridWspLib {
         val weightKg = u16le(payload, 0) / 100.0f
         val fatPercent = u16le(payload, 2) / 10.0f
         val timestamp = if (timestampPresent) {
-            readTimestamp(payload, 4) ?: return null
+            val ts = readTimestamp(payload, 4)
+            if (ts == null && timestampRequired) return null
+            ts
         } else {
             null
         }
+
         val low = (0 until 6).map { u16le(payload, 12 + it * 2) }
         val high = if (highResistancePresent) {
             (0 until 6).map { u16le(payload, 26 + it * 2) }
@@ -1015,7 +1043,6 @@ object HuaweiHagridWspLib {
     private fun ByteArray.toHexString(): String =
         joinToString(separator = "") { "%02X".format(it.toInt() and 0xFF) }
 }
-
 
 /**
  * Replaceable source for Huawei Hagrid CAK/C1/C2 key material.

@@ -223,6 +223,14 @@ class MeasurementFacade @Inject constructor(
     // BLE
     // -------------------------------------------------------------------------
 
+    /**
+     * Persists a measurement received from a scale.
+     *
+     * The carry-over runs last, on the measurement whose user is already final (smart assignment may
+     * have reassigned it), so the gaps are filled from the history of the user the entry ends up on.
+     * It also runs before CRUD applies the body-composition formulas, which lets an inherited
+     * waist/neck/hips feed e.g. the US-Navy body fat formula.
+     */
     suspend fun saveMeasurementFromBleDevice(
         measurement: Measurement,
         values: List<MeasurementValue>,
@@ -230,10 +238,18 @@ class MeasurementFacade @Inject constructor(
         val ref = pendingReferenceUser
         if (ref != null) {
             val finalValues = transformation.applyAssistedWeighing(measurement, values, ref)
-            crud.saveMeasurement(measurement, finalValues)
+            crud.saveMeasurement(
+                measurement,
+                transformation.applyValueInheritance(measurement, finalValues)
+            )
         } else {
             val finalMeasurement = transformation.applySmartUserAssignment(measurement, values)
-            if (finalMeasurement != null) crud.saveMeasurement(finalMeasurement, values)
+            if (finalMeasurement != null) {
+                crud.saveMeasurement(
+                    finalMeasurement,
+                    transformation.applyValueInheritance(finalMeasurement, values)
+                )
+            }
         }
     }
 
@@ -244,6 +260,17 @@ class MeasurementFacade @Inject constructor(
     // -------------------------------------------------------------------------
     // CRUD delegates
     // -------------------------------------------------------------------------
+
+    /**
+     * The values to pre-fill an empty "new measurement" form with: whatever the measurement at
+     * [timestamp] would inherit from its predecessor, via the very same carry-over a Bluetooth sync
+     * runs — so a manual entry and a scale sync start from an identical state.
+     */
+    suspend fun prefillValuesForNewMeasurement(userId: Int, timestamp: Long): List<MeasurementValue> =
+        transformation.applyValueInheritance(
+            Measurement(userId = userId, timestamp = timestamp),
+            emptyList(),
+        )
 
     suspend fun saveMeasurement(
         measurement: Measurement,

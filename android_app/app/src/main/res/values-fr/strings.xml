@@ -337,7 +337,6 @@
     <string name="dialog_title_delete_type">Suppression de type ?</string>
     <string name="dialog_text_delete_type">Voulez-vous vraiment supprimer le type personnalisé \"%1$s\" ? Toutes les données associées seront définitivement supprimées. Cette action ne peut pas être annulée.</string>
     <string name="snackbar_items_deleted_successfully">%1$d items supprimés avec succès.</string>
-    <string name="snackbar_error_deleting_items">Erreur lors de la suppression d\'items.</string>
     <string name="dialog_title_select_user_for_assignment">Choisir un profil pour assignation</string>
     <string name="snackbar_no_other_users_to_change_to">Pas d\'autre profil disponible pour modifier.</string>
     <string name="goal_target_date_label">Date de l\'objectif cible</string>
@@ -396,7 +395,6 @@
     <string name="tuning_conservative">Conservateur</string>
     <string name="tuning_aggressive">Agressif</string>
     <string name="snackbar_items_user_changed_successfully">Le profil a changé %1$d items avec succès.</string>
-    <string name="snackbar_error_user_changed_items">Erreur de changement de profil pour certains items.</string>
     <string name="statistics_no_relevant_types">Aucun type de mesure pertinent disponible ou configuré pour les statistiques.</string>
     <string name="statistics_label_min">Min.</string>
     <string name="statistics_label_max">Max.</string>

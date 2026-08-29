@@ -295,10 +295,8 @@
     <string name="dialog_title_delete_selected_items">删除项目?</string>
     <string name="dialog_message_delete_selected_item">您确定要删除所选项目吗？此操作无法撤销。</string>
     <string name="dialog_title_delete_type">删除类型?</string>
-    <string name="snackbar_error_deleting_items">删除项目时出错。</string>
     <string name="dialog_title_select_user_for_assignment">选择要分配的用户</string>
     <string name="snackbar_no_other_users_to_change_to">无其他可用用户可更改。</string>
-    <string name="snackbar_error_user_changed_items">更改某些项目的用户时出错。</string>
     <string name="statistics_no_relevant_types">无相关测量类型可用或为统计配置。</string>
     <string name="statistics_content_desc_increase">增加</string>
     <string name="statistics_content_desc_decrease">减少</string>

@@ -17,8 +17,10 @@
  */
 package com.health.openscale.ui.screen.overview
 
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +45,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -100,6 +103,16 @@ fun MeasurementDetailScreen(
     userId: Int,
     sharedViewModel: SharedViewModel
 ) {
+    // Entering values while standing on the scale means not touching the phone for a while, so
+    // keep the display awake. The flag is cleared on dispose, so it only affects this screen (and
+    // the system drops it anyway once the activity leaves the foreground).
+    LocalActivity.current?.window?.let { window ->
+        DisposableEffect(window) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            onDispose { window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
+        }
+    }
+
     val context = LocalContext.current
     val resources = LocalResources.current
 
@@ -183,33 +196,23 @@ fun MeasurementDetailScreen(
             pendingUserId = null
             valuesState.clear()
 
-            // Preload values from the user's last measurement, if available and types are loaded.
-            if (allMeasurementTypes.isNotEmpty() && lastMeasurementToPreloadFrom != null) {
-                // Ensure the last measurement belongs to the current user.
-                if (lastMeasurementToPreloadFrom!!.measurement.userId == userId) {
-                    lastMeasurementToPreloadFrom!!.values.forEach { mvFromLast ->
-                        val correspondingType = allMeasurementTypes.find { it.id == mvFromLast.type.id }
-                        if (correspondingType != null &&
-                            correspondingType.isEnabled &&
-                            correspondingType.inputType != InputFieldType.DATE &&
-                            correspondingType.inputType != InputFieldType.TIME
-                        ) {
-                            val valueString = when (correspondingType.inputType) {
-                                InputFieldType.FLOAT -> mvFromLast.value.floatValue?.let { String.format(Locale.US, "%.2f", it) } ?: ""
-                                InputFieldType.INT -> mvFromLast.value.intValue?.toString() ?: ""
-                                InputFieldType.TEXT -> mvFromLast.value.textValue ?: ""
-                                else -> ""
-                            }
-                            if (valueString.isNotEmpty()) {
-                                valuesState[correspondingType.id] = valueString
-                            }
-                        }
+            // Pre-fill from the user's preceding measurement. Which values may be inherited is
+            // decided in one place for the whole app (MeasurementTransformationUseCase's
+            // applyValueInheritance), so a manual entry starts out exactly where a Bluetooth
+            // sync would — the form only formats what it gets back.
+            if (allMeasurementTypes.isNotEmpty()) {
+                sharedViewModel.prefillValuesForNewMeasurement(userId, measurementTimestampState)
+                    .forEach { inherited ->
+                        val correspondingType = allMeasurementTypes.find { it.id == inherited.typeId }
+                            ?: return@forEach
+                        val valueString = when (correspondingType.inputType) {
+                            InputFieldType.FLOAT -> inherited.floatValue?.let { String.format(Locale.US, "%.2f", it) }
+                            InputFieldType.INT -> inherited.intValue?.toString()
+                            else -> null
+                        } ?: return@forEach
+
+                        valuesState[correspondingType.id] = valueString
                     }
-                } else {
-                    // Log if preloading is skipped due to user mismatch (for debugging).
-                    // Consider using a formal logger if this becomes a common scenario to debug.
-                    println("DEBUG: lastMeasurementToPreloadFrom.userId (${lastMeasurementToPreloadFrom!!.measurement.userId}) != currentScreenUserId ($userId). Not preloading values.")
-                }
             }
         }
 

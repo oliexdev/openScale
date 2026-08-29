@@ -1,3 +1,20 @@
+/*
+ * openScale
+ * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package com.health.openscale.core.usecase
 
 import android.app.Application
@@ -9,6 +26,8 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.test.core.app.ApplicationProvider
+import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.User
@@ -23,9 +42,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -103,8 +119,8 @@ class BackupRestoreUseCasesTest {
         )
 
         dbFile = sandboxContext.getDatabasePath(AppDatabase.DATABASE_NAME)
-        assertTrue("expected seeded test database to exist", dbFile.exists())
-        assertEquals(1, repository.getAllUsers().first().size)
+        assertWithMessage("expected seeded test database to exist").that(dbFile.exists()).isTrue()
+        assertThat(repository.getAllUsers().first()).hasSize(1)
     }
 
     @After
@@ -124,10 +140,12 @@ class BackupRestoreUseCasesTest {
 
         val result = useCases.restoreDatabase(Uri.fromFile(invalidZip), baseContext.contentResolver)
 
-        assertTrue("restore should fail for zip without openScale.db", result.isFailure)
-        assertTrue("failed restore should leave the live database file in place", dbFile.exists())
-
-        assertEquals("failed restore should not mutate live in-memory data", 1, repository.getAllUsers().first().size)
+        assertWithMessage("restore should fail for zip without openScale.db")
+            .that(result.isFailure).isTrue()
+        assertWithMessage("failed restore should leave the live database file in place")
+            .that(dbFile.exists()).isTrue()
+        assertWithMessage("failed restore should not mutate live in-memory data")
+            .that(repository.getAllUsers().first()).hasSize(1)
 
         val reopened = buildDatabase(sandboxContext)
 
@@ -147,11 +165,8 @@ class BackupRestoreUseCasesTest {
                 )
             )
 
-            assertEquals(
-                "the original record should still exist after a failed restore",
-                1,
-                reopenedRepo.getAllUsers().first().size
-            )
+            assertWithMessage("the original record should still exist after a failed restore")
+                .that(reopenedRepo.getAllUsers().first()).hasSize(1)
         } finally {
             reopened.close()
         }
@@ -170,9 +185,12 @@ class BackupRestoreUseCasesTest {
 
         val result = useCases.restoreDatabase(Uri.fromFile(unrelatedDb), baseContext.contentResolver)
 
-        assertTrue("restore should fail for unrelated SQLite databases", result.isFailure)
-        assertTrue("failed restore should leave the live database file in place", dbFile.exists())
-        assertEquals("failed restore should not mutate live in-memory data", 1, repository.getAllUsers().first().size)
+        assertWithMessage("restore should fail for unrelated SQLite databases")
+            .that(result.isFailure).isTrue()
+        assertWithMessage("failed restore should leave the live database file in place")
+            .that(dbFile.exists()).isTrue()
+        assertWithMessage("failed restore should not mutate live in-memory data")
+            .that(repository.getAllUsers().first()).hasSize(1)
 
         val reopened = buildDatabase(sandboxContext)
         try {
@@ -191,11 +209,8 @@ class BackupRestoreUseCasesTest {
                 )
             )
 
-            assertEquals(
-                "the original record should still exist after rejecting an unrelated database",
-                1,
-                reopenedRepo.getAllUsers().first().size
-            )
+            assertWithMessage("the original record should still exist after rejecting an unrelated database")
+                .that(reopenedRepo.getAllUsers().first()).hasSize(1)
         } finally {
             reopened.close()
         }
@@ -207,7 +222,8 @@ class BackupRestoreUseCasesTest {
         createLegacyDatabase(legacyDb)
 
         val result = useCases.restoreDatabase(Uri.fromFile(legacyDb), baseContext.contentResolver)
-        assertTrue("restore should accept legacy openScale single-file databases", result.isSuccess)
+        assertWithMessage("restore should accept legacy openScale single-file databases")
+            .that(result.isSuccess).isTrue()
 
         val reopened = buildDatabase(sandboxContext)
         try {
@@ -227,8 +243,8 @@ class BackupRestoreUseCasesTest {
             )
 
             val users = reopenedRepo.getAllUsers().first()
-            assertEquals(1, users.size)
-            assertEquals("legacy-user", users.single().name)
+            assertThat(users).hasSize(1)
+            assertThat(users.single().name).isEqualTo("legacy-user")
         } finally {
             reopened.close()
         }
@@ -249,10 +265,11 @@ class BackupRestoreUseCasesTest {
                 useAssistedWeighing = false
             )
         )
-        assertEquals(2, repository.getAllUsers().first().size)
+        assertThat(repository.getAllUsers().first()).hasSize(2)
 
         val result = useCases.restoreDatabase(Uri.fromFile(backupZip), baseContext.contentResolver)
-        assertTrue("restore from app-generated backup should succeed", result.isSuccess)
+        assertWithMessage("restore from app-generated backup should succeed")
+            .that(result.isSuccess).isTrue()
 
         val reopened = buildDatabase(sandboxContext)
         try {
@@ -272,8 +289,8 @@ class BackupRestoreUseCasesTest {
             )
 
             val users = reopenedRepo.getAllUsers().first()
-            assertEquals(1, users.size)
-            assertEquals("restore-test-user", users.single().name)
+            assertThat(users).hasSize(1)
+            assertThat(users.single().name).isEqualTo("restore-test-user")
         } finally {
             reopened.close()
         }

@@ -412,11 +412,9 @@
     <string name="dialog_title_delete_type">¿Eliminar tipo?</string>
     <string name="dialog_text_delete_type">¿Seguro que quieres eliminar el tipo personalizado “%1$s”? Todas las mediciones asociadas también se eliminarán permanentemente. Esta acción no se puede deshacer.</string>
     <string name="snackbar_items_deleted_successfully">%1$d mediciones eliminadas</string>
-    <string name="snackbar_error_deleting_items">Error al eliminar los elementos.</string>
     <string name="dialog_title_select_user_for_assignment">Seleccionar usuario para la asignación</string>
     <string name="snackbar_no_other_users_to_change_to">No hay otros usuarios disponibles para cambiar.</string>
     <string name="snackbar_items_user_changed_successfully">%1$d mediciones movidas</string>
-    <string name="snackbar_error_user_changed_items">Error al cambiar el usuario de algunos elementos.</string>
     <string name="statistics_no_relevant_types">No hay tipos de medición relevantes disponibles o configurados para las estadísticas.</string>
     <string name="statistics_label_min">Mín</string>
     <string name="statistics_label_max">Max</string>
@@ -689,12 +687,10 @@
     <string name="settings_high_contrast_label">Alto contraste</string>
     <string name="route_title_insights">Análisis</string>
     <string name="insights_confidence_low">Datos insuficientes</string>
-    <string name="insights_section_body_shift">Tu análisis de %1$s</string>
     <string name="insights_label_recomposition">Recomposición corporal</string>
     <string name="insights_label_bulking">Volumen</string>
     <string name="insights_label_mixed_loss">Pérdida mixta</string>
     <string name="insights_label_fat_gain">Aumento de grasa</string>
-    <string name="insights_placeholder_body_shift">Se necesitan al menos %1$d mediciones para analizar cómo ha cambiado tu cuerpo con el tiempo.</string>
     <string name="insights_placeholder_weekday">Se necesitan al menos %1$d mediciones por día de la semana para detectar hábitos semanales.</string>
     <string name="insights_placeholder_seasonal">Se necesitan al menos %1$d años de datos para detectar patrones estacionales.</string>
     <string name="insights_placeholder_anomalies">Se necesitan al menos %1$d mediciones para detectar valores inusuales.</string>

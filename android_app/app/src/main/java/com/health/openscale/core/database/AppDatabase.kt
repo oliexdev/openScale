@@ -567,9 +567,10 @@ val MIGRATION_14_15 = object : Migration(14, 15) {
         )
 
         // Seed the six new MeasurementTypes introduced for S400 dual-frequency
-        // body composition: IMPEDANCE, IMPEDANCE_LOW (raw band readings) and
-        // ECW, ICW, PROTEIN, BCM (derived). All disabled by default; new
-        // installs receive them via getDefaultMeasurementTypes().
+        // body composition: IMPEDANCE, IMPEDANCE_LOW (raw band readings, kept
+        // internal) and ECW, ICW, PROTEIN, BCM (enabled). Flags are taken from
+        // getDefaultMeasurementTypes(), so upgraded installs end up with the
+        // same defaults as fresh ones.
         val newKeys = setOf(
             MeasurementTypeKey.IMPEDANCE,
             MeasurementTypeKey.IMPEDANCE_LOW,

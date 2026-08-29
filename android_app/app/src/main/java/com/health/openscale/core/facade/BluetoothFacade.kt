@@ -227,15 +227,23 @@ class BluetoothFacadeImpl @Inject constructor(
                     connectedDeviceAddress.value == dev.address
             if (already) return@launch
 
+            // Developer mode has to reach unsupported scales too – that is its whole point.
+            val developerMode = settingsFacade.developerModeEnabled.first()
             val (supported, handlerName) = scaleFactory.getSupportingHandlerInfo(dev)
-            if (!supported) {
+            if (!supported && !developerMode) {
                 LogManager.w(TAG, "Saved device '${dev.name}' is not recognized as supported anymore.")
-                return@launch
             }
-            dev.isSupported = true
-            dev.determinedHandlerDisplayName = handlerName
 
-            connection.connectToDevice(dev)
+            // Work on a copy: `dev` is the instance the saved-device flow hands to the UI, and
+            // mutating it here used to overwrite the scale's identity (issue #1478).
+            // An unsupported device is handed over as such so the connector reports it to the user
+            // instead of the tap silently doing nothing.
+            val target = dev.copy(
+                isSupported = supported || developerMode,
+                determinedHandlerDisplayName = handlerName ?: dev.determinedHandlerDisplayName
+            )
+
+            connection.connectToDevice(target)
         }
     }
 

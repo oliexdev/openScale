@@ -32,6 +32,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.health.openscale.core.data.AutoBackupError
 import com.health.openscale.core.data.BackupInterval
 import com.health.openscale.core.data.BodyFatFormulaOption
 import com.health.openscale.core.data.BodyWaterFormulaOption
@@ -91,6 +92,7 @@ object SettingsPreferenceKeys {
     val SAVED_BLUETOOTH_TOLERANCE_PERCENT = intPreferencesKey("saved_bluetooth_tolerance_percent")
     val SAVED_BLUETOOTH_IGNORE_OUTSIDE_TOLERANCE = booleanPreferencesKey("saved_bluetooth_ignore_outside_tolerance")
     val SAVED_BLUETOOTH_AUTO_CONNECT = booleanPreferencesKey("saved_bluetooth_auto_connect")
+    val SAVED_BLUETOOTH_DEVELOPER_MODE = booleanPreferencesKey("saved_bluetooth_developer_mode")
 
     // Settings for chart
     val CHART_SHOW_DATA_POINTS = booleanPreferencesKey("chart_show_data_points")
@@ -110,6 +112,8 @@ object SettingsPreferenceKeys {
     val AUTO_BACKUP_INTERVAL = stringPreferencesKey("auto_backup_interval")
     val AUTO_BACKUP_CREATE_NEW_FILE = booleanPreferencesKey("auto_backup_create_new_file")
     val AUTO_BACKUP_LAST_SUCCESSFUL_TIMESTAMP = longPreferencesKey("auto_backup_last_successful_timestamp")
+    val AUTO_BACKUP_LAST_ERROR = stringPreferencesKey("auto_backup_last_error")
+    val AUTO_BACKUP_LAST_ERROR_TIMESTAMP = longPreferencesKey("auto_backup_last_error_timestamp")
 
     // --- Reminder Settings ---
     val REMINDER_ENABLED = booleanPreferencesKey("reminder_enabled")
@@ -252,6 +256,11 @@ interface SettingsFacade {
     val autoBackupLastSuccessfulTimestamp: Flow<Long>
     suspend fun setAutoBackupLastSuccessfulTimestamp(timestamp: Long)
 
+    /** Reason of the most recent failed backup attempt, or null if the last attempt succeeded. */
+    val autoBackupLastError: Flow<AutoBackupError?>
+    val autoBackupLastErrorTimestamp: Flow<Long>
+    suspend fun setAutoBackupLastError(error: AutoBackupError?)
+
     // --- Reminder Settings ---
     val reminderEnabled: Flow<Boolean>
     suspend fun setReminderEnabled(enabled: Boolean)
@@ -279,6 +288,17 @@ interface SettingsFacade {
 
     val autoConnectOnStartup: Flow<Boolean>
     suspend fun setAutoConnectOnStartup(enabled: Boolean)
+
+    /**
+     * Developer mode for the saved scale: every connection is routed to the diagnostic handler,
+     * which dumps the GATT tree and logs notifications but never stores a measurement.
+     *
+     * Deliberately a flag of its own instead of a marker inside the saved device snapshot, so the
+     * device keeps its real identity (name, handler hint, advertisement payloads) while the mode
+     * is on and toggling it stays lossless.
+     */
+    val developerModeEnabled: Flow<Boolean>
+    suspend fun setDeveloperModeEnabled(enabled: Boolean)
 
     // Generic Settings Accessors
     /**
@@ -564,6 +584,8 @@ class SettingsFacadeImpl @Inject constructor(
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA)
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_DATA)
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_AUTO_CONNECT)
+            // Removing the scale always leaves developer mode behind as well.
+            prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVELOPER_MODE)
         }
     }
 
@@ -610,6 +632,16 @@ class SettingsFacadeImpl @Inject constructor(
 
     override suspend fun setAutoConnectOnStartup(enabled: Boolean) {
         saveSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_AUTO_CONNECT.name, enabled)
+    }
+
+    override val developerModeEnabled: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVELOPER_MODE.name,
+        false
+    )
+
+    override suspend fun setDeveloperModeEnabled(enabled: Boolean) {
+        LogManager.i(TAG, "Bluetooth developer mode ${if (enabled) "enabled" else "disabled"}.")
+        saveSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVELOPER_MODE.name, enabled)
     }
 
     override val isSmartAssignmentEnabled: Flow<Boolean> = observeSetting(
@@ -866,6 +898,47 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun setAutoBackupLastSuccessfulTimestamp(timestamp: Long) {
         LogManager.d(TAG, "Setting autoBackupLastSuccessfulTimestamp to: $timestamp")
         saveSetting(SettingsPreferenceKeys.AUTO_BACKUP_LAST_SUCCESSFUL_TIMESTAMP.name, timestamp)
+    }
+
+    override val autoBackupLastError: Flow<AutoBackupError?> = dataStore.data
+        .catch { exception ->
+            LogManager.e(TAG, "Error reading autoBackupLastError from DataStore.", exception)
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            val errorName = preferences[SettingsPreferenceKeys.AUTO_BACKUP_LAST_ERROR]
+            try {
+                errorName?.let { AutoBackupError.valueOf(it) }
+            } catch (e: IllegalArgumentException) {
+                LogManager.w(TAG, "Invalid AutoBackupError name '$errorName' in DataStore.", e)
+                AutoBackupError.WRITE_FAILED
+            }
+        }
+        .distinctUntilChanged()
+
+    override val autoBackupLastErrorTimestamp: Flow<Long> = observeSetting(
+        SettingsPreferenceKeys.AUTO_BACKUP_LAST_ERROR_TIMESTAMP.name,
+        0L
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing autoBackupLastErrorTimestamp", exception)
+        emit(0L)
+    }
+
+    override suspend fun setAutoBackupLastError(error: AutoBackupError?) {
+        LogManager.d(TAG, "Setting autoBackupLastError to: ${error?.name ?: "none"}")
+        dataStore.edit { preferences ->
+            if (error != null) {
+                preferences[SettingsPreferenceKeys.AUTO_BACKUP_LAST_ERROR] = error.name
+                preferences[SettingsPreferenceKeys.AUTO_BACKUP_LAST_ERROR_TIMESTAMP] = System.currentTimeMillis()
+            } else {
+                preferences.remove(SettingsPreferenceKeys.AUTO_BACKUP_LAST_ERROR)
+                preferences.remove(SettingsPreferenceKeys.AUTO_BACKUP_LAST_ERROR_TIMESTAMP)
+            }
+        }
     }
 
     // --- Reminder Settings ---

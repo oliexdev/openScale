@@ -355,6 +355,12 @@
     <string name="snackbar_developer_for_device_enable_logs">Developer mode enabled for this device. Please enable log file: Settings → General → Enable log file.</string>
     <string name="developer_banner_active">Developer mode is active — no measurements will be saved.</string>
     <string name="developer_banner_enable_logs_hint">Please enable log file: Settings → General → Enable log file.</string>
+    <string name="developer_mode_dialog_title">Enable developer mode?</string>
+    <string name="developer_mode_dialog_message">openScale will only log the Bluetooth traffic of %1$s for diagnostics. As long as developer mode is active, no measurement is saved. You can switch it off again on the Bluetooth screen or in the device settings.</string>
+    <string name="developer_mode_dialog_replaces">%1$s becomes your saved scale and replaces %2$s.</string>
+    <string name="developer_mode_dialog_confirm_button">Enable</string>
+    <string name="developer_mode_disable_action">Disable</string>
+    <string name="developer_mode_active_icon_desc">Developer mode is active</string>
     <string name="capabilities_header">Capabilities</string>
     <string name="cap_body_composition">Body composition</string>
     <string name="cap_time_sync">Time sync</string>
@@ -406,6 +412,12 @@
     <string name="s400_bind_key_description">The Xiaomi S400 scale requires a BLE bind key for decryption. Extract this key from Xiaomi Cloud using the Xiaomi Cloud Tokens Extractor tool.</string>
     <string name="s400_bind_key_error">Bind key must be exactly 32 hex characters</string>
     <string name="bt_s400_missing_bind_key">S400: Bind key not configured. Go to Bluetooth settings to enter your BLE key.</string>
+
+    <!-- Huawei Hagrid Scale Configuration -->
+    <string name="huawei_hagrid_secrets_title">Huawei Hagrid WSP secrets</string>
+    <string name="huawei_hagrid_secrets_description">Configure CAK, C1, and C2 as 32 hex characters each. Values stay in per-driver app settings.</string>
+    <string name="huawei_hagrid_secret_invalid">Expected 32 hex characters</string>
+    <string name="huawei_hagrid_secret_saved">Saved</string>
 
     <!-- Bluetooth Connector -->
     <string name="bluetooth_connector_connected_to">Connected to %1$s</string>
@@ -718,7 +730,7 @@
     <string name="settings_auto_backup_title">Automatic Backups</string>
     <string name="settings_enable_auto_backups">Enable automatic backups</string>
     <string name="content_desc_auto_backups_toggle">Toggle automatic backups</string>
-    <string name="settings_last_backup_status_label">Last backup status</string>
+    <string name="settings_last_backup_status_label">Backup status</string>
     <string name="content_desc_backup_status_icon">Backup status information</string>
     <string name="settings_backup_location_label">Backup location</string>
     <string name="content_desc_backup_location_icon">Backup location setting</string>
@@ -749,6 +761,12 @@
     <string name="settings_backup_location_selection_cancelled">Folder selection cancelled. Automatic backup not enabled.</string>
     <string name="settings_last_backup_status_successful">Last backup: %1$s</string>
     <string name="settings_last_backup_status_never">Last backup: Never</string>
+    <string name="settings_last_backup_status_failed">Last backup failed on %1$s: %2$s</string>
+    <string name="settings_next_backup_scheduled">Next backup: %1$s</string>
+    <string name="settings_next_backup_not_scheduled">Next backup: not scheduled</string>
+    <string name="settings_backup_error_location_inaccessible">The backup folder is no longer accessible. Please select it again.</string>
+    <string name="settings_backup_error_file_creation_failed">The backup file could not be created in the selected folder.</string>
+    <string name="settings_backup_error_write_failed">The database could not be written to the backup file.</string>
     <string name="interval_daily">Daily</string>
     <string name="interval_weekly">Weekly</string>
     <string name="interval_monthly">Monthly</string>
@@ -825,6 +843,9 @@
     <!-- Bluetooth Scales Messages -->
     <string name="bluetooth_scale_trisa_message_not_paired_instruction">This scale has not been paired!\n\nHold the button on the bottom of the scale to switch it to pairing mode, and then reconnect to retrieve the device password.</string>
     <string name="bluetooth_scale_trisa_success_pairing">Pairing succeeded!\n\nReconnect to retrieve measurement data.</string>
+    <string name="bluetooth_scale_weightgurus_slot_empty">empty</string>
+    <string name="bluetooth_scale_weightgurus_slot">User %1$d - %2$s</string>
+    <string name="bluetooth_scale_weightgurus_slot_match">User %1$d - %2$s (matches your name)</string>
     <string name="bluetooth_scale_info_create_user_instruction">Create new user on scale.</string>
     <string name="bluetooth_scale_warning_low_battery">Low battery level (%d%%), please recharge or replace scale batteries</string>
     <string name="bluetooth_scale_info_step_on_for_reference">Please step barefoot on the scale for reference measurements</string>
@@ -861,8 +882,25 @@
     <string name="bt_info_waiting_for_measurements">Waiting for measurement via notifications.</string>
     <string name="bt_info_linked_app_user_to_slot">Linked app user %1$d to scale slot %2$d.</string>
 
+    <!-- Omron WLC scales (HBF-702T family) -->
+    <string name="bt_info_omron_pairing_mode_required">Hold the scale\'s Bluetooth button until it shows the blinking pairing indicator.</string>
+    <string name="bt_info_omron_paired">Scale paired with openScale.</string>
+    <string name="bt_info_omron_measurements_read">Read %1$d new measurement(s) from the scale.</string>
+    <string name="bt_info_omron_no_new_measurements">No new measurements stored on the scale.</string>
+    <string name="bt_omron_slot_with_measurement">Scale user %1$d — %2$.1f kg on %3$s</string>
+    <string name="bt_omron_slot_empty">Scale user %1$d — no measurements</string>
+    <string name="bt_error_omron_unknown_model">Unsupported Omron model \"%1$s\"; cannot decode its measurement records.</string>
+    <string name="bt_error_omron_service_missing">This device does not expose the Omron transfer service.</string>
+    <string name="bt_error_omron_pairing_mode_required">The scale is not in pairing mode. Hold its Bluetooth button until the pairing indicator blinks, then try again.</string>
+    <string name="bt_error_omron_pairing_failed">Could not store the pairing key on the scale.</string>
+    <string name="bt_error_omron_session_failed">The scale refused to start a data transfer.</string>
+    <string name="bt_error_omron_read_failed">Failed to read stored measurements from the scale.</string>
+    <string name="bt_error_omron_timeout">The scale stopped responding; the transfer was cancelled.</string>
+
     <!-- Warnings -->
     <string name="bt_warn_low_battery">Scale battery is low (%1$d%%).</string>
+    <!-- Used by scales that only signal that the battery is low, without reporting a level. -->
+    <string name="bt_warn_low_battery_unknown">Scale battery is low.</string>
     <string name="bt_warn_register_failed_with_code">Creating the user on the scale failed (code %1$d).</string>
     <string name="bt_warn_slots_full">The scale has no free user slots. Delete a user on the device and try again.</string>
     <string name="bt_warn_notify_failed">Failed to enable notifications for %1$s.</string>

@@ -25,12 +25,14 @@ import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import androidx.work.testing.TestListenableWorkerBuilder
 import com.google.common.truth.Truth.assertThat
+import com.health.openscale.core.data.AutoBackupError
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.facade.SettingsFacadeImpl
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Test
@@ -58,15 +60,46 @@ class BackupWorkerTest {
 
     @Test
     fun doWork_returnsSuccess_whenAutoBackupDisabled() = runBlocking {
-        db = RoomTestSupport.inMemory(context)
-        val repository = RoomTestSupport.repositoryFor(db)
+        val settings = newSettings() // auto-backup defaults to disabled
+
+        val result = newWorker(settings).doWork()
+
+        assertThat(result).isEqualTo(ListenableWorker.Result.success())
+    }
+
+    /**
+     * A failing attempt must record why it failed and must not touch the last *successful*
+     * timestamp — otherwise the UI degrades to "Last backup: Never" and the real cause is lost.
+     */
+    @Test
+    fun doWork_recordsError_andKeepsLastSuccess_whenLocationNotWritable() = runBlocking {
+        val settings = newSettings()
+        settings.setAutoBackupEnabledGlobally(true)
+        settings.setAutoBackupLocationUri(
+            "content://com.android.externalstorage.documents/tree/primary%3Adoes-not-exist"
+        )
+        settings.setAutoBackupLastSuccessfulTimestamp(PREVIOUS_SUCCESS)
+
+        val result = newWorker(settings).doWork()
+
+        assertThat(result).isEqualTo(ListenableWorker.Result.failure())
+        assertThat(settings.autoBackupLastError.first()).isEqualTo(AutoBackupError.LOCATION_INACCESSIBLE)
+        assertThat(settings.autoBackupLastErrorTimestamp.first()).isGreaterThan(0L)
+        assertThat(settings.autoBackupLastSuccessfulTimestamp.first()).isEqualTo(PREVIOUS_SUCCESS)
+    }
+
+    private fun newSettings(): SettingsFacadeImpl {
         val dataStore = PreferenceDataStoreFactory.create(
             scope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
             produceFile = { File(context.cacheDir, "bw-${System.nanoTime()}.preferences_pb") },
         )
-        val settings = SettingsFacadeImpl(dataStore) // auto-backup defaults to disabled
+        return SettingsFacadeImpl(dataStore)
+    }
 
-        val worker = TestListenableWorkerBuilder<BackupWorker>(context)
+    private fun newWorker(settings: SettingsFacadeImpl): BackupWorker {
+        db = RoomTestSupport.inMemory(context)
+        val repository = RoomTestSupport.repositoryFor(db)
+        return TestListenableWorkerBuilder<BackupWorker>(context)
             .setWorkerFactory(object : WorkerFactory() {
                 override fun createWorker(
                     appContext: Context,
@@ -75,8 +108,9 @@ class BackupWorkerTest {
                 ): ListenableWorker = BackupWorker(appContext, workerParameters, settings, repository)
             })
             .build()
+    }
 
-        val result = worker.doWork()
-        assertThat(result).isEqualTo(ListenableWorker.Result.success())
+    private companion object {
+        const val PREVIOUS_SUCCESS = 1_700_000_000_000L
     }
 }

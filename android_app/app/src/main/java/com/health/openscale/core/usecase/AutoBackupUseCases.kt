@@ -23,13 +23,16 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.health.openscale.core.data.AutoBackupError
 import com.health.openscale.core.data.BackupInterval
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.core.worker.BackupWorker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 import java.util.concurrent.TimeUnit
@@ -57,6 +60,24 @@ class AutoBackupUseCases @Inject constructor(
     val interval: Flow<BackupInterval> get() = settings.autoBackupInterval
     val createNewFile: Flow<Boolean> get() = settings.autoBackupCreateNewFile
     val lastSuccessfulTimestamp: Flow<Long> get() = settings.autoBackupLastSuccessfulTimestamp
+    val lastError: Flow<AutoBackupError?> get() = settings.autoBackupLastError
+    val lastErrorTimestamp: Flow<Long> get() = settings.autoBackupLastErrorTimestamp
+
+    /**
+     * When the periodic worker is due next, or null if nothing is queued — this lets the UI
+     * distinguish "not scheduled at all" from "scheduled, just not due yet", which otherwise
+     * both look like "Last backup: Never".
+     *
+     * WorkManager reports [Long.MAX_VALUE] whenever no next run is known, which also covers the
+     * short window while a backup is actually running.
+     */
+    val nextBackupAtMillis: Flow<Long?>
+        get() = WorkManager.getInstance(appContext)
+            .getWorkInfosForUniqueWorkFlow(BackupWorker.WORK_NAME)
+            .map { infos ->
+                infos.firstOrNull()?.nextScheduleTimeMillis?.takeIf { it != Long.MAX_VALUE }
+            }
+            .distinctUntilChanged()
 
     // --- Mutations ---
 
@@ -101,30 +122,37 @@ class AutoBackupUseCases @Inject constructor(
             return
         }
 
-        val (repeatMillis, flexMillis) = intervalMillis(chosen)
+        val repeatMillis = intervalMillis(chosen)
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
             .setRequiresStorageNotLow(true)
             .build()
 
+        // No flex window on purpose: WorkManager applies flex only to the *first* run of a
+        // periodic worker (see WorkSpec.calculateNextRunTime), so it would merely postpone the
+        // very first backup by (interval - flex) without making later runs any more regular.
         val req = PeriodicWorkRequestBuilder<BackupWorker>(
-            repeatMillis, TimeUnit.MILLISECONDS,
-            flexMillis, TimeUnit.MILLISECONDS
+            repeatMillis, TimeUnit.MILLISECONDS
         ).setConstraints(constraints)
             .addTag(BackupWorker.TAG)
             .build()
 
+        // UPDATE instead of REPLACE: REPLACE discards the elapsed period, so every settings
+        // change and every reboot (BootReceiver calls us) restarted the interval from zero and
+        // the backup could be postponed indefinitely. UPDATE keeps lastEnqueueTime/periodCount,
+        // still enqueues the work if it is missing or cancelled, and lets a running backup
+        // finish instead of cancelling it mid-write.
         wm.enqueueUniquePeriodicWork(
             BackupWorker.WORK_NAME,
-            ExistingPeriodicWorkPolicy.REPLACE,
+            ExistingPeriodicWorkPolicy.UPDATE,
             req
         )
-        LogManager.i(TAG, "Auto-backup scheduled: interval=$chosen repeat=${repeatMillis}ms flex=${flexMillis}ms")
+        LogManager.i(TAG, "Auto-backup scheduled: interval=$chosen repeat=${repeatMillis}ms")
     }
 
-    private fun intervalMillis(interval: BackupInterval): Pair<Long, Long> = when (interval) {
-        BackupInterval.DAILY -> 24L * 60 * 60 * 1000L to (24L * 60 * 60 * 1000L / 8)
-        BackupInterval.WEEKLY -> 7L * 24 * 60 * 60 * 1000L to (7L * 24 * 60 * 60 * 1000L / 8)
-        BackupInterval.MONTHLY -> 30L * 24 * 60 * 60 * 1000L to (30L * 24 * 60 * 60 * 1000L / 8)
+    private fun intervalMillis(interval: BackupInterval): Long = when (interval) {
+        BackupInterval.DAILY -> 24L * 60 * 60 * 1000L
+        BackupInterval.WEEKLY -> 7L * 24 * 60 * 60 * 1000L
+        BackupInterval.MONTHLY -> 30L * 24 * 60 * 60 * 1000L
     }
 }

@@ -57,9 +57,9 @@ class RunstarR5Handler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.uppercase(Locale.US)
-        val matchesKnownAdvertisingName =
-            name == "RUNSTAR-R5" || name == "RUNSTAR-RX" || name.startsWith("RUNSTAR-")
-        if (!matchesKnownAdvertisingName) return null
+        // Match known advertising names only — not a "RUNSTAR-" prefix wildcard, which
+        // would also swallow the incompatible R6 (see RunstarR6Handler).
+        if (name != "RUNSTAR-R5" && name != "RUNSTAR-RX") return null
 
         return DeviceSupport(
             displayName = "Runstar R5",

@@ -20,6 +20,7 @@ package com.health.openscale.ui.screen.settings
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.provider.DocumentsContract
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -98,6 +99,22 @@ import com.health.openscale.core.utils.CalculationUtils
 
 
 /**
+ * Turns the persisted SAF *tree* URI into the *document* URI that pickers and file managers
+ * expect. Handing them the bare tree URI makes them ignore it and fall back to their default
+ * folder (usually Downloads) instead of the configured backup location.
+ *
+ * Returns null if [treeUriString] is absent or not a tree URI, so callers can fall back.
+ */
+private fun backupLocationDocumentUri(treeUriString: String?): Uri? {
+    val treeUri = treeUriString?.toUri() ?: return null
+    return try {
+        DocumentsContract.buildDocumentUriUsingTree(treeUri, DocumentsContract.getTreeDocumentId(treeUri))
+    } catch (_: IllegalArgumentException) {
+        null
+    }
+}
+
+/**
  * Represents items in the data management settings list.
  */
 sealed class DataManagementSettingListItem {
@@ -154,7 +171,14 @@ fun DataManagementSettingsScreen(
     val autoBackupInterval by settingsViewModel.autoBackupInterval.collectAsState()
     val autoBackupCreateNewFile by settingsViewModel.autoBackupCreateNewFile.collectAsState()
     val autoBackupLastSuccessfulTimestamp by settingsViewModel.autoBackupLastSuccessfulTimestamp.collectAsState()
+    val autoBackupLastError by settingsViewModel.autoBackupLastError.collectAsState()
+    val autoBackupLastErrorTimestamp by settingsViewModel.autoBackupLastErrorTimestamp.collectAsState()
+    val autoBackupNextRunAt by settingsViewModel.autoBackupNextRunAtMillis.collectAsState()
     val isAutoBackupLocationConfigured = autoBackupLocationUriString != null
+
+    // An error only counts as current as long as no later attempt succeeded.
+    val hasCurrentBackupError = autoBackupLastError != null &&
+            autoBackupLastErrorTimestamp >= autoBackupLastSuccessfulTimestamp
 
     // Effective state: global switch is on AND a location is configured.
     val isAutoBackupEffectivelyEnabled by remember(autoBackupGloballyEnabled, isAutoBackupLocationConfigured) {
@@ -167,27 +191,55 @@ fun DataManagementSettingsScreen(
         autoBackupLocationUriString,
         autoBackupGloballyEnabled,
         autoBackupLastSuccessfulTimestamp,
+        autoBackupLastError,
+        autoBackupLastErrorTimestamp,
         context
     ) {
+        val dateFormat = DateFormat.getDateTimeInstance(
+            DateFormat.MEDIUM,
+            DateFormat.SHORT,
+            Locale.getDefault()
+        )
         mutableStateOf(
             if (isAutoBackupEffectivelyEnabled) {
-                if (autoBackupLastSuccessfulTimestamp > 0L) {
-                    val timestamp = autoBackupLastSuccessfulTimestamp
-                    val date = Date(timestamp)
-                    val dateFormat = DateFormat.getDateTimeInstance(
-                        DateFormat.MEDIUM,
-                        DateFormat.SHORT,
-                        Locale.getDefault()
-                    )
-                    val formattedTime = dateFormat.format(date)
-                    resources.getString(R.string.settings_last_backup_status_successful, formattedTime)
-                } else {
-                    resources.getString(R.string.settings_last_backup_status_never)
+                val error = autoBackupLastError
+                when {
+                    error != null && hasCurrentBackupError -> {
+                        val formattedTime = dateFormat.format(Date(autoBackupLastErrorTimestamp))
+                        resources.getString(
+                            R.string.settings_last_backup_status_failed,
+                            formattedTime,
+                            error.getDisplayName(context)
+                        )
+                    }
+                    autoBackupLastSuccessfulTimestamp > 0L -> {
+                        val formattedTime = dateFormat.format(Date(autoBackupLastSuccessfulTimestamp))
+                        resources.getString(R.string.settings_last_backup_status_successful, formattedTime)
+                    }
+                    else -> resources.getString(R.string.settings_last_backup_status_never)
                 }
             } else if (autoBackupGloballyEnabled && !isAutoBackupLocationConfigured) {
                 resources.getString(R.string.settings_backup_location_not_configured_for_auto)
             } else {
                 resources.getString(R.string.settings_auto_backups_disabled)
+            }
+        )
+    }
+
+    // Null while auto-backup is off — there is no next run to report then.
+    val nextBackupStatusText by remember(isAutoBackupEffectivelyEnabled, autoBackupNextRunAt, context) {
+        val dateFormat = DateFormat.getDateTimeInstance(
+            DateFormat.MEDIUM,
+            DateFormat.SHORT,
+            Locale.getDefault()
+        )
+        mutableStateOf(
+            if (!isAutoBackupEffectivelyEnabled) {
+                null
+            } else {
+                autoBackupNextRunAt?.let {
+                    resources.getString(R.string.settings_next_backup_scheduled, dateFormat.format(Date(it)))
+                } ?: resources.getString(R.string.settings_next_backup_not_scheduled)
             }
         )
     }
@@ -400,7 +452,8 @@ fun DataManagementSettingsScreen(
                     supportingText = currentBackupLocationUserDisplay,
                     onClick = {
                         if (!isAnyOperationLoading) {
-                            selectAutoBackupDirectoryLauncher.launch(null) // Allow changing/re-selecting
+                            // Start the picker in the folder currently configured, not at its default.
+                            selectAutoBackupDirectoryLauncher.launch(backupLocationDocumentUri(autoBackupLocationUriString))
                         }
                     },
                     enabled = !isAnyOperationLoading,
@@ -412,8 +465,10 @@ fun DataManagementSettingsScreen(
                                     onClick = {
                                         if (!isAnyOperationLoading) {
                                             try {
+                                                val folderUri = backupLocationDocumentUri(autoBackupLocationUriString)
+                                                    ?: autoBackupLocationUriString!!.toUri()
                                                 val intent = Intent(Intent.ACTION_VIEW)
-                                                intent.setDataAndType(autoBackupLocationUriString!!.toUri(), "vnd.android.document/directory")
+                                                intent.setDataAndType(folderUri, "vnd.android.document/directory")
                                                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                                 context.startActivity(intent)
                                             } catch (_: ActivityNotFoundException) {
@@ -431,7 +486,7 @@ fun DataManagementSettingsScreen(
                             IconButton(
                                 onClick = {
                                     if (!isAnyOperationLoading) {
-                                        selectAutoBackupDirectoryLauncher.launch(null)
+                                        selectAutoBackupDirectoryLauncher.launch(backupLocationDocumentUri(autoBackupLocationUriString))
                                     }
                                 },
                                 enabled = !isAnyOperationLoading
@@ -449,10 +504,20 @@ fun DataManagementSettingsScreen(
             item {
                 SettingsCardItem(
                     label = stringResource(R.string.settings_last_backup_status_label),
-                    supportingText = lastBackupStatusText,
+                    supportingText = listOfNotNull(lastBackupStatusText, nextBackupStatusText).joinToString("\n"),
                     onClick = { /* Could show more details or trigger a manual sync if needed */ },
                     enabled = !isAnyOperationLoading,
-                    customLeadingContent = { Icon(Icons.Filled.Info, contentDescription = stringResource(R.string.content_desc_backup_status_icon)) }
+                    customLeadingContent = {
+                        if (hasCurrentBackupError) {
+                            Icon(
+                                Icons.Filled.WarningAmber,
+                                contentDescription = stringResource(R.string.content_desc_backup_status_icon),
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        } else {
+                            Icon(Icons.Filled.Info, contentDescription = stringResource(R.string.content_desc_backup_status_icon))
+                        }
+                    }
                 )
             }
             item {

@@ -147,18 +147,24 @@ fun MeasurementChart(
 
     val allAvailableMeasurementTypes by sharedViewModel.measurementTypes.collectAsState()
 
-    val defaultSelectedTypesValue = remember(targetMeasurementTypeId) {
+    // Resolved via MeasurementTypeKey, never via MeasurementTypeKey.id: the row id of a
+    // MeasurementType is auto-generated on insert and does not match the enum id.
+    val defaultSelectedTypesValue = remember(targetMeasurementTypeId, allAvailableMeasurementTypes) {
         if (targetMeasurementTypeId != null) {
             setOf(targetMeasurementTypeId.toString())
         } else {
-            setOf(
-                MeasurementTypeKey.WEIGHT.id.toString(),
-                MeasurementTypeKey.BMI.id.toString(),
-                MeasurementTypeKey.BODY_FAT.id.toString(),
-                MeasurementTypeKey.WATER.id.toString(),
-                MeasurementTypeKey.MUSCLE.id.toString(),
-                MeasurementTypeKey.COMMENT.id.toString(),
+            val defaultKeys = setOf(
+                MeasurementTypeKey.WEIGHT,
+                MeasurementTypeKey.BMI,
+                MeasurementTypeKey.BODY_FAT,
+                MeasurementTypeKey.WATER,
+                MeasurementTypeKey.MUSCLE,
+                MeasurementTypeKey.COMMENT,
             )
+            allAvailableMeasurementTypes
+                .filter { it.key in defaultKeys }
+                .map { it.id.toString() }
+                .toSet()
         }
     }
 
@@ -359,9 +365,10 @@ fun MeasurementChart(
                             .find { it.id == targetMeasurementTypeId }
                             ?.let { listOf(it.id) } ?: emptyList()
                     } else {
-                        val defaults = listOf(MeasurementTypeKey.WEIGHT.id, MeasurementTypeKey.BODY_FAT.id)
-                        defaults
-                            .filter { id -> selectableFilteredTypes.any { it.id == id } }
+                        val defaultKeys = setOf(MeasurementTypeKey.WEIGHT, MeasurementTypeKey.BODY_FAT)
+                        selectableFilteredTypes
+                            .filter { it.key in defaultKeys }
+                            .map { it.id }
                             .ifEmpty {
                                 selectableFilteredTypes.firstOrNull()?.let { listOf(it.id) } ?: emptyList()
                             }

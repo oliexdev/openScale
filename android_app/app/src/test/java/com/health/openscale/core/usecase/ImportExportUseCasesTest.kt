@@ -20,6 +20,7 @@ package com.health.openscale.core.usecase
 import android.app.Application
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
@@ -33,6 +34,7 @@ import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
+import com.health.openscale.core.utils.LogManager
 import com.health.openscale.getDefaultMeasurementTypes
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.flow.first
@@ -43,6 +45,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowLog
 import java.io.File
 import java.time.Instant
 import java.time.LocalDate
@@ -64,6 +67,9 @@ class ImportExportUseCasesTest {
 
     @Before
     fun setUp() = runBlocking {
+        // Without init, LogManager reroutes everything to a "not initialized" error, which
+        // would hide the import warnings the tests below assert on.
+        LogManager.init(context, false)
         db = RoomTestSupport.inMemory(context)
         repo = RoomTestSupport.repositoryFor(db)
         repo.insertAllMeasurementTypes(getDefaultMeasurementTypes())
@@ -132,6 +138,15 @@ class ImportExportUseCasesTest {
         return Uri.fromFile(file)
     }
 
+    /** Local wall-clock timestamp of the single measurement imported for [date]. */
+    private suspend fun timestampOn(date: LocalDate) =
+        repo.getMeasurementsWithValuesForUser(userId).first()
+            .map { Instant.ofEpochMilli(it.measurement.timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime() }
+            .first { it.toLocalDate() == date }
+
+    private fun warnings(): String =
+        ShadowLog.getLogs().filter { it.type == Log.WARN }.joinToString("\n") { it.msg }
+
     @Test
     fun import_separateDateAndTimeColumns_isParsed() = runBlocking {
         val report = useCases.importUserFromCsv(
@@ -140,6 +155,42 @@ class ImportExportUseCasesTest {
         assertThat(report.importedMeasurementsCount).isEqualTo(1)
         assertThat(report.linesSkippedMissingDate).isEqualTo(0)
         assertThat(report.linesSkippedDateParseError).isEqualTo(0)
+
+        val imported = timestampOn(LocalDate.of(2025, 4, 7))
+        assertThat(imported.hour).isEqualTo(8)
+        assertThat(imported.minute).isEqualTo(30)
+    }
+
+    /**
+     * Spreadsheets rewrite the TIME column in the device locale (e.g. "8:30:00 AM"), which the
+     * ISO-only parser cannot read. The row is still imported, but at noon - so the fallback has
+     * to be visible in the log, otherwise the user has no way to notice the lost time.
+     */
+    @Test
+    fun import_nonIsoTime_fallsBackToNoonAndWarns() = runBlocking {
+        ShadowLog.clear()
+        val report = useCases.importUserFromCsv(
+            userId, csvUri("DATE,TIME,WEIGHT\n2025-04-07,8:30:00 AM,72.5\n"), context.contentResolver
+        ).getOrThrow()
+        assertThat(report.importedMeasurementsCount).isEqualTo(1)
+
+        val imported = timestampOn(LocalDate.of(2025, 4, 7))
+        assertThat(imported.hour).isEqualTo(12)
+        assertThat(imported.minute).isEqualTo(0)
+
+        assertThat(warnings()).contains("cannot parse time '8:30:00 AM'")
+    }
+
+    @Test
+    fun import_nonIsoDate_isSkippedAndWarns() = runBlocking {
+        ShadowLog.clear()
+        val report = useCases.importUserFromCsv(
+            userId, csvUri("DATE,TIME,WEIGHT\n4/7/2025,08:30,72.5\n"), context.contentResolver
+        ).getOrThrow()
+        assertThat(report.importedMeasurementsCount).isEqualTo(0)
+        assertThat(report.linesSkippedDateParseError).isEqualTo(1)
+
+        assertThat(warnings()).contains("cannot parse date '4/7/2025'")
     }
 
     @Test

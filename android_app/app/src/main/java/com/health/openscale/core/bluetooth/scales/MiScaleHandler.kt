@@ -17,7 +17,24 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
+import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
@@ -98,6 +115,52 @@ class MiScaleHandler : ScaleDeviceHandler() {
     private fun readBodyCompAlgorithm(): BodyCompAlgorithm =
         runCatching { BodyCompAlgorithm.valueOf(settingsGetString(SETTINGS_KEY_ALGORITHM) ?: "") }
             .getOrDefault(BodyCompAlgorithm.XIAOMI)
+
+    /**
+     * A titled radio-button group backed by a string setting. Reads the persisted value for
+     * [key] (falling back to [defaultValue]) and writes the selection back on each change.
+     * Each option is a stored value paired with its label string resource.
+     */
+    @Composable
+    protected fun SettingRadioGroup(
+        @StringRes titleRes: Int,
+        key: String,
+        options: List<Pair<String, Int>>,
+        defaultValue: String,
+        @StringRes descriptionRes: Int? = null,
+    ) {
+        val persisted = settingsGetString(key) ?: defaultValue
+        var selected by remember(persisted) { mutableStateOf(persisted) }
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text = stringResource(titleRes),
+                style = MaterialTheme.typography.titleSmall,
+            )
+            options.forEach { (value, labelRes) ->
+                val onSelect = {
+                    selected = value
+                    settingsPutString(key, value)
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectable(selected = selected == value, onClick = onSelect),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(selected = selected == value, onClick = onSelect)
+                    Text(stringResource(labelRes))
+                }
+            }
+            if (descriptionRes != null) {
+                Text(
+                    text = stringResource(descriptionRes),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
 
     @Composable
     override fun DeviceConfigurationUi() {

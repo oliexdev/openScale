@@ -437,11 +437,9 @@
     <string name="dialog_title_delete_type">Apagar Tipo?</string>
     <string name="dialog_text_delete_type">Tem certeza que deseja apagar o tipo personalizado “%1$s”? Todas as medições associadas também serão apagadas permanentemente. Esta ação não pode ser desfeita.</string>
     <string name="snackbar_items_deleted_successfully">%1$d medições excluídas</string>
-    <string name="snackbar_error_deleting_items">Erro ao apagar elementos.</string>
     <string name="dialog_title_select_user_for_assignment">Selecionar Utilizador para Atribuição</string>
     <string name="snackbar_no_other_users_to_change_to">Não há outros utilizadores disponíveis para troca.</string>
     <string name="snackbar_items_user_changed_successfully">%1$d medições movidas</string>
-    <string name="snackbar_error_user_changed_items">Erro ao alterar o utilizador de alguns elementos.</string>
     <string name="insights_confidence_low">Dados insuficientes</string>
     <string name="insights_section_measurement_analysis">Análise de %1$s</string>
     <string name="insights_label_recomposition">Recomposição corporal</string>

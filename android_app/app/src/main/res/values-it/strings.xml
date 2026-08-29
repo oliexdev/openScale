@@ -414,11 +414,9 @@
     <string name="dialog_title_delete_type">Elimina tipo?</string>
     <string name="dialog_text_delete_type">Vuoi davvero eliminare il tipo personalizzato \"%1$s\"? Anche tutte le misurazioni associate verranno eliminate definitivamente. Questa azione non può essere annullata.</string>
     <string name="snackbar_items_deleted_successfully">%1$d elementi eliminati correttamente.</string>
-    <string name="snackbar_error_deleting_items">Errore durante l\'eliminazione degli elementi.</string>
     <string name="dialog_title_select_user_for_assignment">Seleziona utente per l\'assegnazione</string>
     <string name="snackbar_no_other_users_to_change_to">Nessun altro utente disponibile per il cambio.</string>
     <string name="snackbar_items_user_changed_successfully">L\'utente ha modificato con successo %1$d elementi.</string>
-    <string name="snackbar_error_user_changed_items">Errore durante il cambio utente per alcuni elementi.</string>
     <string name="statistics_no_relevant_types">Nessun tipo di misurazione rilevante disponibile o configurato per le statistiche.</string>
     <string name="statistics_label_min">Minimo</string>
     <string name="statistics_label_max">Massimo</string>

@@ -401,11 +401,9 @@
     <string name="dialog_title_delete_type">Radera typ?</string>
     <string name="dialog_text_delete_type">Är du säker på att du vill ta bort den anpassade typen ”%1$s”? Alla tillhörande mätningar kommer också att raderas permanent. Denna åtgärd kan inte ångras.</string>
     <string name="snackbar_items_deleted_successfully">%1$d mätvärden borttagna</string>
-    <string name="snackbar_error_deleting_items">Fel vid borttagning av objekt.</string>
     <string name="dialog_title_select_user_for_assignment">Välj användare för tilldelning</string>
     <string name="snackbar_no_other_users_to_change_to">Inga andra användare tillgängliga att byta till.</string>
     <string name="snackbar_items_user_changed_successfully">%1$d mätvärden flyttade</string>
-    <string name="snackbar_error_user_changed_items">Fel vid byte av användare för vissa objekt.</string>
     <string name="statistics_no_relevant_types">Inga relevanta mätningstyper tillgängliga eller konfigurerade för statistik.</string>
     <string name="statistics_label_min">Min</string>
     <string name="statistics_label_max">Max</string>

@@ -1,0 +1,6 @@
+* New scale support: Keep S3, Runstar R6, FitTrack Dara 2.0, Vitafit VT701, Relaxmedic, EEBBL, Taylor 5331891, 1BODY CONNECT, Robi S9, Xiaomi S800, Eufy P2, Dr.Trust 505, Scale Up and more Yunmai/Huawei models.
+* New entries inherit waist, hips etc. from the previous measurement.
+* Scientific body-composition algorithm for Mi Scale.
+* Undo for deleted entries, safer saving, resizable charts.
+* Fixed crash when importing a pre-2.5 database.
+* New translations, incl. Hindi and Bulgarian.
