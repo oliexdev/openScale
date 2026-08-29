@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth
 
 import android.content.Context
 import androidx.annotation.VisibleForTesting
+import com.health.openscale.core.bluetooth.scales.HealthKeep280Handler
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
@@ -133,6 +134,7 @@ class ScaleFactory @Inject constructor(
         @VisibleForTesting
         internal fun createHandlers(): List<ScaleDeviceHandler> = listOf(
             // Exact-name match must precede generic LeFu/0xFFF0 handlers (first match wins).
+            HealthKeep280Handler(),
             PicoocHandler(),
             ActiveEraBF06Handler(),
             AfuB1Handler(),
