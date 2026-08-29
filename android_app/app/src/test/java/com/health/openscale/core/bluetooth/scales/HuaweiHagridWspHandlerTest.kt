@@ -187,7 +187,13 @@ class HuaweiHagridWspHandlerTest {
     }
 
     @Test
-    fun `Scale 3 realtime notification after status=0 is published exactly once`() {
+    fun `Scale 3 realtime publishes computed fat and preserves parsed impedances`() {
+        val user = ScaleUser(
+            id = 7,
+            birthday = Date(946684800000L),
+            bodyHeight = 175f,
+            gender = GenderType.MALE,
+        )
         val handler = HuaweiHagridWspHandler()
         val callbacks = CapturingCallbacks()
         handler.supportFor(device("HUAWEI Scale 3"))
@@ -195,20 +201,31 @@ class HuaweiHagridWspHandlerTest {
             transport = NoopTransport(),
             callbacks = callbacks,
             settings = InMemorySettings(),
-            data = FixedDataProvider(ScaleUser(id = 7)),
+            data = FixedDataProvider(user),
             scope = CoroutineScope(EmptyCoroutineContext),
         )
 
-        sendWspNotification(handler, CHR_MEASUREMENT_STATUS_RESULT, byteArrayOf(0x00))
+        sendWspNotification(handler, CHR_REALTIME_WEIGHT, scale3CompositionRealtimePayload())
 
-        // First post-status-0 realtime notification: saved.
-        sendWspNotification(handler, CHR_REALTIME_WEIGHT, realtimePayload())
         assertThat(callbacks.published).hasSize(1)
-        assertThat(callbacks.published.single().weight).isWithin(0.0001f).of(77.32f)
-        assertThat(callbacks.published.single().fat).isWithin(0.0001f).of(18.5f)
+        val measurement = callbacks.published.single()
+        val expectedComposition = HuaweiScale3BodyComposition.calculate(
+            heightCm = user.bodyHeight,
+            weightKg = 77.32f,
+            ageYears = user.age,
+            sex = HuaweiScale3BodyComposition.Sex.MALE,
+            impedanceOhm = 350.0,
+        )
+        assertThat(expectedComposition).isNotNull()
+        assertThat(measurement.weight).isWithin(0.0001f).of(77.32f)
+        assertThat(measurement.fat).isWithin(0.0001f).of(expectedComposition!!.bodyFatPercent)
+        // The body-composition model uses the Scale 3 raw low-frequency sample / 10,
+        // but published impedance fields retain the generic Hagrid parser semantics.
+        assertThat(measurement.impedanceLow).isWithin(0.0001).of(3500.0)
+        assertThat(measurement.impedance).isWithin(0.0001).of(600.0)
 
-        // Subsequent realtime notifications in the same session: ignored for persistence.
-        sendWspNotification(handler, CHR_REALTIME_WEIGHT, realtimePayload())
+        // Subsequent realtime notifications in the same cycle are ignored for persistence.
+        sendWspNotification(handler, CHR_REALTIME_WEIGHT, scale3CompositionRealtimePayload())
         assertThat(callbacks.published).hasSize(1)
     }
 
@@ -784,6 +801,18 @@ class HuaweiHagridWspHandlerTest {
                 0xEA.toByte(), 0x07, 0x06, 0x16, 0x0F, 0x0E, 0x2A, 0x00,
                 0xF4.toByte(), 0x01, 0xF5.toByte(), 0x01, 0xF6.toByte(), 0x01,
                 0xF7.toByte(), 0x01, 0xF8.toByte(), 0x01, 0xF9.toByte(), 0x01,
+                0x48, 0x00,
+                0x58, 0x02, 0x59, 0x02, 0x5A, 0x02,
+                0x5B, 0x02, 0x5C, 0x02, 0x5D, 0x02,
+            )
+
+        private fun scale3CompositionRealtimePayload(): ByteArray =
+            byteArrayOf(
+                0x34, 0x1E,
+                0xB9.toByte(), 0x00,
+                0xEA.toByte(), 0x07, 0x06, 0x16, 0x0F, 0x0E, 0x2A, 0x00,
+                0xAC.toByte(), 0x0D, 0xAD.toByte(), 0x0D, 0xAE.toByte(), 0x0D,
+                0xAF.toByte(), 0x0D, 0xB0.toByte(), 0x0D, 0xB1.toByte(), 0x0D,
                 0x48, 0x00,
                 0x58, 0x02, 0x59, 0x02, 0x5A, 0x02,
                 0x5B, 0x02, 0x5C, 0x02, 0x5D, 0x02,

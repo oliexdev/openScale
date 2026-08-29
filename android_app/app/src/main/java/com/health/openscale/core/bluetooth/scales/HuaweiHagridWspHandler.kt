@@ -677,7 +677,8 @@ class HuaweiHagridWspHandler(
                 "weight=${"%.2f".format(Locale.US, parsed.weightKg)}"
         )
 
-        // Realtime packets belong to the current session; use receive time.
+        // Realtime packet timestamps are scale-local and can carry a stale or incorrect clock.
+        // Use the phone receive time for live measurements; history keeps the parsed timestamp.
         publishHagridMeasurement(parsed, user, dateTimeOverride = Date())
         return true
     }
@@ -742,10 +743,17 @@ class HuaweiHagridWspHandler(
         user: ScaleUser,
         dateTimeOverride: Date? = null
     ) {
-        val rawLowImpedance = parsed.representativeLowOhm ?: 0.0
-        val impedanceOhm = rawLowImpedance / 10.0
+        val low = parsed.representativeLowOhm ?: 0.0
+        val high = parsed.representativeHighOhm ?: low
 
         val isScale3 = isScale3Profile()
+        // Scale 3 reports the low-frequency BIA sample used by its composition model
+        // in 0.1-ohm units. Keep that family-specific conversion separate from the
+        // generic representativeLowOhm/representativeHighOhm values stored by openScale.
+        val scale3ModelImpedanceOhm = parsed.lowFrequencyImpedance
+            .firstOrNull()
+            ?.takeIf { it > 0 }
+            ?.div(10.0)
         val sex = when (user.gender) {
             GenderType.MALE -> HuaweiScale3BodyComposition.Sex.MALE
             GenderType.FEMALE -> HuaweiScale3BodyComposition.Sex.FEMALE
@@ -757,7 +765,7 @@ class HuaweiHagridWspHandler(
                 weightKg = parsed.weightKg,
                 ageYears = user.age,
                 sex = sex,
-                impedanceOhm = impedanceOhm,
+                impedanceOhm = scale3ModelImpedanceOhm ?: 0.0,
             )
         } else {
             null
@@ -787,9 +795,6 @@ class HuaweiHagridWspHandler(
             }
         }
 
-        val low = parsed.representativeLowOhm ?: 0.0
-        val high = parsed.representativeHighOhm ?: low
-
         val measurement = ScaleMeasurement(
             userId = user.id,
             dateTime = dateTimeOverride ?: parsed.timestamp ?: Date(),
@@ -804,8 +809,8 @@ class HuaweiHagridWspHandler(
             lbm = composition?.leanBodyMassKg ?: 0f,
             bmr = composition?.bmrKcal ?: 0f,
             heartRate = parsed.heartRateBpm ?: 0,
-            impedance = composition?.impedanceOhm ?: high,
-            impedanceLow = composition?.impedanceOhm ?: low,
+            impedance = high,
+            impedanceLow = low,
             protein = composition?.proteinPercent ?: 0f,
         )
 
@@ -970,7 +975,12 @@ class HuaweiHagridWspHandler(
                         withResponse = true
                     )
                 }
-                delay(3_000L)
+
+                delay(REARM_POLL_TIMEOUT_MS)
+                if (rearmPollOutstanding) {
+                    logD("Huawei Hagrid: rearm status poll timed out; retrying")
+                    rearmPollOutstanding = false
+                }
             }
         }
     }
@@ -1225,6 +1235,7 @@ class HuaweiHagridWspHandler(
         private const val MANAGER_INFO_TIMEOUT_MS = 2500L
         private const val USER_INFO_ACK_TIMEOUT_MS = 3000L
         private const val MEASUREMENT_STATUS_POLL_INTERVAL_MS = 3000L
+        private const val REARM_POLL_TIMEOUT_MS = 3000L
         private const val MAX_STATUS_POLLS = 30
         private const val MAX_HISTORY_RECORDS = 64
 

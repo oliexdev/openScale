@@ -362,8 +362,8 @@ class MeasurementTransformationUseCase @Inject constructor(
      * user — the one and only inheritance rule in the app, used both when a scale delivers a
      * measurement and when the "new measurement" form is pre-filled.
      *
-     * A scale only reports what it can weigh, so values the user keeps by hand — waist, hips,
-     * caliper values, custom numeric types — would silently be absent on every sync. Those are taken from
+     * A scale only reports what it can weigh, so everything the user keeps by hand — waist, hips,
+     * caliper values, custom types — would silently be absent on every sync. Those are taken from
      * the last measurement **before** [measurement]'s timestamp, so a historic entry read from the
      * scale's memory inherits the state of its own point in time and never that of a later one.
      *
@@ -373,9 +373,6 @@ class MeasurementTransformationUseCase @Inject constructor(
      * - TEXT, DATE, TIME and USER are dropped: a comment or a date is written about *that* one
      *   weigh-in and would be wrong on the next.
      * - Derived types (BMI, BMR, …) are dropped — they are recomputed from the raw values.
-     * - Per-weigh-in physiological/device values (body fat, water, muscle, LBM, bone, visceral fat,
-     *   heart rate, ECW/ICW, protein, BCM) are never inherited: absence means the scale did not
-     *   produce that value for this weigh-in.
      * - Internal (impedance) and disabled types are dropped: raw device input, stale the moment it
      *   is copied.
      *
@@ -391,19 +388,6 @@ class MeasurementTransformationUseCase @Inject constructor(
         measurement: Measurement,
         values: List<MeasurementValue>
     ): List<MeasurementValue> {
-        val nonInheritableMeasurementKeys = setOf(
-            MeasurementTypeKey.BODY_FAT,
-            MeasurementTypeKey.WATER,
-            MeasurementTypeKey.MUSCLE,
-            MeasurementTypeKey.LBM,
-            MeasurementTypeKey.BONE,
-            MeasurementTypeKey.VISCERAL_FAT,
-            MeasurementTypeKey.HEART_RATE,
-            MeasurementTypeKey.ECW,
-            MeasurementTypeKey.ICW,
-            MeasurementTypeKey.PROTEIN,
-            MeasurementTypeKey.BCM,
-        )
         // History is ordered newest → oldest, so the first strictly older entry is the predecessor.
         val previous = query.getMeasurementsForUser(measurement.userId).first()
             .firstOrNull {
@@ -416,7 +400,6 @@ class MeasurementTransformationUseCase @Inject constructor(
         val carried = previous.values.mapNotNull { previousValue ->
             val type = previousValue.type
             if (type.id in presentTypeIds) return@mapNotNull null
-            if (type.key in nonInheritableMeasurementKeys) return@mapNotNull null
             if (type.isDerived || type.isInternal || !type.isEnabled) return@mapNotNull null
 
             when (type.inputType) {
