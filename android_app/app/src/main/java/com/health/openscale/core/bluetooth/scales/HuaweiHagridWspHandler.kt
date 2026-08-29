@@ -747,13 +747,18 @@ class HuaweiHagridWspHandler(
         val high = parsed.representativeHighOhm ?: low
 
         val isScale3 = isScale3Profile()
-        // Scale 3 reports the low-frequency BIA sample used by its composition model
-        // in 0.1-ohm units. Keep that family-specific conversion separate from the
-        // generic representativeLowOhm/representativeHighOhm values stored by openScale.
+
+        // The Scale 3 reports its low-frequency BIA sample in 0.1-ohm units, which the generic
+        // hagridImpedanceOhm() heuristic ("below 4000 is already ohms") misreads: a real 350 Ω
+        // arrives as 3500 and is kept as 3500 Ω. Convert it for this family explicitly, and store
+        // the very same number the composition model is fed — a stored impedance that does not
+        // match the value the body composition was derived from cannot be interpreted later.
         val scale3ModelImpedanceOhm = parsed.lowFrequencyImpedance
             .firstOrNull()
             ?.takeIf { it > 0 }
             ?.div(10.0)
+
+        val publishedLow = if (isScale3) scale3ModelImpedanceOhm ?: low else low
         val sex = when (user.gender) {
             GenderType.MALE -> HuaweiScale3BodyComposition.Sex.MALE
             GenderType.FEMALE -> HuaweiScale3BodyComposition.Sex.FEMALE
@@ -810,7 +815,7 @@ class HuaweiHagridWspHandler(
             bmr = composition?.bmrKcal ?: 0f,
             heartRate = parsed.heartRateBpm ?: 0,
             impedance = high,
-            impedanceLow = low,
+            impedanceLow = publishedLow,
             protein = composition?.proteinPercent ?: 0f,
         )
 

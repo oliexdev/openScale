@@ -219,9 +219,9 @@ class HuaweiHagridWspHandlerTest {
         assertThat(expectedComposition).isNotNull()
         assertThat(measurement.weight).isWithin(0.0001f).of(77.32f)
         assertThat(measurement.fat).isWithin(0.0001f).of(expectedComposition!!.bodyFatPercent)
-        // The body-composition model uses the Scale 3 raw low-frequency sample / 10,
-        // but published impedance fields retain the generic Hagrid parser semantics.
-        assertThat(measurement.impedanceLow).isWithin(0.0001).of(3500.0)
+        // The stored low-frequency impedance is the very value the composition model was fed,
+        // so a measurement can still be interpreted from what is in the database.
+        assertThat(measurement.impedanceLow).isWithin(0.0001).of(350.0)
         assertThat(measurement.impedance).isWithin(0.0001).of(600.0)
 
         // Subsequent realtime notifications in the same cycle are ignored for persistence.
