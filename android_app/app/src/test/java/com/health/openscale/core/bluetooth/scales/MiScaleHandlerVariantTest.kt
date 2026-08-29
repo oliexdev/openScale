@@ -158,19 +158,6 @@ class MiScaleHandlerVariantTest {
         setup.handler.handleDisconnected()
     }
 
-    @Test
-    fun `variant learned from a previous connection overrides the scan-time name heuristic`() {
-        val handler = MiScaleHandler()
-        val settings = InMemorySettings()
-        settings.putString("gatt_variant_00:11:22:33:44:55", "V1")
-        handler.attachSettings(settings)
-
-        val support = handler.supportFor(device("MI SCALE2"))!!
-        assertThat(support.displayName).isEqualTo("Xiaomi Mi Scale v1")
-        assertThat(support.capabilities).doesNotContain(DeviceCapability.BODY_COMPOSITION)
-        assertThat(support.capabilities).doesNotContain(DeviceCapability.UNIT_CONFIG)
-    }
-
     // ----- Harness (same pattern as KeepS3HandlerTest) -----
 
     private class Setup(

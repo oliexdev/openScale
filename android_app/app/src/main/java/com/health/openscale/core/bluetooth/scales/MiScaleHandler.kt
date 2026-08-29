@@ -201,10 +201,10 @@ class MiScaleHandler : ScaleDeviceHandler() {
 
         val looksV2 = services.any { it == SERVICE_MI_CFG } ||
                 name == "MIBCS" || name == "MIBFS" || name == "MI SCALE2"
-        // A variant learned from a previous connection's GATT table beats the name heuristic:
-        // the weight-only XMTZC04HM advertises "MI SCALE2" exactly like a real v2 does.
-        val scanVariant = persistedVariantFor(device.address)
-            ?: if (looksV2) Variant.V2 else Variant.V1
+        // Scan-time guess only. The advertised name is ambiguous — the weight-only XMTZC04HM
+        // advertises "MI SCALE2" exactly like a real v2 — so this may over-promise v2
+        // capabilities until [onConnected] derives the real variant from the GATT table.
+        val scanVariant = if (looksV2) Variant.V2 else Variant.V1
 
         val display = if (scanVariant == Variant.V2) "Xiaomi Mi Scale v2" else "Xiaomi Mi Scale v1"
 
@@ -282,8 +282,19 @@ class MiScaleHandler : ScaleDeviceHandler() {
             return
         }
         variant = detected
-        rememberDetectedVariant(detected)
         logI("Connected (${variant.name} from GATT table); init sequence")
+
+        // The device list still shows the scan-time guess, which is derived from the advertised
+        // name and is wrong for the weight-only XMTZC04HM. Say so once per connection so the
+        // missing body composition does not look like a bug. Name only: the advertised service
+        // UUIDs of the scan are not available here.
+        val advertisedName = getPeripheral()?.name?.uppercase(Locale.ROOT).orEmpty()
+        val advertisedAsV2 = advertisedName == "MIBCS" || advertisedName == "MIBFS" ||
+                advertisedName == "MI SCALE2"
+        if (advertisedAsV2 && variant == Variant.V1) {
+            logW("Advertised as v2 ($advertisedName) but the GATT table is v1; weight only")
+            userWarn(R.string.bt_warn_mi_scale_variant_downgraded)
+        }
 
         // Choose primary/alternate by variant to avoid cross-service chatter.
         val svcPrimary   = if (variant == Variant.V2) SERVICE_BODY_COMP else SERVICE_WEIGHT
@@ -695,29 +706,6 @@ class MiScaleHandler : ScaleDeviceHandler() {
         }
     }
 
-
-    // ----- Persisted per-device variant -----
-
-    private val SETTINGS_KEY_GATT_VARIANT_PREFIX = "gatt_variant_"
-
-    /**
-     * Variant learned from a previous connection's GATT table, keyed by device address, or null
-     * when the device never connected. Scan-time [supportFor] may also run before any adapter
-     * has attached driver settings; the runCatching swallows that uninitialized access.
-     */
-    private fun persistedVariantFor(address: String): Variant? =
-        runCatching { settingsGetString(SETTINGS_KEY_GATT_VARIANT_PREFIX + address) }
-            .getOrNull()
-            ?.let { stored -> runCatching { Variant.valueOf(stored) }.getOrNull() }
-
-    /**
-     * Persist the GATT-detected variant so scan-time support queries stop promising v2
-     * capabilities (body composition, unit config) a downgraded device cannot deliver.
-     */
-    private fun rememberDetectedVariant(detected: Variant) {
-        val address = getPeripheral()?.address ?: return
-        settingsPutString(SETTINGS_KEY_GATT_VARIANT_PREFIX + address, detected.name)
-    }
 
     private fun getLastImportedTimestamp(userId: Int): Int {
         return settingsGetInt("last_imported_ts_$userId", 0)
