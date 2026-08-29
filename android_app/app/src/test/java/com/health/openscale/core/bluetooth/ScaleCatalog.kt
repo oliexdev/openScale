@@ -44,6 +44,7 @@ import com.health.openscale.core.bluetooth.scales.HoffenBbs8107Handler
 import com.health.openscale.core.bluetooth.scales.HuaweiAhCh100Handler
 import com.health.openscale.core.bluetooth.scales.HuaweiCH100SHandler
 import com.health.openscale.core.bluetooth.scales.HuaweiHagridWspHandler
+import com.health.openscale.core.bluetooth.scales.HumeDara2Handler
 import com.health.openscale.core.bluetooth.scales.IHealthHS3Handler
 import com.health.openscale.core.bluetooth.scales.InlifeHandler
 import com.health.openscale.core.bluetooth.scales.KeepS3Handler
@@ -221,6 +222,7 @@ object ScaleCatalog {
         device("vscale") claimedBy ExingtechY1Handler::class.java,
         device("Body Fat-B2") claimedBy EbelterBodyFatB2Handler::class.java,
         device("Electronic Scale") claimedBy ExcelvanCF36xHandler::class.java,
+        device("Dara 2.0") claimedBy HumeDara2Handler::class.java,
         device("Etekcity Smart Fitness Scale") claimedBy EtekcityESF551Handler::class.java,
         device("EUFY C20") claimedBy EufyC20Handler::class.java,
         device("eufy T9148") claimedBy EufyP2Handler::class.java,

@@ -47,6 +47,7 @@ import com.health.openscale.core.bluetooth.scales.HoffenBbs8107Handler
 import com.health.openscale.core.bluetooth.scales.HuaweiAhCh100Handler
 import com.health.openscale.core.bluetooth.scales.HuaweiCH100SHandler
 import com.health.openscale.core.bluetooth.scales.HuaweiHagridWspHandler
+import com.health.openscale.core.bluetooth.scales.HumeDara2Handler
 import com.health.openscale.core.bluetooth.scales.IHealthHS3Handler
 import com.health.openscale.core.bluetooth.scales.InlifeHandler
 import com.health.openscale.core.bluetooth.scales.KeepS3Handler
@@ -179,6 +180,7 @@ class ScaleFactory @Inject constructor(
             HesleyHandler(),
             ExingtechY1Handler(),
             EbelterBodyFatB2Handler(),
+            HumeDara2Handler(),
             ExcelvanCF36xHandler(),
             EtekcityESF551Handler(),
             EtekcityFit8SHandler(),
