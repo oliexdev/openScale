@@ -29,7 +29,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.UUID
-import kotlin.math.max
 
 /**
  * OneByone (classic) handler (Service 0xFFF0, notify on 0xFFF4, write cmds on 0xFFF1).
@@ -63,9 +62,9 @@ class OneByoneHandler : ScaleDeviceHandler() {
     private var clockAckFallbackJob: Job? = null
     private var promptedForMeasurement = false
 
-    // prevent saving measurements too close in time (ms)
-    private val DATE_TIME_THRESHOLD_MS = 3000
-    private var lastSavedAt: Long = 0L
+    // One live measurement per connection: the scale repeats its settled frame, immediately as a
+    // duplicate and again a few seconds later once its bioimpedance retry has run.
+    private var publishedLive = false
 
     // --- Capability declaration -----------------------------------------------
 
@@ -162,7 +161,9 @@ class OneByoneHandler : ScaleDeviceHandler() {
         clockAckFallbackJob = null
         waitAckClock = false
         historicMode = false
+        historyCount = 0
         promptedForMeasurement = false
+        publishedLive = false
     }
 
     override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
@@ -210,9 +211,11 @@ class OneByoneHandler : ScaleDeviceHandler() {
 
         // CF ... frames carry weight/impedance (+ optional timestamp if length >= 18)
         if (data.isNotEmpty() && data[0] == 0xCF.toByte() && data.size >= 11) {
-            // A measurement frame means the user is already standing on the scale, so the
+            // A live measurement frame means the user is already standing on the scale, so the
             // "step on the scale" fallback would arrive too late to be anything but confusing.
-            suppressStepOnPrompt()
+            // History frames prove nothing about the here and now — the prompt after the transfer
+            // is exactly what the user needs then, so leave it armed.
+            if (!historicMode) suppressStepOnPrompt()
             if (historicMode) historyCount++
             parseMeasurementFrame(data, user, isHistoric = historicMode)
         } else {
@@ -236,8 +239,27 @@ class OneByoneHandler : ScaleDeviceHandler() {
         // Historic entries include a timestamp at bytes 11..17 (length >= 18)
         val hasTimestamp = hasHistoryTimestamp(bytes)
 
-        // Discard unwanted frames: history without time, or anything without impedance
-        if (!impedancePresent || (isHistoric && !hasTimestamp)) return
+        // A history entry without its timestamp cannot be placed on the graph, so drop it.
+        if (isHistoric && !hasTimestamp) return
+
+        // Only record settled readings. Byte 9 is the lock status: 0x00 and 0x36 mean the scale has
+        // finished weighing, anything else is still in progress. Historic entries are settled by
+        // definition, so the gate applies to live frames only.
+        if (!isHistoric && !isFinalReading(bytes)) {
+            logD("Ignoring in-progress frame (status=0x%02X, %.2f kg)"
+                .format(bytes[9].toInt() and 0xFF, weightKg))
+            return
+        }
+
+        // Frames with no usable weight carry nothing worth saving.
+        if (weightKg <= 0f) return
+
+        // The settled reading is sent more than once: as an immediate duplicate, and again after
+        // the scale has retried its bioimpedance measurement. Record the first one only.
+        if (!isHistoric && publishedLive) {
+            logD("Live measurement already published this session, ignoring repeat")
+            return
+        }
 
         // Timestamp (BE year + plain month/day/time), used when provided
         val whenCal = Calendar.getInstance()
@@ -259,11 +281,6 @@ class OneByoneHandler : ScaleDeviceHandler() {
             }
         }
 
-        // Rate-limit saves (avoid too-dense series)
-        val nowMs = max(System.currentTimeMillis(), whenCal.timeInMillis)
-        if (nowMs - lastSavedAt < DATE_TIME_THRESHOLD_MS) return
-        lastSavedAt = nowMs
-
         // Build composition using OneByoneLib (same as legacy)
         val (sex, peopleType) = mapUserToLibParams(user)
         val lib = OneByoneLib(sex, user.age, user.bodyHeight, peopleType)
@@ -273,24 +290,33 @@ class OneByoneHandler : ScaleDeviceHandler() {
             dateTime = if (hasTimestamp) whenCal.time else Calendar.getInstance().time
             weight = weightKg
             // Store the raw impedance so body composition can be recomputed later.
-            impedance = impedanceOhm.toDouble()
+            if (impedancePresent) impedance = impedanceOhm.toDouble()
         }
 
-        try {
-            // Derivations
-            val fatPct = lib.getBodyFat(m.weight, impedanceOhm)
-            m.fat = fatPct
-            m.water = lib.getWater(fatPct)
-            m.bone = lib.getBoneMass(m.weight, impedanceOhm)
-            m.visceralFat = lib.getVisceralFat(m.weight)
-            m.muscle = lib.getMuscle(m.weight, impedanceOhm)
-            m.lbm = lib.getLBM(m.weight, m.fat)
-
-            publish(m)
-        } catch (t: Throwable) {
-            // If library throws on impossible inputs, just log & ignore this frame
-            logW("OneByoneLib failed: ${t.message}")
+        // Body composition needs impedance. The scale reports zero when it could not run the
+        // bioimpedance measurement (socks or shoes, poor foot contact), and the weight is still
+        // perfectly good — record it rather than losing the weigh-in entirely.
+        if (impedancePresent) {
+            try {
+                val fatPct = lib.getBodyFat(m.weight, impedanceOhm)
+                m.fat = fatPct
+                m.water = lib.getWater(fatPct)
+                m.bone = lib.getBoneMass(m.weight, impedanceOhm)
+                m.visceralFat = lib.getVisceralFat(m.weight)
+                m.muscle = lib.getMuscle(m.weight, impedanceOhm)
+                m.lbm = lib.getLBM(m.weight, m.fat)
+            } catch (t: Throwable) {
+                // If the library throws on impossible inputs, keep the weight and drop the rest.
+                logW("OneByoneLib failed, publishing weight only: ${t.message}")
+            }
+        } else {
+            // No user-facing notice here on purpose: a snackbar emitted at this point is dismissed
+            // by BleConnector's saved-measurement snackbar ~700 ms later, so it never really shows.
+            logI("No impedance in frame - publishing weight only (%.2f kg)".format(weightKg))
         }
+
+        if (!isHistoric) publishedLive = true
+        publish(m)
     }
 
     // --- Command builders ------------------------------------------------------
@@ -340,6 +366,7 @@ class OneByoneHandler : ScaleDeviceHandler() {
          */
         private const val CLOCK_ACK_TIMEOUT_MS = 3000L
 
+
         /** Length of a live measurement frame: `CF …` payload plus the XOR byte at index 10. */
         const val LIVE_FRAME_LEN = 11
 
@@ -358,6 +385,18 @@ class OneByoneHandler : ScaleDeviceHandler() {
          */
         fun isLiveFrame(bytes: ByteArray): Boolean =
             bytes.size >= LIVE_FRAME_LEN && bytes[10] == xorChecksum(bytes, 10)
+
+        /**
+         * True when byte 9 marks the reading as settled ("locked" in the vendor app, which treats
+         * 0x00 and 0x36 as final and everything else as still in progress).
+         */
+        fun isFinalReading(bytes: ByteArray): Boolean {
+            if (bytes.size < LIVE_FRAME_LEN) return false
+            return when (bytes[9].toInt() and 0xFF) {
+                0x00, 0x36 -> true
+                else -> false
+            }
+        }
 
         /**
          * True when [bytes] carries a history timestamp in bytes 11..17.

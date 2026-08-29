@@ -113,6 +113,55 @@ class OneByoneHandlerTest {
         assertThat(OneByoneHandler.hasHistoryTimestamp(checksumCollision)).isTrue()
     }
 
+    /**
+     * Captured after the coalescing fix shipped: the scale settled (status 0x00) but reported
+     * **zero impedance** — no bioimpedance run. The weight is valid and must survive; only the
+     * body composition is skipped.
+     */
+    private val zeroImpedance = hex("CF 00 00 28 28 00 00 00 01 00 CE")
+
+    @Test
+    fun `a settled zero-impedance frame is a valid weight`() {
+        assertThat(OneByoneHandler.isLiveFrame(zeroImpedance)).isTrue()
+        assertThat(OneByoneHandler.isFinalReading(zeroImpedance)).isTrue()
+        assertThat(weightKg(zeroImpedance)).isWithin(1e-3f).of(102.80f)
+        assertThat(impedanceOhm(zeroImpedance)).isEqualTo(0f)
+    }
+
+    @Test
+    fun `settled readings are distinguished from in-progress ones`() {
+        // 0x00 and 0x36 are the vendor app's "locked" values.
+        for (frame in listOf(single1016, single1014) + allCoalesced) {
+            assertThat(OneByoneHandler.isFinalReading(frame)).isTrue()
+        }
+        assertThat(OneByoneHandler.isFinalReading(hex("CF 50 0F B0 27 10 13 51 00 36 63"))).isTrue()
+
+        // Anything else is still settling and must not be recorded.
+        assertThat(OneByoneHandler.isFinalReading(hex("CF 50 0F B0 27 10 13 51 00 01 54"))).isFalse()
+        assertThat(OneByoneHandler.isFinalReading(hex("CF 50 0F B0 27 10 13 51 00 02 57"))).isFalse()
+        assertThat(OneByoneHandler.isFinalReading(ByteArray(4))).isFalse()
+    }
+
+    /**
+     * The back-to-back pair that validated the weight-only path on real hardware: the same
+     * 103.00 kg weigh-in taken in socks (no bioimpedance) and barefoot (coalesced frame).
+     */
+    private val socks = hex("CF 00 00 3C 28 00 00 00 01 00 DA")
+    private val barefootCoalesced = hex("CF B6 0D 3C 28 B4 B5 99 01 00 F9 CF B6 0D 3C 28 B4 B5 99 01")
+
+    @Test
+    fun `socks and barefoot frames agree on weight and differ only in impedance`() {
+        for (frame in listOf(socks, barefootCoalesced)) {
+            assertThat(OneByoneHandler.isLiveFrame(frame)).isTrue()
+            assertThat(OneByoneHandler.isFinalReading(frame)).isTrue()
+            assertThat(weightKg(frame)).isWithin(1e-3f).of(103.00f)
+        }
+
+        // Socks block the bioimpedance measurement; barefoot produces a usable reading.
+        assertThat(impedanceOhm(socks)).isEqualTo(0f)
+        assertThat(impedanceOhm(barefootCoalesced)).isWithin(1e-3f).of(351.0f)
+    }
+
     @Test
     fun `rejects truncated and corrupted frames`() {
         assertThat(OneByoneHandler.isLiveFrame(hex("CF 50 0F B0 27"))).isFalse()
