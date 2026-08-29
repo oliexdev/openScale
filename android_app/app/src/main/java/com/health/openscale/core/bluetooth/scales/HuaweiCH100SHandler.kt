@@ -309,7 +309,7 @@ class HuaweiCH100SHandler : ScaleDeviceHandler() {
     private fun sendUserInfo(user: ScaleUser, weightTenthKg: Int?) {
         val sexBit = if (user.gender.isMale()) 0x00 else 0x80
         val age = user.age and 0x7F
-        val w = (weightTenthKg ?: (user.initialWeight * 10f).toInt()).coerceAtLeast(0)
+        val w = (weightTenthKg ?: (profileWeightKg(user) * 10f).toInt()).coerceAtLeast(1)
         val payload = ByteArrayOutputStream().apply {
             write(authCode)
             write((age or sexBit) and 0xFF)
@@ -319,6 +319,19 @@ class HuaweiCH100SHandler : ScaleDeviceHandler() {
             write(le16(0xFFFF))
         }.toByteArray()
         sendEncrypted(CMD_USER_INFO, payload)
+    }
+
+    /**
+     * Body weight in kg for the USER_INFO record, never 0 — same reasoning as the
+     * AH100/CH100 sibling handler: the scale re-requests a weightless record in a
+     * USER_CHANGED loop. Prefers the last stored measurement, then the profile
+     * weight, then a BMI-22 estimate from body height.
+     */
+    private fun profileWeightKg(user: ScaleUser): Float {
+        lastMeasurementFor(user.id)?.weight?.takeIf { it.isFinite() && it > 0f }?.let { return it }
+        user.initialWeight.takeIf { it.isFinite() && it > 0f }?.let { return it }
+        val heightM = user.bodyHeight / 100f
+        return if (heightM.isFinite() && heightM > 0.5f) 22f * heightM * heightM else 70f
     }
 
     // --- Wire helpers ---------------------------------------------------------
