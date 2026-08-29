@@ -386,7 +386,9 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
         // Encrypted USER_INFO payload format (matches v2.5.4 exactly):
         //   auth(7) || age|sexBit(1) || height(1) || 0x00(1) || weightLE(2)
         //          || resistanceLE(2) || 0x1C 0xE2 (2 constant)
-        // Total = 16 bytes (confirmed against a real CH100 capture).
+        // 16 bytes transmitted, of which the length byte declares 14 — the
+        // trailer is not counted. Do not reconcile those two numbers; they
+        // disagree on the wire too. See sendCmdEncrypted.
         val sexBit = if (user.gender.isMale()) 0x00 else 0x80
         val age = (user.age and 0xFF) or sexBit
         val height = user.bodyHeight.toInt() and 0xFF
@@ -452,10 +454,17 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
             return
         }
         // The 2-byte trailer is transmitted but not counted, as in the vendor app.
+        val declaredLen = payload.size - USER_INFO_TRAILER
         val frame = buildEncryptedCommand(
-            CMD_USER_INFO, payload, mk, macBytes(), explicitLen = payload.size - USER_INFO_TRAILER
+            CMD_USER_INFO, payload, mk, macBytes(), explicitLen = declaredLen
         )
-        logD("→ CMD* 0x%02X len=%d (encrypted)".format(CMD_USER_INFO.toInt() and 0xFF, payload.size))
+        // Log both numbers. A log line reading len=16 next to a frame reading
+        // 0x0E is how the length byte went unnoticed in the first place.
+        logD(
+            "→ CMD* 0x%02X len=%d declared=%d (encrypted)".format(
+                CMD_USER_INFO.toInt() and 0xFF, payload.size, declaredLen
+            )
+        )
         writeTo(SERVICE, CHAR_TX, frame, withResponse = true)
     }
 

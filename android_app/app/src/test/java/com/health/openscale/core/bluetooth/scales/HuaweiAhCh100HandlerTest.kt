@@ -321,27 +321,11 @@ class HuaweiAhCh100HandlerTest {
         }
     }
 
-    @Test
-    fun `real capture - USER_INFO declares 14 while transmitting 16, as the vendor app does`() {
-        // Huawei's own app sends "DC 0E 09" followed by 16 encrypted bytes: the
-        // trailing 2-byte constant is outside the declared length. Decoded from
-        // the btsnoop captures attached to issue #547.
-        val mac = HuaweiAhCh100Handler.macStringToBytes(CAPTURE_MAC)
-        val mk = HuaweiAhCh100Handler.deriveMagicKey(
-            HuaweiAhCh100Handler.buildAuthToken(1), mac
-        )
-        val payload = ByteArray(16)
-
-        val frame = HuaweiAhCh100Handler.buildEncryptedCommand(
-            HuaweiAhCh100Handler.CMD_USER_INFO, payload, mk, mac,
-            explicitLen = payload.size - HuaweiAhCh100Handler.USER_INFO_TRAILER
-        )
-
-        assertThat(frame[0]).isEqualTo(HuaweiAhCh100Handler.FRAME_ENCRYPTED)
-        assertThat(frame[1]).isEqualTo(0x0E.toByte())
-        assertThat(frame[2]).isEqualTo(HuaweiAhCh100Handler.CMD_USER_INFO)
-        assertThat(frame.size).isEqualTo(3 + 16)
-    }
+    // The USER_INFO record the handler sends is pinned in
+    // HuaweiUserRecordWireTest, which drives the state machine and reads the
+    // bytes off the transport. Asserting it here would mean building the frame
+    // with the same arguments the assertion checks — green whatever
+    // sendUserInfo does.
 
     // -- Helpers -------------------------------------------------------------
 
