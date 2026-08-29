@@ -50,19 +50,26 @@ class BodyMiScaleLib(
     private val isMale = gender == GenderType.MALE
 
     /**
-     * Lean / fat-free body mass in kg — the Xiaomi hardware-calibrated formula, shared by
-     * both modes and capped at 98% of body weight. Everything downstream depends on this.
+     * Lean / fat-free body mass in kg — the Xiaomi hardware-calibrated formula, corrected
+     * for female profiles because the base regression has no sex term, and capped at 98%
+     * of body weight. Everything downstream depends on this.
      */
     fun getLbm(weightKg: Float, impedance: Float): Float {
-        val lbm = (heightCm * 9.058f / 100f) * (heightCm / 100f) +
+        var lbm = (heightCm * 9.058f / 100f) * (heightCm / 100f) +
             weightKg * 0.32f + 12.226f - impedance * 0.0068f - age * 0.0542f
+
+        // bodymiscale 2026.8.0: its hardware regression lacks a sex term and overestimates
+        // female LBM by about 16%, skewing every metric derived from it.
+        if (!isMale) lbm *= FEMALE_LBM_CORRECTION
+
         return minOf(lbm, weightKg * 0.98f)
     }
 
     /** Body fat percentage via the Siri (1956) 2-compartment model. Pass the [getLbm] result as [lbm]. */
     fun getFat(weightKg: Float, lbm: Float): Float {
         val fat = (weightKg - lbm) / weightKg * 100f
-        return fat.coerceIn(5f, 75f)
+        val minimumFat = if (isMale) 5f else 10f
+        return fat.coerceIn(minimumFat, 75f)
     }
 
     /** Water percentage of body weight, via the Pace & Rathbun (1945) 0.73 constant. */
@@ -128,6 +135,8 @@ class BodyMiScaleLib(
     }
 
     private companion object {
+        const val FEMALE_LBM_CORRECTION = 0.84f
+
         // Schofield (slope, constant) by bracket: 0-3, 3-10, 10-18, 18-30, 30-60, 60+
         val MALE_SCHOFIELD = arrayOf(
             59.512f to -30.4f, 22.706f to 504.3f, 17.686f to 658.2f,
