@@ -131,9 +131,6 @@ class ScaleFactory @Inject constructor(
         @VisibleForTesting
         internal fun createHandlers(): List<ScaleDeviceHandler> = listOf(
             // Exact-name match must precede generic LeFu/0xFFF0 handlers (first match wins).
-            // PicoocHandler matches only "PICOOC-*"/"Latin-*" names, but has to stay ahead of
-            // ScaleupHandler, which claims any device whose manufacturer data carries a
-            // 0xD0/0xE0 key regardless of name.
             PicoocHandler(),
             ActiveEraBF06Handler(),
             KeepS3Handler(),
