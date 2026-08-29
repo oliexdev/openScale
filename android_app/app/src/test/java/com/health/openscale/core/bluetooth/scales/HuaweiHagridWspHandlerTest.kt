@@ -166,7 +166,7 @@ class HuaweiHagridWspHandlerTest {
     }
 
     @Test
-    fun `Scale 3 realtime notification before status=0 is not published`() {
+    fun `Scale 3 realtime notification before status=0 is published immediately`() {
         val handler = HuaweiHagridWspHandler()
         val callbacks = CapturingCallbacks()
         handler.supportFor(device("HUAWEI Scale 3"))
@@ -180,13 +180,20 @@ class HuaweiHagridWspHandlerTest {
 
         sendWspNotification(handler, CHR_REALTIME_WEIGHT, realtimePayload())
 
-        assertThat(callbacks.published).isEmpty()
+        assertThat(callbacks.published).hasSize(1)
+        assertThat(callbacks.published.single().weight).isWithin(0.0001f).of(77.32f)
         assertThat(callbacks.infos.map { it.resId })
             .contains(R.string.bluetooth_scale_info_measuring_weight)
     }
 
     @Test
-    fun `Scale 3 realtime notification after status=0 is published exactly once`() {
+    fun `Scale 3 realtime publishes computed fat and preserves parsed impedances`() {
+        val user = ScaleUser(
+            id = 7,
+            birthday = Date(946684800000L),
+            bodyHeight = 175f,
+            gender = GenderType.MALE,
+        )
         val handler = HuaweiHagridWspHandler()
         val callbacks = CapturingCallbacks()
         handler.supportFor(device("HUAWEI Scale 3"))
@@ -194,28 +201,38 @@ class HuaweiHagridWspHandlerTest {
             transport = NoopTransport(),
             callbacks = callbacks,
             settings = InMemorySettings(),
-            data = FixedDataProvider(ScaleUser(id = 7)),
+            data = FixedDataProvider(user),
             scope = CoroutineScope(EmptyCoroutineContext),
         )
 
-        sendWspNotification(handler, CHR_MEASUREMENT_STATUS_RESULT, byteArrayOf(0x00))
+        sendWspNotification(handler, CHR_REALTIME_WEIGHT, scale3CompositionRealtimePayload())
 
-        // First post-status-0 realtime notification: saved.
-        sendWspNotification(handler, CHR_REALTIME_WEIGHT, realtimePayload())
         assertThat(callbacks.published).hasSize(1)
-        assertThat(callbacks.published.single().weight).isWithin(0.0001f).of(77.32f)
-        assertThat(callbacks.published.single().fat).isWithin(0.0001f).of(18.5f)
+        val measurement = callbacks.published.single()
+        val expectedComposition = HuaweiScale3BodyComposition.calculate(
+            heightCm = user.bodyHeight,
+            weightKg = 77.32f,
+            ageYears = user.age,
+            sex = HuaweiScale3BodyComposition.Sex.MALE,
+            impedanceOhm = 350.0,
+        )
+        assertThat(expectedComposition).isNotNull()
+        assertThat(measurement.weight).isWithin(0.0001f).of(77.32f)
+        assertThat(measurement.fat).isWithin(0.0001f).of(expectedComposition!!.bodyFatPercent)
+        // The stored low-frequency impedance is the very value the composition model was fed,
+        // so a measurement can still be interpreted from what is in the database.
+        assertThat(measurement.impedanceLow).isWithin(0.0001).of(350.0)
+        assertThat(measurement.impedance).isWithin(0.0001).of(600.0)
 
-        // Subsequent realtime notifications in the same session: ignored for persistence.
-        sendWspNotification(handler, CHR_REALTIME_WEIGHT, realtimePayload())
+        // Subsequent realtime notifications in the same cycle are ignored for persistence.
+        sendWspNotification(handler, CHR_REALTIME_WEIGHT, scale3CompositionRealtimePayload())
         assertThat(callbacks.published).hasSize(1)
     }
 
     @Test
-    fun `Scale 3 realtime before status=0 is cached and published when status=0 arrives`() {
-        // Common real-world sequence: the scale sends the final stable realtime notification
-        // BEFORE it sends measurement status=0. The cached value must be published on status=0,
-        // not discarded.
+    fun `Scale 3 realtime before status=0 is published immediately and status=0 does not duplicate`() {
+        // The Scale 3 sends the final stable realtime notification well before status=0.
+        // Persist it immediately; status=0 only closes the hardware/display cycle.
         val handler = HuaweiHagridWspHandler()
         val callbacks = CapturingCallbacks()
         handler.supportFor(device("HUAWEI Scale 3"))
@@ -227,19 +244,18 @@ class HuaweiHagridWspHandlerTest {
             scope = CoroutineScope(EmptyCoroutineContext),
         )
 
-        // Realtime arrives first – must NOT be published yet.
+        // Realtime arrives first and is published immediately.
         sendWspNotification(handler, CHR_REALTIME_WEIGHT, realtimePayload())
-        assertThat(callbacks.published).isEmpty()
+        assertThat(callbacks.published).hasSize(1)
+        assertThat(callbacks.published.single().weight).isWithin(0.0001f).of(77.32f)
         assertThat(callbacks.infos.map { it.resId })
             .contains(R.string.bluetooth_scale_info_measuring_weight)
 
-        // Status=0 arrives – cached realtime is published exactly once.
+        // status=0 must not publish the same result again.
         sendWspNotification(handler, CHR_MEASUREMENT_STATUS_RESULT, byteArrayOf(0x00))
         assertThat(callbacks.published).hasSize(1)
-        assertThat(callbacks.published.single().weight).isWithin(0.0001f).of(77.32f)
-        assertThat(callbacks.published.single().fat).isWithin(0.0001f).of(18.5f)
 
-        // Any further realtime notifications in the same session are ignored.
+        // Any further realtime notifications in the same completed cycle are ignored.
         sendWspNotification(handler, CHR_REALTIME_WEIGHT, realtimePayload())
         assertThat(callbacks.published).hasSize(1)
     }
@@ -457,23 +473,58 @@ class HuaweiHagridWspHandlerTest {
     @Test
     fun `sendPostMeasurementReads sends second realtime request only for Scale 3`() {
         fun realtimeWritesAfterStatus(deviceName: String): Int {
-            val handler = HuaweiHagridWspHandler()
-            handler.supportFor(device(deviceName))
-            val transport = CapturingTransport(
-                setOf(
-                    SVC_BODY_COMPOSITION to CHR_REALTIME_WEIGHT,
-                    SVC_BODY_COMPOSITION to CHR_HISTORY_WEIGHT,
-                    SVC_CURRENT_TIME to CHR_MEASUREMENT_STATUS_POLL,
-                    SVC_CURRENT_TIME to CHR_MEASUREMENT_STATUS_RESULT,
-                )
+            val randA = ByteArray(16) { it.toByte() }
+            val randB = ByteArray(16) { (it + 16).toByte() }
+            val workKey = ByteArray(16) { (it + 32).toByte() }
+            val workKeyIv = ByteArray(16) { (it + 48).toByte() }
+            val cak = ByteArray(16) { (it + 64).toByte() }
+            val c1 = ByteArray(16) { (it + 80).toByte() }
+            val c2 = ByteArray(16) { (it + 96).toByte() }
+            val userInfoIv = ByteArray(16) { (it + 112).toByte() }
+            val user = ScaleUser(
+                id = 1,
+                birthday = Date(946684800000L),
+                bodyHeight = 175f,
+                gender = GenderType.MALE,
+                initialWeight = 80f,
             )
+            val randomValues = ArrayDeque(listOf(randB, workKey, workKeyIv, userInfoIv))
+            val handler = HuaweiHagridWspHandler(randomBytes = { randomValues.removeFirst() })
+            val settings = InMemorySettings().apply {
+                putString(HuaweiHagridWspHandler.SETTINGS_KEY_CAK_HEX, cak.toHex())
+                putString(HuaweiHagridWspHandler.SETTINGS_KEY_C1_HEX, c1.toHex())
+                putString(HuaweiHagridWspHandler.SETTINGS_KEY_C2_HEX, c2.toHex())
+            }
+            val transport = CapturingTransport.allHagrid()
+
+            handler.supportFor(device(deviceName, address = HAGRID_ADDRESS))
             handler.attach(
                 transport = transport,
                 callbacks = CapturingCallbacks(),
-                settings = InMemorySettings(),
-                data = FixedDataProvider(ScaleUser(id = 1)),
+                settings = settings,
+                data = FixedDataProvider(user),
                 scope = CoroutineScope(EmptyCoroutineContext),
             )
+
+            // Measurement-status notifications are intentionally ignored until the
+            // authenticated Hagrid session reaches READY.
+            handler.handleConnected(user)
+            sendWspNotification(handler, CHR_REQUEST_AUTH, randA)
+            sendWspNotification(
+                handler,
+                CHR_AUTH_TOKEN,
+                HuaweiHagridWspLib.expectedAuthResponsePayload(randA, randB, cak)
+            )
+            sendWspNotification(handler, CHR_SEND_WORK_KEY, byteArrayOf(0x00))
+            sendWspNotification(handler, CHR_GET_MANAGER_INFO, managerInfoPayload())
+
+            val userInfoAck = HuaweiHagridWspLib.encryptedPayloadWithIv(
+                byteArrayOf(0x00),
+                workKey,
+                ByteArray(16) { (it + 128).toByte() }
+            )
+            sendWspNotification(handler, CHR_SET_USER_INFO, userInfoAck, encrypted = true)
+
             val before = transport.writes.count { it.characteristic == CHR_REALTIME_WEIGHT }
             sendWspNotification(handler, CHR_MEASUREMENT_STATUS_RESULT, byteArrayOf(0x00))
             return transport.writes.count { it.characteristic == CHR_REALTIME_WEIGHT } - before
@@ -750,6 +801,18 @@ class HuaweiHagridWspHandlerTest {
                 0xEA.toByte(), 0x07, 0x06, 0x16, 0x0F, 0x0E, 0x2A, 0x00,
                 0xF4.toByte(), 0x01, 0xF5.toByte(), 0x01, 0xF6.toByte(), 0x01,
                 0xF7.toByte(), 0x01, 0xF8.toByte(), 0x01, 0xF9.toByte(), 0x01,
+                0x48, 0x00,
+                0x58, 0x02, 0x59, 0x02, 0x5A, 0x02,
+                0x5B, 0x02, 0x5C, 0x02, 0x5D, 0x02,
+            )
+
+        private fun scale3CompositionRealtimePayload(): ByteArray =
+            byteArrayOf(
+                0x34, 0x1E,
+                0xB9.toByte(), 0x00,
+                0xEA.toByte(), 0x07, 0x06, 0x16, 0x0F, 0x0E, 0x2A, 0x00,
+                0xAC.toByte(), 0x0D, 0xAD.toByte(), 0x0D, 0xAE.toByte(), 0x0D,
+                0xAF.toByte(), 0x0D, 0xB0.toByte(), 0x0D, 0xB1.toByte(), 0x0D,
                 0x48, 0x00,
                 0x58, 0x02, 0x59, 0x02, 0x5A, 0x02,
                 0x5B, 0x02, 0x5C, 0x02, 0x5D, 0x02,
