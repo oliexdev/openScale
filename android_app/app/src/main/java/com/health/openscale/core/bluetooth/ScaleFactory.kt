@@ -176,9 +176,6 @@ class ScaleFactory @Inject constructor(
             HesleyHandler(),
             ExingtechY1Handler(),
             EbelterBodyFatB2Handler(),
-            // Same LeFu/0xFFF0 chip family; kept as siblings, not merged, since neither name
-            // ("Dara 2.0" / "Electronic Scale") collides with the other — see HumeDara2Handler's
-            // class doc for why it isn't FitTrackDaraHandler's differently-branded "Dara" either.
             HumeDara2Handler(),
             ExcelvanCF36xHandler(),
             EtekcityESF551Handler(),
