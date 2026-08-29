@@ -155,7 +155,7 @@ class BluetoothFacadeImpl @Inject constructor(
     override val savedDeviceSupport: StateFlow<DeviceSupport?> =
         combine(savedDevice, savedTuningProfile) { dev, tuning ->
             if (dev == null) return@combine null
-            val base = scaleFactory.getDeviceSupportFor(dev.name, dev.address) ?: return@combine null
+            val base = scaleFactory.getDeviceSupportFor(dev) ?: return@combine null
             base.copy(tuningProfile = tuning)
         }.stateIn(scope, SharingStarted.WhileSubscribed(5000), null)
 

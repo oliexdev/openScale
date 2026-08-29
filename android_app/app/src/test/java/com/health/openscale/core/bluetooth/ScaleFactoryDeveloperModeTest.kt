@@ -95,12 +95,12 @@ class ScaleFactoryDeveloperModeTest {
     @Test
     fun `developer mode leaves the reported driver of the saved scale untouched`() = runTest {
         val (factory, settings) = factoryWithSettings()
-        val before = factory.getDeviceSupportFor(GATT_SCALE, "00:11:22:33:44:55")
+        val before = factory.getDeviceSupportFor(ScaleCatalog.device(GATT_SCALE))
 
         settings.setDeveloperModeEnabled(true)
 
         assertThat(before?.displayName).isEqualTo("Sanitas SBF70 / SilverCrest SBF75 / Crane")
-        assertThat(factory.getDeviceSupportFor(GATT_SCALE, "00:11:22:33:44:55")?.displayName)
+        assertThat(factory.getDeviceSupportFor(ScaleCatalog.device(GATT_SCALE))?.displayName)
             .isEqualTo(before?.displayName)
     }
 

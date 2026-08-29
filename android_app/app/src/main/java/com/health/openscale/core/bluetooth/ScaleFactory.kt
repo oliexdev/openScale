@@ -302,10 +302,15 @@ class ScaleFactory @Inject constructor(
         return null
     }
 
-    fun getDeviceSupportFor(name: String, address: String): DeviceSupport? {
-        val info = ScannedDeviceInfo(name, address, 0, emptyList(), null)
-        return modernKotlinHandlers.firstNotNullOfOrNull { it.supportFor(info) }
-    }
+    /**
+     * Returns the [DeviceSupport] of the first handler that claims [device].
+     *
+     * Always pass the complete advertisement: handlers that identify a scale by its services,
+     * manufacturer data or service data (Etekcity Fit 8S, Yunmai X, the standard weight profile,
+     * ...) cannot recognise it from name and address alone and would report "no support".
+     */
+    fun getDeviceSupportFor(device: ScannedDeviceInfo): DeviceSupport? =
+        modernKotlinHandlers.firstNotNullOfOrNull { it.supportFor(device) }
 
     /**
      * Checks if any known handler can theoretically support the given device.
