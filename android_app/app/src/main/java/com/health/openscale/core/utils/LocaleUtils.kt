@@ -19,12 +19,14 @@ package com.health.openscale.core.utils
 
 import android.app.LocaleManager
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.os.Build
 import android.os.LocaleList
 import androidx.activity.ComponentActivity
 import com.health.openscale.core.data.SupportedLanguage
 import com.health.openscale.core.data.UnitType
 import java.text.NumberFormat
+import java.time.temporal.WeekFields
 import java.util.Locale
 
 
@@ -167,6 +169,26 @@ object LocaleUtils {
             UnitType.NONE-> signPrefix + formatNumber(absVal, maxFraction = 1, locale)
         }
     }
+
+    /**
+     * The calendar-week rule (first day of week, minimal days in first week) for grouping
+     * measurements into weeks.
+     *
+     * Deliberately read from the **device** configuration, never from [effectiveLocale] or
+     * `Locale.getDefault()`: [SupportedLanguage.toLocale] builds region-less locales such as
+     * `de`, and `WeekFields.of(Locale("de"))` is Sunday-based with a 1-day first week — so a
+     * German user picking the German in-app language would get Sunday weeks. On API 33+
+     * [updateAppLocale] additionally pushes that region-less locale into `LocaleManager`,
+     * where it can also become `Locale.getDefault()`.
+     *
+     * Falls back to ISO whenever no region is known (or the framework is unavailable, as in
+     * plain JVM unit tests), so the result is deterministic instead of accidentally Sunday.
+     */
+    @JvmStatic
+    fun systemWeekFields(): WeekFields = runCatching {
+        val locale = Resources.getSystem().configuration.locales[0]
+        if (locale.country.isNullOrBlank()) WeekFields.ISO else WeekFields.of(locale)
+    }.getOrDefault(WeekFields.ISO)
 
     /**
      * Locale-aware number formatting with clamped fraction digits.

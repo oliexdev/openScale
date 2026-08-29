@@ -77,11 +77,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import com.health.openscale.R
-import java.time.DayOfWeek
+import com.health.openscale.core.utils.LocaleUtils
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.time.temporal.TemporalAdjusters
 import java.time.temporal.WeekFields
 import java.util.Locale
 
@@ -476,16 +477,24 @@ enum class AggregationLevel(@param:StringRes val displayNameResId: Int) {
      * as epoch milliseconds.
      *
      * For [NONE] and [DAY] the period is a single calendar day.
+     *
+     * [weekFields] must be the same rule that [periodKey] and [periodLabel] are given —
+     * a [WEEK] period bounded by a different first-day-of-week than the one used to group
+     * measurements would not contain its own members (see issue #1454).
      */
     fun periodBounds(
         timestamp: Long,
         zone: ZoneId = ZoneId.systemDefault(),
+        weekFields: WeekFields = LocaleUtils.systemWeekFields(),
     ): Pair<Long, Long> {
         val date = Instant.ofEpochMilli(timestamp).atZone(zone).toLocalDate()
         val (start, end) = when (this) {
             NONE,
             DAY   -> date to date.plusDays(1)
-            WEEK  -> { val mon = date.with(DayOfWeek.MONDAY); mon to mon.plusWeeks(1) }
+            WEEK  -> {
+                val first = date.with(TemporalAdjusters.previousOrSame(weekFields.firstDayOfWeek))
+                first to first.plusWeeks(1)
+            }
             MONTH -> { val f = date.withDayOfMonth(1); f to f.plusMonths(1) }
             YEAR  -> { val f = date.withDayOfYear(1); f to f.plusYears(1) }
         }
@@ -494,42 +503,50 @@ enum class AggregationLevel(@param:StringRes val displayNameResId: Int) {
     }
 
     /**
-     * Returns a stable, locale-independent key for the period containing [timestamp].
+     * Returns a key identifying the period containing [timestamp].
      * Suitable as a LazyColumn item key or Map key.
      *
      * Examples: "2025-04-07" (DAY/NONE), "2025-W15" (WEEK), "2025-4" (MONTH), "2025" (YEAR).
+     *
+     * Stable for a given [zone] and [weekFields]; the [WEEK] key depends on the week rule and
+     * therefore changes if the device region does. Nothing persists it — it lives in memory for
+     * one aggregation pass — and a locale change recreates the activity, so that is harmless.
+     * It is not a durable identifier and must not be written to disk or exported.
      */
     fun periodKey(
         timestamp: Long,
         zone: ZoneId = ZoneId.systemDefault(),
+        weekFields: WeekFields = LocaleUtils.systemWeekFields(),
     ): String {
         val date = Instant.ofEpochMilli(timestamp).atZone(zone).toLocalDate()
         return when (this) {
             NONE,
             DAY   -> date.toString()
-            WEEK  -> {
-                val wf = WeekFields.of(Locale.getDefault())
-                "${date.get(wf.weekBasedYear())}-W${date.get(wf.weekOfWeekBasedYear())}"
-            }
+            WEEK  -> "${date.get(weekFields.weekBasedYear())}-W${date.get(weekFields.weekOfWeekBasedYear())}"
             MONTH -> "${date.year}-${date.monthValue}"
             YEAR  -> "${date.year}"
         }
     }
 
     /**
-     * Returns a human-readable, locale-sensitive label for the period containing [timestamp].
+     * Returns a human-readable label for the period containing [timestamp].
      *
-     * Intentionally separate from [periodKey] — labels are locale-dependent and must
-     * not be used as stable identifiers.
+     * [locale] only drives presentation — month names, date style. The week *identity* comes
+     * from [weekFields], the same rule [periodKey] and [periodBounds] use, so the number shown
+     * always belongs to the period the row actually covers.
      *
      * @param calendarWeekAbbrev Localised abbreviation for "calendar week" (e.g. "CW" / "KW").
      *                           Only used for [WEEK].
+     * @param short              Renders [MONTH] as "Apr 2025" instead of "April 2025", for
+     *                           narrow layouts such as the table's period column.
      */
     fun periodLabel(
         timestamp: Long,
         calendarWeekAbbrev: String,
         locale: Locale = Locale.getDefault(),
         zone: ZoneId = ZoneId.systemDefault(),
+        weekFields: WeekFields = LocaleUtils.systemWeekFields(),
+        short: Boolean = false,
     ): String {
         val date = Instant.ofEpochMilli(timestamp).atZone(zone).toLocalDate()
         return when (this) {
@@ -537,11 +554,12 @@ enum class AggregationLevel(@param:StringRes val displayNameResId: Int) {
             DAY   -> date.format(
                 DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
             )
-            WEEK  -> {
-                val wf = WeekFields.of(locale)
-                "${date.get(wf.weekBasedYear())} – $calendarWeekAbbrev ${date.get(wf.weekOfWeekBasedYear())}"
-            }
-            MONTH -> date.format(DateTimeFormatter.ofPattern("MMMM yyyy", locale))
+            WEEK  ->
+                "${date.get(weekFields.weekBasedYear())} – " +
+                    "$calendarWeekAbbrev ${date.get(weekFields.weekOfWeekBasedYear())}"
+            MONTH -> date.format(
+                DateTimeFormatter.ofPattern(if (short) "MMM yyyy" else "MMMM yyyy", locale)
+            )
             YEAR  -> date.year.toString()
         }
     }

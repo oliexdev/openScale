@@ -119,9 +119,7 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.time.temporal.WeekFields
 import java.util.Date
 import java.util.Locale
 
@@ -397,22 +395,19 @@ fun TableScreen(
     val dateFormatterTime      = remember { DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault()) }
 
     val calendarWeekAbbrev = stringResource(R.string.calendar_week_abbrev)
+    val weekFields         = remember { LocaleUtils.systemWeekFields() }
+
+    // Period labels come from AggregationLevel.periodLabel so the week number shown here is the
+    // one the row's period bounds were built from — see issue #1454.
     val aggregationLabelFormatter: (Long, AggregationLevel) -> String =
-        remember(effectiveAggregationLevel, calendarWeekAbbrev) {
+        remember(calendarWeekAbbrev, weekFields) {
             { timestamp, level ->
-                val date   = Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDate()
-                val locale = Locale.getDefault()
-                when (level) {
-                    AggregationLevel.NONE  -> ""
-                    AggregationLevel.DAY   -> dateFormatterDate.format(Date(timestamp))
-                    AggregationLevel.WEEK  -> {
-                        val wf = WeekFields.of(locale)
-                        "${date.get(wf.weekBasedYear())} – $calendarWeekAbbrev ${date.get(wf.weekOfWeekBasedYear())}"
-                    }
-                    AggregationLevel.MONTH ->
-                        date.format(DateTimeFormatter.ofPattern("MMM yyyy", locale))
-                    AggregationLevel.YEAR  -> date.year.toString()
-                }
+                if (level == AggregationLevel.NONE) "" else level.periodLabel(
+                    timestamp          = timestamp,
+                    calendarWeekAbbrev = calendarWeekAbbrev,
+                    weekFields         = weekFields,
+                    short              = true,
+                )
             }
         }
 
@@ -576,19 +571,24 @@ fun TableScreen(
             Instant.ofEpochMilli(drillDownEndMillis).atZone(ZoneId.systemDefault()).toLocalDate(),
         )
         val midMillis = drillDownStartMillis + (drillDownEndMillis - drillDownStartMillis) / 2L
-        val date      = Instant.ofEpochMilli(midMillis).atZone(ZoneId.systemDefault()).toLocalDate()
         // Read the locale observably so the title recomposes on locale changes.
         val locale    = ComposeLocale.current.platformLocale
         val count     = aggregatedItems.size
-        val label = when {
-            spanDays <= 1  -> dateFormatterDate.format(Date(drillDownStartMillis))
-            spanDays <= 8  -> {
-                val wf = WeekFields.of(locale)
-                "${date.get(wf.weekBasedYear())} – $calendarWeekAbbrev ${date.get(wf.weekOfWeekBasedYear())}"
-            }
-            spanDays <= 32 -> date.format(DateTimeFormatter.ofPattern("MMMM yyyy", locale))
-            else           -> date.year.toString()
+        // The drill-down range may come from any screen's aggregation, so the level is derived
+        // from the range itself rather than from this screen's setting. Labelling then goes
+        // through periodLabel like everywhere else.
+        val level = when {
+            spanDays <= 1  -> AggregationLevel.DAY
+            spanDays <= 8  -> AggregationLevel.WEEK
+            spanDays <= 32 -> AggregationLevel.MONTH
+            else           -> AggregationLevel.YEAR
         }
+        val label = level.periodLabel(
+            timestamp          = midMillis,
+            calendarWeekAbbrev = calendarWeekAbbrev,
+            locale             = locale,
+            weekFields         = weekFields,
+        )
         "$label ($count)"
     } else {
         stringResource(R.string.route_title_table)
