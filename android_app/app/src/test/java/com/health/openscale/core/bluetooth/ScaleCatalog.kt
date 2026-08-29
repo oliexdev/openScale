@@ -21,6 +21,7 @@ import android.util.SparseArray
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
 import com.health.openscale.core.bluetooth.scales.HealthKeep280Handler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
+import com.health.openscale.core.bluetooth.scales.AfuB1Handler
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
@@ -44,6 +45,7 @@ import com.health.openscale.core.bluetooth.scales.HoffenBbs8107Handler
 import com.health.openscale.core.bluetooth.scales.HuaweiAhCh100Handler
 import com.health.openscale.core.bluetooth.scales.HuaweiCH100SHandler
 import com.health.openscale.core.bluetooth.scales.HuaweiHagridWspHandler
+import com.health.openscale.core.bluetooth.scales.HumeDara2Handler
 import com.health.openscale.core.bluetooth.scales.IHealthHS3Handler
 import com.health.openscale.core.bluetooth.scales.InlifeHandler
 import com.health.openscale.core.bluetooth.scales.KeepS3Handler
@@ -54,6 +56,7 @@ import com.health.openscale.core.bluetooth.scales.MiScaleHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
 import com.health.openscale.core.bluetooth.scales.OmronWlcHandler
+import com.health.openscale.core.bluetooth.scales.PicoocHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
 import com.health.openscale.core.bluetooth.scales.QNHandler
@@ -158,9 +161,13 @@ object ScaleCatalog {
      */
     val fixtures: List<Fixture> = listOf(
         // --- Matched by advertised name ---
-	device("HEALTHKEEP 280") claimedBy HealthKeep280Handler::class.java,
-	device("AE BS-06") claimedBy ActiveEraBF06Handler::class.java,
+        device("HEALTHKEEP 280") claimedBy HealthKeep280Handler::class.java,
+        device("AE BS-06") claimedBy ActiveEraBF06Handler::class.java,
+        device("AFU-BH-TZ-B1", uuid16(0xFC50)) claimedBy AfuB1Handler::class.java,
         device("Keep_S3") claimedBy KeepS3Handler::class.java,
+        // The S3 Lite V2.0 advertises as PICOOC-CQ; the Latin series carries no vendor prefix.
+        device("PICOOC-CQ") claimedBy PicoocHandler::class.java,
+        device("Latin-S") claimedBy PicoocHandler::class.java,
         device("Beurer BF450") claimedBy BeurerBF450Handler::class.java,
         device("BIA SCALE", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
         device("RYFIT") claimedBy RyFitHandler::class.java,
@@ -173,6 +180,7 @@ object ScaleCatalog {
         device("SANITAS SBF73") claimedBy SanitasSbf72Handler::class.java,
         device("Beurer BF915") claimedBy SanitasSbf72Handler::class.java,
         device("Beurer BF105") claimedBy StandardBeurerSanitasHandler::class.java,
+        device("Beurer BF1000") claimedBy StandardBeurerSanitasHandler::class.java,
         device("Beurer BF500") claimedBy StandardBeurerSanitasHandler::class.java,
         device("Beurer BF600") claimedBy StandardBeurerSanitasHandler::class.java,
         device("Beurer BF950") claimedBy StandardBeurerSanitasHandler::class.java,
@@ -216,6 +224,7 @@ object ScaleCatalog {
         device("vscale") claimedBy ExingtechY1Handler::class.java,
         device("Body Fat-B2") claimedBy EbelterBodyFatB2Handler::class.java,
         device("Electronic Scale") claimedBy ExcelvanCF36xHandler::class.java,
+        device("Dara 2.0") claimedBy HumeDara2Handler::class.java,
         device("Etekcity Smart Fitness Scale") claimedBy EtekcityESF551Handler::class.java,
         device("EUFY C20") claimedBy EufyC20Handler::class.java,
         device("eufy T9148") claimedBy EufyP2Handler::class.java,
