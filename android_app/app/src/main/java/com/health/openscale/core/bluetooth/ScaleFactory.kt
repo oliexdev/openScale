@@ -22,6 +22,7 @@ import androidx.annotation.VisibleForTesting
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
+import com.health.openscale.core.bluetooth.scales.AfuB1Handler
 import com.health.openscale.core.bluetooth.scales.FitTrackDaraHandler
 import com.health.openscale.core.bluetooth.scales.ScaleupHandler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
@@ -131,6 +132,7 @@ class ScaleFactory @Inject constructor(
         internal fun createHandlers(): List<ScaleDeviceHandler> = listOf(
             // Exact-name match must precede generic LeFu/0xFFF0 handlers (first match wins).
             ActiveEraBF06Handler(),
+            AfuB1Handler(),
             KeepS3Handler(),
             OmronWlcHandler(),
             BeurerBF450Handler(),
