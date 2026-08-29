@@ -171,6 +171,7 @@ object ScaleCatalog {
         device("SANITAS SBF73") claimedBy SanitasSbf72Handler::class.java,
         device("Beurer BF915") claimedBy SanitasSbf72Handler::class.java,
         device("Beurer BF105") claimedBy StandardBeurerSanitasHandler::class.java,
+        device("Beurer BF1000") claimedBy StandardBeurerSanitasHandler::class.java,
         device("Beurer BF500") claimedBy StandardBeurerSanitasHandler::class.java,
         device("Beurer BF600") claimedBy StandardBeurerSanitasHandler::class.java,
         device("Beurer BF950") claimedBy StandardBeurerSanitasHandler::class.java,
