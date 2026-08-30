@@ -442,10 +442,8 @@ private fun MeasurementAnalysisCard(analysis: MeasurementAnalysis) {
 
         // ── Summary ───────────────────────────────────────────────────
         val summary: String? = when {
-            analysis.plateauDays != null &&
-                    analysis.plateauDays > 14 &&
-                    java.time.temporal.ChronoUnit.DAYS.between(analysis.lastMeasuredOn, LocalDate.now()) <= 7 ->
-                stringResource(R.string.insights_summary_plateau, analysis.plateauDays)
+            analysis.shouldShowPlateauSummary() ->
+                stringResource(R.string.insights_summary_plateau, analysis.plateauDays ?: 0)
 
             analysis.shortTermTrend != analysis.longTermTrend && analysis.longTermTrend != TrendDirection.STABLE -> when (analysis.shortTermTrend) {
                 TrendDirection.DOWN   -> stringResource(R.string.insights_summary_trend_change_down)
@@ -465,6 +463,12 @@ private fun MeasurementAnalysisCard(analysis: MeasurementAnalysis) {
         summary?.let { InsightSummaryText(it) }
     }
 }
+
+internal fun MeasurementAnalysis.shouldShowPlateauSummary(today: LocalDate = LocalDate.now()): Boolean =
+    plateauDays != null &&
+            plateauDays > 14 &&
+            longTermTrend == TrendDirection.STABLE &&
+            java.time.temporal.ChronoUnit.DAYS.between(lastMeasuredOn, today) <= 7
 
 // ---------------------------------------------------------------------------
 // ShiftStatTile
