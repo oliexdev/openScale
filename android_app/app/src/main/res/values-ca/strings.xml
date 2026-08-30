@@ -808,4 +808,5 @@
     <string name="bt_sbf72_choice_slot_other_user">P%1$d: Utilitzat per %2$s (Voleu assignar-vos-el?)</string>
     <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Ocupat (no enllaçat)</string>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d: Crea «%2$s» aquí</string>
+    <string name="bt_warn_low_battery_unknown">La bàscula té la bateria baixa.</string>
 </resources>
