@@ -89,11 +89,11 @@
     <string name="user_settings_content_description_delete">מחיקת משתמש</string>
     <string name="user_settings_content_description_add_user">הוספת משתמש חדש</string>
     <string name="user_detail_content_description_change_unit">החלפת יחידה</string>
-    <string name="success_measurement_updated">המדידה עודכנה בהצלחה</string>
-    <string name="success_measurement_saved">המדידה נשמרה בהצלחה</string>
-    <string name="error_saving_measurement">שגיאה בשמירת המדידה</string>
-    <string name="success_measurement_deleted">המדידה %1$s נמחקה בהצלחה</string>
-    <string name="error_deleting_measurement">שגיאה במחיקת המדידה</string>
+    <string name="success_measurement_updated">המדידה עודכנה (%1$s)</string>
+    <string name="success_measurement_saved">המדידה נשמרה (%1$s)</string>
+    <string name="error_saving_measurement">לא ניתן לשמור את המדידה. נא לנסות שוב.</string>
+    <string name="success_measurement_deleted">מדידה נמחקה (%1$s)</string>
+    <string name="error_deleting_measurement">לא ניתן למחוק מדידה. נא לנסות שוב.</string>
     <string name="action_save_measurement">שמירת מדידה</string>
     <string name="action_add_measurement">הוספת מדידה</string>
     <string name="action_add_measurement_desc">הוספת מדידה חדשה</string>
@@ -136,4 +136,16 @@
     <string name="measurement_type_visceral_fat">שומן בטני</string>
     <string name="measurement_type_chest">חזה</string>
     <string name="sync_app_open_action">פתיחה</string>
+    <string name="sync_app_unreachable_hint">השינוי האחרון לא סונכרן. נא לפתוח את openScale-sync ולהפעיל סנכרון ידני.</string>
+    <string name="route_title_insights">תובנות</string>
+    <string name="user_added_successfully">המשתמש/ת %1$s נוספו בהצלחה.</string>
+    <string name="error_duplicate_timestamp">לא נשמר - כבר קיימת מדידה ב־%1$s.</string>
+    <string name="action_undo">הסגה</string>
+    <string name="cd_chart_handle_show">נגיעה תציג את התרשים</string>
+    <string name="dialog_title_discard_changes">לסלק את השינויים?</string>
+    <string name="dialog_message_discard_changes">השינויים שלך לא נשמרו והם ילכו לאיבוד.</string>
+    <string name="action_discard">סילוק</string>
+    <string name="action_keep_editing">להמשיך לערוך</string>
+    <string name="dialog_title_change_value">שינוי %1$s</string>
+    <string name="content_desc_increase_value">הגדלת %1$s</string>
 </resources>
