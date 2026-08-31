@@ -80,6 +80,15 @@ class QNHandler : ScaleDeviceHandler() {
     /** Flag to track if we've received the protocol type from 0x12 frame. */
     private var hasReceivedProtocolType = false
 
+    /**
+     * Whether the 0x12 frame used the long/"universal" 18-byte layout (length byte ==
+     * data.length, protocol type 0xFF, e.g. GE CS 10 G "Fit Plus" — confirmed via BTSnoop
+     * capture). Devices using this variant send live weight in the ES-30M byte layout
+     * ([4]=state, [5,6]=weight) even when weightScaleFactor is 100, not 10, so this flag
+     * — not weightScaleFactor — is what the live-weight parser gates on for them.
+     */
+    private var isLongFrameVariant = false
+
     /** Store the current user to access later when sending configuration. */
     private var currentUser: ScaleUser? = null
 
@@ -101,7 +110,11 @@ class QNHandler : ScaleDeviceHandler() {
             nameLc.contains("renpho-scale") ||
             // SEB/Tefal Goodvibes variants advertise under SEB branding
             // while keeping the QN/Yolanda service layout.
-            nameLc.contains("seb-scale")
+            nameLc.contains("seb-scale") ||
+            // GE CS 10 G "Fit Plus": confirmed via BTSnoop capture to advertise
+            // FFE0 pre-connect with name "Fit Plus" (not AE00 — that's only visible
+            // after GATT connect), so the AE00 relaxation below never fires for it.
+            nameLc == "fit plus"
 
         // AE00 is a QN-only vendor service (newer QN firmware) that is never shared with the
         // fff0 Inlife/1byone/Eufy cluster, so it positively identifies a QN scale even when the
@@ -137,6 +150,7 @@ class QNHandler : ScaleDeviceHandler() {
         weightScaleFactor = 100.0f
         seenProtocolType = 0x00.toByte()
         hasReceivedProtocolType = false
+        isLongFrameVariant = false
         historyQueryAttempts = 0
         isConnected = true
         sessionStartedScaleSeconds = (System.currentTimeMillis() / 1000L) - SCALE_UNIX_TIMESTAMP_OFFSET
@@ -289,9 +303,12 @@ class QNHandler : ScaleDeviceHandler() {
         logD( "QN: raw notify: ${data.toHexPreview(24)}")
 
         // Detect format by checking if byte[4] looks like a stable flag (0x00, 0x01, 0x02)
-        // vs weight data (typically > 0x10)
+        // vs weight data (typically > 0x10). weightScaleFactor==10 catches the classic
+        // ES-30M; isLongFrameVariant catches the "universal" (protocolType 0xFF) devices
+        // that use this same byte layout despite reporting factor 100 — confirmed via
+        // BTSnoop capture for GE CS 10 G "Fit Plus".
         val byte4Value = data[4].toInt() and 0xFF
-        val isES30MFormat = byte4Value <= 0x02 && weightScaleFactor == 10.0f
+        val isES30MFormat = byte4Value <= 0x02 && (weightScaleFactor == 10.0f || isLongFrameVariant)
 
         val stable: Boolean
         val raw: Float
@@ -302,7 +319,11 @@ class QNHandler : ScaleDeviceHandler() {
             // ES-30M format: byte[4]=stable, bytes[5,6]=weight
             if (data.size < 11) return
             val stableFlag = byte4Value
-            stable = stableFlag == 0x02 || stableFlag == 0x01
+            // Only state 2 carries real impedance — state 1 ("stabilizing") still reports
+            // R1=R2=0 in every captured frame, so treating it as stable would publish a
+            // measurement with fabricated impedance and then never see the real one (guarded
+            // by hasPublishedForThisSession). Confirmed via BTSnoop capture.
+            stable = stableFlag == 0x02
             raw = u16be(data[5], data[6])
             r1 = u16be(data[7], data[8])
             r2 = u16be(data[9], data[10])
@@ -317,7 +338,22 @@ class QNHandler : ScaleDeviceHandler() {
             logD("QN: using original format")
         }
 
-        if (!stable || hasPublishedForThisSession) return
+        if (!stable) return
+
+        // Acknowledge the stable reading with 0x1F, per the vendor SDK
+        // (CmdBuilder.buildOverCmd -> QNDecoderImpl opcode 0x10/state 0x02 handler), which
+        // always answers a stable frame with [0x1F, 0x05, protocolType, 0x10, checksum]
+        // regardless of anything else. Sent unconditionally (even on repeat stable frames)
+        // to match the vendor app's behavior.
+        val ack = byteArrayOf(0x1F, 0x05, seenProtocolType, 0x10, 0x00)
+        ack[ack.lastIndex] = checksum(ack, 0, ack.lastIndex - 1)
+        if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
+            writeTo(SVC_T2, CHR_T2_WRITE_SHARED, ack, true)
+        } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
+            writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, ack, true)
+        }
+
+        if (hasPublishedForThisSession) return
 
         var weightKg = raw / weightScaleFactor
 
@@ -441,9 +477,13 @@ class QNHandler : ScaleDeviceHandler() {
      */
     private fun handleScaleInfoFrame(data: ByteArray) {
         if (data.size <= 10) return
-        
+
         weightScaleFactor = if (data[10].toInt() == 1) 100.0f else 10.0f
-        logD("QN: set weightScaleFactor=$weightScaleFactor from opcode 0x12")
+        // Long/"universal" variant: length byte equals the actual frame length (e.g. 0x12 for
+        // an 18-byte frame). Confirmed via BTSnoop capture for GE CS 10 G "Fit Plus"
+        // (protocolType 0xFF, weightScaleFactor 100, yet ES-30M-style 0x10 frames).
+        isLongFrameVariant = (data[1].toInt() and 0xFF) == data.size
+        logD("QN: set weightScaleFactor=$weightScaleFactor isLongFrameVariant=$isLongFrameVariant from opcode 0x12")
         
         // NOW send the configuration after we have the protocol type
         if (!hasReceivedProtocolType) {
@@ -468,11 +508,20 @@ class QNHandler : ScaleDeviceHandler() {
             else -> 0x01.toByte() // KG
         }
 
-        logD("QN: sending config with seenProtocolType=$seenProtocolType unitByte=$unitByte")
+        // Height/age/gender, per the vendor SDK's CmdBuilder.buildCmd(0x13, scaleType,
+        // [unit, lightInterval, height, age, gender]) (QNDecoderImpl.setScaleConfig).
+        // Clamped to the vendor's own [60,220]cm / [6,80]yr bounds (buildUserInfoCmd) so an
+        // out-of-range profile can't produce a byte the scale's firmware doesn't expect.
+        // Gender wire byte is inverted from the vendor's internal enum: 0 = male, 1 = female.
+        val heightByte = user.bodyHeight.toInt().coerceIn(60, 220).toByte()
+        val ageByte = user.age.coerceIn(6, 80).toByte()
+        val genderByte = if (user.gender.isMale()) 0x00.toByte() else 0x01.toByte()
+
+        logD("QN: sending config with seenProtocolType=$seenProtocolType unitByte=$unitByte height=$heightByte age=$ageByte gender=$genderByte")
 
         // Configure unit on both flavors (the non-matching write will be ignored by the stack).
         val cfg = byteArrayOf(
-            0x13, 0x09, seenProtocolType, unitByte, 0x10, 0x00, 0x00, 0x00, 0x00
+            0x13, 0x09, seenProtocolType, unitByte, 0x10, heightByte, ageByte, genderByte, 0x00
         )
         cfg[cfg.lastIndex] = checksum(cfg, 0, cfg.lastIndex) // last byte = checksum
 
