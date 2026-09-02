@@ -19,7 +19,6 @@ package com.health.openscale.core.usecase
 
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.testutil.Fixtures
 import org.junit.Test
@@ -27,8 +26,8 @@ import org.junit.Test
 class MeasurementFilterUseCasesTest {
 
     private val useCase = MeasurementFilterUseCases()
-    private val weight = Fixtures.type(id = 1, key = MeasurementTypeKey.WEIGHT)
-    private val fat = Fixtures.type(id = 2, key = MeasurementTypeKey.BODY_FAT)
+    private val weight = Fixtures.type(id = 1, identity = MeasurementType.WEIGHT.identity)
+    private val fat = Fixtures.type(id = 2, identity = MeasurementType.BODY_FAT.identity)
 
     private fun emWith(measurementId: Int, vararg types: MeasurementType): EnrichedMeasurement =
         Fixtures.enriched(

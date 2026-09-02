@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -29,6 +30,9 @@ import java.util.Locale
 import java.util.UUID
 import kotlin.math.min
 import kotlin.random.Random
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Handler for **Bluetooth Standard Weight Profile** devices (GATT 181D/181B/181C/1805/180F).
@@ -176,12 +180,12 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
     protected open fun transformBeforePublish(m: ScaleMeasurement): ScaleMeasurement {
         logD("transformBeforePublish called for measurement: $m")
 
-        val w = m.weight.takeIf { it > 0f } ?: 1f
+        val w = (m[MeasurementType.WEIGHT]?.value ?: 0f).takeIf { it > 0f } ?: 1f
 
-        m.water = (m.water / w) * 100f
+        m[MeasurementType.WATER]?.let { waterMassKg -> m[MeasurementType.WATER] = Percent((waterMassKg.value / w) * 100f) }
 
-        logD("transformed values before publish: weight=${m.weight}kg, lbm=${m.lbm}kg, bone=${m.bone}kg, " +
-                    "fat=${m.fat}%, muscle=${m.muscle}%, water=${m.water}%")
+        logD("transformed values before publish: weight=${m[MeasurementType.WEIGHT]}kg, lbm=${m[MeasurementType.LBM]}kg, bone=${m[MeasurementType.BONE]}kg, " +
+                    "fat=${m[MeasurementType.BODY_FAT]}%, muscle=${m[MeasurementType.MUSCLE]}%, water=${m[MeasurementType.WATER]}%")
 
         return m
     }
@@ -342,7 +346,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         val weightRaw = u16le(value, offset); offset += 2
 
         val m = ScaleMeasurement()
-        m.weight = weightRaw * multiplier
+        m[MeasurementType.WEIGHT] = Kg(weightRaw * multiplier)
 
         if (tsPresent) {
             val cal = Calendar.getInstance()
@@ -361,7 +365,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
             val scaleUserIndex = u8(value, offset); offset += 1
             val appId = loadUserIdForScaleIndex(scaleUserIndex)
             if (appId != -1) m.userId = appId
-            logD("Weight: flags=0x${flags.toString(16)} idx=$scaleUserIndex mappedAppId=$appId kg=$isKg value=${m.weight}")
+            logD("Weight: flags=0x${flags.toString(16)} idx=$scaleUserIndex mappedAppId=$appId kg=$isKg value=${m[MeasurementType.WEIGHT]}")
         }
 
         if (bmiHeight) {
@@ -397,7 +401,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         val m = ScaleMeasurement()
 
         val bodyFatPct = u16le(value, offset) * 0.1f; offset += 2
-        m.fat = bodyFatPct
+        m[MeasurementType.BODY_FAT] = Percent(bodyFatPct)
 
         if (tsPresent) {
             val cal = Calendar.getInstance()
@@ -427,7 +431,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
 
         if (musclePctPresent) {
             val musclePct = u16le(value, offset) * 0.1f; offset += 2
-            m.muscle = musclePct
+            m[MeasurementType.MUSCLE] = Percent(musclePct)
         }
 
         var softLean = 0.0f
@@ -448,21 +452,21 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
 
         if (waterMassPresent) {
             val bodyWaterMass = u16le(value, offset) * massMultiplier; offset += 2
-            m.water = bodyWaterMass
+            m[MeasurementType.WATER] = Percent(bodyWaterMass)
         }
 
         if (impedancePresent) {
             val z = u16le(value, offset) * 0.1f; offset += 2
             logD("Impedance=$z Ω")
             // Store the raw impedance so body composition can be recomputed later.
-            if (z > 0f) m.impedance = z.toDouble()
+            if (z > 0f) m[MeasurementType.IMPEDANCE] = Ohm(z)
         }
 
         if (weightPresent) {
             val w = u16le(value, offset) * massMultiplier; offset += 2
-            m.weight = w
+            m[MeasurementType.WEIGHT] = Kg(w)
         } else {
-            pendingMeasurement?.weight?.takeIf { it > 0f }?.let { m.weight = it }
+            pendingMeasurement?.get(MeasurementType.WEIGHT)?.value?.takeIf { it > 0f }?.let { m[MeasurementType.WEIGHT] = Kg(it) }
         }
 
         if (heightPresent) {
@@ -473,13 +477,13 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         if (multiPacket) logW("Body Composition: multi-packet measurement not supported")
 
         // Derive LBM & bone if we have soft-lean and weight
-        val w2 = m.weight
+        val w2 = (m[MeasurementType.WEIGHT]?.value ?: 0f)
         if (w2 > 0f && softLeanPresent) {
-            val fatMass = w2 * (m.fat / 100f)
+            val fatMass = w2 * ((m[MeasurementType.BODY_FAT]?.value ?: 0f) / 100f)
             val leanBodyMass = w2 - fatMass
             val boneMass = leanBodyMass - softLean
-            m.lbm = leanBodyMass
-            m.bone = boneMass
+            m[MeasurementType.LBM] = Kg(leanBodyMass)
+            m[MeasurementType.BONE] = Kg(boneMass)
         }
 
         return m

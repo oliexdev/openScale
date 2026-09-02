@@ -38,7 +38,7 @@ import com.health.openscale.core.data.EvaluationState
 import com.health.openscale.core.data.IconResource
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementTypeIcon
-import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.UserFacade
 import dagger.hilt.EntryPoint
@@ -223,7 +223,7 @@ private suspend fun loadDisplayData(
 
     // Resolve target type: explicit selection → weight → first enabled numeric
     val targetType = selectedTypeId?.let { sel -> allTypes.firstOrNull { it.id == sel } }
-        ?: allTypes.firstOrNull { it.key == MeasurementTypeKey.WEIGHT }
+        ?: allTypes.firstOrNull { it.key == MeasurementType.WEIGHT }
         ?: allTypes.firstOrNull { it.isEnabled && (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) }
         ?: return null
 

@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.YunmaiLib
@@ -29,6 +30,8 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.abs
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 /**
  * Yunmai (SE/Mini) – minimal, event-driven implementation.
@@ -142,13 +145,13 @@ class YunmaiHandler(
         }
 
         if (lastMeasurement != null && isDuplicateMeasurement(measurement, lastMeasurement!!)) {
-            logI("Duplicate measurement skipped: weight=${measurement.weight}kg, fat=${measurement.fat}")
+            logI("Duplicate measurement skipped: weight=${measurement[MeasurementType.WEIGHT]}kg, fat=${measurement[MeasurementType.BODY_FAT]}")
             return
         }
 
         publish(measurement) // base will take it from here
         lastMeasurement = measurement
-        logI("Measurement published: weight=${measurement.weight} kg, fat=${measurement.fat}")
+        logI("Measurement published: weight=${measurement[MeasurementType.WEIGHT]} kg, fat=${measurement[MeasurementType.BODY_FAT]}")
     }
 
     // --- Packet builders ------------------------------------------------------
@@ -216,7 +219,7 @@ class YunmaiHandler(
 
         val m = ScaleMeasurement().apply {
             dateTime = Date(tsMillis)
-            weight = weightKg
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
         }
 
         if (isMini) {
@@ -243,12 +246,12 @@ class YunmaiHandler(
             }
 
             if (fatPct > 0f && fatPct.isFinite()) {
-                m.fat = fatPct
-                m.muscle = yunmai.getMuscle(fatPct)
-                m.water = yunmai.getWater(fatPct)
-                m.bone = yunmai.getBoneMass(m.muscle, weightKg)
-                m.lbm = yunmai.getLeanBodyMass(weightKg, fatPct)
-                m.visceralFat = yunmai.getVisceralFat(fatPct, user.age)
+                m[MeasurementType.BODY_FAT] = Percent(fatPct)
+                m[MeasurementType.MUSCLE] = Percent(yunmai.getMuscle(fatPct))
+                m[MeasurementType.WATER] = Percent(yunmai.getWater(fatPct))
+                m[MeasurementType.BONE] = Kg(yunmai.getBoneMass((m[MeasurementType.MUSCLE]?.value ?: 0f), weightKg))
+                m[MeasurementType.LBM] = Kg(yunmai.getLeanBodyMass(weightKg, fatPct))
+                m[MeasurementType.VISCERAL_FAT] = yunmai.getVisceralFat(fatPct, user.age)
             } else {
                 logW("Body fat is zero/invalid (prot=$protocolVer, R=$resistance)")
             }
@@ -274,12 +277,12 @@ class YunmaiHandler(
         val timeDiff = abs(newTime - existingTime)
         if (timeDiff > timeThresholdMs) return false
 
-        if (abs(new.weight - existing.weight) > valueTolerance) return false
-        if (abs(new.fat - existing.fat) > valueTolerance) return false
-        if (abs(new.water - existing.water) > valueTolerance) return false
-        if (abs(new.muscle - existing.muscle) > valueTolerance) return false
-        if (abs(new.bone - existing.bone) > valueTolerance) return false
-        if (abs(new.visceralFat - existing.visceralFat) > valueTolerance) return false
+        if (abs((new[MeasurementType.WEIGHT]?.value ?: 0f) - (existing[MeasurementType.WEIGHT]?.value ?: 0f)) > valueTolerance) return false
+        if (abs((new[MeasurementType.BODY_FAT]?.value ?: 0f) - (existing[MeasurementType.BODY_FAT]?.value ?: 0f)) > valueTolerance) return false
+        if (abs((new[MeasurementType.WATER]?.value ?: 0f) - (existing[MeasurementType.WATER]?.value ?: 0f)) > valueTolerance) return false
+        if (abs((new[MeasurementType.MUSCLE]?.value ?: 0f) - (existing[MeasurementType.MUSCLE]?.value ?: 0f)) > valueTolerance) return false
+        if (abs((new[MeasurementType.BONE]?.value ?: 0f) - (existing[MeasurementType.BONE]?.value ?: 0f)) > valueTolerance) return false
+        if (abs((new[MeasurementType.VISCERAL_FAT] ?: 0f) - (existing[MeasurementType.VISCERAL_FAT] ?: 0f)) > valueTolerance) return false
 
         return true
     }

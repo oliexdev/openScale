@@ -40,6 +40,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.HuaweiHagridSecretProvider
@@ -55,6 +56,11 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.roundToInt
+import com.health.openscale.core.data.Bpm
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Huawei/Honor Hagrid WSP scale handler.
@@ -589,7 +595,7 @@ class HuaweiHagridWspHandler(
     }
 
     private fun buildUserInfo(user: ScaleUser): HuaweiHagridWspLib.HagridUserInfo {
-        val lastWeight = lastMeasurementFor(user.id)?.weight
+        val lastWeight = lastMeasurementFor(user.id)?.get(MeasurementType.WEIGHT)?.value
         val configuredWeight = when {
             lastWeight != null && lastWeight.isFinite() && lastWeight > 0f -> lastWeight
             user.initialWeight.isFinite() && user.initialWeight > 0f -> user.initialWeight
@@ -803,21 +809,24 @@ class HuaweiHagridWspHandler(
         val measurement = ScaleMeasurement(
             userId = user.id,
             dateTime = dateTimeOverride ?: parsed.timestamp ?: Date(),
-            weight = parsed.weightKg,
-            fat = composition?.bodyFatPercent
-                ?: parsed.fatPercent.takeIf { it > 0f && it < 80f }
-                ?: 0f,
-            water = composition?.waterPercent ?: 0f,
-            muscle = composition?.skeletalMusclePercent ?: 0f,
-            visceralFat = composition?.visceralFatLevel ?: 0f,
-            bone = composition?.boneMineralKg ?: 0f,
-            lbm = composition?.leanBodyMassKg ?: 0f,
-            bmr = composition?.bmrKcal ?: 0f,
-            heartRate = parsed.heartRateBpm ?: 0,
-            impedance = high,
-            impedanceLow = publishedLow,
-            protein = composition?.proteinPercent ?: 0f,
-        )
+        ).apply {
+            this[MeasurementType.WEIGHT] = Kg(parsed.weightKg)
+            this[MeasurementType.BODY_FAT] = Percent(
+                composition?.bodyFatPercent
+                    ?: parsed.fatPercent.takeIf { it > 0f && it < 80f }
+                    ?: 0f
+            )
+            this[MeasurementType.WATER] = Percent(composition?.waterPercent ?: 0f)
+            this[MeasurementType.MUSCLE] = Percent(composition?.skeletalMusclePercent ?: 0f)
+            this[MeasurementType.VISCERAL_FAT] = composition?.visceralFatLevel ?: 0f
+            this[MeasurementType.BONE] = Kg(composition?.boneMineralKg ?: 0f)
+            this[MeasurementType.LBM] = Kg(composition?.leanBodyMassKg ?: 0f)
+            this[MeasurementType.BMR] = Kcal(composition?.bmrKcal ?: 0f)
+            parsed.heartRateBpm?.let { this[MeasurementType.HEART_RATE] = Bpm(it) }
+            this[MeasurementType.IMPEDANCE] = Ohm(high.toFloat())
+            this[MeasurementType.IMPEDANCE_LOW] = Ohm(publishedLow.toFloat())
+            this[MeasurementType.PROTEIN] = Percent(composition?.proteinPercent ?: 0f)
+        }
 
         logI(
             "Publishing Huawei Hagrid measurement: lowCount=${parsed.lowFrequencyImpedance.size} " +
@@ -838,8 +847,7 @@ class HuaweiHagridWspHandler(
             ScaleMeasurement(
                 userId = user.id,
                 dateTime = parsed.timestamp ?: Date(),
-                weight = weight,
-            )
+            ).apply { this[MeasurementType.WEIGHT] = Kg(weight) }
         )
     }
 
@@ -857,11 +865,12 @@ class HuaweiHagridWspHandler(
             ScaleMeasurement(
                 userId = user.id,
                 dateTime = parsed.timestamp ?: Date(),
-                weight = parsed.weightKg ?: 0f,
-                fat = parsed.fatPercent?.takeIf { it > 0f && it < 80f } ?: 0f,
-                muscle = parsed.musclePercent?.takeIf { it > 0f && it < 100f } ?: 0f,
-                impedance = parsed.impedanceOhm ?: 0.0,
-            )
+            ).apply {
+                this[MeasurementType.WEIGHT] = Kg(parsed.weightKg ?: 0f)
+                this[MeasurementType.BODY_FAT] = Percent(parsed.fatPercent?.takeIf { it > 0f && it < 80f } ?: 0f)
+                this[MeasurementType.MUSCLE] = Percent(parsed.musclePercent?.takeIf { it > 0f && it < 100f } ?: 0f)
+                this[MeasurementType.IMPEDANCE] = Ohm((parsed.impedanceOhm ?: 0.0).toFloat())
+            }
         )
     }
 

@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
@@ -27,6 +28,10 @@ import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.ConverterUtils
 import java.util.UUID
 import kotlin.math.roundToInt
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Hume Health "Dara 2.0" body-composition scale.
@@ -201,7 +206,7 @@ class HumeDara2Handler : ScaleDeviceHandler() {
         val weightKg = ConverterUtils.toKilogram(weightKgFromFrame(frame), user.scaleUnit)
         val impedanceOhms = impedanceOhmsFromFrame(frame)
 
-        val m = ScaleMeasurement().apply { weight = weightKg }
+        val m = ScaleMeasurement().apply { this[MeasurementType.WEIGHT] = Kg(weightKg) }
 
         if (impedanceOhms in PLAUSIBLE_IMPEDANCE_OHMS && user.bodyHeight > 0f) {
             val bia = StandardImpedanceLib(
@@ -211,16 +216,16 @@ class HumeDara2Handler : ScaleDeviceHandler() {
                 heightM = user.bodyHeight / 100.0,
                 impedance = impedanceOhms
             )
-            m.impedance = impedanceOhms
-            m.fat = bia.totalFatPercentage.toFloat()
-            m.water = bia.totalBodyWaterPercentage.toFloat()
-            m.muscle = bia.skeletalMusclePercentage.toFloat()
-            m.bone = bia.boneMassKg.toFloat()
-            m.bmr = bia.basalMetabolicRate.toFloat()
-            m.lbm = bia.fatFreeMassKg.toFloat()
-            logD("publish kg=${m.weight} impedance=$impedanceOhms fat=${m.fat} water=${m.water} muscle=${m.muscle} bone=${m.bone} bmr=${m.bmr} lbm=${m.lbm}")
+            m[MeasurementType.IMPEDANCE] = Ohm(impedanceOhms.toFloat())
+            m[MeasurementType.BODY_FAT] = Percent(bia.totalFatPercentage.toFloat())
+            m[MeasurementType.WATER] = Percent(bia.totalBodyWaterPercentage.toFloat())
+            m[MeasurementType.MUSCLE] = Percent(bia.skeletalMusclePercentage.toFloat())
+            m[MeasurementType.BONE] = Kg(bia.boneMassKg.toFloat())
+            m[MeasurementType.BMR] = Kcal(bia.basalMetabolicRate.toFloat())
+            m[MeasurementType.LBM] = Kg(bia.fatFreeMassKg.toFloat())
+            logD("publish kg=${m[MeasurementType.WEIGHT]} impedance=$impedanceOhms fat=${m[MeasurementType.BODY_FAT]} water=${m[MeasurementType.WATER]} muscle=${m[MeasurementType.MUSCLE]} bone=${m[MeasurementType.BONE]} bmr=${m[MeasurementType.BMR]} lbm=${m[MeasurementType.LBM]}")
         } else {
-            logD("publish kg=${m.weight} impedance=$impedanceOhms out of plausible range, skipping body composition")
+            logD("publish kg=${m[MeasurementType.WEIGHT]} impedance=$impedanceOhms out of plausible range, skipping body composition")
         }
 
         publish(m)

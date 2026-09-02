@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.GenderType
@@ -13,6 +14,9 @@ import kotlinx.coroutines.*
 import java.util.*
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 class RyFitHandler : ScaleDeviceHandler() {
 
@@ -237,14 +241,14 @@ class RyFitHandler : ScaleDeviceHandler() {
         val measurement = ScaleMeasurement().apply {
             userId = user.id
             dateTime = Date()
-            this.weight = weight
-            fat = pendingFat!!
-            water = pendingWater!!
-            this.muscle = muscle
-            bone = boneKg
-            this.bmr = bmr
-            this.visceralFat = visceralFat
-            this.lbm = lbm
+            this[MeasurementType.WEIGHT] = Kg(weight)
+            this[MeasurementType.BODY_FAT] = Percent(pendingFat!!)
+            this[MeasurementType.WATER] = Percent(pendingWater!!)
+            this[MeasurementType.MUSCLE] = Percent(muscle)
+            this[MeasurementType.BONE] = Kg(boneKg)
+            this[MeasurementType.BMR] = Kcal(bmr)
+            this[MeasurementType.VISCERAL_FAT] = visceralFat
+            this[MeasurementType.LBM] = Kg(lbm)
         }
         publish(measurement)
         logI("Published measurement: weight=$weight, fat=$pendingFat, water=$pendingWater, muscle=$muscle")

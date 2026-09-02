@@ -53,7 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.health.openscale.R
-import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.Trend
 import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.core.model.ValueWithDifference
@@ -135,7 +135,7 @@ fun GraphScreen(
     if (showDeleteDialog && sheetEnrichedMeasurement != null) {
         val enrichedItem  = sheetEnrichedMeasurement
         val weightValue   = enrichedItem.valuesWithTrend.find {
-            it.currentValue.type.key == MeasurementTypeKey.WEIGHT
+            it.currentValue.type.key == MeasurementType.WEIGHT
         }
         val weightString  = weightValue?.currentValue?.let {
             LocaleUtils.formatValueForDisplay(it.value.floatValue.toString(), it.type.unit)

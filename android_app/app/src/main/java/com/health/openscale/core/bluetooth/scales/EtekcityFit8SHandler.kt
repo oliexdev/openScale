@@ -18,12 +18,17 @@
 package com.health.openscale.core.bluetooth.scales
 
 import android.bluetooth.le.ScanResult
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import java.util.UUID
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 // Based on https://github.com/ronnnnnnnnnnnnn/etekcity_esf551_ble
 
@@ -122,29 +127,29 @@ class EtekcityFit8SHandler : ScaleDeviceHandler() {
         val m = ScaleMeasurement().apply {
             userId = user.id
             dateTime = Date()
-            weight = weightKg
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
         }
 
         val impedance = (payload[13].toInt() and 0xFF) or
                 ((payload[14].toInt() and 0xFF) shl 8)
 
         if (impedance != 0) {
-            m.impedance = impedance.toDouble()
+            m[MeasurementType.IMPEDANCE] = Ohm(impedance.toFloat())
 
             val lib = StandardImpedanceLib(
                 gender = user.gender,
                 age = user.age,
-                weightKg = m.weight.toDouble(),
+                weightKg = (m[MeasurementType.WEIGHT]?.value ?: 0f).toDouble(),
                 heightM = user.bodyHeight / 100.0,
-                impedance = m.impedance
+                impedance = (m[MeasurementType.IMPEDANCE]?.value ?: 0f).toDouble()
             )
 
-            m.fat = lib.totalFatPercentage.toFloat()
-            m.water = lib.totalBodyWaterPercentage.toFloat()
-            m.muscle = lib.skeletalMusclePercentage.toFloat()
-            m.bone = lib.boneMassKg.toFloat()
-            m.bmr = lib.basalMetabolicRate.toFloat()
-            m.lbm = lib.fatFreeMassKg.toFloat()
+            m[MeasurementType.BODY_FAT] = Percent(lib.totalFatPercentage.toFloat())
+            m[MeasurementType.WATER] = Percent(lib.totalBodyWaterPercentage.toFloat())
+            m[MeasurementType.MUSCLE] = Percent(lib.skeletalMusclePercentage.toFloat())
+            m[MeasurementType.BONE] = Kg(lib.boneMassKg.toFloat())
+            m[MeasurementType.BMR] = Kcal(lib.basalMetabolicRate.toFloat())
+            m[MeasurementType.LBM] = Kg(lib.fatFreeMassKg.toFloat())
         } else {
             logD("Impedance is missing or zero. Publishing weight only")
         }

@@ -90,7 +90,7 @@ import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.EvaluationState
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementTypeIcon
-import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.Trend
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.facade.SettingsPreferenceKeys
@@ -192,9 +192,9 @@ fun TableScreen(
             val defaultIds = allAvailableTypesFromVM
                 .filter {
                     it.isEnabled &&
-                            it.key != MeasurementTypeKey.DATE &&
-                            it.key != MeasurementTypeKey.TIME &&
-                            it.key != MeasurementTypeKey.USER
+                            it.key != MeasurementType.DATE &&
+                            it.key != MeasurementType.TIME &&
+                            it.key != MeasurementType.USER
                 }
                 .map { it.id }
             selectedColumnIdsFromFilter.addAll(defaultIds)
@@ -685,21 +685,21 @@ fun TableScreen(
                 filterLogic = { allTypes ->
                     allTypes.filter {
                         it.isEnabled &&
-                                it.key != MeasurementTypeKey.DATE &&
-                                it.key != MeasurementTypeKey.TIME &&
-                                it.key != MeasurementTypeKey.USER
+                                it.key != MeasurementType.DATE &&
+                                it.key != MeasurementType.TIME &&
+                                it.key != MeasurementType.USER
                     }
                 },
                 defaultSelectionLogic = { availableFilteredTypes ->
-                    // Matched on MeasurementTypeKey, not on MeasurementTypeKey.id: the row id of a
+                    // Matched on the predefined Key constants, not on MeasurementType.id: the row id of a
                     // MeasurementType is auto-generated on insert and does not match the enum id.
                     val defaultKeys = setOf(
-                        MeasurementTypeKey.WEIGHT,
-                        MeasurementTypeKey.BMI,
-                        MeasurementTypeKey.BODY_FAT,
-                        MeasurementTypeKey.WATER,
-                        MeasurementTypeKey.MUSCLE,
-                        MeasurementTypeKey.COMMENT,
+                        MeasurementType.WEIGHT,
+                        MeasurementType.BMI,
+                        MeasurementType.BODY_FAT,
+                        MeasurementType.WATER,
+                        MeasurementType.MUSCLE,
+                        MeasurementType.COMMENT,
                     )
                     availableFilteredTypes
                         .filter { it.key in defaultKeys && it.isEnabled }
@@ -778,7 +778,7 @@ fun TableScreen(
                     )
                     Row(Modifier.weight(1f).horizontalScroll(horizontalScrollState)) {
                         displayedTypes.forEach { type ->
-                            val width = if (type.key == MeasurementTypeKey.COMMENT) commentWidth else colWidth
+                            val width = if (type.key == MeasurementType.COMMENT) commentWidth else colWidth
                             TableHeaderCellInternal(
                                 text      = type.getDisplayName(LocalContext.current),
                                 modifier  = Modifier
@@ -862,11 +862,11 @@ fun TableScreen(
                             ) {
                                 displayedTypes.forEach { colType ->
                                     val cellData = rowData.values[colType.id]
-                                    val width    = if (colType.key == MeasurementTypeKey.COMMENT) commentWidth else colWidth
+                                    val width    = if (colType.key == MeasurementType.COMMENT) commentWidth else colWidth
                                     TableDataCellInternal(
                                         cellData     = cellData,
                                         modifier     = Modifier.width(width).fillMaxHeight(),
-                                        alignment    = if (colType.key == MeasurementTypeKey.COMMENT)
+                                        alignment    = if (colType.key == MeasurementType.COMMENT)
                                             TextAlign.Start else TextAlign.End,
                                         isAggregated = rowData.isAggregated,
                                     )

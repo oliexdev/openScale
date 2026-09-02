@@ -23,14 +23,13 @@ import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.Measurement
-import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.User
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
 import com.health.openscale.core.usecase.SyncUseCases
-import com.health.openscale.getDefaultMeasurementTypes
 import com.health.openscale.testutil.MainDispatcherRule
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.CoroutineScope
@@ -82,7 +81,7 @@ class SharedViewModelTest {
             scope, File(app.cacheDir, "shared-${System.nanoTime()}.preferences_pb")
         )
         val facades = RoomTestSupport.facadesFor(app, repo, settings)
-        val sync = SyncUseCases(app, MeasurementTypeCrudUseCases(repo))
+        val sync = SyncUseCases(app, MeasurementTypeCrudUseCases(repo, ApplicationProvider.getApplicationContext()))
         vm = SharedViewModel(
             facades.userFacade, facades.measurementFacade, facades.dataManagementFacade, settings, sync,
         )
@@ -121,10 +120,10 @@ class SharedViewModelTest {
     @Test
     fun screenFlow_emitsSuccessWithAggregatedData_forSelectedUser() {
         runBlocking {
-            repo.insertAllMeasurementTypes(getDefaultMeasurementTypes())
+            repo.insertAllMeasurementTypes(MeasurementType.seedRows())
             val uid = repo.insertUser(user("Alice")).toInt()
             val weightTypeId = repo.getAllMeasurementTypes().first()
-                .first { it.key == MeasurementTypeKey.WEIGHT }.id
+                .first { it.key == MeasurementType.WEIGHT }.id
             val measurementId = repo.insertMeasurement(
                 Measurement(userId = uid, timestamp = System.currentTimeMillis())
             ).toInt()

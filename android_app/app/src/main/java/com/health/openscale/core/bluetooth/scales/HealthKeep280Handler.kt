@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
@@ -25,6 +26,10 @@ import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import com.health.openscale.core.data.Bpm
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 class HealthKeep280Handler : ScaleDeviceHandler() {
 
@@ -109,16 +114,16 @@ class HealthKeep280Handler : ScaleDeviceHandler() {
 
                 val measurement = ScaleMeasurement().apply {
                     this.userId = user.id
-                    this.weight = weight
+                    this[MeasurementType.WEIGHT] = Kg(weight)
                     this.dateTime = Date()
                     if (heartRate > 0) {
-                        this.heartRate = heartRate
+                        this[MeasurementType.HEART_RATE] = Bpm(heartRate)
                     }
                 }
 
                 // Calcolo automatico di grasso, acqua, muscoli e ossa tramite la libreria BIA di openScale
                 if (impedance > 0 && user.bodyHeight > 0 && user.age > 0) {
-                    measurement.impedance = impedance.toDouble()
+                    measurement[MeasurementType.IMPEDANCE] = Ohm(impedance.toFloat())
                     
                     val impedanceLib = StandardImpedanceLib(
                         gender = user.gender,
@@ -128,10 +133,10 @@ class HealthKeep280Handler : ScaleDeviceHandler() {
                         impedance = impedance.toDouble()
                     )
 
-                    measurement.fat = impedanceLib.totalFatPercentage.toFloat().coerceIn(0f, 75f)
-                    measurement.water = impedanceLib.totalBodyWaterPercentage.toFloat().coerceIn(0f, 80f)
-                    measurement.muscle = impedanceLib.skeletalMusclePercentage.toFloat().coerceIn(0f, 99f)
-                    measurement.bone = impedanceLib.boneMassKg.toFloat().coerceIn(0f, 10f)
+                    measurement[MeasurementType.BODY_FAT] = Percent(impedanceLib.totalFatPercentage.toFloat().coerceIn(0f, 75f))
+                    measurement[MeasurementType.WATER] = Percent(impedanceLib.totalBodyWaterPercentage.toFloat().coerceIn(0f, 80f))
+                    measurement[MeasurementType.MUSCLE] = Percent(impedanceLib.skeletalMusclePercentage.toFloat().coerceIn(0f, 99f))
+                    measurement[MeasurementType.BONE] = Kg(impedanceLib.boneMassKg.toFloat().coerceIn(0f, 10f))
                 }
 
                 logI("Publishing final measurement: $weight kg, Impedance: $impedance Ohm, HR: $heartRate bpm")

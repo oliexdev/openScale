@@ -25,12 +25,14 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import com.health.openscale.core.data.Kg
 
 /**
  * Robi S9 smart scale (Fitdays app, Lefu-style FFB0 protocol).
@@ -94,7 +96,7 @@ class RobiS9Handler : ScaleDeviceHandler() {
         val weightKg = parseFinalWeightKg(data) ?: return
         val m = ScaleMeasurement().apply {
             dateTime = Date()
-            weight = weightKg
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
             // Byte 8 is heart rate (bpm), bytes 9..10 are impedance (u16 BE, Ohm); this
             // capture's A3 frame had zeros there, so body composition still isn't published.
         }

@@ -20,7 +20,7 @@ package com.health.openscale.core.service
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
-import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.Trend
 import com.health.openscale.testutil.Fixtures
 import com.health.openscale.testutil.RoomTestSupport
@@ -54,7 +54,7 @@ class MeasurementEnricherTest {
 
     @Test
     fun enrichWithDifferences_computesDeltaAndTrend_vsPreviousMeasurement() {
-        val weight = Fixtures.type(id = 1, key = MeasurementTypeKey.WEIGHT)
+        val weight = Fixtures.type(id = 1, identity = MeasurementType.WEIGHT.identity)
         val newest = Fixtures.mwv(2, Fixtures.ts(2025, 1, 2), listOf(Fixtures.valueWithType(weight, 72f, 2)))
         val older = Fixtures.mwv(1, Fixtures.ts(2025, 1, 1), listOf(Fixtures.valueWithType(weight, 70f, 1)))
 
@@ -72,7 +72,7 @@ class MeasurementEnricherTest {
 
     @Test
     fun enrichWithDifferences_skipsDisabledTypes() {
-        val disabled = Fixtures.type(id = 1, key = MeasurementTypeKey.WEIGHT, enabled = false)
+        val disabled = Fixtures.type(id = 1, identity = MeasurementType.WEIGHT.identity, enabled = false)
         val mwv = Fixtures.mwv(1, Fixtures.ts(2025, 1, 1), listOf(Fixtures.valueWithType(disabled, 70f, 1)))
 
         val result = enricher().enrichWithDifferences(listOf(mwv), listOf(disabled))
@@ -82,8 +82,8 @@ class MeasurementEnricherTest {
 
     @Test
     fun enrichWithDifferences_sortsByDisplayOrder() {
-        val late = Fixtures.type(id = 1, key = MeasurementTypeKey.WEIGHT, displayOrder = 5)
-        val early = Fixtures.type(id = 2, key = MeasurementTypeKey.BODY_FAT, displayOrder = 1)
+        val late = Fixtures.type(id = 1, identity = MeasurementType.WEIGHT.identity, displayOrder = 5)
+        val early = Fixtures.type(id = 2, identity = MeasurementType.BODY_FAT.identity, displayOrder = 1)
         val mwv = Fixtures.mwv(
             1, Fixtures.ts(2025, 1, 1),
             listOf(Fixtures.valueWithType(late, 70f, 1), Fixtures.valueWithType(early, 20f, 1)),

@@ -23,11 +23,10 @@ import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.Measurement
-import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.User
 import com.health.openscale.core.database.AppDatabase
-import com.health.openscale.getDefaultMeasurementTypes
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -57,10 +56,10 @@ class DerivedValuesCalculatorIntegrationTest {
     @Before
     fun setUp() = runBlocking {
         db = RoomTestSupport.inMemory(context)
-        db.measurementTypeDao().insertAll(getDefaultMeasurementTypes())
+        db.measurementTypeDao().insertAll(MeasurementType.seedRows())
         val types = db.measurementTypeDao().getAll().first()
-        weightTypeId = types.first { it.key == MeasurementTypeKey.WEIGHT }.id
-        bmiTypeId = types.first { it.key == MeasurementTypeKey.BMI }.id
+        weightTypeId = types.first { it.key == MeasurementType.WEIGHT }.id
+        bmiTypeId = types.first { it.key == MeasurementType.BMI }.id
 
         userId = db.userDao().insert(
             User(

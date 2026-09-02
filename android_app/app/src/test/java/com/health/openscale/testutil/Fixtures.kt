@@ -20,7 +20,6 @@ package com.health.openscale.testutil
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.model.EnrichedMeasurement
@@ -43,13 +42,13 @@ object Fixtures {
 
     fun type(
         id: Int,
-        key: MeasurementTypeKey = MeasurementTypeKey.CUSTOM,
+        identity: String = "user.fixture_type_$id",
         inputType: InputFieldType = InputFieldType.FLOAT,
         displayOrder: Int = id,
         enabled: Boolean = true,
     ): MeasurementType = MeasurementType(
         id = id,
-        key = key,
+        identity = identity,
         unit = UnitType.NONE,
         inputType = inputType,
         displayOrder = displayOrder,

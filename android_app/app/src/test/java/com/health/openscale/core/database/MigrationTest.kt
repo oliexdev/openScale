@@ -22,6 +22,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -79,7 +80,16 @@ class MigrationTest {
         assertThat(weight).isNotNull()
 
         // The rewrite seeds the default measurement types.
-        assertThat(repo.getAllMeasurementTypes().first()).isNotEmpty()
+        val types = repo.getAllMeasurementTypes().first()
+        assertThat(types).isNotEmpty()
+
+        // Regression: 13_14 / 14_15 used to re-insert seven keys that 6_7 had already
+        // seeded (their INSERT OR IGNORE lost its conflict target when 12_13 dropped the
+        // unique index), leaving upgraded databases with 41 types instead of 34.
+        // MIGRATION_15_16 merges the duplicates and gives every row its identity.
+        assertThat(types).hasSize(MeasurementType.allKeys.size)
+        assertThat(types.map { it.identity }).containsNoDuplicates()
+        assertThat(types.all { it.isBuiltIn() }).isTrue()
     }
 
     /**

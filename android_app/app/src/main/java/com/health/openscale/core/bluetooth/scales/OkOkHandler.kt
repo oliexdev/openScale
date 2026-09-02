@@ -19,12 +19,17 @@ package com.health.openscale.core.bluetooth.scales
 
 import android.bluetooth.le.ScanResult
 import android.util.SparseArray
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.OkOkV2Lib
 import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.ConverterUtils
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Unified OKOK broadcast handler with dynamic display name:
@@ -130,18 +135,18 @@ class OkOkHandler : ScaleDeviceHandler() {
         parseV20(m)?.let { (kg, imp) ->
             publish(ScaleMeasurement().apply {
                 userId = user.id
-                weight = kg
+                this[MeasurementType.WEIGHT] = Kg(kg)
                 // Store the raw impedance so body composition can be computed/recomputed later.
-                if (imp > 0f) impedance = imp.toDouble()
+                if (imp > 0f) this[MeasurementType.IMPEDANCE] = Ohm(imp)
             })
             return BroadcastAction.CONSUMED_STOP
         }
         parseV11(m)?.let { kg ->
-            publish(ScaleMeasurement().apply { userId = user.id; weight = kg })
+            publish(ScaleMeasurement().apply { userId = user.id; this[MeasurementType.WEIGHT] = Kg(kg) })
             return BroadcastAction.CONSUMED_STOP
         }
         parseVF0(m)?.let { kg ->
-            publish(ScaleMeasurement().apply { userId = user.id; weight = kg })
+            publish(ScaleMeasurement().apply { userId = user.id; this[MeasurementType.WEIGHT] = Kg(kg) })
             return BroadcastAction.CONSUMED_STOP
         }
 
@@ -149,19 +154,19 @@ class OkOkHandler : ScaleDeviceHandler() {
         parseC0(m)?.let { (kg, imp) ->
             publish(ScaleMeasurement().apply {
                 userId = user.id
-                weight = kg
+                this[MeasurementType.WEIGHT] = Kg(kg)
                 if (user.age <= 5 || imp == 0f) return@apply
 
                 val lib = OkOkV2Lib(user.age, if (user.gender.isMale()) 1 else 0, user.bodyHeight)
-                water = lib.getWater(kg, imp)
-                visceralFat = lib.getVisceralFat(kg, imp)
-                fat = lib.getBodyFat(kg, imp)
-                muscle = lib.getMuscle(kg, imp)
-                lbm = lib.getLBM(kg, imp)
-                bone = lib.getBoneMass(kg, imp)
-                bmr = lib.getBMR(kg)
-                protein = lib.getProtein(kg, imp)
-                impedance = imp.toDouble()
+                this[MeasurementType.WATER] = Percent(lib.getWater(kg, imp))
+                this[MeasurementType.VISCERAL_FAT] = lib.getVisceralFat(kg, imp)
+                this[MeasurementType.BODY_FAT] = Percent(lib.getBodyFat(kg, imp))
+                this[MeasurementType.MUSCLE] = Percent(lib.getMuscle(kg, imp))
+                this[MeasurementType.LBM] = Kg(lib.getLBM(kg, imp))
+                this[MeasurementType.BONE] = Kg(lib.getBoneMass(kg, imp))
+                this[MeasurementType.BMR] = Kcal(lib.getBMR(kg))
+                this[MeasurementType.PROTEIN] = Percent(lib.getProtein(kg, imp))
+                this[MeasurementType.IMPEDANCE] = Ohm(imp)
             })
             return BroadcastAction.CONSUMED_STOP
         }

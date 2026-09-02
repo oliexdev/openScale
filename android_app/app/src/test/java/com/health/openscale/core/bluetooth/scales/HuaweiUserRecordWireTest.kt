@@ -18,6 +18,8 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.google.common.truth.Truth.assertThat
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -127,8 +129,7 @@ class HuaweiUserRecordWireTest {
             previous = ScaleMeasurement(
                 userId = TEST_USER_ID,
                 dateTime = Date(0L),
-                weight = 80.0f,
-            ),
+            ).apply { this[MeasurementType.WEIGHT] = Kg(80.0f) },
         )
 
         val plain = decodeAhCh100Record(driveAhCh100ToUserInfo(setup))

@@ -17,11 +17,15 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
+import android.icu.util.Measure
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import java.util.UUID
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 class EbelterBodyFatB2Handler : ScaleDeviceHandler() {
 
@@ -97,11 +101,11 @@ class EbelterBodyFatB2Handler : ScaleDeviceHandler() {
 
         val m = ScaleMeasurement()
         m.dateTime = Date()
-        m.weight = weightKg
+        m[MeasurementType.WEIGHT] = Kg(weightKg)
 
         // grasa solo si viene distinta de 0 (cuando no está activado, suele venir 0)
         if (fatRaw != 0) {
-            m.fat = fatRaw / 10.0f
+            m[MeasurementType.BODY_FAT] = Percent(fatRaw / 10.0f)
         }
 
         // -----------------------------

@@ -18,12 +18,15 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.max
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 /**
  * Handler for Hesley scales that advertise as "YunChen".
@@ -88,14 +91,14 @@ class HesleyHandler : ScaleDeviceHandler() {
 
         val m = ScaleMeasurement().apply {
             dateTime = Date()
-            this.weight = max(0f, weight)
-            this.fat = fat
-            this.muscle = muscle
-            this.water = water
-            this.bone = bone
+            this[MeasurementType.WEIGHT] = Kg(max(0f, weight))
+            this[MeasurementType.BODY_FAT] = Percent(fat)
+            this[MeasurementType.MUSCLE] = Percent(muscle)
+            this[MeasurementType.WATER] = Percent(water)
+            this[MeasurementType.BONE] = Kg(bone)
         }
 
-        logD( "Hesley result kg=${m.weight} fat=${m.fat} water=${m.water} muscle=${m.muscle} bone=${m.bone}")
+        logD( "Hesley result kg=${m[MeasurementType.WEIGHT]} fat=${m[MeasurementType.BODY_FAT]} water=${m[MeasurementType.WATER]} muscle=${m[MeasurementType.MUSCLE]} bone=${m[MeasurementType.BONE]}")
         publish(m)
     }
 }

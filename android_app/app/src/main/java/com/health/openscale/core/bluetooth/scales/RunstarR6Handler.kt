@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -25,6 +26,9 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.abs
+import com.health.openscale.core.data.Bpm
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
 
 /**
  * Runstar R6 smart scale.
@@ -159,9 +163,9 @@ class RunstarR6Handler : ScaleDeviceHandler() {
 
         val measurement = ScaleMeasurement().apply {
             dateTime = Date()
-            weight = grams / 1000.0f
-            if (heartRateRaw != 0) heartRate = heartRateRaw
-            if (impedanceRaw != 0) impedance = impedanceRaw.toDouble()
+            this[MeasurementType.WEIGHT] = Kg(grams / 1000.0f)
+            if (heartRateRaw != 0) this[MeasurementType.HEART_RATE] = Bpm(heartRateRaw)
+            if (impedanceRaw != 0) this[MeasurementType.IMPEDANCE] = Ohm(impedanceRaw.toFloat())
         }
         publish(measurement)
         lastPublishedWeightRaw = grams
@@ -185,7 +189,7 @@ class RunstarR6Handler : ScaleDeviceHandler() {
 
         publish(ScaleMeasurement().apply {
             dateTime = entryDate
-            weight = grams / 1000.0f
+            this[MeasurementType.WEIGHT] = Kg(grams / 1000.0f)
         })
         sendAck(seq)
     }

@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
@@ -30,6 +31,11 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.roundToInt
+import com.health.openscale.core.data.Bpm
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Picooc (有品) body fat scales that speak the connection-oriented BLE protocol:
@@ -320,9 +326,9 @@ class PicoocHandler : ScaleDeviceHandler() {
         val measurement = ScaleMeasurement().apply {
             userId = user.id
             dateTime = Date()
-            weight = pendingWeightKg
-            if (pendingImpedance > 0.0) impedance = pendingImpedance
-            if (pendingHeartRate > 0) heartRate = pendingHeartRate
+            this[MeasurementType.WEIGHT] = Kg(pendingWeightKg)
+            if (pendingImpedance > 0.0) this[MeasurementType.IMPEDANCE] = Ohm(pendingImpedance.toFloat())
+            if (pendingHeartRate > 0) this[MeasurementType.HEART_RATE] = Bpm(pendingHeartRate)
         }
 
         val usableImpedance = pendingImpedance in MIN_IMPEDANCE..MAX_IMPEDANCE
@@ -340,24 +346,24 @@ class PicoocHandler : ScaleDeviceHandler() {
 
         if (composition != null && composition.fatPercent in MIN_FAT_PERCENT..MAX_FAT_PERCENT) {
             // The scale did the maths for us — prefer its numbers over our estimate.
-            measurement.fat = composition.fatPercent
-            measurement.water = composition.waterPercent.coerceIn(0f, 80f)
-            measurement.bone = composition.boneMassKg.coerceIn(0f, 10f)
-            measurement.visceralFat = composition.visceralFat.toFloat()
-            measurement.lbm = pendingWeightKg * (1f - composition.fatPercent / 100f)
+            measurement[MeasurementType.BODY_FAT] = Percent(composition.fatPercent)
+            measurement[MeasurementType.WATER] = Percent(composition.waterPercent.coerceIn(0f, 80f))
+            measurement[MeasurementType.BONE] = Kg(composition.boneMassKg.coerceIn(0f, 10f))
+            measurement[MeasurementType.VISCERAL_FAT] = composition.visceralFat.toFloat()
+            measurement[MeasurementType.LBM] = Kg(pendingWeightKg * (1f - composition.fatPercent / 100f))
             // 0x32 carries neither of these, so fall back to the estimator for them.
             lib?.let {
-                measurement.muscle = it.skeletalMusclePercentage.toFloat().coerceIn(0f, 100f)
-                measurement.bmr = it.basalMetabolicRate.toFloat().coerceIn(0f, 5000f)
+                measurement[MeasurementType.MUSCLE] = Percent(it.skeletalMusclePercentage.toFloat().coerceIn(0f, 100f))
+                measurement[MeasurementType.BMR] = Kcal(it.basalMetabolicRate.toFloat().coerceIn(0f, 5000f))
             }
             logI("Picooc body composition source: 0x32 packet")
         } else if (lib != null) {
-            measurement.fat = lib.totalFatPercentage.toFloat().coerceIn(0f, 75f)
-            measurement.water = lib.totalBodyWaterPercentage.toFloat().coerceIn(0f, 80f)
-            measurement.muscle = lib.skeletalMusclePercentage.toFloat().coerceIn(0f, 100f)
-            measurement.bone = lib.boneMassKg.toFloat().coerceIn(0f, 10f)
-            measurement.lbm = lib.fatFreeMassKg.toFloat().coerceIn(0f, 150f)
-            measurement.bmr = lib.basalMetabolicRate.toFloat().coerceIn(0f, 5000f)
+            measurement[MeasurementType.BODY_FAT] = Percent(lib.totalFatPercentage.toFloat().coerceIn(0f, 75f))
+            measurement[MeasurementType.WATER] = Percent(lib.totalBodyWaterPercentage.toFloat().coerceIn(0f, 80f))
+            measurement[MeasurementType.MUSCLE] = Percent(lib.skeletalMusclePercentage.toFloat().coerceIn(0f, 100f))
+            measurement[MeasurementType.BONE] = Kg(lib.boneMassKg.toFloat().coerceIn(0f, 10f))
+            measurement[MeasurementType.LBM] = Kg(lib.fatFreeMassKg.toFloat().coerceIn(0f, 150f))
+            measurement[MeasurementType.BMR] = Kcal(lib.basalMetabolicRate.toFloat().coerceIn(0f, 5000f))
             logI("Picooc body composition source: StandardImpedanceLib (${pendingImpedance}Ω)")
         } else {
             logI("Picooc body composition unavailable: impedance=$pendingImpedance height=${user.bodyHeight}")
@@ -369,10 +375,10 @@ class PicoocHandler : ScaleDeviceHandler() {
         composition?.bodyAge?.takeIf { it > 0 }?.let { logI("Picooc metabolic body age: $it (not stored)") }
 
         logI(
-            "Picooc publishing ($reason) → weight=${measurement.weight}kg fat=${measurement.fat}% " +
-                "water=${measurement.water}% muscle=${measurement.muscle}% bone=${measurement.bone}kg " +
-                "visceral=${measurement.visceralFat} lbm=${measurement.lbm}kg bmr=${measurement.bmr}kcal " +
-                "hr=${measurement.heartRate}bpm impedance=${measurement.impedance}Ω"
+            "Picooc publishing ($reason) → weight=${measurement[MeasurementType.WEIGHT]}kg fat=${measurement[MeasurementType.BODY_FAT]}% " +
+                "water=${measurement[MeasurementType.WATER]}% muscle=${measurement[MeasurementType.MUSCLE]}% bone=${measurement[MeasurementType.BONE]}kg " +
+                "visceral=${measurement[MeasurementType.VISCERAL_FAT]} lbm=${measurement[MeasurementType.LBM]}kg bmr=${measurement[MeasurementType.BMR]}kcal " +
+                "hr=${measurement[MeasurementType.HEART_RATE]}bpm impedance=${measurement[MeasurementType.IMPEDANCE]}Ω"
         )
         publish(measurement)
         // No requestDisconnect(): the scale terminates the link itself once it is done.

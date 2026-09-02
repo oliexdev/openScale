@@ -20,6 +20,7 @@ package com.health.openscale.core.bluetooth.scales
 import android.bluetooth.le.ScanResult
 import androidx.annotation.VisibleForTesting
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.WeightUnit
@@ -32,6 +33,9 @@ import java.util.Locale
 import java.util.UUID
 import kotlin.experimental.or
 import kotlin.math.max
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Beurer/Sanitas handler (BF700/800/RT Libra, BF710, Sanitas SBF70/SBF75/Crane).
@@ -672,13 +676,13 @@ class BeurerSanitasHandler : ScaleDeviceHandler() {
         val m = ScaleMeasurement().apply {
             this.userId = userId
             this.dateTime = Date(timestampMs)
-            this.weight = weight
-            this.fat = fat
-            this.water = water
-            this.muscle = muscle
-            this.bone = bone
+            this[MeasurementType.WEIGHT] = Kg(weight)
+            this[MeasurementType.BODY_FAT] = Percent(fat)
+            this[MeasurementType.WATER] = Percent(water)
+            this[MeasurementType.MUSCLE] = Percent(muscle)
+            this[MeasurementType.BONE] = Kg(bone)
             // Store the raw impedance so body composition can be recomputed later.
-            if (impedance > 0) this.impedance = impedance.toDouble()
+            if (impedance > 0) this[MeasurementType.IMPEDANCE] = Ohm(impedance.toFloat())
         }
         publish(m)
     }

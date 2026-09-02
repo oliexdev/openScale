@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -25,6 +26,8 @@ import com.health.openscale.core.utils.ConverterUtils
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 /**
  * Handler for Exingtech Y1 scales (often advertising as "VScale").
@@ -124,14 +127,14 @@ class ExingtechY1Handler : ScaleDeviceHandler() {
 
         return ScaleMeasurement().apply {
             dateTime = Date()
-            this.weight = weight
-            this.fat = fat
-            this.water = water
-            this.muscle = muscle
-            this.bone = bone
-            this.visceralFat = visceralIndex
+            this[MeasurementType.WEIGHT] = Kg(weight)
+            this[MeasurementType.BODY_FAT] = Percent(fat)
+            this[MeasurementType.WATER] = Percent(water)
+            this[MeasurementType.MUSCLE] = Percent(muscle)
+            this[MeasurementType.BONE] = Kg(bone)
+            this[MeasurementType.VISCERAL_FAT] = visceralIndex
         }.also {
-            logD("VScale result kg=${it.weight} fat=${it.fat} water=${it.water} muscle=${it.muscle} bone=${it.bone} visc=${it.visceralFat}"
+            logD("VScale result kg=${it[MeasurementType.WEIGHT]} fat=${it[MeasurementType.BODY_FAT]} water=${it[MeasurementType.WATER]} muscle=${it[MeasurementType.MUSCLE]} bone=${it[MeasurementType.BONE]} visc=${it[MeasurementType.VISCERAL_FAT]}"
             )
         }
     }

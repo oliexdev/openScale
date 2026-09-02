@@ -37,6 +37,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -80,7 +84,6 @@ import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.LbmFormulaOption
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeIcon
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.ui.components.MeasurementIcon
 import com.health.openscale.ui.shared.SharedViewModel
@@ -114,12 +117,55 @@ fun MeasurementTypeDetailScreen(
     }
     val isEdit = typeId != -1
 
-    val currentMeasurementTypeKey = remember(originalExistingType, isEdit) {
-        if (isEdit) originalExistingType?.key ?: MeasurementTypeKey.CUSTOM else MeasurementTypeKey.CUSTOM
+    // The predefined key behind the edited row — null for a new type and for every
+    // ble.*/user.* row. It constrains units and input types; a custom type is free.
+    val editedKey: MeasurementType.Key<*>? = remember(originalExistingType, isEdit) {
+        if (isEdit) originalExistingType?.key else null
     }
 
-    val allowedUnitsForKey = remember(currentMeasurementTypeKey) { currentMeasurementTypeKey.allowedUnitTypes }
-    val allowedInputTypesForKey = remember(currentMeasurementTypeKey) { currentMeasurementTypeKey.allowedInputType }
+    // A handler-contributed type stays inside the unit family its protocol declared
+    // (kg/lb/st remains switchable, a percentage cannot become a mass) and keeps the input
+    // type its protocol writes — switching it would make every future reading load into a
+    // column nothing reads. Expressed as allowed lists, which the existing plumbing below
+    // already renders as hidden dropdowns once there is nothing left to choose.
+    val allowedUnitsForKey = remember(editedKey, originalExistingType) {
+        when {
+            editedKey != null -> editedKey.allowedUnitTypes
+            originalExistingType?.isDeviceOwned() == true -> originalExistingType.unit.convertibleUnits()
+            else -> UnitType.entries.toList()
+        }
+    }
+    val allowedInputTypesForKey = remember(editedKey, originalExistingType) {
+        when {
+            editedKey != null -> editedKey.allowedInputTypes
+            originalExistingType?.isDeviceOwned() == true -> listOf(originalExistingType.inputType)
+            else -> listOf(
+                InputFieldType.FLOAT, InputFieldType.INT, InputFieldType.TEXT,
+                InputFieldType.DATE, InputFieldType.TIME
+            )
+        }
+    }
+
+    // The CSV column is the user-facing side of a user-created type's identity. One value
+    // answers both questions: null means the column is not free, and when it is, this is
+    // exactly the identity that gets saved.
+    val isUserOwnedType = originalExistingType?.isUserOwned() == true
+    var csvColumnKey by remember(originalExistingType) {
+        mutableStateOf(
+            originalExistingType?.identity
+                ?.takeIf { it.isNotBlank() }
+                ?.let { MeasurementType.identityColumnKey(it) }
+                .orEmpty()
+        )
+    }
+    val takenColumnKeys = remember(measurementTypes, typeId) {
+        measurementTypes.filter { it.id != typeId && it.identity.isNotBlank() }
+            .map { MeasurementType.identityColumnKey(it.identity) }
+            .toSet()
+    }
+    val claimedIdentity = remember(csvColumnKey, takenColumnKeys) {
+        MeasurementType.userIdentityFrom(csvColumnKey, takenColumnKeys)
+    }
 
     var name by remember { mutableStateOf(originalExistingType?.getDisplayName(context).orEmpty()) }
     var selectedUnit by remember {
@@ -180,12 +226,15 @@ fun MeasurementTypeDetailScreen(
                     return@TopBarAction
                 }
 
-                val finalKey = if (isEdit) originalExistingType?.key ?: MeasurementTypeKey.CUSTOM else MeasurementTypeKey.CUSTOM
+                if (isUserOwnedType && claimedIdentity == null) {
+                    Toast.makeText(context, R.string.measurement_type_csv_column_taken, Toast.LENGTH_SHORT).show()
+                    return@TopBarAction
+                }
 
-                val derivedForType = when (currentMeasurementTypeKey) {
-                    MeasurementTypeKey.BODY_FAT -> bodyFatFormula != BodyFatFormulaOption.OFF
-                    MeasurementTypeKey.WATER    -> bodyWaterFormula != BodyWaterFormulaOption.OFF
-                    MeasurementTypeKey.LBM      -> lbmFormula != LbmFormulaOption.OFF
+                val derivedForType = when (editedKey) {
+                    MeasurementType.BODY_FAT -> bodyFatFormula != BodyFatFormulaOption.OFF
+                    MeasurementType.WATER    -> bodyWaterFormula != BodyWaterFormulaOption.OFF
+                    MeasurementType.LBM      -> lbmFormula != LbmFormulaOption.OFF
                     else -> originalExistingType?.isDerived ?: false
                 }
 
@@ -199,16 +248,21 @@ fun MeasurementTypeDetailScreen(
                     displayOrder = originalExistingType?.displayOrder ?: measurementTypes.size,
                     isEnabled = isEnabled,
                     isPinned = isPinned,
-                    key = finalKey,
+                    // A user-owned type carries the (possibly edited) CSV column back as
+                    // its identity; everything else travels untouched — a brand-new type
+                    // leaves it blank and MeasurementTypeCrudUseCases assigns the user.*
+                    // one, predefined and ble.* identities are frozen in the use case.
+                    identity = if (isUserOwnedType) claimedIdentity.orEmpty()
+                               else originalExistingType?.identity.orEmpty(),
                     isDerived = derivedForType,
                     isOnRightYAxis = isOnRightYAxis
                 )
 
                 scope.launch {
-                    when (currentMeasurementTypeKey) {
-                        MeasurementTypeKey.BODY_FAT -> if (bodyFatFormula != bodyFatFormulaOption) sharedViewModel.setSelectedBodyFatFormula(bodyFatFormula)
-                        MeasurementTypeKey.WATER    -> if (bodyWaterFormula != bodyWaterFormulaOption) sharedViewModel.setSelectedBodyWaterFormula(bodyWaterFormula)
-                        MeasurementTypeKey.LBM      -> if (lbmFormula != lbmFormulaOption) sharedViewModel.setSelectedLbmFormula(lbmFormula)
+                    when (editedKey) {
+                        MeasurementType.BODY_FAT -> if (bodyFatFormula != bodyFatFormulaOption) sharedViewModel.setSelectedBodyFatFormula(bodyFatFormula)
+                        MeasurementType.WATER    -> if (bodyWaterFormula != bodyWaterFormulaOption) sharedViewModel.setSelectedBodyWaterFormula(bodyWaterFormula)
+                        MeasurementType.LBM      -> if (lbmFormula != lbmFormulaOption) sharedViewModel.setSelectedLbmFormula(lbmFormula)
                         else -> Unit
                     }
                 }
@@ -351,11 +405,38 @@ fun MeasurementTypeDetailScreen(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Marks the whole type rather than any single field, so it sits above the
+        // controls: you learn what you are looking at before you start changing things.
+        // Predefined and user-created types carry no such marker.
+        if (originalExistingType?.isDeviceOwned() == true) {
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Bluetooth,
+                        contentDescription = null, // the label right next to it carries the meaning
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = stringResource(R.string.measurement_type_from_scale),
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
+            }
+        }
+
         OutlinedSettingRow(label = stringResource(R.string.measurement_type_label_enabled)) {
             Switch(checked = isEnabled, onCheckedChange = { isEnabled = it })
         }
 
-        if (!isEdit || (originalExistingType?.key == MeasurementTypeKey.CUSTOM)) {
+        if (!isEdit || originalExistingType?.isBuiltIn() == false) {
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
@@ -401,8 +482,8 @@ fun MeasurementTypeDetailScreen(
         )
 
         // Formula pickers use local state
-        when (currentMeasurementTypeKey) {
-            MeasurementTypeKey.BODY_FAT -> {
+        when (editedKey) {
+            MeasurementType.BODY_FAT -> {
                 FormulaPickerRow(
                     label = stringResource(R.string.formula_label_body_fat),
                     currentText = bodyFatFormula.displayName(context),
@@ -416,7 +497,7 @@ fun MeasurementTypeDetailScreen(
                     onSelect = { requestFormulaChange( it) }
                 )
             }
-            MeasurementTypeKey.WATER -> {
+            MeasurementType.WATER -> {
                 FormulaPickerRow(
                     label = stringResource(R.string.formula_label_body_water),
                     currentText = bodyWaterFormula.displayName(context),
@@ -430,7 +511,7 @@ fun MeasurementTypeDetailScreen(
                     onSelect = { requestFormulaChange(it) }
                 )
             }
-            MeasurementTypeKey.LBM -> {
+            MeasurementType.LBM -> {
                 FormulaPickerRow(
                     label = stringResource(R.string.formula_label_lbm),
                     currentText = lbmFormula.displayName(context),
@@ -529,6 +610,50 @@ fun MeasurementTypeDetailScreen(
         if (selectedInputType == InputFieldType.FLOAT || selectedInputType == InputFieldType.INT) {
             OutlinedSettingRow(label = stringResource(R.string.measurement_type_label_on_right_y_axis)) {
                 Switch(checked = isOnRightYAxis, onCheckedChange = { isOnRightYAxis = it })
+            }
+        }
+
+        // Reference rather than a control, hence last: the header this type exports under.
+        // Editable only for a self-created type — a predefined column is the shared
+        // vocabulary that makes an export readable elsewhere, and a ble.* identity is the
+        // handler's link to its own values. Those two stay visible with a padlock: this
+        // row is the one place that answers "why does my export say BODY_FAT?".
+        if (originalExistingType != null && originalExistingType.key != MeasurementType.USER) {
+            if (isUserOwnedType) {
+                OutlinedTextField(
+                    value = csvColumnKey,
+                    onValueChange = { csvColumnKey = it },
+                    label = { Text(stringResource(R.string.measurement_type_label_csv_column)) },
+                    singleLine = true,
+                    isError = claimedIdentity == null,
+                    supportingText = {
+                        if (claimedIdentity == null) {
+                            Text(stringResource(R.string.measurement_type_csv_column_taken))
+                        }
+                    },
+                    textStyle = LocalTextStyle.current.copy(fontFamily = FontFamily.Monospace),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                OutlinedSettingRow(label = stringResource(R.string.measurement_type_label_csv_column)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Lock,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = MeasurementType.identityColumnKey(originalExistingType.identity),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontFamily = FontFamily.Monospace,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
         }
     }
