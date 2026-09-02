@@ -637,8 +637,8 @@ class BeurerSanitasHandler : ScaleDeviceHandler() {
             // If we had deferred data and it matches the same timestamp/user, drop it
             storedMeasurement.measurementData?.let { pending ->
                 if (ru.remoteUserId == storedMeasurement.storedUid) {
-                    val tsA = ConverterUtils.fromUnsignedInt32Be(merged, 0)
-                    val tsB = ConverterUtils.fromUnsignedInt32Be(pending, 0)
+                    val tsA = decodeTimestampSeconds(merged, 0)
+                    val tsB = decodeTimestampSeconds(pending, 0)
                     if (tsA == tsB) {
                         logD("Dropping deferred data (duplicate of saved data)")
                         storedMeasurement.measurementData = null
@@ -660,7 +660,7 @@ class BeurerSanitasHandler : ScaleDeviceHandler() {
     }
 
     private fun addMeasurement(buf: ByteArray, userId: Int) {
-        val timestampMs = ConverterUtils.fromUnsignedInt32Be(buf, 0) * 1000L
+        val timestampMs = decodeTimestampSeconds(buf, 0) * 1000L
         val weight = getKiloGram(buf, 4)
         val impedance = ConverterUtils.fromUnsignedInt16Be(buf, 6)
         val fat = getPercent(buf, 8)
@@ -682,6 +682,19 @@ class BeurerSanitasHandler : ScaleDeviceHandler() {
         }
         publish(m)
     }
+
+    /**
+     * Decode a 4-byte big-endian unix timestamp from a measurement payload.
+     *
+     * Some firmwares set bit 31 of the timestamp in live [CMD_MEASUREMENT] frames while
+     * sending the same field with the bit cleared in [CMD_SAVED_MEASUREMENT] frames.
+     * Observed on a Beurer BF800-W (issue #1500): SET_TIME wrote 0x6A9290AD and the live
+     * measurement 21 s later carried 0xEA9290C2 = (0x6A9290AD + 21) or 0x80000000.
+     * Decoded unmasked, such a measurement lands ~68 years in the future (year 2094).
+     * Unix timestamps do not need bit 31 until 2038, so the flag bit is safe to mask off.
+     */
+    private fun decodeTimestampSeconds(data: ByteArray, offset: Int): Long =
+        ConverterUtils.fromUnsignedInt32Be(data, offset) and 0x7FFF_FFFFL
 
     private fun getKiloGram(data: ByteArray, offset: Int): Float {
         // Unit is 50 g
