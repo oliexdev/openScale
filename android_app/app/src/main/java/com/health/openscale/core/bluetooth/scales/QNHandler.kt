@@ -81,17 +81,18 @@ class QNHandler : ScaleDeviceHandler() {
     /** Last seen protocol type from a vendor packet (byte[2]), echoed back in our replies. */
     private var seenProtocolType: Byte = 0x00.toByte()
 
+    /**
+     * True for the GE CS 10 G "Fit Plus" family, which always reports protocolType 0xFF and is
+     * the only sub-family this handler's behavior has been verified against via a real BTSnoop
+     * capture (weight, impedance, the 0x1F ack, and real height/age/gender in the 0x13 config).
+     * Everything gated on this flag falls back to the pre-existing, longer-serving behavior for
+     * every other protocolType, so verified fixes for this one family can't regress the rest.
+     */
+    private val isCapturedUniversalVariant: Boolean
+        get() = seenProtocolType == 0xFF.toByte()
+
     /** Flag to track if we've received the protocol type from 0x12 frame. */
     private var hasReceivedProtocolType = false
-
-    /**
-     * Whether the 0x12 frame used the long/"universal" 18-byte layout (length byte ==
-     * data.length, protocol type 0xFF, e.g. GE CS 10 G "Fit Plus" — confirmed via BTSnoop
-     * capture). Devices using this variant send live weight in the ES-30M byte layout
-     * ([4]=state, [5,6]=weight) even when weightScaleFactor is 100, not 10, so this flag
-     * — not weightScaleFactor — is what the live-weight parser gates on for them.
-     */
-    private var isLongFrameVariant = false
 
     /** Store the current user to access later when sending configuration. */
     private var currentUser: ScaleUser? = null
@@ -154,7 +155,6 @@ class QNHandler : ScaleDeviceHandler() {
         weightScaleFactor = 100.0f
         seenProtocolType = 0x00.toByte()
         hasReceivedProtocolType = false
-        isLongFrameVariant = false
         historyQueryAttempts = 0
         isConnected = true
         sessionStartedScaleSeconds = (System.currentTimeMillis() / 1000L) - SCALE_UNIX_TIMESTAMP_OFFSET
@@ -307,12 +307,9 @@ class QNHandler : ScaleDeviceHandler() {
         logD( "QN: raw notify: ${data.toHexPreview(24)}")
 
         // Detect format by checking if byte[4] looks like a stable flag (0x00, 0x01, 0x02)
-        // vs weight data (typically > 0x10). weightScaleFactor==10 catches the classic
-        // ES-30M; isLongFrameVariant catches the "universal" (protocolType 0xFF) devices
-        // that use this same byte layout despite reporting factor 100 — confirmed via
-        // BTSnoop capture for GE CS 10 G "Fit Plus".
+        // vs weight data (typically > 0x10).
         val byte4Value = data[4].toInt() and 0xFF
-        val isES30MFormat = byte4Value <= 0x02 && (weightScaleFactor == 10.0f || isLongFrameVariant)
+        val isES30MFormat = byte4Value <= 0x02 && weightScaleFactor == 10.0f
 
         val stable: Boolean
         val raw: Float
@@ -323,11 +320,12 @@ class QNHandler : ScaleDeviceHandler() {
             // ES-30M format: byte[4]=stable, bytes[5,6]=weight
             if (data.size < 11) return
             val stableFlag = byte4Value
-            // Only state 2 carries real impedance — state 1 ("stabilizing") still reports
-            // R1=R2=0 in every captured frame, so treating it as stable would publish a
-            // measurement with fabricated impedance and then never see the real one (guarded
-            // by hasPublishedForThisSession). Confirmed via BTSnoop capture.
-            stable = stableFlag == 0x02
+            // Only state 2 carries real impedance on the captured Fit Plus family — state 1
+            // ("stabilizing") always reports R1=R2=0 there, so treating it as stable would
+            // publish a measurement with fabricated impedance and then never see the real one
+            // (guarded by hasPublishedForThisSession). Not verified for other protocolTypes,
+            // so they keep the original (state 1 or 2) behavior.
+            stable = if (isCapturedUniversalVariant) stableFlag == 0x02 else (stableFlag == 0x02 || stableFlag == 0x01)
             raw = u16be(data[5], data[6])
             r1 = u16be(data[7], data[8])
             r2 = u16be(data[9], data[10])
@@ -347,14 +345,17 @@ class QNHandler : ScaleDeviceHandler() {
         // Acknowledge the stable reading with 0x1F, per the vendor SDK
         // (CmdBuilder.buildOverCmd -> QNDecoderImpl opcode 0x10/state 0x02 handler), which
         // always answers a stable frame with [0x1F, 0x05, protocolType, 0x10, checksum]
-        // regardless of anything else. Sent unconditionally (even on repeat stable frames)
-        // to match the vendor app's behavior.
-        val ack = byteArrayOf(0x1F, 0x05, seenProtocolType, 0x10, 0x00)
-        ack[ack.lastIndex] = checksum(ack, 0, ack.lastIndex - 1)
-        if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
-            writeTo(SVC_T2, CHR_T2_WRITE_SHARED, ack, true)
-        } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
-            writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, ack, true)
+        // regardless of anything else. Verified against a real capture of the protocolType
+        // 0xFF ("Fit Plus") family only; scoped there until we have evidence other QN devices
+        // also expect it.
+        if (isCapturedUniversalVariant) {
+            val ack = byteArrayOf(0x1F, 0x05, seenProtocolType, 0x10, 0x00)
+            ack[ack.lastIndex] = checksum(ack, 0, ack.lastIndex - 1)
+            if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
+                writeTo(SVC_T2, CHR_T2_WRITE_SHARED, ack, true)
+            } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
+                writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, ack, true)
+            }
         }
 
         if (hasPublishedForThisSession) return
@@ -483,11 +484,7 @@ class QNHandler : ScaleDeviceHandler() {
         if (data.size <= 10) return
 
         weightScaleFactor = if (data[10].toInt() == 1) 100.0f else 10.0f
-        // Long/"universal" variant: length byte equals the actual frame length (e.g. 0x12 for
-        // an 18-byte frame). Confirmed via BTSnoop capture for GE CS 10 G "Fit Plus"
-        // (protocolType 0xFF, weightScaleFactor 100, yet ES-30M-style 0x10 frames).
-        isLongFrameVariant = (data[1].toInt() and 0xFF) == data.size
-        logD("QN: set weightScaleFactor=$weightScaleFactor isLongFrameVariant=$isLongFrameVariant from opcode 0x12")
+        logD("QN: set weightScaleFactor=$weightScaleFactor from opcode 0x12")
         
         // NOW send the configuration after we have the protocol type
         if (!hasReceivedProtocolType) {
@@ -517,9 +514,12 @@ class QNHandler : ScaleDeviceHandler() {
         // Clamped to the vendor's own [60,220]cm / [6,80]yr bounds (buildUserInfoCmd) so an
         // out-of-range profile can't produce a byte the scale's firmware doesn't expect.
         // Gender wire byte is inverted from the vendor's internal enum: 0 = male, 1 = female.
-        val heightByte = user.bodyHeight.toInt().coerceIn(60, 220).toByte()
-        val ageByte = user.age.coerceIn(6, 80).toByte()
-        val genderByte = if (user.gender.isMale()) 0x00.toByte() else 0x01.toByte()
+        // Verified against a real capture of the protocolType 0xFF ("Fit Plus") family only;
+        // other protocolTypes keep sending zeros (the pre-existing behavior) until we have
+        // evidence they also expect real values here.
+        val heightByte = if (isCapturedUniversalVariant) user.bodyHeight.toInt().coerceIn(60, 220).toByte() else 0x00.toByte()
+        val ageByte = if (isCapturedUniversalVariant) user.age.coerceIn(6, 80).toByte() else 0x00.toByte()
+        val genderByte = if (!isCapturedUniversalVariant) 0x00.toByte() else if (user.gender.isMale()) 0x00.toByte() else 0x01.toByte()
 
         logD("QN: sending config with seenProtocolType=$seenProtocolType unitByte=$unitByte height=$heightByte age=$ageByte gender=$genderByte")
 
@@ -577,14 +577,30 @@ class QNHandler : ScaleDeviceHandler() {
         ((d.toLong() and 0xFFL) shl 24)
 
     private fun publishQnMeasurement(user: ScaleUser, weightKg: Float, r1: Float, source: String) {
+        // On the captured "Fit Plus" family, r1 is raw ADC counts in tenths of an ohm (e.g.
+        // 4350 -> 435.0 Ohm), landing squarely in the ~300-1000 Ohm range the Trisa formula
+        // below is documented against; taken as whole ohms it's roughly 10x too large. The
+        // vendor SDK's own two-byte combine (MeasureDecoder.h/twoByte2Int) applies no scaling,
+        // so this is specific to how this family's firmware reports the value, not a universal
+        // QN constant -- scoped accordingly rather than changed for every protocolType.
+        val impedanceOhm = if (isCapturedUniversalVariant) r1 / 10f else r1
+
         val m = ScaleMeasurement().apply {
             userId = user.id
             this[MeasurementType.WEIGHT] = Kg(weightKg)
-            // Store the raw resistance so body composition can be recomputed later.
-            this[MeasurementType.IMPEDANCE] = Ohm(r1)
+            // Store the (possibly rescaled) resistance so body composition can be recomputed later.
+            this[MeasurementType.IMPEDANCE] = Ohm(impedanceOhm)
         }
 
-        val impedance = if (r1 < 410f) 3.0f else 0.3f * (r1 - 400f)
+        // Pre-existing ad-hoc calibration for the other protocolTypes this handler already
+        // serves; left untouched since we have no capture evidence to correct it for them.
+        val impedance = if (isCapturedUniversalVariant) {
+            impedanceOhm
+        } else if (impedanceOhm < 410f) {
+            3.0f
+        } else {
+            0.3f * (impedanceOhm - 400f)
+        }
 
         val trisa = TrisaBodyAnalyzeLib(
             if (user.gender.isMale()) 1 else 0,
@@ -597,7 +613,7 @@ class QNHandler : ScaleDeviceHandler() {
         m[MeasurementType.MUSCLE] = Percent(trisa.getMuscle(weightKg, impedance))
         m[MeasurementType.BONE] = Kg(trisa.getBone(weightKg, impedance))
 
-        logD("QN: publishing $source measurement weight=$weightKg kg r1=$r1 impedance=$impedance")
+        logD("QN: publishing $source measurement weight=$weightKg kg r1=$r1 impedanceOhm=$impedanceOhm impedance=$impedance")
         // Snapshot: the accumulator keeps being mutated after this publish.
         publish(m.snapshot())
     }
