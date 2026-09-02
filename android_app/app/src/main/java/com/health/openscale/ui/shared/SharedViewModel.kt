@@ -36,7 +36,6 @@ import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.facade.DataManagementFacade
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
-import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.core.facade.UserFacade
 import com.health.openscale.core.model.AggregatedMeasurement
 import com.health.openscale.core.model.MeasurementInsight
@@ -45,6 +44,7 @@ import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.usecase.MeasurementDemoUseCase
 import com.health.openscale.core.usecase.SyncUseCases
 import com.health.openscale.core.utils.LogManager
+import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.ui.screen.components.AGGREGATION_LEVEL_SUFFIX
 import com.health.openscale.ui.screen.components.CUSTOM_END_DATE_MILLIS_SUFFIX
 import com.health.openscale.ui.screen.components.CUSTOM_START_DATE_MILLIS_SUFFIX
@@ -303,17 +303,32 @@ class SharedViewModel @Inject constructor(
     // Aggregation level (persisted per screen context)
     // -------------------------------------------------------------------------
 
-    fun observeAggregationLevel(screenContextName: String): Flow<AggregationLevel> {
-        val key = "${screenContextName}${AGGREGATION_LEVEL_SUFFIX}"
-        return observeSetting(key, AggregationLevel.NONE.name)
+    /**
+     * Where the setting named by [settingSuffix] is stored for [screenContextName]: the screen's
+     * own context, or one shared context while that setting is linked across screens.
+     *
+     * The per-screen entries stay in DataStore untouched while linked, so unlinking hands each
+     * screen back exactly what it had before - no migration, no lost settings. Time range and
+     * aggregation are linked independently, so sharing one starting date across the app while the
+     * table still groups by month is possible.
+     */
+    fun filterContext(screenContextName: String, settingSuffix: String): Flow<String> =
+        linkedAcrossScreens(settingSuffix).map { linked ->
+            if (linked) SettingsPreferenceKeys.SHARED_FILTER_CONTEXT else screenContextName
+        }
+
+    fun observeAggregationLevel(screenContextName: String): Flow<AggregationLevel> =
+        filterContext(screenContextName, AGGREGATION_LEVEL_SUFFIX)
+            .flatMapLatest { context ->
+                observeSetting("${context}${AGGREGATION_LEVEL_SUFFIX}", AggregationLevel.NONE.name)
+            }
             .map { name ->
                 AggregationLevel.entries.find { it.name == name } ?: AggregationLevel.NONE
             }
-    }
 
     suspend fun saveAggregationLevel(screenContextName: String, level: AggregationLevel) {
-        val key = "${screenContextName}${AGGREGATION_LEVEL_SUFFIX}"
-        saveSetting(key, level.name)
+        val context = filterContext(screenContextName, AGGREGATION_LEVEL_SUFFIX).first()
+        saveSetting("${context}${AGGREGATION_LEVEL_SUFFIX}", level.name)
     }
 
     // -------------------------------------------------------------------------
@@ -359,15 +374,18 @@ class SharedViewModel @Inject constructor(
         useSmoothing: Boolean,
     ): StateFlow<UiState<List<AggregatedMeasurement>>> {
         // Combine the three persisted settings into a single resolved time-range pair
-        val timeRangeFlow: Flow<Pair<Long?, Long?>> = combine(
-            observeSetting("${screenContextName}${TIME_RANGE_SUFFIX}", TimeRangeFilter.ALL_DAYS.name),
-            observeSetting("${screenContextName}${CUSTOM_START_DATE_MILLIS_SUFFIX}", 0L),
-            observeSetting("${screenContextName}${CUSTOM_END_DATE_MILLIS_SUFFIX}", 0L),
-        ) { rangeName, customStart, customEnd ->
-            val range = TimeRangeFilter.entries.find { it.name == rangeName }
-                ?: TimeRangeFilter.ALL_DAYS
-            resolveTimeRange(range, customStart, customEnd)
-        }
+        val timeRangeFlow: Flow<Pair<Long?, Long?>> = filterContext(screenContextName, TIME_RANGE_SUFFIX)
+            .flatMapLatest { context ->
+                combine(
+                    observeSetting("${context}${TIME_RANGE_SUFFIX}", TimeRangeFilter.ALL_DAYS.name),
+                    observeSetting("${context}${CUSTOM_START_DATE_MILLIS_SUFFIX}", 0L),
+                    observeSetting("${context}${CUSTOM_END_DATE_MILLIS_SUFFIX}", 0L),
+                ) { rangeName, customStart, customEnd ->
+                    val range = TimeRangeFilter.entries.find { it.name == rangeName }
+                        ?: TimeRangeFilter.ALL_DAYS
+                    range.resolveBounds(customStart, customEnd)
+                }
+            }
 
         val aggregationFlow: Flow<AggregationLevel> = observeAggregationLevel(screenContextName)
 
@@ -503,31 +521,6 @@ class SharedViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Resolves a [TimeRangeFilter] into concrete start/end epoch-millisecond bounds.
-     * Returns `null` for an open bound (no filter applied on that side).
-     *
-     * Previously this logic was spread across rememberResolvedTimeRangeState in
-     * multiple Composables. Keeping it here makes it testable without Android instrumentation.
-     */
-    private fun resolveTimeRange(
-        filter: TimeRangeFilter,
-        customStartMillis: Long,
-        customEndMillis: Long,
-    ): Pair<Long?, Long?> {
-        val now = System.currentTimeMillis()
-        return when (filter) {
-            TimeRangeFilter.ALL_DAYS      -> null to null
-            TimeRangeFilter.LAST_7_DAYS   -> (now - 7L   * 86_400_000) to null
-            TimeRangeFilter.LAST_30_DAYS  -> (now - 30L  * 86_400_000) to null
-            TimeRangeFilter.LAST_365_DAYS -> (now - 365L * 86_400_000) to null
-            TimeRangeFilter.CUSTOM        ->
-                if (customStartMillis > 0L && customEndMillis > 0L)
-                    customStartMillis to customEndMillis
-                else
-                    null to null
-        }
-    }
 
     // -------------------------------------------------------------------------
     // Drill-down flow — raw, non-aggregated, fixed time window

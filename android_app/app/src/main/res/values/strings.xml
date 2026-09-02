@@ -496,8 +496,17 @@
     <string name="time_range_last_365_days">Last 365 Days</string>
     <string name="time_range_custom">Custom Days</string>
     <string name="time_range_custom_from_to">From %1$s to %2$s</string>
+    <string name="time_range_custom_since">Since %1$s</string>
+    <string name="time_range_custom_dialog_title">Select date range</string>
+    <string name="time_range_custom_hint_open_end">No end date — always up to today.</string>
+    <string name="time_range_custom_hint_fixed_end">Clear the end date to always include today.</string>
+    <string name="time_range_custom_clear_end">Clear end</string>
     <string name="filter_section_time_range">Time range</string>
     <string name="filter_section_aggregation">Aggregation</string>
+    <string name="content_description_time_range_linked">Time range applies to all screens</string>
+    <string name="content_description_time_range_unlinked">Time range applies to this screen only</string>
+    <string name="content_description_aggregation_linked">Aggregation applies to all screens</string>
+    <string name="content_description_aggregation_unlinked">Aggregation applies to this screen only</string>
     <string name="content_description_aggregation_selected">%1$s selected</string>
     <string name="aggregation_level_none">No Aggregation</string>
     <string name="aggregation_level_day">Day</string>

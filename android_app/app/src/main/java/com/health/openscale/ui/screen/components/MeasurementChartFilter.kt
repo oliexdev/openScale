@@ -17,25 +17,47 @@
  */
 package com.health.openscale.ui.screen.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.LinkOff
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDateRangePickerState
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,10 +65,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
+import androidx.core.view.WindowCompat
 import com.health.openscale.R
 import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.TimeRangeFilter
@@ -59,6 +90,7 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
@@ -85,7 +117,13 @@ fun provideFilterTopBarAction(
     val context = LocalContext.current
 
     // --- Time range state ---
-    val targetTimeRangeKeyName = "${screenContextName}${TIME_RANGE_SUFFIX}"
+    val settingsContext by sharedViewModel.filterContext(screenContextName, TIME_RANGE_SUFFIX)
+        .collectAsState(initial = screenContextName)
+    val isTimeRangeLinked by sharedViewModel.linkedAcrossScreens(TIME_RANGE_SUFFIX)
+        .collectAsState(initial = false)
+    val isAggregationLinked by sharedViewModel.linkedAcrossScreens(AGGREGATION_LEVEL_SUFFIX)
+        .collectAsState(initial = false)
+    val targetTimeRangeKeyName = "${settingsContext}${TIME_RANGE_SUFFIX}"
     val currentPersistedTimeRangeName by sharedViewModel
         .observeSetting(targetTimeRangeKeyName, TimeRangeFilter.ALL_DAYS.name)
         .collectAsState(initial = TimeRangeFilter.ALL_DAYS.name)
@@ -114,42 +152,148 @@ fun provideFilterTopBarAction(
     var showMenuState by rememberSaveable { mutableStateOf(false) }
     var showDateRangePicker by remember { mutableStateOf(false) }
 
+    // Read back so reopening the dialog shows the range that is actually in effect.
+    val customStartMillis by sharedViewModel
+        .observeSetting("${settingsContext}${CUSTOM_START_DATE_MILLIS_SUFFIX}", 0L)
+        .collectAsState(initial = 0L)
+    val customEndMillis by sharedViewModel
+        .observeSetting("${settingsContext}${CUSTOM_END_DATE_MILLIS_SUFFIX}", 0L)
+        .collectAsState(initial = 0L)
+
     if (showDateRangePicker) {
-        val dateRangePickerState = rememberDateRangePickerState()
-        DatePickerDialog(
+        val dateRangePickerState = rememberDateRangePickerState(
+            initialSelectedStartDateMillis = customStartMillis.takeIf { it > 0L }
+                ?.let(::localDayStartToPickerMillis),
+            initialSelectedEndDateMillis = customEndMillis.takeIf { it > 0L }
+                ?.let(::localDayStartToPickerMillis),
+        )
+        val selectedStart = dateRangePickerState.selectedStartDateMillis
+        val selectedEnd = dateRangePickerState.selectedEndDateMillis
+
+        // Persists the picked range and switches the filter over to it. A null [endMillis] is
+        // stored as 0L, which resolveBounds reads as "open end".
+        val applyRange: (startMillis: Long, endMillis: Long?) -> Unit = { startMillis, endMillis ->
+            showDateRangePicker = false
+            scope.launch {
+                sharedViewModel.saveSetting(
+                    "${settingsContext}${CUSTOM_START_DATE_MILLIS_SUFFIX}",
+                    pickerMillisToLocalDayStart(startMillis)
+                )
+                sharedViewModel.saveSetting(
+                    "${settingsContext}${CUSTOM_END_DATE_MILLIS_SUFFIX}",
+                    endMillis?.let(::pickerMillisToLocalDayStart) ?: 0L
+                )
+                sharedViewModel.saveSetting(
+                    targetTimeRangeKeyName,
+                    TimeRangeFilter.CUSTOM.name
+                )
+            }
+        }
+
+        // Material 3 presents range selection as a full-screen dialog. The range picker has no
+        // month arrows - it is one continuously scrolling list of months - so inside a standard
+        // dialog only a single month is visible at a time and it reads as if it were stuck.
+        Dialog(
             onDismissRequest = { showDateRangePicker = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDateRangePicker = false
-                        val startMillis = dateRangePickerState.selectedStartDateMillis
-                        val endMillis = dateRangePickerState.selectedEndDateMillis
-                        if (startMillis != null && endMillis != null) {
-                            scope.launch {
-                                sharedViewModel.saveSetting(
-                                    "${screenContextName}${CUSTOM_START_DATE_MILLIS_SUFFIX}",
-                                    startMillis
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false,
+                decorFitsSystemWindows = false
+            )
+        ) {
+            // The dialog gets its own window, so the activity's edge-to-edge setup does not reach
+            // it and the status bar icons would keep their default light tint on a light sheet.
+            // Deriving the tint from the sheet's own luminance stays right whichever way the theme
+            // was resolved - system, manual override or high contrast.
+            val containerColor = DatePickerDefaults.colors().containerColor
+            val view = LocalView.current
+            SideEffect {
+                (view.parent as? DialogWindowProvider)?.window?.let { window ->
+                    WindowCompat.getInsetsController(window, view)
+                        .isAppearanceLightStatusBars = containerColor.luminance() > 0.5f
+                }
+            }
+
+            // One continuous sheet: the app bar takes the date picker's own container colour so
+            // there is no seam between the bar and the picker header below it.
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = containerColor
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .safeDrawingPadding()
+                ) {
+                    TopAppBar(
+                        title = { Text(stringResource(R.string.time_range_custom_dialog_title)) },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.Transparent
+                        ),
+                        navigationIcon = {
+                            IconButton(onClick = { showDateRangePicker = false }) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = stringResource(R.string.cancel_button)
                                 )
-                                sharedViewModel.saveSetting(
-                                    "${screenContextName}${CUSTOM_END_DATE_MILLIS_SUFFIX}",
-                                    endMillis
+                            }
+                        },
+                        actions = {
+                            if (selectedEnd != null) {
+                                TextButton(
+                                    onClick = {
+                                        dateRangePickerState.setSelection(selectedStart, null)
+                                    }
+                                ) {
+                                    Text(stringResource(R.string.time_range_custom_clear_end))
+                                }
+                            }
+                            TextButton(
+                                onClick = {
+                                    selectedStart?.let { applyRange(it, selectedEnd) }
+                                },
+                                // A start on its own is a complete choice: "from this day onwards".
+                                enabled = selectedStart != null
+                            ) { Text(stringResource(R.string.dialog_ok)) }
+                        }
+                    )
+
+                    DateRangePicker(
+                        state = dateRangePickerState,
+                        modifier = Modifier.weight(1f),
+                        // The title slot sits above the headline and carries the one thing the
+                        // picker itself cannot express: what an empty end date means, and how to
+                        // get back to it once a date has been chosen.
+                        title = {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 24.dp, end = 24.dp, top = 16.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(MaterialTheme.colorScheme.secondaryContainer)
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Info,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    modifier = Modifier.size(18.dp)
                                 )
-                                sharedViewModel.saveSetting(
-                                    targetTimeRangeKeyName,
-                                    TimeRangeFilter.CUSTOM.name
+                                Spacer(Modifier.width(10.dp))
+                                Text(
+                                    text = stringResource(
+                                        if (selectedEnd == null) R.string.time_range_custom_hint_open_end
+                                        else R.string.time_range_custom_hint_fixed_end
+                                    ),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             }
                         }
-                    },
-                    enabled = dateRangePickerState.selectedEndDateMillis != null
-                ) { Text(stringResource(R.string.dialog_ok)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDateRangePicker = false }) {
-                    Text(stringResource(R.string.cancel_button))
+                    )
                 }
             }
-        ) { DateRangePicker(state = dateRangePickerState) }
+        }
     }
 
     return TopBarAction(
@@ -160,11 +304,14 @@ fun provideFilterTopBarAction(
         DropdownMenu(expanded = showMenuState, onDismissRequest = { showMenuState = false }) {
 
             // --- Section 1: Time range ---
-            Text(
-                text = stringResource(R.string.filter_section_time_range),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            FilterSectionHeader(
+                title = stringResource(R.string.filter_section_time_range),
+                linked = isTimeRangeLinked,
+                linkedDescription = stringResource(R.string.content_description_time_range_linked),
+                unlinkedDescription = stringResource(R.string.content_description_time_range_unlinked),
+                onLinkedChange = { linked ->
+                    scope.launch { sharedViewModel.setLinkedAcrossScreens(TIME_RANGE_SUFFIX, linked) }
+                }
             )
             TimeRangeFilter.entries.forEach { timeRange ->
                 DropdownMenuItem(
@@ -198,11 +345,14 @@ fun provideFilterTopBarAction(
             // --- Section 2: Aggregation (only for Graph, Table, Statistics) ---
             if (showAggregation) {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                Text(
-                    text = stringResource(R.string.filter_section_aggregation),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                FilterSectionHeader(
+                    title = stringResource(R.string.filter_section_aggregation),
+                    linked = isAggregationLinked,
+                    linkedDescription = stringResource(R.string.content_description_aggregation_linked),
+                    unlinkedDescription = stringResource(R.string.content_description_aggregation_unlinked),
+                    onLinkedChange = { linked ->
+                        scope.launch { sharedViewModel.setLinkedAcrossScreens(AGGREGATION_LEVEL_SUFFIX, linked) }
+                    }
                 )
                 AggregationLevel.entries.forEach { level ->
                     DropdownMenuItem(
@@ -257,6 +407,53 @@ fun provideFilterTopBarAction(
                         }
                         showMenuState = false
                     }
+                )
+            }
+        }
+    }
+}
+
+/**
+ * A section heading in the filter menu, carrying the toggle that decides whether the choices
+ * below it apply to this screen alone or to every screen.
+ *
+ * The toggle belongs on the heading rather than in the list: it sets the scope of the entries,
+ * it is not one more entry to pick.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FilterSectionHeader(
+    title: String,
+    linked: Boolean,
+    linkedDescription: String,
+    unlinkedDescription: String,
+    onLinkedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f)
+        )
+        val description = if (linked) linkedDescription else unlinkedDescription
+        TooltipBox(
+            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+            tooltip = { PlainTooltip { Text(description) } },
+            state = rememberTooltipState()
+        ) {
+            IconToggleButton(checked = linked, onCheckedChange = onLinkedChange) {
+                Icon(
+                    imageVector = if (linked) Icons.Default.Link else Icons.Default.LinkOff,
+                    contentDescription = description,
+                    tint = if (linked) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
@@ -367,3 +564,28 @@ internal fun rememberPeriodChartData(
         }
     }
 }
+
+/**
+ * Converts a [DateRangePicker] selection into the start of that calendar day in the local zone.
+ *
+ * The picker reports UTC midnight of the day the user tapped. Stored unchanged, that is 22:00 of
+ * the previous day at UTC+2 - so an evening measurement from the day before the chosen start would
+ * be swept into the range. Interpreting the value as a bare calendar date and re-anchoring it
+ * locally keeps the boundary on the day the user actually picked.
+ */
+private fun pickerMillisToLocalDayStart(pickerMillis: Long): Long =
+    Instant.ofEpochMilli(pickerMillis)
+        .atZone(ZoneOffset.UTC)
+        .toLocalDate()
+        .atStartOfDay(ZoneId.systemDefault())
+        .toInstant()
+        .toEpochMilli()
+
+/** Inverse of [pickerMillisToLocalDayStart], for seeding the picker from a stored range. */
+private fun localDayStartToPickerMillis(localMillis: Long): Long =
+    Instant.ofEpochMilli(localMillis)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
+        .atStartOfDay(ZoneOffset.UTC)
+        .toInstant()
+        .toEpochMilli()

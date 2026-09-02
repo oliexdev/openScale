@@ -137,7 +137,7 @@ class MeasurementFacade @Inject constructor(
      * @param userId                Database id of the user.
      * @param measurementTypesFlow  Global type catalogue.
      * @param startTimeMillisFlow   Start of the time range (inclusive), null = no bound.
-     * @param endTimeMillisFlow     End of the time range (exclusive), null = no bound.
+     * @param endTimeMillisFlow     End of the time range (inclusive), null = no bound.
      * @param typesToSmoothFlow     Type ids to apply smoothing to.
      * @param algorithmFlow         Selected smoothing algorithm.
      * @param alphaFlow             Alpha for exponential smoothing (0..1).

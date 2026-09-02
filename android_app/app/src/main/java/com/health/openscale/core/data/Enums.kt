@@ -79,6 +79,7 @@ import androidx.compose.ui.res.stringResource
 import com.health.openscale.R
 import com.health.openscale.core.utils.LocaleUtils
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -493,7 +494,48 @@ enum class TimeRangeFilter(@param:StringRes val displayNameResId: Int) {
     fun getDisplayName(context: Context): String {
         return context.getString(displayNameResId)
     }
+
+    /**
+     * Resolves this filter into the inclusive epoch-millisecond bounds the measurement pipeline
+     * filters on. `null` on either side means that side is unbounded.
+     *
+     * Single source of truth for the conversion: both the data pipeline (SharedViewModel) and the
+     * UI (filter title, period chart) call it, so the label a chart carries cannot drift from the
+     * data the chart shows.
+     *
+     * [customStartMillis] and [customEndMillis] are local start-of-day millis as written by the
+     * date range picker, `0L` meaning "not set". A [CUSTOM] range with a start but no end stays
+     * open-ended and keeps picking up new measurements as they arrive - that is what makes a fixed
+     * starting point (the day a diet began, say) useful over time.
+     *
+     * The rolling ranges snap their start to local midnight and leave the end open, so a
+     * measurement dated slightly in the future stays visible.
+     */
+    fun resolveBounds(
+        customStartMillis: Long = 0L,
+        customEndMillis: Long = 0L,
+        zone: ZoneId = ZoneId.systemDefault(),
+        today: LocalDate = LocalDate.now(zone),
+    ): Pair<Long?, Long?> = when (this) {
+        ALL_DAYS      -> null to null
+        LAST_7_DAYS   -> today.minusDays(7).startOfDayMillis(zone) to null
+        LAST_30_DAYS  -> today.minusDays(30).startOfDayMillis(zone) to null
+        LAST_365_DAYS -> today.minusDays(365).startOfDayMillis(zone) to null
+        CUSTOM        -> {
+            val start = customStartMillis.takeIf { it > 0L }
+            // An unset end is a deliberate choice, not missing input: the range runs up to today
+            // and stays open for whatever is measured after it.
+            val end = customEndMillis.takeIf { it > 0L }?.let { endDayStart ->
+                Instant.ofEpochMilli(endDayStart).atZone(zone).toLocalDate()
+                    .plusDays(1).startOfDayMillis(zone) - 1
+            }
+            start to end
+        }
+    }
 }
+
+private fun LocalDate.startOfDayMillis(zone: ZoneId): Long =
+    atStartOfDay(zone).toInstant().toEpochMilli()
 
 enum class AggregationLevel(@param:StringRes val displayNameResId: Int) {
     NONE(R.string.aggregation_level_none),
