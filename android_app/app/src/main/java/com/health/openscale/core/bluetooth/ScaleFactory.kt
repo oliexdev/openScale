@@ -19,9 +19,12 @@ package com.health.openscale.core.bluetooth
 
 import android.content.Context
 import androidx.annotation.VisibleForTesting
+import com.health.openscale.core.bluetooth.scales.HealthKeep280Handler
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
+import com.health.openscale.core.bluetooth.scales.AfuB1Handler
+import com.health.openscale.core.bluetooth.scales.AiLinkBroadcastHandler
 import com.health.openscale.core.bluetooth.scales.FitTrackDaraHandler
 import com.health.openscale.core.bluetooth.scales.ScaleupHandler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
@@ -46,6 +49,7 @@ import com.health.openscale.core.bluetooth.scales.HoffenBbs8107Handler
 import com.health.openscale.core.bluetooth.scales.HuaweiAhCh100Handler
 import com.health.openscale.core.bluetooth.scales.HuaweiCH100SHandler
 import com.health.openscale.core.bluetooth.scales.HuaweiHagridWspHandler
+import com.health.openscale.core.bluetooth.scales.HumeDara2Handler
 import com.health.openscale.core.bluetooth.scales.IHealthHS3Handler
 import com.health.openscale.core.bluetooth.scales.InlifeHandler
 import com.health.openscale.core.bluetooth.scales.KeepS3Handler
@@ -58,6 +62,7 @@ import com.health.openscale.core.bluetooth.scales.XiaomiS800Handler
 import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
 import com.health.openscale.core.bluetooth.scales.OmronWlcHandler
+import com.health.openscale.core.bluetooth.scales.PicoocHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
 import com.health.openscale.core.bluetooth.scales.QNHandler
@@ -130,7 +135,10 @@ class ScaleFactory @Inject constructor(
         @VisibleForTesting
         internal fun createHandlers(): List<ScaleDeviceHandler> = listOf(
             // Exact-name match must precede generic LeFu/0xFFF0 handlers (first match wins).
+            HealthKeep280Handler(),
+            PicoocHandler(),
             ActiveEraBF06Handler(),
+            AfuB1Handler(),
             KeepS3Handler(),
             OmronWlcHandler(),
             BeurerBF450Handler(),
@@ -148,6 +156,7 @@ class ScaleFactory @Inject constructor(
             SinocareHandler(),
             SenssunHandler(),
             RenphoHandler(),
+            AiLinkBroadcastHandler(),
             QNHandlerBroadcast(),
             QNHandler(),
             OneByoneHandler(),
@@ -175,6 +184,7 @@ class ScaleFactory @Inject constructor(
             HesleyHandler(),
             ExingtechY1Handler(),
             EbelterBodyFatB2Handler(),
+            HumeDara2Handler(),
             ExcelvanCF36xHandler(),
             EtekcityESF551Handler(),
             EtekcityFit8SHandler(),
@@ -294,10 +304,15 @@ class ScaleFactory @Inject constructor(
         return null
     }
 
-    fun getDeviceSupportFor(name: String, address: String): DeviceSupport? {
-        val info = ScannedDeviceInfo(name, address, 0, emptyList(), null)
-        return modernKotlinHandlers.firstNotNullOfOrNull { it.supportFor(info) }
-    }
+    /**
+     * Returns the [DeviceSupport] of the first handler that claims [device].
+     *
+     * Always pass the complete advertisement: handlers that identify a scale by its services,
+     * manufacturer data or service data (Etekcity Fit 8S, Yunmai X, the standard weight profile,
+     * ...) cannot recognise it from name and address alone and would report "no support".
+     */
+    fun getDeviceSupportFor(device: ScannedDeviceInfo): DeviceSupport? =
+        modernKotlinHandlers.firstNotNullOfOrNull { it.supportFor(device) }
 
     /**
      * Checks if any known handler can theoretically support the given device.

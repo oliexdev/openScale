@@ -106,7 +106,6 @@ import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.EvaluationState
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.Trend
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.UserGoals
@@ -136,6 +135,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
@@ -182,6 +182,9 @@ fun OverviewScreen(
         sharedViewModel   = sharedViewModel,
     )
     val isAggregated = !isDrillDown && activeAggregationLevel != AggregationLevel.NONE
+    // Hoisted out of the item scope: the same rule the period bounds behind each row were
+    // built from, so label and drill-down range always agree.
+    val weekFields   = remember { LocaleUtils.systemWeekFields() }
 
     // ── Data ──────────────────────────────────────────────────────────────────
     // Normal mode: screenFlow — cached, reacts to user/time-range/aggregation changes.
@@ -266,7 +269,7 @@ fun OverviewScreen(
     var measurementToDelete by remember { mutableStateOf<AggregatedMeasurement?>(null) }
     measurementToDelete?.let { aggItem ->
         val enrichedItem  = aggItem.enriched
-        val weightValue   = enrichedItem.valuesWithTrend.find { it.currentValue.type.key == MeasurementTypeKey.WEIGHT }
+        val weightValue   = enrichedItem.valuesWithTrend.find { it.currentValue.type.key == MeasurementType.WEIGHT }
         val weightString  = weightValue?.currentValue?.let {
             LocaleUtils.formatValueForDisplay(it.value.floatValue.toString(), it.type.unit)
         } ?: ""
@@ -618,6 +621,7 @@ fun OverviewScreen(
                                             aggregatedPeriodLabel      = activeAggregationLevel.periodLabel(
                                                 timestamp            = ts,
                                                 calendarWeekAbbrev  = stringResource(R.string.calendar_week_abbrev),
+                                                weekFields          = weekFields,
                                             ),
                                         )
                                     } else {
@@ -777,9 +781,10 @@ fun MeasurementCard(
         // Read the locale observably so the label recomposes on locale changes.
         val locale = ComposeLocale.current.platformLocale
         remember(measurementWithValues.measurement.timestamp, locale) {
-            val ts = measurementWithValues.measurement.timestamp
-            "${DateFormat.getDateInstance(DateFormat.MEDIUM, locale).format(Date(ts))} " +
-                    DateFormat.getTimeInstance(DateFormat.SHORT, locale).format(Date(ts))
+            val date = Date(measurementWithValues.measurement.timestamp)
+            "${DateFormat.getDateInstance(DateFormat.MEDIUM, locale).format(date)} " +
+                    "(${SimpleDateFormat("EE", locale).format(date)}) " +
+                    DateFormat.getTimeInstance(DateFormat.SHORT, locale).format(date)
         }
     }
 
@@ -1200,8 +1205,8 @@ fun MeasurementRowExpandable(
                     val (displayValue, displayLow, displayHigh) = remember(evalResult, type.unit) {
                         val targetUnit = type.unit
                         val baseUnit   = when (type.key) {
-                            MeasurementTypeKey.WEIGHT, MeasurementTypeKey.LBM -> UnitType.KG
-                            MeasurementTypeKey.WAIST                          -> UnitType.CM
+                            MeasurementType.WEIGHT, MeasurementType.LBM -> UnitType.KG
+                            MeasurementType.WAIST                          -> UnitType.CM
                             else                                               -> UnitType.PERCENT
                         }
                         // The noAgeBand branch above already handled negative limits,

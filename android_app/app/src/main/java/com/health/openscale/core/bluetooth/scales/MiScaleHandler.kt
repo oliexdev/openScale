@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.BodyMiScaleLib
@@ -52,6 +53,10 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 import java.util.UUID
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Xiaomi Mi Scale (v1/v2) handler for the modern GATT stack.
@@ -509,7 +514,7 @@ class MiScaleHandler : ScaleDeviceHandler() {
 
         val m = ScaleMeasurement().apply {
             dateTime = dt
-            weight = ConverterUtils.toKilogram(native, user.scaleUnit)
+            this[MeasurementType.WEIGHT] = Kg.from(native, user.scaleUnit)
             userId = user.id
         }
 
@@ -517,7 +522,7 @@ class MiScaleHandler : ScaleDeviceHandler() {
             val imp = ((d[10].toInt() and 0xFF) shl 8) or (d[9].toInt() and 0xFF)
             if (imp > 0) {
                 // Store the raw impedance so body composition can be recomputed later.
-                m.impedance = imp.toDouble()
+                m[MeasurementType.IMPEDANCE] = Ohm(imp.toFloat())
                 when (readBodyCompAlgorithm()) {
                     BodyCompAlgorithm.XIAOMI -> applyXiaomiComposition(m, imp.toFloat(), user)
                     BodyCompAlgorithm.BODYMISCALE_SCIENCE -> applyBodyMiScaleComposition(m, imp.toFloat(), user)
@@ -535,12 +540,12 @@ class MiScaleHandler : ScaleDeviceHandler() {
     private fun applyXiaomiComposition(m: ScaleMeasurement, impedance: Float, user: ScaleUser) {
         val sex = if (user.gender == GenderType.MALE) 1 else 0
         val lib = MiScaleLib(sex, user.age, user.bodyHeight)
-        m.water       = lib.getWater(m.weight, impedance)
-        m.visceralFat = lib.getVisceralFat(m.weight)
-        m.fat         = lib.getBodyFat(m.weight, impedance)
-        m.muscle      = lib.getMuscle(m.weight, impedance)
-        m.lbm         = lib.getLBM(m.weight, impedance)
-        m.bone        = lib.getBoneMass(m.weight, impedance)
+        m[MeasurementType.WATER] = Percent(lib.getWater((m[MeasurementType.WEIGHT]?.value ?: 0f), impedance))
+        m[MeasurementType.VISCERAL_FAT] = lib.getVisceralFat((m[MeasurementType.WEIGHT]?.value ?: 0f))
+        m[MeasurementType.BODY_FAT] = Percent(lib.getBodyFat((m[MeasurementType.WEIGHT]?.value ?: 0f), impedance))
+        m[MeasurementType.MUSCLE] = Percent(lib.getMuscle((m[MeasurementType.WEIGHT]?.value ?: 0f), impedance))
+        m[MeasurementType.LBM] = Kg(lib.getLBM((m[MeasurementType.WEIGHT]?.value ?: 0f), impedance))
+        m[MeasurementType.BONE] = Kg(lib.getBoneMass((m[MeasurementType.WEIGHT]?.value ?: 0f), impedance))
     }
 
     /**
@@ -553,19 +558,19 @@ class MiScaleHandler : ScaleDeviceHandler() {
     private fun applyBodyMiScaleComposition(m: ScaleMeasurement, impedance: Float, user: ScaleUser) {
         val lib = BodyMiScaleLib(user.gender, user.age, user.bodyHeight)
 
-        val lbmKg   = lib.getLbm(m.weight, impedance)
-        val fatPct  = lib.getFat(m.weight, lbmKg)
+        val lbmKg   = lib.getLbm((m[MeasurementType.WEIGHT]?.value ?: 0f), impedance)
+        val fatPct  = lib.getFat((m[MeasurementType.WEIGHT]?.value ?: 0f), lbmKg)
         val boneKg  = lib.getBoneMass(lbmKg)
-        val muscleKg = lib.getMuscleMass(m.weight, fatPct, boneKg)
+        val muscleKg = lib.getMuscleMass((m[MeasurementType.WEIGHT]?.value ?: 0f), fatPct, boneKg)
 
-        m.fat         = fatPct
-        m.water       = lib.getWater(fatPct)
-        m.muscle      = if (m.weight > 0f) muscleKg / m.weight * 100f else 0f
-        m.lbm         = lbmKg
-        m.bone        = boneKg
-        m.protein     = lib.getProtein(m.weight, lbmKg)
-        m.bmr         = lib.getBmr(m.weight)
-        m.visceralFat = lib.getVisceralFat(m.weight)
+        m[MeasurementType.BODY_FAT] = Percent(fatPct)
+        m[MeasurementType.WATER] = Percent(lib.getWater(fatPct))
+        m[MeasurementType.MUSCLE] = Percent(if ((m[MeasurementType.WEIGHT]?.value ?: 0f) > 0f) muscleKg / (m[MeasurementType.WEIGHT]?.value ?: 0f) * 100f else 0f)
+        m[MeasurementType.LBM] = Kg(lbmKg)
+        m[MeasurementType.BONE] = Kg(boneKg)
+        m[MeasurementType.PROTEIN] = Percent(lib.getProtein((m[MeasurementType.WEIGHT]?.value ?: 0f), lbmKg))
+        m[MeasurementType.BMR] = Kcal(lib.getBmr((m[MeasurementType.WEIGHT]?.value ?: 0f)))
+        m[MeasurementType.VISCERAL_FAT] = lib.getVisceralFat((m[MeasurementType.WEIGHT]?.value ?: 0f))
     }
 
     /** History record (10 bytes): [status][weightLE(2)][yearLE(2)][mon][day][h][m][s] */
@@ -602,7 +607,7 @@ class MiScaleHandler : ScaleDeviceHandler() {
 
         val m = ScaleMeasurement().apply {
             dateTime = dt
-            weight = ConverterUtils.toKilogram(native, user.scaleUnit)
+            this[MeasurementType.WEIGHT] = Kg.from(native, user.scaleUnit)
             userId = user.id
         }
         publish(m)

@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
@@ -29,6 +30,10 @@ import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Dr. Trust SSW532 / ICOMON FG2211WB body composition scale.
@@ -131,7 +136,7 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
             if (fallback > 0f) {
                 publish(ScaleMeasurement().apply {
                     dateTime = Date()
-                    weight   = fallback
+                    this[MeasurementType.WEIGHT] = Kg(fallback)
                 })
             }
         }
@@ -195,7 +200,7 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
             // User stepped off without picking up handles — publish saved weight and disconnect
             logD("step-off detected: publishing savedWeightKg=$savedWeightKg")
             bodyCompPublished = true
-            publish(ScaleMeasurement().apply { dateTime = Date(); weight = savedWeightKg })
+            publish(ScaleMeasurement().apply { dateTime = Date(); this[MeasurementType.WEIGHT] = Kg(savedWeightKg) })
             savedWeightKg = 0f
             writeTeardownAck()
             requestDisconnect()
@@ -250,7 +255,7 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
                                 bodyCompPublished = true
                                 publish(ScaleMeasurement().apply {
                                     dateTime = Date()
-                                    weight   = savedWeightKg
+                                    this[MeasurementType.WEIGHT] = Kg(savedWeightKg)
                                 })
                                 savedWeightKg = 0f
                                 writeTeardownAck()
@@ -291,15 +296,15 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
         bodyCompPublished = true
         publish(ScaleMeasurement().apply {
             dateTime    = Date()
-            weight      = pendingWeightKg
-            fat         = fatPct.coerceIn(0f, 75f)
-            water       = lib.totalBodyWaterPercentage.toFloat().coerceIn(0f, 80f)
-            muscle      = lib.skeletalMusclePercentage.toFloat().coerceIn(0f, 99f)
-            bone        = lib.boneMassKg.toFloat().coerceIn(0f, 10f)
-            bmr         = lib.basalMetabolicRate.toFloat().coerceIn(0f, 5000f)
-            lbm         = lib.fatFreeMassKg.toFloat().coerceIn(0f, 150f)
-            visceralFat = estimateVisceralFat(pendingWeightKg, z3, user.age, gender)
-            impedance   = wholeBodyZ
+            this[MeasurementType.WEIGHT] = Kg(pendingWeightKg)
+            this[MeasurementType.BODY_FAT] = Percent(fatPct.coerceIn(0f, 75f))
+            this[MeasurementType.WATER] = Percent(lib.totalBodyWaterPercentage.toFloat().coerceIn(0f, 80f))
+            this[MeasurementType.MUSCLE] = Percent(lib.skeletalMusclePercentage.toFloat().coerceIn(0f, 99f))
+            this[MeasurementType.BONE] = Kg(lib.boneMassKg.toFloat().coerceIn(0f, 10f))
+            this[MeasurementType.BMR] = Kcal(lib.basalMetabolicRate.toFloat().coerceIn(0f, 5000f))
+            this[MeasurementType.LBM] = Kg(lib.fatFreeMassKg.toFloat().coerceIn(0f, 150f))
+            this[MeasurementType.VISCERAL_FAT] = estimateVisceralFat(pendingWeightKg, z3, user.age, gender)
+            this[MeasurementType.IMPEDANCE] = Ohm(wholeBodyZ.toFloat())
         })
         writeTeardownAck()
         requestDisconnect()

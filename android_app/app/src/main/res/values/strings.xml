@@ -191,6 +191,19 @@
     <string name="measurement_type_icw">Intracellular water</string>
     <string name="measurement_type_protein">Protein</string>
     <string name="measurement_type_bcm">Body cell mass</string>
+    <string name="measurement_type_from_scale">Added by a scale</string>
+    <string name="measurement_type_label_csv_column">CSV column</string>
+    <string name="measurement_type_csv_column_taken">This CSV column is already in use.</string>
+    <string name="measurement_type_segmental_fat_left_arm">Body fat (left arm)</string>
+    <string name="measurement_type_segmental_fat_right_arm">Body fat (right arm)</string>
+    <string name="measurement_type_segmental_fat_torso">Body fat (torso)</string>
+    <string name="measurement_type_segmental_fat_left_leg">Body fat (left leg)</string>
+    <string name="measurement_type_segmental_fat_right_leg">Body fat (right leg)</string>
+    <string name="measurement_type_segmental_muscle_left_arm">Muscle (left arm)</string>
+    <string name="measurement_type_segmental_muscle_right_arm">Muscle (right arm)</string>
+    <string name="measurement_type_segmental_muscle_torso">Muscle (torso)</string>
+    <string name="measurement_type_segmental_muscle_left_leg">Muscle (left leg)</string>
+    <string name="measurement_type_segmental_muscle_right_leg">Muscle (right leg)</string>
     <string name="s400_bone_formula_label">Bone formula</string>
     <string name="s400_bone_formula_mi_legacy">Impedance-based regression (Legacy)</string>
     <string name="s400_bone_formula_heymsfield">Heymsfield (anthropometric)</string>
@@ -805,6 +818,7 @@
     <string name="import_summary_skipped_missing_dates">"%1$d rows skipped due to missing dates."</string>
     <string name="import_summary_skipped_date_parse_errors">"%1$d rows skipped due to date parsing errors."</string>
     <string name="import_summary_values_skipped_parse_errors">"%1$d individual values could not be parsed."</string>
+    <string name="import_summary_skipped_unknown_columns">"%1$d columns did not match any measurement and were skipped."</string>
     <string name="import_error_no_valid_data">No valid data found in the CSV file, or all rows contained errors.</string>
     <string name="import_error_missing_date_column">Import failed: The mandatory column date is missing in the CSV header.</string>
     <string name="import_error_cannot_read_file">Import failed: Could not read the file.</string>
@@ -901,6 +915,8 @@
 
     <!-- Warnings -->
     <string name="bt_warn_low_battery">Scale battery is low (%1$d%%).</string>
+    <!-- Used by scales that only signal that the battery is low, without reporting a level. -->
+    <string name="bt_warn_low_battery_unknown">Scale battery is low.</string>
     <string name="bt_warn_register_failed_with_code">Creating the user on the scale failed (code %1$d).</string>
     <string name="bt_warn_slots_full">The scale has no free user slots. Delete a user on the device and try again.</string>
     <string name="bt_warn_notify_failed">Failed to enable notifications for %1$s.</string>

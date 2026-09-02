@@ -17,59 +17,87 @@
  */
 package com.health.openscale.core.bluetooth.data
 
-import com.health.openscale.core.data.WeightUnit
+import com.health.openscale.core.data.Bpm
+import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.UnitValue
 import java.util.Date
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 /**
- * Represents a single measurement record from a scale, potentially combined from multiple BLE packets.
+ * One weigh-in as reported by a scale, potentially combined from multiple BLE packets —
+ * the envelope (who, when) plus a map of values keyed by the [MeasurementType.Key] that
+ * describes them.
+ *
+ * Handlers write predefined quantities and their own device keys through the same API.
+ * The unit is part of the value's type — setting a bare number or the wrong unit does
+ * not compile, and the conversions live on the unit classes (`Kg.fromLb`, `Cm.fromInch`):
+ *
+ *     m[MeasurementType.WEIGHT] = Kg(raw * 0.005f)       // Key<Kg>
+ *     m[MeasurementType.BODY_FAT] = Percent(fat)          // Key<Percent>
+ *     m[MeasurementType.HEART_RATE] = Bpm(60)             // Key<Bpm>
+ *     m[FAT_LEFT_ARM] = Percent(12.4f)                    // handler-declared devicePercent
+ *
+ * Absence is absence: a quantity the scale did not report is simply not in the map — there
+ * is no 0f sentinel. [set] therefore drops values that never describe a real measurement
+ * (non-finite or non-positive numbers, blank text), which keeps [mergeWith]'s
+ * first-value-wins semantics sound without every handler guarding its writes.
  */
-data class ScaleMeasurement(
-    var userId: Int = 0xFF, // openScale's internal app user ID
+class ScaleMeasurement(
+    /** openScale's internal app user ID; 0xFF = the scale did not report a user slot. */
+    var userId: Int = 0xFF,
+    /** Timestamp of the weigh-in; becomes the Measurement row's timestamp, null = "now". */
     var dateTime: Date? = null,
-    var weight: Float = 0.0f,    // must be in kg
-    var fat: Float = 0.0f,   // must be in percentage
-    var water: Float = 0.0f, // must be in percentage
-    var muscle: Float = 0.0f, // must be in percentage
-    var visceralFat: Float = 0.0f, // must be in percentage
-    var bone: Float = 0.0f,  // must be in kg
-    var lbm : Float = 0.0f, // must be in kg
-    var bmr: Float = 0.0f,       // Basal Metabolic Rate in kcal
-    var heartRate: Int = 0, // must be bpm
-    var impedance: Double = 0.0, // Ohms — high-frequency band when the scale is dual-band
-    var impedanceLow: Double = 0.0, // Ohms — low-frequency band; 0 when not reported
-    var ecw: Float = 0.0f, // Extracellular water, % of body weight
-    var icw: Float = 0.0f, // Intracellular water, % of body weight
-    var protein: Float = 0.0f, // Protein, % of body weight
-    var bcm: Float = 0.0f, // Body cell mass, kg
+    val values: MutableMap<MeasurementType.Key<*>, Any> = LinkedHashMap(),
 ) {
 
-    // --- Utility methods ---
+    /**
+     * Records a value; silently drops what never describes a real measurement (see class
+     * doc). The value's type is the unit contract — the connector unwraps and converts to
+     * the user's configured unit once, centrally.
+     */
+    operator fun <T : Any> set(key: MeasurementType.Key<T>, value: T) {
+        val usable = when (value) {
+            is UnitValue -> value.value.isFinite() && value.value > 0f
+            is Float -> value.isFinite() && value > 0f
+            is Bpm -> value.value > 0
+            is Int -> value > 0
+            is String -> value.isNotBlank()
+            is Date -> true
+            else -> false   // Unit (the USER column key) carries no value
+        }
+        if (usable) values[key] = value
+    }
 
-    fun hasWeight(): Boolean = this.weight > 0f
+    /** Reads a value back, typed as the key declared it; null = not reported. */
+    @Suppress("UNCHECKED_CAST")
+    operator fun <T : Any> get(key: MeasurementType.Key<T>): T? = values[key] as T?
 
+    operator fun contains(key: MeasurementType.Key<*>): Boolean = key in values
+
+    fun hasWeight(): Boolean = MeasurementType.WEIGHT in this
+
+    /**
+     * Fill-the-gaps merge for multi-packet protocols: a value already collected wins over
+     * one arriving later; userId and dateTime transfer only when still unset.
+     */
     fun mergeWith(other: ScaleMeasurement) = apply {
-        if (other.weight > 0f && this.weight <= 0f) this.weight = other.weight
-        if (other.fat > 0f && this.fat <= 0f) this.fat = other.fat
-        if (other.water > 0f && this.water <= 0f) this.water = other.water
-        if (other.muscle > 0f && this.muscle <= 0f) this.muscle = other.muscle
-        if (other.visceralFat > 0f && this.visceralFat <= 0f) this.visceralFat = other.visceralFat
-        if (other.bone > 0f && this.bone <= 0f) this.bone = other.bone
-        if (other.lbm > 0f && this.lbm <= 0f) this.lbm = other.lbm
-        if (other.bmr > 0f && this.bmr <= 0f) this.bmr = other.bmr
-        if (other.heartRate > 0f && this.heartRate <= 0f) this.heartRate = other.heartRate
-        if (other.impedance > 0.0 && this.impedance <= 0.0) this.impedance = other.impedance
-        if (other.impedanceLow > 0.0 && this.impedanceLow <= 0.0) this.impedanceLow = other.impedanceLow
-        if (other.ecw > 0f && this.ecw <= 0f) this.ecw = other.ecw
-        if (other.icw > 0f && this.icw <= 0f) this.icw = other.icw
-        if (other.protein > 0f && this.protein <= 0f) this.protein = other.protein
-        if (other.bcm > 0f && this.bcm <= 0f) this.bcm = other.bcm
+        other.values.forEach { (key, value) -> values.putIfAbsent(key, value) }
 
         if (other.userId != 0xFF &&
-            (this.userId == 0xFF || this.userId == -1)) { // -1 was common init value
+            (this.userId == 0xFF || this.userId == -1)) { // -1 was a common init value
             this.userId = other.userId
         }
-
         if (this.dateTime == null && other.dateTime != null) this.dateTime = other.dateTime
     }
-}
 
+    /**
+     * Deep copy for handlers that publish while continuing to mutate their accumulator —
+     * the map is detached, so later mutations never bleed into published data.
+     */
+    fun snapshot(): ScaleMeasurement = ScaleMeasurement(userId, dateTime, LinkedHashMap(values))
+
+    override fun toString(): String =
+        "ScaleMeasurement(userId=$userId, dateTime=$dateTime, " +
+            "values=${values.entries.joinToString { "${it.key.identity}=${it.value}" }})"
+}

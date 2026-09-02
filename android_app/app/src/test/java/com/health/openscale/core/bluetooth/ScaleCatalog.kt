@@ -19,7 +19,10 @@ package com.health.openscale.core.bluetooth
 
 import android.util.SparseArray
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
+import com.health.openscale.core.bluetooth.scales.HealthKeep280Handler
+import com.health.openscale.core.bluetooth.scales.AiLinkBroadcastHandler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
+import com.health.openscale.core.bluetooth.scales.AfuB1Handler
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
@@ -43,6 +46,7 @@ import com.health.openscale.core.bluetooth.scales.HoffenBbs8107Handler
 import com.health.openscale.core.bluetooth.scales.HuaweiAhCh100Handler
 import com.health.openscale.core.bluetooth.scales.HuaweiCH100SHandler
 import com.health.openscale.core.bluetooth.scales.HuaweiHagridWspHandler
+import com.health.openscale.core.bluetooth.scales.HumeDara2Handler
 import com.health.openscale.core.bluetooth.scales.IHealthHS3Handler
 import com.health.openscale.core.bluetooth.scales.InlifeHandler
 import com.health.openscale.core.bluetooth.scales.KeepS3Handler
@@ -53,6 +57,7 @@ import com.health.openscale.core.bluetooth.scales.MiScaleHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
 import com.health.openscale.core.bluetooth.scales.OmronWlcHandler
+import com.health.openscale.core.bluetooth.scales.PicoocHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
 import com.health.openscale.core.bluetooth.scales.QNHandler
@@ -147,6 +152,24 @@ object ScaleCatalog {
     /** Etekcity's company id; with service 0xFFD0 the only fingerprint of the nameless Fit 8S. */
     private const val ETEKCITY_COMPANY_ID = 0x06D0
 
+    /** Not a registered company id at all: AiLink packs its CID (0x01) and VID (0x03) here. */
+    private const val AILINK_COMPANY_ID = 0x0301
+
+    /**
+     * An AiLink advertisement carrying a completed measurement. Its payload is encrypted and
+     * checksummed, so unlike most fixtures here it cannot be a zero-filled placeholder — the
+     * handler only claims records that actually decrypt. Synthesised with the protocol's own
+     * cipher over an invented reading; see `AiLinkLibTest`.
+     */
+    private val AILINK_RECORD = byteArrayOf(
+        0x01,                                                     // PID
+        0x5F, 0x4E, 0x3D, 0x2C, 0x1B, 0x0A,                       // MAC, little-endian
+        0x8F.toByte(),                                            // checksum of the payload
+        0x10, 0xE6.toByte(), 0x9C.toByte(), 0xF7.toByte(),        // TEA-encrypted payload
+        0xCB.toByte(), 0x45, 0x2C, 0xCC.toByte(),
+        0xFF.toByte(), 0xFF.toByte(),
+    )
+
     private infix fun ScannedDeviceInfo.claimedBy(handler: Class<out ScaleDeviceHandler>) =
         Fixture(this, handler)
 
@@ -157,8 +180,13 @@ object ScaleCatalog {
      */
     val fixtures: List<Fixture> = listOf(
         // --- Matched by advertised name ---
+        device("HEALTHKEEP 280") claimedBy HealthKeep280Handler::class.java,
         device("AE BS-06") claimedBy ActiveEraBF06Handler::class.java,
+        device("AFU-BH-TZ-B1", uuid16(0xFC50)) claimedBy AfuB1Handler::class.java,
         device("Keep_S3") claimedBy KeepS3Handler::class.java,
+        // The S3 Lite V2.0 advertises as PICOOC-CQ; the Latin series carries no vendor prefix.
+        device("PICOOC-CQ") claimedBy PicoocHandler::class.java,
+        device("Latin-S") claimedBy PicoocHandler::class.java,
         device("Beurer BF450") claimedBy BeurerBF450Handler::class.java,
         device("BIA SCALE", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
         device("RYFIT") claimedBy RyFitHandler::class.java,
@@ -171,6 +199,7 @@ object ScaleCatalog {
         device("SANITAS SBF73") claimedBy SanitasSbf72Handler::class.java,
         device("Beurer BF915") claimedBy SanitasSbf72Handler::class.java,
         device("Beurer BF105") claimedBy StandardBeurerSanitasHandler::class.java,
+        device("Beurer BF1000") claimedBy StandardBeurerSanitasHandler::class.java,
         device("Beurer BF500") claimedBy StandardBeurerSanitasHandler::class.java,
         device("Beurer BF600") claimedBy StandardBeurerSanitasHandler::class.java,
         device("Beurer BF950") claimedBy StandardBeurerSanitasHandler::class.java,
@@ -214,6 +243,7 @@ object ScaleCatalog {
         device("vscale") claimedBy ExingtechY1Handler::class.java,
         device("Body Fat-B2") claimedBy EbelterBodyFatB2Handler::class.java,
         device("Electronic Scale") claimedBy ExcelvanCF36xHandler::class.java,
+        device("Dara 2.0") claimedBy HumeDara2Handler::class.java,
         device("Etekcity Smart Fitness Scale") claimedBy EtekcityESF551Handler::class.java,
         device("EUFY C20") claimedBy EufyC20Handler::class.java,
         device("eufy T9148") claimedBy EufyP2Handler::class.java,
@@ -265,6 +295,13 @@ object ScaleCatalog {
         // Scaleup: any manufacturer record whose company-id low byte is 0xD0 (measuring) or 0xE0.
         advertisement(manufacturerData = listOf(0x1DD0 to ByteArray(9)))
             claimedBy ScaleupHandler::class.java,
+        // AiLink broadcast body-fat scale: service 0xF0A0 plus an encrypted, checksummed record
+        // whose "company id" is really the vendor's CID/VID pair. Real capture from an "EL1".
+        advertisement(
+            name = "EL1",
+            services = listOf(uuid16(0xF0A0)),
+            manufacturerData = listOf(AILINK_COMPANY_ID to AILINK_RECORD),
+        ) claimedBy AiLinkBroadcastHandler::class.java,
     )
 
     // --- Registry queries -------------------------------------------------------------------

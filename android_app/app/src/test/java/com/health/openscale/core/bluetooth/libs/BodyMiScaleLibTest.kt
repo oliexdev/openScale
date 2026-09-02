@@ -64,4 +64,23 @@ class BodyMiScaleLibTest {
         val fatHigh = lib.getFat(weight, lib.getLbm(weight, 600f))
         assertThat(fatHigh).isGreaterThan(fatLow)
     }
+
+    @Test
+    fun female_profile_applies_bodymiscale_lbm_correction() {
+        val femaleLib = BodyMiScaleLib(GenderType.FEMALE, age = 46, heightCm = 168f)
+
+        val lbm = femaleLib.getLbm(weight, impedance)
+        val fat = femaleLib.getFat(weight, lbm)
+
+        assertThat(lbm).isWithin(EPS).of(50.40f)
+        assertThat(fat).isWithin(EPS).of(41.46f)
+    }
+
+    @Test
+    fun fat_uses_sex_specific_biological_floor() {
+        val femaleLib = BodyMiScaleLib(GenderType.FEMALE, age = 46, heightCm = 168f)
+
+        assertThat(lib.getFat(100f, 99f)).isEqualTo(5f)
+        assertThat(femaleLib.getFat(100f, 99f)).isEqualTo(10f)
+    }
 }

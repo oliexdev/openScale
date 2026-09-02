@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.ActivityLevel
@@ -29,6 +30,8 @@ import java.nio.charset.StandardCharsets
 import java.util.Date
 import java.util.UUID
 import kotlin.random.Random
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 /**
  * BodyConnectHandler
@@ -339,12 +342,12 @@ class BodyConnectHandler : ScaleDeviceHandler() {
 
         val m = ScaleMeasurement().apply {
             dateTime = Date(deviceTimeToJava(lastTS!!))
-            this.weight = weight
+            this[MeasurementType.WEIGHT] = Kg(weight)
         }
-        fat?.let { m.fat = it }
-        water?.let { m.water = it }
-        muscle?.let { m.muscle = it }
-        bone?.let { m.bone = it }
+        fat?.let { m[MeasurementType.BODY_FAT] = Percent(it) }
+        water?.let { m[MeasurementType.WATER] = Percent(it) }
+        muscle?.let { m[MeasurementType.MUSCLE] = Percent(it) }
+        bone?.let { m[MeasurementType.BONE] = Kg(it) }
         publish(m)
     }
 

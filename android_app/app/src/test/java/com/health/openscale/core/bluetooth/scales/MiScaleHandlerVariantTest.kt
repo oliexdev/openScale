@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
 import kotlinx.coroutines.CoroutineScope
@@ -131,7 +132,8 @@ class MiScaleHandlerVariantTest {
 
         setup.handler.handleNotification(charWeightMeas, history10Frame(weightKg = 70f))
         assertThat(setup.callbacks.published).hasSize(1)
-        assertThat(setup.callbacks.published.single().weight).isWithin(0.0001f).of(70f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.WEIGHT]?.value)
+            .isWithin(0.0001f).of(70f)
 
         setup.handler.handleDisconnected()
     }
@@ -262,7 +264,7 @@ class MiScaleHandlerVariantTest {
         val errors = mutableListOf<Int>()
 
         override fun onPublish(measurement: ScaleMeasurement) {
-            published += measurement.copy()
+            published += measurement.snapshot()
         }
 
         override fun onError(resId: Int, t: Throwable?, vararg args: Any) {

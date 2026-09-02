@@ -24,7 +24,9 @@ import com.health.openscale.core.bluetooth.scales.DrTrustSSW532Handler
 import com.health.openscale.core.bluetooth.scales.EtekcityESF551Handler
 import com.health.openscale.core.bluetooth.scales.EtekcityFit8SHandler
 import com.health.openscale.core.bluetooth.scales.EufyC20Handler
+import com.health.openscale.core.bluetooth.scales.ExcelvanCF36xHandler
 import com.health.openscale.core.bluetooth.scales.FitTrackDaraHandler
+import com.health.openscale.core.bluetooth.scales.HumeDara2Handler
 import com.health.openscale.core.bluetooth.scales.MGBHandler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
 import com.health.openscale.core.bluetooth.scales.QNHandlerBroadcast
@@ -204,6 +206,27 @@ class ScaleFactoryTest {
         // …and without the name it must not touch MGB's own devices.
         assertClaimedBy(device("icomon", SERVICE_FFB0), MGBHandler::class.java)
         assertClaimedBy(device("yg", SERVICE_FFB0), MGBHandler::class.java)
+    }
+
+    /**
+     * "Dara 2.0" (Hume Health, OEM "LeFu Scale", 0xFFF0/0xCF framing) and "FitTrack Dara" (an
+     * unrelated FitTrack product, 0xFFB0/0xAC02 framing) are two different scales that happen
+     * to share a model name. FitTrackDaraHandler only matches names starting with "FITTRACK",
+     * so it never takes this device — but pin that explicitly since it's exactly the confusion
+     * https://github.com/oliexdev/openScale/issues/1448 reported ("Not Supported" despite named
+     * FitTrack Dara 2.0 support already existing). Also pin the sibling boundary against
+     * ExcelvanCF36xHandler, the other 0xFFF0 handler: neither name collides with the other, but
+     * both are on the same chip family in the same part of the registry.
+     */
+    @Test
+    fun `Hume Dara 2_0 is not swallowed by the unrelated FitTrack Dara handler`() {
+        assertClaimedBy(device("Dara 2.0"), HumeDara2Handler::class.java)
+        assertClaimedBy(device("FITTRACK Dara", SERVICE_FFB0), FitTrackDaraHandler::class.java)
+        assertClaimedBy(device("Electronic Scale"), ExcelvanCF36xHandler::class.java)
+
+        assertThat(FitTrackDaraHandler().supportFor(device("Dara 2.0"))).isNull()
+        assertThat(ExcelvanCF36xHandler().supportFor(device("Dara 2.0"))).isNull()
+        assertThat(HumeDara2Handler().supportFor(device("Electronic Scale"))).isNull()
     }
 
     /**

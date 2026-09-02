@@ -75,7 +75,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.screen.dialog.DeleteConfirmationDialog
 import com.health.openscale.ui.shared.SharedViewModel
@@ -408,7 +407,7 @@ fun MeasurementTypeSettingsScreen(
                         }
 
                         // Delete button is only shown for custom types
-                        if (type.key == MeasurementTypeKey.CUSTOM) {
+                        if (!type.isBuiltIn()) {
                             IconButton(onClick = { typeToDelete = type }) {
                                 Icon(
                                     Icons.Default.Delete,

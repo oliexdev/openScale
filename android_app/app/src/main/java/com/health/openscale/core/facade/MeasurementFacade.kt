@@ -21,7 +21,6 @@ import android.R.attr.level
 import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.SmoothingAlgorithm
 import com.health.openscale.core.data.User
@@ -293,6 +292,13 @@ class MeasurementFacade @Inject constructor(
     suspend fun addMeasurementType(type: MeasurementType): Result<Long> =
         typeCrud.add(type)
 
+    /**
+     * Resolves the measurement type a scale handler contributed, creating it on first use;
+     * null when it could neither be found nor created.
+     */
+    suspend fun resolveOrCreateMeasurementType(key: MeasurementType.Key<*>): MeasurementType? =
+        typeCrud.resolveOrCreate(key)
+
     suspend fun updateMeasurementType(type: MeasurementType): Result<Unit> =
         typeCrud.update(type)
 
@@ -323,8 +329,8 @@ class MeasurementFacade @Inject constructor(
         measuredAtMillis: Long,
     ) = evaluationUseCases.evaluate(type, value, userEvaluationContext, measuredAtMillis)
 
-    fun plausiblePercentRangeFor(typeKey: MeasurementTypeKey) =
-        evaluationUseCases.plausiblePercentRangeFor(typeKey)
+    fun plausiblePercentRangeFor(key: MeasurementType.Key<*>?) =
+        evaluationUseCases.plausiblePercentRangeFor(key)
 
     // -------------------------------------------------------------------------
     // Selection helper

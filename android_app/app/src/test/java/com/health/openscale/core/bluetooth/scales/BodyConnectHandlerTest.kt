@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.google.common.truth.Truth.assertThat
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
@@ -444,11 +445,11 @@ class BodyConnectHandlerTest {
 
         assertThat(setup.callbacks.published).hasSize(1)
         val measurement = setup.callbacks.published.single()
-        assertThat(measurement.weight).isWithin(1e-5f).of(80.2f)
-        assertThat(measurement.fat).isWithin(1e-5f).of(17.6f)
-        assertThat(measurement.water).isWithin(1e-5f).of(61.6f)
-        assertThat(measurement.muscle).isWithin(1e-5f).of(42.7f)
-        assertThat(measurement.bone).isWithin(1e-5f).of(3.6f)
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(1e-5f).of(80.2f)
+        assertThat(measurement[MeasurementType.BODY_FAT]?.value).isWithin(1e-5f).of(17.6f)
+        assertThat(measurement[MeasurementType.WATER]?.value).isWithin(1e-5f).of(61.6f)
+        assertThat(measurement[MeasurementType.MUSCLE]?.value).isWithin(1e-5f).of(42.7f)
+        assertThat(measurement[MeasurementType.BONE]?.value).isWithin(1e-5f).of(3.6f)
     }
 
     @Test
@@ -588,7 +589,7 @@ class BodyConnectHandlerTest {
         val requestedUserInteractions = mutableListOf<Pair<UserInteractionType, SlotSelectionData?>>()
 
         override fun onPublish(measurement: ScaleMeasurement) {
-            published += measurement.copy()
+            published += measurement.snapshot()
         }
         override fun onUserInteractionRequired(interactionType: UserInteractionType, data: Any?) {
             @Suppress("UNCHECKED_CAST")

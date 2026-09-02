@@ -18,11 +18,15 @@
 package com.health.openscale.core.bluetooth.scales
 
 import android.bluetooth.le.ScanResult
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.YunmaiLib
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Advertisement parser for the Yunmai X (YMBS-M268) broadcast protocol.
@@ -178,23 +182,23 @@ class YunmaiXHandler : ScaleDeviceHandler() {
         val m = ScaleMeasurement().apply {
             userId = user.id
             dateTime = Date()
-            weight = f.weightKg
+            this[MeasurementType.WEIGHT] = Kg(f.weightKg)
         }
 
         if (f.impedanceOhm > 0) {
-            m.impedance = f.impedanceOhm.toDouble()
+            m[MeasurementType.IMPEDANCE] = Ohm(f.impedanceOhm.toFloat())
 
             val sexInt = if (user.gender.isMale()) 1 else 0
             val yunmai = YunmaiLib(sexInt, user.bodyHeight, user.activityLevel)
             val fatPct = yunmai.getFat(user.age, f.weightKg, f.impedanceOhm)
 
             if (fatPct > 0f && fatPct.isFinite()) {
-                m.fat = fatPct
-                m.muscle = yunmai.getMuscle(fatPct)
-                m.water = yunmai.getWater(fatPct)
-                m.bone = yunmai.getBoneMass(m.muscle, f.weightKg)
-                m.lbm = yunmai.getLeanBodyMass(f.weightKg, fatPct)
-                m.visceralFat = yunmai.getVisceralFat(fatPct, user.age)
+                m[MeasurementType.BODY_FAT] = Percent(fatPct)
+                m[MeasurementType.MUSCLE] = Percent(yunmai.getMuscle(fatPct))
+                m[MeasurementType.WATER] = Percent(yunmai.getWater(fatPct))
+                m[MeasurementType.BONE] = Kg(yunmai.getBoneMass((m[MeasurementType.MUSCLE]?.value ?: 0f), f.weightKg))
+                m[MeasurementType.LBM] = Kg(yunmai.getLeanBodyMass(f.weightKg, fatPct))
+                m[MeasurementType.VISCERAL_FAT] = yunmai.getVisceralFat(fatPct, user.age)
             } else {
                 logW("Body fat is zero/invalid (R=${f.impedanceOhm})")
             }

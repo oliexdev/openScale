@@ -22,7 +22,6 @@ import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.User
 import com.health.openscale.core.data.UserGoals
 import kotlinx.coroutines.flow.first
@@ -55,7 +54,7 @@ class UserGoalsDaoTest {
                 activityLevel = ActivityLevel.MODERATE, useAssistedWeighing = false,
             )
         ).toInt()
-        typeId = db.measurementTypeDao().insert(MeasurementType(key = MeasurementTypeKey.WEIGHT)).toInt()
+        typeId = db.measurementTypeDao().insert(MeasurementType(identity = MeasurementType.WEIGHT.identity)).toInt()
     }
 
     @After

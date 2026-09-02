@@ -71,6 +71,11 @@ class BroadcastScaleAdapter(
             // Filter: only target MAC
             if (peripheral.address != targetAddress) return
 
+            // Filter: the scan is over (measurement complete, timed out, or disconnected).
+            // Android still delivers advertisements that were already queued when stopScan()
+            // was called; processing them would re-attach the handler we just released.
+            if (!isScanning) return
+
             // Filter: optional RSSI threshold
             val rssi = scanResult.rssi
             tuning.minRssiDbm?.let { if (rssi < it) return }
@@ -122,6 +127,8 @@ class BroadcastScaleAdapter(
                     _events.tryEmit(BluetoothEvent.BroadcastComplete(peripheral.address))
                     stopScanInternal()
                     cleanup()
+                    runCatching { handler.handleDisconnected() }
+                    runCatching { handler.detach() }
                     broadcastAttached = false
                 }
             }

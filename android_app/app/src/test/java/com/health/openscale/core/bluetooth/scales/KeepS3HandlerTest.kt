@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.google.common.truth.Truth.assertThat
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.KeepS3BodyComposition
@@ -37,6 +38,8 @@ import java.util.Date
 import java.util.UUID
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.roundToInt
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -191,19 +194,19 @@ class KeepS3HandlerTest {
         setup.handler.handleNotification(notifyCharacteristic, record)
 
         assertThat(setup.callbacks.published).hasSize(1)
-        assertThat(setup.callbacks.published.single().weight).isWithin(0.0001f).of(85.10f)
-        assertThat(setup.callbacks.published.single().impedance).isEqualTo(478.0)
-        assertThat(setup.callbacks.published.single().impedanceLow).isEqualTo(506.0)
-        assertThat(setup.callbacks.published.single().heartRate).isEqualTo(107)
-        assertThat(setup.callbacks.published.single().fat).isEqualTo(29.5f)
-        assertThat(setup.callbacks.published.single().water).isEqualTo(50.2f)
-        assertThat(setup.callbacks.published.single().muscle)
+        assertThat(setup.callbacks.published.single()[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(85.10f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.IMPEDANCE]?.value).isEqualTo(478f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.IMPEDANCE_LOW]?.value).isEqualTo(506f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.HEART_RATE]?.value).isEqualTo(107)
+        assertThat(setup.callbacks.published.single()[MeasurementType.BODY_FAT]?.value).isEqualTo(29.5f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.WATER]?.value).isEqualTo(50.2f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.MUSCLE]?.value)
             .isWithin(0.001f).of(38.42538f)
-        assertThat(setup.callbacks.published.single().visceralFat).isEqualTo(12f)
-        assertThat(setup.callbacks.published.single().protein).isEqualTo(12.7f)
-        assertThat(setup.callbacks.published.single().bone).isEqualTo(3.0f)
-        assertThat(setup.callbacks.published.single().lbm).isEqualTo(60.0f)
-        assertThat(setup.callbacks.published.single().bmr).isEqualTo(1791f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.VISCERAL_FAT]).isEqualTo(12f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.PROTEIN]?.value).isEqualTo(12.7f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.BONE]?.value).isEqualTo(3.0f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.LBM]?.value).isEqualTo(60.0f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.BMR]?.value).isEqualTo(1791f)
 
         val storedDeviceImpedance = KeepS3Protocol.parseDeviceImpedance(
             setup.settings.strings[KeepS3Protocol.deviceImpedanceSettingKey(setup.user.id)],
@@ -256,11 +259,11 @@ class KeepS3HandlerTest {
 
         assertThat(setup.callbacks.published).hasSize(1)
         assertThat(setup.callbacks.published.single().userId).isEqualTo(setup.user.id)
-        assertThat(setup.callbacks.published.single().impedance).isEqualTo(475.0)
-        assertThat(setup.callbacks.published.single().impedanceLow).isEqualTo(502.0)
-        assertThat(setup.callbacks.published.single().fat).isEqualTo(29.4f)
-        assertThat(setup.callbacks.published.single().water).isEqualTo(50.3f)
-        assertThat(setup.callbacks.published.single().muscle)
+        assertThat(setup.callbacks.published.single()[MeasurementType.IMPEDANCE]?.value).isEqualTo(475f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.IMPEDANCE_LOW]?.value).isEqualTo(502f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.BODY_FAT]?.value).isEqualTo(29.4f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.WATER]?.value).isEqualTo(50.3f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.MUSCLE]?.value)
             .isWithin(0.001f).of(38.47059f)
         assertThat(setup.transport.writes.count {
             it.payload.contentEquals(KeepS3Protocol.buildAck(0x57))
@@ -288,10 +291,10 @@ class KeepS3HandlerTest {
         runCurrent()
 
         assertThat(setup.callbacks.published).hasSize(1)
-        assertThat(setup.callbacks.published.single().weight).isWithin(0.0001f).of(85.00f)
-        assertThat(setup.callbacks.published.single().impedance).isEqualTo(0.0)
-        assertThat(setup.callbacks.published.single().impedanceLow).isEqualTo(0.0)
-        assertThat(setup.callbacks.published.single().heartRate).isEqualTo(97)
+        assertThat(setup.callbacks.published.single()[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(85.00f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.IMPEDANCE]).isNull()
+        assertThat(setup.callbacks.published.single()[MeasurementType.IMPEDANCE_LOW]).isNull()
+        assertThat(setup.callbacks.published.single()[MeasurementType.HEART_RATE]?.value).isEqualTo(97)
     }
 
     @Test
@@ -314,11 +317,11 @@ class KeepS3HandlerTest {
         )
 
         assertThat(setup.callbacks.published).hasSize(1)
-        assertThat(setup.callbacks.published.single().weight).isEqualTo(85.1f)
-        assertThat(setup.callbacks.published.single().heartRate).isEqualTo(107)
-        assertThat(setup.callbacks.published.single().fat).isEqualTo(0f)
-        assertThat(setup.callbacks.published.single().water).isEqualTo(0f)
-        assertThat(setup.callbacks.published.single().lbm).isEqualTo(0f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.WEIGHT]?.value).isEqualTo(85.1f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.HEART_RATE]?.value).isEqualTo(107)
+        assertThat(setup.callbacks.published.single()[MeasurementType.BODY_FAT]).isNull()
+        assertThat(setup.callbacks.published.single()[MeasurementType.WATER]).isNull()
+        assertThat(setup.callbacks.published.single()[MeasurementType.LBM]).isNull()
     }
 
     @Test
@@ -352,11 +355,11 @@ class KeepS3HandlerTest {
             ),
         )!!
         val actual = setup.callbacks.published.single()
-        assertThat(actual.fat).isEqualTo(expected.bodyFatPercent)
-        assertThat(actual.water).isEqualTo(expected.waterPercent)
-        assertThat(actual.muscle).isEqualTo(expected.skeletalMusclePercent)
-        assertThat(actual.bone).isEqualTo(expected.boneKg)
-        assertThat(actual.lbm).isEqualTo(expected.fatFreeMassKg)
+        assertThat(actual[MeasurementType.BODY_FAT]?.value).isEqualTo(expected.bodyFatPercent)
+        assertThat(actual[MeasurementType.WATER]?.value).isEqualTo(expected.waterPercent)
+        assertThat(actual[MeasurementType.MUSCLE]?.value).isEqualTo(expected.skeletalMusclePercent)
+        assertThat(actual[MeasurementType.BONE]?.value).isEqualTo(expected.boneKg)
+        assertThat(actual[MeasurementType.LBM]?.value).isEqualTo(expected.fatFreeMassKg)
     }
 
     @Test
@@ -564,8 +567,8 @@ class KeepS3HandlerTest {
             ),
         )
         val previous = first.callbacks.published.single()
-        assertThat(previous.impedance).isEqualTo(475.0)
-        assertThat(previous.impedanceLow).isEqualTo(502.0)
+        assertThat(previous[MeasurementType.IMPEDANCE]?.value).isEqualTo(475f)
+        assertThat(previous[MeasurementType.IMPEDANCE_LOW]?.value).isEqualTo(502f)
 
         val setup = attachedHandler(previous = previous, settings = settings, scope = this)
 
@@ -584,10 +587,11 @@ class KeepS3HandlerTest {
         val previous = ScaleMeasurement(
             userId = 7,
             dateTime = Date(0x1234_5678L * 1000L),
-            weight = 85.10f,
-            impedance = 478.0,
-            impedanceLow = 506.0,
-        )
+        ).apply {
+            this[MeasurementType.WEIGHT] = Kg(85.10f)
+            this[MeasurementType.IMPEDANCE] = Ohm(478f)
+            this[MeasurementType.IMPEDANCE_LOW] = Ohm(506f)
+        }
         val settings = InMemorySettings().apply {
             putString(
                 KeepS3Protocol.deviceImpedanceSettingKey(previous.userId),
@@ -648,9 +652,10 @@ class KeepS3HandlerTest {
         previous: ScaleMeasurement? = ScaleMeasurement(
             userId = user.id,
             dateTime = Date(0x1234_5678L * 1000L),
-            weight = 85.10f,
-            impedance = 301.0,
-        ),
+        ).apply {
+            this[MeasurementType.WEIGHT] = Kg(85.10f)
+            this[MeasurementType.IMPEDANCE] = Ohm(301f)
+        },
     ): Setup {
         val handler = KeepS3Handler()
         val transport = CapturingTransport()
@@ -810,7 +815,7 @@ class KeepS3HandlerTest {
         val published = mutableListOf<ScaleMeasurement>()
 
         override fun onPublish(measurement: ScaleMeasurement) {
-            published += measurement.copy()
+            published += measurement.snapshot()
         }
 
         override fun resolveString(resId: Int, vararg args: Any): String = "res:$resId"
