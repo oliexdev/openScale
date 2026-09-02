@@ -26,9 +26,11 @@ import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.ConnectionStatus
 import com.health.openscale.core.data.Measurement
-import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.Bpm
+import com.health.openscale.core.data.InputFieldType
+import com.health.openscale.core.data.UnitValue
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
-import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.shared.SnackbarEvent
@@ -349,7 +351,7 @@ class BleConnector(
             }
 
             is BluetoothEvent.MeasurementReceived -> {
-                LogManager.i(TAG, "Event: Measurement received from $deviceDisplayName: Weight ${event.measurement.weight}")
+                LogManager.i(TAG, "Event: Measurement received from $deviceDisplayName: Weight ${event.measurement[MeasurementType.WEIGHT]}")
                 saveMeasurementFromEvent(event.measurement, deviceDisplayName)
             }
 
@@ -452,7 +454,8 @@ class BleConnector(
                 timestamp = measurementData.dateTime?.time ?: System.currentTimeMillis()
             )
 
-            // Load all measurement types to (a) map keys -> IDs and (b) read target units for conversion.
+            // Load all measurement types once: predefined ones are resolved from this
+            // snapshot, device-contributed ones are created on first use.
             val types = measurementFacade.getAllMeasurementTypes().firstOrNull()
                 ?: run {
                     LogManager.e(TAG, "Could not load MeasurementTypes from DB for $deviceName.")
@@ -463,109 +466,56 @@ class BleConnector(
                     )
                     return@launch
                 }
+            val typesByIdentity = types.associateBy { it.identity }
 
-            val typeKeyToIdMap   = types.associate { it.key to it.id }
-            val typeKeyToUnitMap = types.associate { it.key to it.unit }
-
-            fun getTypeId(key: MeasurementTypeKey) = typeKeyToIdMap[key]
-            fun getTargetUnit(key: MeasurementTypeKey) = typeKeyToUnitMap[key] ?: UnitType.NONE
-
-            // Declare raw units provided by ScaleMeasurement for each key.
-            // Percent-based values will "convert" to themselves (converter returns unchanged value).
-            val rawUnitByKey: Map<MeasurementTypeKey, UnitType> = mapOf(
-                MeasurementTypeKey.WEIGHT       to UnitType.KG,
-                MeasurementTypeKey.BODY_FAT     to UnitType.PERCENT,
-                MeasurementTypeKey.WATER        to UnitType.PERCENT,
-                MeasurementTypeKey.MUSCLE       to UnitType.PERCENT,
-                MeasurementTypeKey.VISCERAL_FAT to UnitType.PERCENT,
-                MeasurementTypeKey.BONE         to UnitType.KG,
-                MeasurementTypeKey.LBM          to UnitType.KG,
-                MeasurementTypeKey.HEART_RATE   to UnitType.BPM,
-                MeasurementTypeKey.IMPEDANCE    to UnitType.OHM,
-                MeasurementTypeKey.IMPEDANCE_LOW to UnitType.OHM,
-                MeasurementTypeKey.ECW          to UnitType.PERCENT,
-                MeasurementTypeKey.ICW          to UnitType.PERCENT,
-                MeasurementTypeKey.PROTEIN      to UnitType.PERCENT,
-                MeasurementTypeKey.BCM          to UnitType.KG,
-                MeasurementTypeKey.BMR          to UnitType.KCAL
-            )
-
+            // One loop for everything the handler reported. The key declares which
+            // column its value lands in and which unit it arrived in; the row knows the
+            // unit the user wants. ScaleMeasurement.set already dropped values that never
+            // describe a real measurement, so what is in the map is worth persisting —
+            // which is also why resolving (and thus creating) a device type only happens
+            // for values that survived: a broken packet must not leave an empty type
+            // behind.
+            //
+            // BMR goes in first so its presence guards the per-value recalc that runs
+            // after WEIGHT lands; otherwise DerivedValuesProcess would write its
+            // Mifflin-St Jeor BMR before the device's BIA-based BMR arrives, leaving two
+            // rows for the same typeId.
             val values = mutableListOf<MeasurementValue>()
+            val reported = measurementData.values.entries
+                .sortedByDescending { it.key == MeasurementType.BMR }
 
-            /**
-             * Adds a converted float value for the given key if present & valid.
-             * - Reads the raw unit for the key (what the device/handler provided).
-             * - Looks up the target unit from MeasurementType.
-             * - Converts using existing ConverterUtils.convertFloatValueUnit.
-             */
-            fun addConvertedIfValid(
-                value: Float?,
-                key: MeasurementTypeKey,
-                isValid: (Float) -> Boolean = { it.isFinite() && it > 0f }
-            ) {
-                val v = value ?: return
-                if (!isValid(v)) return
+            for ((key, raw) in reported) {
+                val type = typesByIdentity[key.identity]
+                    ?: measurementFacade.resolveOrCreateMeasurementType(key)
+                    ?: run {
+                        LogManager.w(TAG, "($deviceName): Skipping ${key.identity}, type unavailable.")
+                        null
+                    } ?: continue
 
-                val rawUnit = rawUnitByKey[key] ?: UnitType.NONE
-                val target  = getTargetUnit(key)
-
-                val converted = com.health.openscale.core.utils.ConverterUtils.convertFloatValueUnit(
-                    v, rawUnit, target
-                )
-
-                getTypeId(key)?.let { typeId ->
-                    values.add(
-                        MeasurementValue(
-                            measurementId = 0,
-                            typeId = typeId,
-                            floatValue = converted
-                        )
+                values += when (key.inputType) {
+                    InputFieldType.FLOAT -> MeasurementValue(
+                        measurementId = 0,
+                        typeId = type.id,
+                        // The user may have configured a different unit than the wire one.
+                        floatValue = com.health.openscale.core.utils.ConverterUtils
+                            .convertFloatValueUnit(
+                                if (raw is UnitValue) raw.value else raw as Float,
+                                key.wireUnit, type.unit
+                            )
                     )
+                    InputFieldType.INT -> MeasurementValue(
+                        measurementId = 0, typeId = type.id,
+                        intValue = if (raw is Bpm) raw.value else raw as Int
+                    )
+                    InputFieldType.TEXT -> MeasurementValue(
+                        measurementId = 0, typeId = type.id, textValue = raw as String
+                    )
+                    InputFieldType.DATE, InputFieldType.TIME -> MeasurementValue(
+                        measurementId = 0, typeId = type.id, dateValue = (raw as java.util.Date).time
+                    )
+                    InputFieldType.USER -> continue
                 }
             }
-
-            /**
-             * Adds an integer value for the given key if present & valid.
-             * Used for heart rate which is stored as an Int.
-             */
-            fun addConvertedIfValid(
-                value: Int?,
-                key: MeasurementTypeKey
-            ) {
-                val v = value ?: return
-                if (v <= 0) return
-                getTypeId(key)?.let { typeId ->
-                    values.add(
-                        MeasurementValue(
-                            measurementId = 0,
-                            typeId = typeId,
-                            intValue = v
-                        )
-                    )
-                }
-            }
-
-            // BMR goes in first so its presence guards the per-value recalc that
-            // runs after WEIGHT lands; otherwise DerivedValuesProcess would write
-            // its Mifflin-St Jeor BMR before the device's BIA-based BMR arrives,
-            // leaving two rows for the same typeId.
-            addConvertedIfValid(measurementData.bmr,                    MeasurementTypeKey.BMR)
-
-            // Collect all supported values from ScaleMeasurement, converting as needed.
-            addConvertedIfValid(measurementData.weight,       MeasurementTypeKey.WEIGHT)
-            addConvertedIfValid(measurementData.fat,          MeasurementTypeKey.BODY_FAT)
-            addConvertedIfValid(measurementData.water,        MeasurementTypeKey.WATER)
-            addConvertedIfValid(measurementData.muscle,       MeasurementTypeKey.MUSCLE)
-            addConvertedIfValid(measurementData.visceralFat,  MeasurementTypeKey.VISCERAL_FAT)
-            addConvertedIfValid(measurementData.bone,         MeasurementTypeKey.BONE)
-            addConvertedIfValid(measurementData.lbm,          MeasurementTypeKey.LBM)
-            addConvertedIfValid(measurementData.heartRate, MeasurementTypeKey.HEART_RATE)
-            addConvertedIfValid(measurementData.impedance.toFloat(),    MeasurementTypeKey.IMPEDANCE)
-            addConvertedIfValid(measurementData.impedanceLow.toFloat(), MeasurementTypeKey.IMPEDANCE_LOW)
-            addConvertedIfValid(measurementData.ecw,                    MeasurementTypeKey.ECW)
-            addConvertedIfValid(measurementData.icw,                    MeasurementTypeKey.ICW)
-            addConvertedIfValid(measurementData.protein,                MeasurementTypeKey.PROTEIN)
-            addConvertedIfValid(measurementData.bcm,                    MeasurementTypeKey.BCM)
 
             if (values.isEmpty()) {
                 LogManager.w(TAG, "No valid values from measurement of $deviceName to save.")
@@ -585,7 +535,7 @@ class BleConnector(
                     "Measurement from $deviceName for User $currentAppUserId saved (ID: $measurementId). Values: ${values.size}"
                 )
                 pendingSavedCount.incrementAndGet()
-                lastSavedArgs = listOf(measurementData.weight, deviceName)
+                lastSavedArgs = listOf(measurementData[MeasurementType.WEIGHT] ?: 0f, deviceName)
                 savedBurstSignal.tryEmit(Unit)
             } catch (e: Exception) {
                 LogManager.e(TAG, "Error saving measurement from $deviceName.", e)

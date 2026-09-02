@@ -24,7 +24,6 @@ import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.LbmFormulaOption
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
@@ -54,6 +53,14 @@ class MeasurementTransformationUseCase @Inject constructor(
 ) {
 
     /**
+     * The row id of the WEIGHT type. Resolved from the database — the pre-16 code compared
+     * MeasurementValue.typeId against the enum's ordinal, which only worked because WEIGHT
+     * happened to be seeded as row 1.
+     */
+    private suspend fun weightTypeId(): Int? =
+        query.getAllMeasurementTypes().first().find { it.key == MeasurementType.WEIGHT }?.id
+
+    /**
      * Transforms a measurement by applying "Assisted Weighing" logic.
      * It calculates the weight difference and returns the new list of values.
      *
@@ -64,13 +71,14 @@ class MeasurementTransformationUseCase @Inject constructor(
         totalWeightValues: List<MeasurementValue>,
         referenceUser: User
     ): List<MeasurementValue> {
-        val totalWeight = totalWeightValues.find { it.typeId == MeasurementTypeKey.WEIGHT.id }?.floatValue ?: 0f
+        val weightTypeId = weightTypeId() ?: return totalWeightValues
+        val totalWeight = totalWeightValues.find { it.typeId == weightTypeId }?.floatValue ?: 0f
         val lastReferenceWeight = query.getMeasurementsForUser(referenceUser.id).first()
-            .firstNotNullOfOrNull { m -> m.values.find { v -> v.type.key == MeasurementTypeKey.WEIGHT }?.value?.floatValue } ?: 0f
+            .firstNotNullOfOrNull { m -> m.values.find { v -> v.type.key == MeasurementType.WEIGHT }?.value?.floatValue } ?: 0f
 
         val diffWeight = totalWeight - lastReferenceWeight
         val diffWeightMeasurementValue = MeasurementValue(
-            typeId = MeasurementTypeKey.WEIGHT.id,
+            typeId = weightTypeId,
             floatValue = diffWeight,
             measurementId = measurement.id // placeholder
         )
@@ -94,7 +102,7 @@ class MeasurementTransformationUseCase @Inject constructor(
             return measurement
         }
 
-        val newWeight = values.find { it.typeId == MeasurementTypeKey.WEIGHT.id }?.floatValue
+        val newWeight = weightTypeId()?.let { id -> values.find { it.typeId == id } }?.floatValue
         if (newWeight == null) {
             return measurement // No weight to assign, save as is
         }
@@ -103,7 +111,7 @@ class MeasurementTransformationUseCase @Inject constructor(
         val allUsers = userUseCases.observeAllUsers().first()
         val userDiffs = allUsers.mapNotNull { user ->
             val lastWeight = query.getMeasurementsForUser(user.id).first()
-                .firstNotNullOfOrNull { m -> m.values.find { v -> v.type.key == MeasurementTypeKey.WEIGHT }?.value?.floatValue }
+                .firstNotNullOfOrNull { m -> m.values.find { v -> v.type.key == MeasurementType.WEIGHT }?.value?.floatValue }
 
             if (lastWeight != null && lastWeight > 0) {
                 val diffPercent = (abs(newWeight - lastWeight) / lastWeight) * 100
@@ -170,7 +178,7 @@ class MeasurementTransformationUseCase @Inject constructor(
         val byKey = types.associateBy { it.key }
 
         // Anchor: weight (in kg)
-        val weightType = byKey[MeasurementTypeKey.WEIGHT] ?: return values
+        val weightType = byKey[MeasurementType.WEIGHT] ?: return values
         val weightVal  = values.find { it.typeId == weightType.id }?.floatValue ?: return values
         val weightKg   = when (weightType.unit) {
             UnitType.KG -> weightVal
@@ -184,7 +192,7 @@ class MeasurementTransformationUseCase @Inject constructor(
         val isMale   = user.gender == GenderType.MALE
 
         // BMI (prefer provided, otherwise compute)
-        val bmiType = byKey[MeasurementTypeKey.BMI]
+        val bmiType = byKey[MeasurementType.BMI]
         val bmiProvided = bmiType?.let { t -> values.find { it.typeId == t.id }?.floatValue }
         val bmi = bmiProvided?.toDouble() ?: run {
             val hM = heightCm / 100.0
@@ -213,18 +221,18 @@ class MeasurementTransformationUseCase @Inject constructor(
         }
 
         // --- BODY FAT (%)
-        byKey[MeasurementTypeKey.BODY_FAT]?.let { type ->
+        byKey[MeasurementType.BODY_FAT]?.let { type ->
             if (bfOpt != BodyFatFormulaOption.OFF) {
                 val bf = when (bfOpt) {
                     BodyFatFormulaOption.US_NAVY -> {
-                        val waistIn = values.find { it.typeId == byKey[MeasurementTypeKey.WAIST]?.id }?.let {
+                        val waistIn = values.find { it.typeId == byKey[MeasurementType.WAIST]?.id }?.let {
                             it.floatValue?.let { value ->
-                                ConverterUtils.convertFloatValueUnit(value, byKey[MeasurementTypeKey.WAIST]!!.unit, UnitType.INCH)
+                                ConverterUtils.convertFloatValueUnit(value, byKey[MeasurementType.WAIST]!!.unit, UnitType.INCH)
                             }
                         }
-                        val neckIn = values.find { it.typeId == byKey[MeasurementTypeKey.NECK]?.id }?.let {
+                        val neckIn = values.find { it.typeId == byKey[MeasurementType.NECK]?.id }?.let {
                             it.floatValue?.let { value ->
-                                ConverterUtils.convertFloatValueUnit(value, byKey[MeasurementTypeKey.NECK]!!.unit, UnitType.INCH)
+                                ConverterUtils.convertFloatValueUnit(value, byKey[MeasurementType.NECK]!!.unit, UnitType.INCH)
                             }
                         }
                         val heightIn = (heightCm / 2.54).toFloat()
@@ -236,9 +244,9 @@ class MeasurementTransformationUseCase @Inject constructor(
                                     86.010f * log10(diff) - 70.041f * log10(heightIn) + 36.76f
                                 } else null
                             } else {
-                                val hipsIn = values.find { it.typeId == byKey[MeasurementTypeKey.HIPS]?.id }?.let {
+                                val hipsIn = values.find { it.typeId == byKey[MeasurementType.HIPS]?.id }?.let {
                                     it.floatValue?.let { value ->
-                                        ConverterUtils.convertFloatValueUnit(value, byKey[MeasurementTypeKey.HIPS]!!.unit, UnitType.INCH)
+                                        ConverterUtils.convertFloatValueUnit(value, byKey[MeasurementType.HIPS]!!.unit, UnitType.INCH)
                                     }
                                 }
                                 if (hipsIn != null && hipsIn > 0f) {
@@ -276,7 +284,7 @@ class MeasurementTransformationUseCase @Inject constructor(
         }
 
         // --- BODY WATER (stored either as %, or mass depending on type.unit)
-        byKey[MeasurementTypeKey.WATER]?.let { type ->
+        byKey[MeasurementType.WATER]?.let { type ->
             if (bwOpt != BodyWaterFormulaOption.OFF) {
                 val liters = when (bwOpt) {
                     BodyWaterFormulaOption.BEHNKE_1963 ->
@@ -318,11 +326,11 @@ class MeasurementTransformationUseCase @Inject constructor(
         }
 
         // --- LBM (mass)
-        byKey[MeasurementTypeKey.LBM]?.let { type ->
+        byKey[MeasurementType.LBM]?.let { type ->
             if (lbmOpt != LbmFormulaOption.OFF) {
                 val lbmKg = when (lbmOpt) {
                     LbmFormulaOption.WEIGHT_MINUS_BODY_FAT -> {
-                        val bfType = byKey[MeasurementTypeKey.BODY_FAT]
+                        val bfType = byKey[MeasurementType.BODY_FAT]
                         // Prefer freshly computed BF in 'out', fallback to original list
                         val bfPercent = out.firstOrNull { it.typeId == bfType?.id }?.floatValue
                             ?: values.firstOrNull { it.typeId == bfType?.id }?.floatValue
@@ -446,7 +454,8 @@ class MeasurementTransformationUseCase @Inject constructor(
             return values
         }
 
-        val weightIndex = values.indexOfFirst { it.typeId == MeasurementTypeKey.WEIGHT.id }
+        val weightTypeId = weightTypeId() ?: return values
+        val weightIndex = values.indexOfFirst { it.typeId == weightTypeId }
         if (weightIndex == -1) {
             return values
         }

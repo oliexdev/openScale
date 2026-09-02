@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.ActivityLevel
@@ -26,6 +27,9 @@ import java.util.Locale
 import java.util.UUID
 import kotlin.math.max
 import kotlin.math.min
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 class InlifeHandler : ScaleDeviceHandler() {
 
@@ -184,13 +188,13 @@ class InlifeHandler : ScaleDeviceHandler() {
         }
 
         val m = ScaleMeasurement().apply {
-            this.weight = weight
-            this.fat = clamp(fatPct, 5.0, 80.0)
-            this.water = clamp(water, 5.0, 80.0)
-            this.muscle = clamp(muscle, 5.0, 80.0)
-            this.bone = clamp(boneKg, 0.5, 8.0)        // bone mass in kg (legacy kept kg here)
-            this.lbm = lbm
-            this.visceralFat = clamp(visceral, 1.0, 50.0)
+            this[MeasurementType.WEIGHT] = Kg(weight)
+            this[MeasurementType.BODY_FAT] = Percent(clamp(fatPct, 5.0, 80.0))
+            this[MeasurementType.WATER] = Percent(clamp(water, 5.0, 80.0))
+            this[MeasurementType.MUSCLE] = Percent(clamp(muscle, 5.0, 80.0))
+            this[MeasurementType.BONE] = Kg(clamp(boneKg, 0.5, 8.0))        // bone mass in kg (legacy kept kg here)
+            this[MeasurementType.LBM] = Kg(lbm)
+            this[MeasurementType.VISCERAL_FAT] = clamp(visceral, 1.0, 50.0)
         }
 
         publish(m)
@@ -206,8 +210,8 @@ class InlifeHandler : ScaleDeviceHandler() {
         // Legacy left BIA as TODO; publish weight plus the raw impedance so body
         // composition can be computed/recomputed later.
         publish(ScaleMeasurement().apply {
-            this.weight = weight
-            if (impedance > 0) this.impedance = impedance.toDouble()
+            this[MeasurementType.WEIGHT] = Kg(weight)
+            if (impedance > 0) this[MeasurementType.IMPEDANCE] = Ohm(impedance.toFloat())
         })
         // (Optional) Hook a BIA library here if available later.
         sendCommand(CMD_FINISH)

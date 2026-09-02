@@ -22,18 +22,11 @@ import com.health.openscale.core.data.AmputationPart
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Limb
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.UnitType
 import kotlin.collections.joinToString
 import kotlin.collections.map
 
 class DatabaseConverters {
-
-    @TypeConverter
-    fun fromTypeKey(value: MeasurementTypeKey): String = value.name
-
-    @TypeConverter
-    fun toTypeKey(value: String): MeasurementTypeKey = MeasurementTypeKey.valueOf(value)
 
     // UnitType
     @TypeConverter

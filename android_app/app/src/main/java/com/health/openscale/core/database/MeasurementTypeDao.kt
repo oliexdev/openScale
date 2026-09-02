@@ -42,4 +42,11 @@ interface MeasurementTypeDao {
 
     @Query("SELECT * FROM MeasurementType ORDER BY displayOrder ASC")
     fun getAll(): Flow<List<MeasurementType>>
+
+    @Query("SELECT * FROM MeasurementType WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Int): MeasurementType?
+
+    /** Looks a type up by its stable identity — how handler-contributed types are resolved. */
+    @Query("SELECT * FROM MeasurementType WHERE identity = :identity LIMIT 1")
+    suspend fun getByIdentity(identity: String): MeasurementType?
 }

@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
@@ -26,6 +27,10 @@ import com.health.openscale.core.utils.LogManager
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * SWAN / Icomon / YG (aka "MGB") handler.
@@ -202,13 +207,13 @@ class MGBHandler : ScaleDeviceHandler() {
         val m = ScaleMeasurement().apply {
             userId = user.id
             dateTime = Date()
-            weight = weightKg
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
         }
 
         // The scale reports only weight + raw impedance; derive body composition the same way
         // VitafitVT701Handler does for its weight+impedance scales.
         if (impedanceOhm in 1 until 1500) {
-            m.impedance = impedanceOhm.toDouble()
+            m[MeasurementType.IMPEDANCE] = Ohm(impedanceOhm.toFloat())
             val lib = StandardImpedanceLib(
                 gender = user.gender,
                 age = user.age,
@@ -216,11 +221,11 @@ class MGBHandler : ScaleDeviceHandler() {
                 heightM = user.bodyHeight / 100.0,
                 impedance = impedanceOhm.toDouble(),
             )
-            m.fat = lib.totalFatPercentage.toFloat()
-            m.water = lib.totalBodyWaterPercentage.toFloat()
-            m.muscle = lib.skeletalMusclePercentage.toFloat()
-            m.bone = lib.boneMassKg.toFloat()
-            m.bmr = lib.basalMetabolicRate.toFloat()
+            m[MeasurementType.BODY_FAT] = Percent(lib.totalFatPercentage.toFloat())
+            m[MeasurementType.WATER] = Percent(lib.totalBodyWaterPercentage.toFloat())
+            m[MeasurementType.MUSCLE] = Percent(lib.skeletalMusclePercentage.toFloat())
+            m[MeasurementType.BONE] = Kg(lib.boneMassKg.toFloat())
+            m[MeasurementType.BMR] = Kcal(lib.basalMetabolicRate.toFloat())
         }
 
         publish(m)
@@ -272,19 +277,19 @@ class MGBHandler : ScaleDeviceHandler() {
         p += 6
 
         // weight (uint16 LE * 0.1)
-        m.weight = readDeciBE(d, p); p += 2
+        m[MeasurementType.WEIGHT] = Kg(readDeciBE(d, p)); p += 2
 
         // BMI (ignored)
         /* val bmi = readDeciLE(d, p); */ p += 2
 
         // fat %
-        m.fat = readDeciBE(d, p); p += 2
+        m[MeasurementType.BODY_FAT] = Percent(readDeciBE(d, p)); p += 2
 
         // two unknown bytes
         p += 2
 
         pending = m
-        LogManager.d("MgbHandler", "first frame -> weight=${m.weight}, fat=${m.fat}")
+        LogManager.d("MgbHandler", "first frame -> weight=${m[MeasurementType.WEIGHT]}, fat=${m[MeasurementType.BODY_FAT]}")
     }
 
     /**
@@ -297,10 +302,10 @@ class MGBHandler : ScaleDeviceHandler() {
 
         var p = 2 // after 01 00 header
 
-        m.muscle = readDeciLE(d, p); p += 2
+        m[MeasurementType.MUSCLE] = Percent(readDeciLE(d, p)); p += 2
         /* val bmr = readDeciLE(d, p); */ p += 2
-        m.bone = readDeciLE(d, p); p += 2
-        m.water = readDeciLE(d, p); p += 2
+        m[MeasurementType.BONE] = Kg(readDeciLE(d, p)); p += 2
+        m[MeasurementType.WATER] = Percent(readDeciLE(d, p)); p += 2
         /* val age = d[p].toUByte().toInt(); */ p += 1
         /* val protein = readDeciLE(d, p); */ p += 2
         // Skip remaining bytes (unknown/padding)
@@ -308,7 +313,7 @@ class MGBHandler : ScaleDeviceHandler() {
 
         publish(m)
         pending = null
-        LogManager.d("MgbHandler", "second frame -> muscle=${m.muscle}, bone=${m.bone}, water=${m.water} → published")
+        LogManager.d("MgbHandler", "second frame -> muscle=${m[MeasurementType.MUSCLE]}, bone=${m[MeasurementType.BONE]}, water=${m[MeasurementType.WATER]} → published")
     }
 
     /** Read uint16 little-endian and scale by 0.1f. */

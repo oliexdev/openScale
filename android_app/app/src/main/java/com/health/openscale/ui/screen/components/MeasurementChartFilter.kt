@@ -52,16 +52,16 @@ import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.TimeRangeFilter
 import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.core.model.MeasurementWithValues
+import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
 import kotlinx.coroutines.launch
-import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.time.temporal.WeekFields
+import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 
 /**
@@ -287,6 +287,11 @@ internal fun rememberPeriodChartData(
             Instant.ofEpochMilli(it.measurement.timestamp).atZone(ZoneId.systemDefault()).toLocalDate()
         }
 
+        // Same calendar-week rule the aggregation uses, so a bar and its table row cover the
+        // same days and carry the same week number.
+        val weekFields   = LocaleUtils.systemWeekFields()
+        val firstDayOfWeek = weekFields.firstDayOfWeek
+
         val totalDays = ChronoUnit.DAYS.between(minDate, maxDate).toInt()
         val groupingUnit: ChronoUnit
         val intervalSize: Long = 1
@@ -301,7 +306,7 @@ internal fun rememberPeriodChartData(
         val allPeriods = mutableListOf<LocalDate>()
         var cursor = when (groupingUnit) {
             ChronoUnit.DAYS   -> minDate
-            ChronoUnit.WEEKS  -> minDate.with(DayOfWeek.MONDAY)
+            ChronoUnit.WEEKS  -> minDate.with(TemporalAdjusters.previousOrSame(firstDayOfWeek))
             ChronoUnit.MONTHS -> minDate.withDayOfMonth(1)
             else              -> minDate.withDayOfYear(1)
         }
@@ -331,7 +336,7 @@ internal fun rememberPeriodChartData(
                 .atZone(ZoneId.systemDefault()).toLocalDate()
             when (groupingUnit) {
                 ChronoUnit.DAYS   -> date
-                ChronoUnit.WEEKS  -> date.with(DayOfWeek.MONDAY)
+                ChronoUnit.WEEKS  -> date.with(TemporalAdjusters.previousOrSame(firstDayOfWeek))
                 ChronoUnit.MONTHS -> date.withDayOfMonth(1)
                 else              -> date.withDayOfYear(1)
             }
@@ -341,7 +346,7 @@ internal fun rememberPeriodChartData(
         val labelFormatter: (LocalDate) -> String = { date ->
             when (groupingUnit) {
                 ChronoUnit.DAYS   -> date.format(DateTimeFormatter.ofPattern("d LLL", locale))
-                ChronoUnit.WEEKS  -> "W${date.get(WeekFields.of(locale).weekOfWeekBasedYear())}"
+                ChronoUnit.WEEKS  -> "W${date.get(weekFields.weekOfWeekBasedYear())}"
                 ChronoUnit.MONTHS -> date.format(DateTimeFormatter.ofPattern("LLL yy", locale))
                 else              -> date.year.toString()
             }

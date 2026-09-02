@@ -18,12 +18,15 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.abs
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 class MedisanaBs44xHandler : ScaleDeviceHandler() {
 
@@ -139,7 +142,7 @@ class MedisanaBs44xHandler : ScaleDeviceHandler() {
 
         val m = current ?: ScaleMeasurement().also { current = it }
         m.dateTime = Date(tsSec * 1000)
-        m.weight = weightKg
+        m[MeasurementType.WEIGHT] = Kg(weightKg)
     }
 
     // Feature frame:
@@ -149,10 +152,10 @@ class MedisanaBs44xHandler : ScaleDeviceHandler() {
         if (d.size < 16) return
         val m = current ?: ScaleMeasurement().also { current = it }
 
-        m.fat    = decode12bitTenth(d, 8)
-        m.water  = decode12bitTenth(d, 10)
-        m.muscle = decode12bitTenth(d, 12)
-        m.bone   = decode12bitTenth(d, 14)
+        m[MeasurementType.BODY_FAT] = Percent(decode12bitTenth(d, 8))
+        m[MeasurementType.WATER] = Percent(decode12bitTenth(d, 10))
+        m[MeasurementType.MUSCLE] = Percent(decode12bitTenth(d, 12))
+        m[MeasurementType.BONE] = Kg(decode12bitTenth(d, 14))
     }
 
     private fun decode12bitTenth(d: ByteArray, off: Int): Float {

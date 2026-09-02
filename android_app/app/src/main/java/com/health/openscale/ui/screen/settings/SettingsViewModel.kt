@@ -328,6 +328,9 @@ class SettingsViewModel @Inject constructor(
                     if (report.valuesSkippedParseError > 0) {
                         parts.add(context.getString(R.string.import_summary_values_skipped_parse_errors, report.valuesSkippedParseError).removeSuffix("."))
                     }
+                    if (report.skippedColumns.isNotEmpty()) {
+                        parts.add(context.getString(R.string.import_summary_skipped_unknown_columns, report.skippedColumns.size).removeSuffix("."))
+                    }
 
                     if (parts.isNotEmpty()) {
                         append(" (")

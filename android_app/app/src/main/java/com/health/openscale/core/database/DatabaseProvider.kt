@@ -27,7 +27,6 @@ import android.net.Uri
 import com.health.openscale.BuildConfig
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.facade.SettingsFacade
@@ -245,12 +244,12 @@ class DatabaseProvider : ContentProvider() {
 
                 runBlocking {
                     val allMeasurementTypes = databaseRepository.getAllMeasurementTypes().first()
-                    val weightType = allMeasurementTypes.find { it.key == MeasurementTypeKey.WEIGHT }
-                    val fatType = allMeasurementTypes.find { it.key == MeasurementTypeKey.BODY_FAT }
-                    val waterType = allMeasurementTypes.find { it.key == MeasurementTypeKey.WATER }
-                    val muscleType = allMeasurementTypes.find { it.key == MeasurementTypeKey.MUSCLE }
+                    val weightType = allMeasurementTypes.find { it.key == MeasurementType.WEIGHT }
+                    val fatType = allMeasurementTypes.find { it.key == MeasurementType.BODY_FAT }
+                    val waterType = allMeasurementTypes.find { it.key == MeasurementType.WATER }
+                    val muscleType = allMeasurementTypes.find { it.key == MeasurementType.MUSCLE }
                     val typeIdMap = allMeasurementTypes.associate { it.key to it.id }
-                    weightTypeIdFound = typeIdMap[MeasurementTypeKey.WEIGHT]
+                    weightTypeIdFound = typeIdMap[MeasurementType.WEIGHT]
 
                     if (weightType != null) {
                         val targetWeightValue = ConverterUtils.convertFloatValueUnit(weightFromProviderInKg, UnitType.KG, weightType.unit)
@@ -285,10 +284,8 @@ class DatabaseProvider : ContentProvider() {
                     // supplied as a "values_json" payload are written too (canonical → user unit).
                     val valuesJson = values.getAsString(MeasurementColumns.VALUES_JSON)
                     if (valuesJson != null) {
-                        val typesByKey = allMeasurementTypes.associateBy { it.key.name }
-                        val typesById = allMeasurementTypes.associateBy { it.id }
                         val existingTypeIds = measurementValuesToInsert.mapTo(HashSet()) { it.typeId }
-                        GenericValueJson.parse(valuesJson, typesByKey, typesById).forEach { (type, parsedValue) ->
+                        GenericValueJson.parse(valuesJson, allMeasurementTypes).forEach { (type, parsedValue) ->
                             if (type.id !in existingTypeIds) {
                                 measurementValuesToInsert.add(parsedValue)
                                 existingTypeIds.add(type.id)
@@ -298,7 +295,7 @@ class DatabaseProvider : ContentProvider() {
                 }
 
                 if (weightTypeIdFound == null) { // Double check if weight type ID was resolved
-                    LogManager.e(TAG, "Weight MeasurementTypeKey system configuration issue. Cannot insert essential weight value.")
+                    LogManager.e(TAG, "Weight measurement type missing. Cannot insert essential weight value.")
                     return null
                 }
 
@@ -398,7 +395,7 @@ class DatabaseProvider : ContentProvider() {
                         // Helper to update a value, converting from base unit to user's configured unit.
                         suspend fun processValueUpdate(
                             newValueFromProvider: Float?, // Value in base unit (kg or %)
-                            typeKey: MeasurementTypeKey,
+                            typeKey: MeasurementType.Key<*>,
                             cvKey: String
                         ) {
                             if (!values.containsKey(cvKey)) return // This value is not being updated.
@@ -414,7 +411,7 @@ class DatabaseProvider : ContentProvider() {
                             if (newValueFromProvider != null) { // A new value is provided (insert or update)
                                 // --- START: Unit Conversion ---
                                 val targetValue = when {
-                                    typeKey == MeasurementTypeKey.WEIGHT -> {
+                                    typeKey == MeasurementType.WEIGHT -> {
                                         // Convert incoming KG to user's weight unit.
                                         ConverterUtils.convertFloatValueUnit(newValueFromProvider, UnitType.KG, targetType.unit)
                                     }
@@ -422,8 +419,8 @@ class DatabaseProvider : ContentProvider() {
                                         // For composition, convert incoming % to absolute weight in user's unit.
                                         // The base weight for calculation must be the new weight being provided.
                                         val baseWeightInKg = weightFromProviderInKg ?: existingMeasurementWithValues.values
-                                            .find { it.type.key == MeasurementTypeKey.WEIGHT }?.value?.floatValue?.let {
-                                                typeMap[MeasurementTypeKey.WEIGHT]?.unit?.let { unit ->
+                                            .find { it.type.key == MeasurementType.WEIGHT }?.value?.floatValue?.let {
+                                                typeMap[MeasurementType.WEIGHT]?.unit?.let { unit ->
                                                     ConverterUtils.convertFloatValueUnit(it, unit, UnitType.KG)
                                                 }
                                             }
@@ -465,10 +462,10 @@ class DatabaseProvider : ContentProvider() {
                         }
 
                         // Process updates for all relevant measurement types
-                        processValueUpdate(weightFromProviderInKg, MeasurementTypeKey.WEIGHT, MeasurementColumns.WEIGHT)
-                        processValueUpdate(fatFromProviderPercent, MeasurementTypeKey.BODY_FAT, MeasurementColumns.BODY_FAT)
-                        processValueUpdate(waterFromProviderPercent, MeasurementTypeKey.WATER, MeasurementColumns.WATER)
-                        processValueUpdate(muscleFromProviderPercent, MeasurementTypeKey.MUSCLE, MeasurementColumns.MUSCLE)
+                        processValueUpdate(weightFromProviderInKg, MeasurementType.WEIGHT, MeasurementColumns.WEIGHT)
+                        processValueUpdate(fatFromProviderPercent, MeasurementType.BODY_FAT, MeasurementColumns.BODY_FAT)
+                        processValueUpdate(waterFromProviderPercent, MeasurementType.WATER, MeasurementColumns.WATER)
+                        processValueUpdate(muscleFromProviderPercent, MeasurementType.MUSCLE, MeasurementColumns.MUSCLE)
 
                         // Generic inbound values (all types incl. custom) supplied as a
                         // "values_json" payload — mirrors the insert path. Lets an external app
@@ -476,17 +473,15 @@ class DatabaseProvider : ContentProvider() {
                         // Values arrive canonical and are converted to the user's unit by parse().
                         val valuesJson = values.getAsString(MeasurementColumns.VALUES_JSON)
                         if (valuesJson != null) {
-                            val typesByKey = allMeasurementTypes.associateBy { it.key.name }
-                            val typesById = allMeasurementTypes.associateBy { it.id }
                             // Skip types already handled by the explicit weight/fat/water/muscle
                             // columns above, so a duplicate in the JSON can't overwrite them.
                             val handledTypeIds = buildSet {
-                                if (values.containsKey(MeasurementColumns.WEIGHT)) typeMap[MeasurementTypeKey.WEIGHT]?.id?.let(::add)
-                                if (values.containsKey(MeasurementColumns.BODY_FAT)) typeMap[MeasurementTypeKey.BODY_FAT]?.id?.let(::add)
-                                if (values.containsKey(MeasurementColumns.WATER)) typeMap[MeasurementTypeKey.WATER]?.id?.let(::add)
-                                if (values.containsKey(MeasurementColumns.MUSCLE)) typeMap[MeasurementTypeKey.MUSCLE]?.id?.let(::add)
+                                if (values.containsKey(MeasurementColumns.WEIGHT)) typeMap[MeasurementType.WEIGHT]?.id?.let(::add)
+                                if (values.containsKey(MeasurementColumns.BODY_FAT)) typeMap[MeasurementType.BODY_FAT]?.id?.let(::add)
+                                if (values.containsKey(MeasurementColumns.WATER)) typeMap[MeasurementType.WATER]?.id?.let(::add)
+                                if (values.containsKey(MeasurementColumns.MUSCLE)) typeMap[MeasurementType.MUSCLE]?.id?.let(::add)
                             }
-                            GenericValueJson.parse(valuesJson, typesByKey, typesById).forEach { (type, parsedValue) ->
+                            GenericValueJson.parse(valuesJson, allMeasurementTypes).forEach { (type, parsedValue) ->
                                 if (type.id in handledTypeIds) return@forEach
                                 val existingValue = existingMeasurementWithValues.values.find { it.type.id == type.id }
                                 if (existingValue != null) {
@@ -588,7 +583,14 @@ class DatabaseProvider : ContentProvider() {
         private val uriMatcher = UriMatcher(UriMatcher.NO_MATCH)
         // v2: sync Intents carry userId on delete/clear (multi-user routing). openScale-sync
         // requires >= 2 and warns the user to update openScale otherwise.
-        private const val API_VERSION = 2
+        /**
+         * ContentProvider API version, served via the meta URI.
+         * v2 — sync intents carry the userId on delete/clear.
+         * v3 — generic value JSON identifies types by `identity` (namespaced, stable across
+         *      installations); the legacy `key`/`typeId` fields are gone from the wire in
+         *      both directions — inbound entries without an identity are dropped.
+         */
+        private const val API_VERSION = 3
         val AUTHORITY = BuildConfig.APPLICATION_ID + ".provider"
 
         private const val MATCH_TYPE_META = 1

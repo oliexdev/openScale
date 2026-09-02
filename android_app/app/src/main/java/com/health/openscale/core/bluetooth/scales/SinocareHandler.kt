@@ -19,11 +19,13 @@ package com.health.openscale.core.bluetooth.scales
 
 import android.bluetooth.le.ScanResult
 import android.util.SparseArray
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.LogManager
 import kotlin.math.max
+import com.health.openscale.core.data.Kg
 
 /**
  * SinocareHandler
@@ -118,7 +120,7 @@ class SinocareHandler : ScaleDeviceHandler() {
             val weightKg = weightRaw / 100.0f
 
             val m = ScaleMeasurement().apply {
-                weight = weightKg
+                this[MeasurementType.WEIGHT] = Kg(weightKg)
                 // dateTime left as "now" by default if ScaleMeasurement handles it, or set explicitly:
                 // dateTime = Date(System.currentTimeMillis())
                 // Optionally attach userId if your model requires it:

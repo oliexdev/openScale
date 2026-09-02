@@ -388,19 +388,26 @@ internal fun rememberXAxisValueFormatter(
     return remember(chartSeries, aggregationLevel, weekAbbrev) {
         val xToDatesMap = chartSeries.flatMap { it.points }.associate { it.x to it.date }
 
+        // The 'w' pattern letter resolves against the formatter's locale, which would let the
+        // axis disagree with the table and overview. Build the week label from the shared rule
+        // instead; the other levels have no such ambiguity.
+        val weekFields = LocaleUtils.systemWeekFields()
+
         val pattern = when (aggregationLevel) {
             AggregationLevel.NONE  -> "d MMM"
             AggregationLevel.DAY   -> "d MMM"
-            AggregationLevel.WEEK  -> "'${weekAbbrev}'w yy"
+            AggregationLevel.WEEK  -> null
             AggregationLevel.MONTH -> "MMM yy"
             AggregationLevel.YEAR  -> "yyyy"
         }
 
-        val formatter = DateTimeFormatter.ofPattern(pattern)
+        val formatter = pattern?.let { DateTimeFormatter.ofPattern(it) }
 
         CartesianValueFormatter { _, value, _ ->
-            (xToDatesMap[value.toFloat()] ?: LocalDate.ofEpochDay(value.toLong()))
-                .format(formatter)
+            val date = xToDatesMap[value.toFloat()] ?: LocalDate.ofEpochDay(value.toLong())
+            formatter?.format(date)
+                ?: "$weekAbbrev${date.get(weekFields.weekOfWeekBasedYear())} " +
+                    "${date.get(weekFields.weekBasedYear()) % 100}"
         }
     }
 }

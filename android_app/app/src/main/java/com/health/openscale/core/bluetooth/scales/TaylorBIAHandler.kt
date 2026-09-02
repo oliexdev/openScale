@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -28,6 +29,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import com.health.openscale.core.data.Kg
 
 /**
  * Taylor 5331891 BIA (Body Composition) bathroom scale.
@@ -185,7 +187,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
             published = true
             publish(ScaleMeasurement().apply {
                 dateTime = Date()
-                weight = pendingWeightKg
+                this[MeasurementType.WEIGHT] = Kg(pendingWeightKg)
             })
         }
     }
@@ -243,7 +245,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         // Weight-only: the scale transmits no impedance/body-composition data over BLE.
         val measurement = ScaleMeasurement().apply {
             dateTime = Date()
-            weight = weightKg
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
         }
 
         publish(measurement)

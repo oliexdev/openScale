@@ -24,13 +24,11 @@ import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
 import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
-import com.health.openscale.getDefaultMeasurementTypes
 import com.health.openscale.testutil.MainDispatcherRule
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.CoroutineScope
@@ -77,7 +75,7 @@ class SettingsViewModelTest {
     fun setUp() = runBlocking {
         db = RoomTestSupport.inMemory(app)
         repo = RoomTestSupport.repositoryFor(db)
-        repo.insertAllMeasurementTypes(getDefaultMeasurementTypes())
+        repo.insertAllMeasurementTypes(MeasurementType.seedRows())
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
         val settings = RoomTestSupport.settingsFacadeFor(
             scope, File(app.cacheDir, "settings-${System.nanoTime()}.preferences_pb")
@@ -118,7 +116,7 @@ class SettingsViewModelTest {
 
     @Test
     fun createUserWithGoals_persistsUserAndGoals() = runBlocking {
-        repo.insertAllMeasurementTypes(getDefaultMeasurementTypes())
+        repo.insertAllMeasurementTypes(MeasurementType.seedRows())
         val typeId = repo.getAllMeasurementTypes().first().first().id
 
         vm.createUserWithGoals(
@@ -136,7 +134,7 @@ class SettingsViewModelTest {
 
     @Test
     fun updateUserWithGoals_reconcilesGoals() = runBlocking {
-        repo.insertAllMeasurementTypes(getDefaultMeasurementTypes())
+        repo.insertAllMeasurementTypes(MeasurementType.seedRows())
         val types = repo.getAllMeasurementTypes().first()
         val keptType = types[0].id
         val removedType = types[1].id
@@ -172,7 +170,6 @@ class SettingsViewModelTest {
 
         vm.addMeasurementType(
             MeasurementType(
-                key = MeasurementTypeKey.CUSTOM,
                 name = "MyMetric",
                 inputType = InputFieldType.FLOAT,
                 unit = UnitType.NONE,

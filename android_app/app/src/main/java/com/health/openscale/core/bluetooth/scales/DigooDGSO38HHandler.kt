@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.WeightUnit
@@ -25,6 +26,8 @@ import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import java.util.UUID
 import kotlin.math.abs
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 /**
  * Digoo DG-SO38H GATT handler (legacy: BluetoothDigooDGSO38H).
@@ -137,7 +140,7 @@ class DigooDGSO38HHandler : ScaleDeviceHandler() {
         val fat = (((frame[6].toInt() and 0xFF) shl 8) or (frame[7].toInt() and 0xFF)) / 10.0f
 
         val m = ScaleMeasurement().apply {
-            this.weight = weight
+            this[MeasurementType.WEIGHT] = Kg(weight)
             dateTime = Date()
         }
 
@@ -154,11 +157,11 @@ class DigooDGSO38HHandler : ScaleDeviceHandler() {
             // bone kg [18] /10
             val bone = (frame[18].toInt() and 0xFF) / 10.0f
 
-            m.fat = fat
-            m.water = water
-            m.muscle = muscle
-            m.bone = bone
-            m.visceralFat = visceral
+            m[MeasurementType.BODY_FAT] = Percent(fat)
+            m[MeasurementType.WATER] = Percent(water)
+            m[MeasurementType.MUSCLE] = Percent(muscle)
+            m[MeasurementType.BONE] = Kg(bone)
+            m[MeasurementType.VISCERAL_FAT] = visceral
         }
 
         publish(m)
