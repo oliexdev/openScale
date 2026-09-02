@@ -20,6 +20,7 @@ package com.health.openscale.core.bluetooth
 import android.util.SparseArray
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
+import com.health.openscale.core.bluetooth.scales.AndUC352BLEHandler
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
@@ -157,6 +158,7 @@ object ScaleCatalog {
      */
     val fixtures: List<Fixture> = listOf(
         // --- Matched by advertised name ---
+        device("A&D_UC-352BLE_123456", uuid16(0x181D)) claimedBy AndUC352BLEHandler::class.java,
         device("AE BS-06") claimedBy ActiveEraBF06Handler::class.java,
         device("Keep_S3") claimedBy KeepS3Handler::class.java,
         device("Beurer BF450") claimedBy BeurerBF450Handler::class.java,
