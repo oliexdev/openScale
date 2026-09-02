@@ -809,4 +809,27 @@
     <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Ocupat (no enllaçat)</string>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d: Crea «%2$s» aquí</string>
     <string name="bt_warn_low_battery_unknown">La bàscula té la bateria baixa.</string>
+    <string name="measurement_type_from_scale">Afegit per una bàscula</string>
+    <string name="measurement_type_label_csv_column">Columna del CSV</string>
+    <string name="measurement_type_csv_column_taken">Aquesta columna del CSV ja s’està utilitzant.</string>
+    <string name="measurement_type_segmental_fat_left_arm">Greix corporal (braç esquerre)</string>
+    <string name="measurement_type_segmental_fat_right_arm">Greix corporal (braç dret)</string>
+    <string name="measurement_type_segmental_fat_torso">Greix corporal (tronc)</string>
+    <string name="measurement_type_segmental_fat_left_leg">Greix corporal (cama esquerra)</string>
+    <string name="measurement_type_segmental_fat_right_leg">Greix corporal (cama dreta)</string>
+    <string name="measurement_type_segmental_muscle_left_arm">Múscul (braç esquerre)</string>
+    <string name="measurement_type_segmental_muscle_right_arm">Múscul (braç dret)</string>
+    <string name="measurement_type_segmental_muscle_torso">Múscul (tronc)</string>
+    <string name="measurement_type_segmental_muscle_left_leg">Múscul (cama esquerra)</string>
+    <string name="measurement_type_segmental_muscle_right_leg">Múscul (cama dreta)</string>
+    <string name="time_range_custom_since">De %1$s ençà</string>
+    <string name="time_range_custom_dialog_title">Seleccioneu un interval de dates</string>
+    <string name="time_range_custom_hint_open_end">Sense data de fi — sempre fins a avui.</string>
+    <string name="time_range_custom_hint_fixed_end">Esborreu la data de fi per a incloure-hi sempre avui.</string>
+    <string name="time_range_custom_clear_end">Esborra la fi</string>
+    <string name="content_description_time_range_linked">L’interval de temps s’aplica a totes les pantalles</string>
+    <string name="content_description_time_range_unlinked">L’interval de temps s’aplica només a aquesta pantalla</string>
+    <string name="content_description_aggregation_linked">L’agregació s’aplica a totes les pantalles</string>
+    <string name="content_description_aggregation_unlinked">L’agregació només s’aplica a aquesta pantalla</string>
+    <string name="import_summary_skipped_unknown_columns">%1$d columnes no coincidien amb cap mesura i s’han omès.</string>
 </resources>
