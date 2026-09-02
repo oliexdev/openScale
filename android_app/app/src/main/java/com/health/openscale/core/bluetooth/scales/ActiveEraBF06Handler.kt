@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.WeightUnit
@@ -29,6 +30,11 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
+import com.health.openscale.core.data.Bpm
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Active Era BF-06 (aka "BS-06") GATT handler.
@@ -236,7 +242,7 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
             stableWeightKg = weightKg
             logI("Stable weight: %.3f kg".format(stableWeightKg))
             sendMeasuringSnack(weightKg)
-            ensurePending().weight = weightKg
+            ensurePending()[MeasurementType.WEIGHT] = Kg(weightKg)
 
             // We can publish later once we have HR/ADC (if provided)
             maybePublishIfComplete()
@@ -284,17 +290,17 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
                     val calc = LibICBIACalculatorWLA07(stableWeightKg, user.bodyHeight.toInt(), impedanceOhm, user.age, user.gender.isMale())
                     ensurePending().apply {
                         val bodyFat = calc.bodyFatPercent.toFloat()
-                        fat = bodyFat
-                        muscle = calc.musclePercent.toFloat()
-                        visceralFat = calc.visceralFat.toFloat()
-                        bone = calc.boneMass.toFloat()
-                        water = calc.moisturePercent.toFloat()
-                        lbm = (stableWeightKg * (100.0 - bodyFat) / 100.0).toFloat()
-                        bmr = calc.bMR.toFloat()
-                        protein = calc.protein.toFloat()
+                        this[MeasurementType.BODY_FAT] = Percent(bodyFat)
+                        this[MeasurementType.MUSCLE] = Percent(calc.musclePercent.toFloat())
+                        this[MeasurementType.VISCERAL_FAT] = calc.visceralFat.toFloat()
+                        this[MeasurementType.BONE] = Kg(calc.boneMass.toFloat())
+                        this[MeasurementType.WATER] = Percent(calc.moisturePercent.toFloat())
+                        this[MeasurementType.LBM] = Kg((stableWeightKg * (100.0 - bodyFat) / 100.0).toFloat())
+                        this[MeasurementType.BMR] = Kcal(calc.bMR.toFloat())
+                        this[MeasurementType.PROTEIN] = Percent(calc.protein.toFloat())
 
                         // Store the raw impedance so body composition can be recomputed later.
-                        impedance = impedanceOhm
+                        this[MeasurementType.IMPEDANCE] = Ohm(impedanceOhm.toFloat())
                     }
                 }
                 else -> {
@@ -310,10 +316,10 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
                     val fatKg = (stableWeightKg - ffm).coerceAtLeast(0.0)
                     val fatPct = if (stableWeightKg > 0) (fatKg / stableWeightKg) * 100.0 else 0.0
                     ensurePending().apply {
-                        lbm = ffm.toFloat()
-                        fat = fatPct.toFloat()
+                        this[MeasurementType.LBM] = Kg(ffm.toFloat())
+                        this[MeasurementType.BODY_FAT] = Percent(fatPct.toFloat())
                         // Store the raw impedance so body composition can be recomputed later.
-                        impedance = impedanceOhm
+                        this[MeasurementType.IMPEDANCE] = Ohm(impedanceOhm.toFloat())
                         // Optional: rough water/muscle estimates could be added if desired
                     }
                 }
@@ -327,7 +333,7 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
         val hrBpm = pkt[0x03].toInt() and 0xFF
         logI("Heart rate: $hrBpm bpm")
         ensurePending().apply {
-            heartRate = hrBpm
+            this[MeasurementType.HEART_RATE] = Bpm(hrBpm)
         }
 
         maybePublishIfComplete()
@@ -357,7 +363,7 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
         val m = ensurePending()
 
         val needHr = supportsHR
-        val haveHr = m.heartRate != 0
+        val haveHr = (m[MeasurementType.HEART_RATE]?.value ?: 0) != 0
 
         if (needHr && !haveHr) return
 
@@ -367,7 +373,7 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
             dateTime = java.util.Date() // now
         }
         publish(m)
-        logI("published measurement (weight=${m.weight}, fat=${m.fat}, lbm=${m.lbm})")
+        logI("published measurement (weight=${m[MeasurementType.WEIGHT]}, fat=${m[MeasurementType.BODY_FAT]}, lbm=${m[MeasurementType.LBM]})")
         // Reset to avoid double-publishing in the same session
         pending = null
     }

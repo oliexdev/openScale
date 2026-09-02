@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.KeepS3BodyComposition
@@ -31,6 +32,11 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.roundToInt
+import com.health.openscale.core.data.Bpm
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /** Pure codec for the capture-verified Keep S3 application protocol. */
 internal object KeepS3Protocol {
@@ -583,12 +589,11 @@ class KeepS3Handler : ScaleDeviceHandler() {
         val measurement = ScaleMeasurement().apply {
             userId = user.id
             dateTime = Date()
-            weight = weightKg
-            if (heartRateBpm > 0) heartRate = heartRateBpm
-            // openScale has no measurement type for the vendor impedance or the phase angles,
-            // so they are decoded and logged but not published. Re-enabling any of these needs
-            // a MeasurementTypeKey, a ScaleMeasurement field, a DB migration and BleConnector
-            // wiring.
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
+            if (heartRateBpm > 0) this[MeasurementType.HEART_RATE] = Bpm(heartRateBpm)
+            // The vendor impedance and phase angles are decoded and logged but not
+            // published. Wiring any of them up is now handler-local: declare a
+            // MeasurementType.deviceFloat key and write it into the measurement.
             // if (deviceImpedanceOhm > 0) deviceImpedance = deviceImpedanceOhm.toDouble()
             // phaseAngle50Degrees?.takeIf { it.isFinite() && it > 0f }?.let { phaseAngle = it }
             // phaseAngle100Degrees?.takeIf { it.isFinite() && it > 0f }?.let { phaseAngleHigh = it }
@@ -598,8 +603,8 @@ class KeepS3Handler : ScaleDeviceHandler() {
             if (hasDualFrequencyImpedance) {
                 // ScaleMeasurement's established dual-band convention is high frequency in
                 // impedance and low frequency in impedanceLow. Keep S3 reports 100/50 kHz.
-                impedance = compositionImpedance100Ohm.toDouble()
-                impedanceLow = compositionImpedance50Ohm.toDouble()
+                this[MeasurementType.IMPEDANCE] = Ohm(compositionImpedance100Ohm.toFloat())
+                this[MeasurementType.IMPEDANCE_LOW] = Ohm(compositionImpedance50Ohm.toFloat())
             }
 
             val composition = if (hasDualFrequencyImpedance) {
@@ -628,20 +633,21 @@ class KeepS3Handler : ScaleDeviceHandler() {
             if (composition == null) {
                 logW("Keep S3 body composition unavailable; missing or invalid dual-frequency input")
             } else {
-                fat = composition.bodyFatPercent
-                water = composition.waterPercent
-                visceralFat = composition.visceralFatLevel.toFloat()
-                bone = composition.boneKg
-                lbm = composition.fatFreeMassKg
-                bmr = composition.basalMetabolicRateKcal.toFloat()
-                protein = composition.proteinPercent
+                this[MeasurementType.BODY_FAT] = Percent(composition.bodyFatPercent)
+                this[MeasurementType.WATER] = Percent(composition.waterPercent)
+                this[MeasurementType.VISCERAL_FAT] = composition.visceralFatLevel.toFloat()
+                this[MeasurementType.BONE] = Kg(composition.boneKg)
+                this[MeasurementType.LBM] = Kg(composition.fatFreeMassKg)
+                this[MeasurementType.BMR] = Kcal(composition.basalMetabolicRateKcal.toFloat())
+                this[MeasurementType.PROTEIN] = Percent(composition.proteinPercent)
                 // openScale evaluates MUSCLE as a skeletal-muscle percentage (plausible range
                 // 15-60%). Keep's broader "muscle" value is FFM minus bone and can exceed that
                 // range, so publish the separately decoded skeletal-muscle percentage here.
-                muscle = composition.skeletalMusclePercent
+                this[MeasurementType.MUSCLE] = Percent(composition.skeletalMusclePercent)
                 // Keep's broader composition.musclePercent remains decoded by the model but is
                 // not published because openScale has no lean-soft-tissue measurement type.
-                // Not published — openScale has no measurement type for these.
+                // Not published yet — wiring them up would be handler-local now
+                // (MeasurementType.deviceFloat), but stays a deliberate follow-up.
                 // subcutaneousFat = composition.subcutaneousFatPercent
                 // bodyAge = composition.bodyAge
                 // bmi22ReferenceWeight = composition.bmi22ReferenceWeightKg
@@ -691,7 +697,7 @@ class KeepS3Handler : ScaleDeviceHandler() {
         }
         logI("Keep S3 previous record uses matched protocol impedance=${impedanceOhm.roundToInt()}Ω")
         return KeepS3Protocol.PreviousRecord(
-            weightKg = previous.weight,
+            weightKg = (previous[MeasurementType.WEIGHT]?.value ?: 0f),
             timestampSeconds = (previous.dateTime?.time ?: 0L) / 1000L,
             impedanceOhm = impedanceOhm,
         )
@@ -705,7 +711,7 @@ class KeepS3Handler : ScaleDeviceHandler() {
         val timestampSeconds = measurement.dateTime?.time?.div(1000L) ?: return
         val encoded = KeepS3Protocol.serializeDeviceImpedance(
             timestampSeconds = timestampSeconds,
-            weightKg = measurement.weight,
+            weightKg = (measurement[MeasurementType.WEIGHT]?.value ?: 0f),
             impedanceOhm = deviceImpedanceOhm,
         ) ?: return
         settingsPutString(KeepS3Protocol.deviceImpedanceSettingKey(userId), encoded)
@@ -717,7 +723,7 @@ class KeepS3Handler : ScaleDeviceHandler() {
             settingsGetString(KeepS3Protocol.deviceImpedanceSettingKey(userId)),
         ) ?: return null
         return stored.impedanceOhm.toDouble().takeIf {
-            KeepS3Protocol.deviceImpedanceMatches(stored, timestampSeconds, previous.weight)
+            KeepS3Protocol.deviceImpedanceMatches(stored, timestampSeconds, (previous[MeasurementType.WEIGHT]?.value ?: 0f))
         }
     }
 

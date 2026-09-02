@@ -26,10 +26,9 @@ import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.core.model.MeasurementValueWithType
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.ValueWithDifference
-import java.time.Instant
+import com.health.openscale.core.utils.LocaleUtils
 import java.time.ZoneId
 import java.time.temporal.WeekFields
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.roundToInt
@@ -58,6 +57,9 @@ class MeasurementAggregationUseCase @Inject constructor() {
      *
      * @param measurements Chronologically sorted list (newest → oldest).
      * @param level        The desired aggregation granularity.
+     * @param weekFields   Calendar-week rule for [AggregationLevel.WEEK]. Grouping, bounds and
+     *                     key all use this one value, so a period always contains its own
+     *                     members (issue #1454). Tests pin it instead of relying on the device.
      * @return List of [AggregatedMeasurement] sorted newest → oldest.
      *         When [level] is [AggregationLevel.NONE] each raw measurement is wrapped
      *         individually with [AggregatedMeasurement.aggregatedFromCount] == 1.
@@ -66,49 +68,33 @@ class MeasurementAggregationUseCase @Inject constructor() {
         measurements: List<EnrichedMeasurement>,
         level: AggregationLevel,
         zone: ZoneId = ZoneId.systemDefault(),
+        weekFields: WeekFields = LocaleUtils.systemWeekFields(),
     ): List<AggregatedMeasurement> {
         if (measurements.isEmpty()) return emptyList()
 
         if (level == AggregationLevel.NONE) {
             return measurements.map { em ->
                 val ts = em.measurementWithValues.measurement.timestamp
-                val (periodStart, periodEnd) = level.periodBounds(ts, zone)
+                val (periodStart, periodEnd) = level.periodBounds(ts, zone, weekFields)
                 AggregatedMeasurement(
                     enriched             = em,
                     aggregatedFromCount  = 1,
                     periodStartMillis    = periodStart,
                     periodEndMillis      = periodEnd,
-                    periodKey            = level.periodKey(ts, zone),
+                    periodKey            = level.periodKey(ts, zone, weekFields),
                 )
             }
         }
 
-        // Hoist WeekFields outside the groupBy lambda (locale lookup is not free)
-        val weekFields = if (level == AggregationLevel.WEEK) WeekFields.of(Locale.getDefault()) else null
-
-        // Group by period key — reuses the same logic as periodKey() extension
+        // Group by the very key the entry will carry, so the two can never drift apart.
         val grouped: Map<String, List<EnrichedMeasurement>> = measurements
             .groupBy { em ->
-                val date = Instant.ofEpochMilli(em.measurementWithValues.measurement.timestamp)
-                    .atZone(zone)
-                    .toLocalDate()
-                when (level) {
-                    AggregationLevel.NONE  -> date.toString()
-                    AggregationLevel.DAY   -> date.toString()
-                    AggregationLevel.WEEK  -> {
-                        val wf   = weekFields!!
-                        val week = date.get(wf.weekOfWeekBasedYear())
-                        val year = date.get(wf.weekBasedYear())
-                        "$year-W$week"
-                    }
-                    AggregationLevel.MONTH -> "${date.year}-${date.monthValue}"
-                    AggregationLevel.YEAR  -> "${date.year}"
-                }
+                level.periodKey(em.measurementWithValues.measurement.timestamp, zone, weekFields)
             }
 
         // Build one aggregated entry per group, sorted oldest → newest for diff calculation
         val sortedOldestFirst: List<AggregatedMeasurement> = grouped.values
-            .mapNotNull { group -> buildAggregatedEntry(group, level, zone) }
+            .mapNotNull { group -> buildAggregatedEntry(group, level, zone, weekFields) }
             .sortedBy { it.enriched.measurementWithValues.measurement.timestamp }
 
         // Calculate diff + trend between consecutive periods then reverse to newest → oldest
@@ -132,6 +118,7 @@ class MeasurementAggregationUseCase @Inject constructor() {
         group: List<EnrichedMeasurement>,
         level: AggregationLevel,
         zone: ZoneId,
+        weekFields: WeekFields,
     ): AggregatedMeasurement? {
         if (group.isEmpty()) return null
 
@@ -198,14 +185,14 @@ class MeasurementAggregationUseCase @Inject constructor() {
             measurementWithValuesProjected = emptyList(),
         )
 
-        val (periodStart, periodEnd) = level.periodBounds(minTs, zone)
+        val (periodStart, periodEnd) = level.periodBounds(minTs, zone, weekFields)
 
         return AggregatedMeasurement(
             enriched            = enriched,
             aggregatedFromCount = group.size,
             periodStartMillis   = periodStart,
             periodEndMillis     = periodEnd,
-            periodKey           = level.periodKey(minTs, zone),
+            periodKey           = level.periodKey(minTs, zone, weekFields),
         )
     }
 

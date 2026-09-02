@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -25,6 +26,8 @@ import com.health.openscale.core.utils.LogManager
 import java.util.Calendar
 import java.util.Date
 import java.util.UUID
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 /**
  * SenssunHandler
@@ -198,11 +201,11 @@ class SenssunHandler : ScaleDeviceHandler() {
 
         if (valuesMask == 0x0F) {
             val m = ScaleMeasurement().apply {
-                weight = lastWeight / 10.0f
-                fat = lastFat / 10.0f
-                water = lastHydration / 10.0f
-                bone = lastBone / 10.0f
-                muscle = lastMuscle / 10.0f
+                this[MeasurementType.WEIGHT] = Kg(lastWeight / 10.0f)
+                this[MeasurementType.BODY_FAT] = Percent(lastFat / 10.0f)
+                this[MeasurementType.WATER] = Percent(lastHydration / 10.0f)
+                this[MeasurementType.BONE] = Kg(lastBone / 10.0f)
+                this[MeasurementType.MUSCLE] = Percent(lastMuscle / 10.0f)
                 dateTime = Date()
             }
             publish(m)

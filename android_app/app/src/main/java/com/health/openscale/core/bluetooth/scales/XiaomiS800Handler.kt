@@ -47,12 +47,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.XiaomiS800Lib
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import java.util.Locale
+import com.health.openscale.core.data.Kg
 
 /**
  * Xiaomi Mijia 8-electrode Body Composition Scale S800 (xiaomi.scales.ms116).
@@ -123,7 +125,7 @@ class XiaomiS800Handler : ScaleDeviceHandler() {
 
         val m = ScaleMeasurement().apply {
             dateTime = Date()
-            weight = weightKg
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
             userId = user.id
         }
         publish(m)

@@ -20,15 +20,18 @@ package com.health.openscale.core.usecase
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.InputFieldType
-import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.testutil.Fixtures
 import org.junit.Test
+import java.time.ZoneId
+import java.time.temporal.WeekFields
+import java.util.Locale
 
 class MeasurementAggregationUseCaseTest {
 
     private val useCase = MeasurementAggregationUseCase()
-    private val weight = Fixtures.type(id = 1, key = MeasurementTypeKey.WEIGHT)
+    private val weight = Fixtures.type(id = 1, identity = MeasurementType.WEIGHT.identity)
 
     private fun em(measurementId: Int, timestamp: Long, weightValue: Float): EnrichedMeasurement =
         Fixtures.enriched(
@@ -90,7 +93,7 @@ class MeasurementAggregationUseCaseTest {
 
     private val heartRate = Fixtures.type(
         id = 2,
-        key = MeasurementTypeKey.HEART_RATE,
+        identity = MeasurementType.HEART_RATE.identity,
         inputType = InputFieldType.INT,
     )
 
@@ -146,5 +149,57 @@ class MeasurementAggregationUseCaseTest {
         val aggregated = out[0].enriched.measurementWithValues.values
             .first { it.type.id == weight.id }.value
         assertThat(aggregated.intValue).isNull()
+    }
+
+    // ── Calendar weeks ────────────────────────────────────────────────────────
+
+    private val zone: ZoneId = ZoneId.systemDefault()
+    private val isoWeek: WeekFields = WeekFields.ISO
+    private val usWeek: WeekFields = WeekFields.of(Locale.US)
+
+    @Test
+    fun aggregate_week_groupsBySundayOrMondayDependingOnTheRule() {
+        val input = listOf(
+            em(1, Fixtures.ts(2025, 4, 6), 80f),   // Sunday
+            em(2, Fixtures.ts(2025, 4, 7), 82f),   // Monday
+        )
+
+        assertThat(useCase.aggregate(input, AggregationLevel.WEEK, zone, usWeek)).hasSize(1)
+        assertThat(useCase.aggregate(input, AggregationLevel.WEEK, zone, isoWeek)).hasSize(2)
+    }
+
+    /**
+     * Regression for issue #1454: the entry's period bounds must cover every measurement that
+     * was folded into it, otherwise the drill-down filtered by those bounds shows other rows
+     * than the aggregated row summarised.
+     */
+    @Test
+    fun aggregate_periodBoundsContainEveryMeasurementOfTheirOwnEntry() {
+        val input = (0 until 60).map { day ->
+            em(day + 1, Fixtures.ts(2025, 3, 1) + day * 86_400_000L, 80f + day)
+        }
+
+        for (weekFields in listOf(isoWeek, usWeek)) {
+            for (level in AggregationLevel.entries) {
+                val out = useCase.aggregate(input, level, zone, weekFields)
+
+                assertThat(out.sumOf { it.aggregatedFromCount }).isEqualTo(input.size)
+
+                out.forEach { entry ->
+                    val members = input.filter {
+                        level.periodKey(
+                            it.measurementWithValues.measurement.timestamp, zone, weekFields
+                        ) == entry.periodKey
+                    }
+                    assertThat(members).isNotEmpty()
+                    assertThat(members).hasSize(entry.aggregatedFromCount)
+                    members.forEach { m ->
+                        val t = m.measurementWithValues.measurement.timestamp
+                        assertThat(t).isAtLeast(entry.periodStartMillis)
+                        assertThat(t).isLessThan(entry.periodEndMillis)
+                    }
+                }
+            }
+        }
     }
 }

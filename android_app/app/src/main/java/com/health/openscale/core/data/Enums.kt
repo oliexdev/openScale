@@ -77,11 +77,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import com.health.openscale.R
-import java.time.DayOfWeek
+import com.health.openscale.core.utils.LocaleUtils
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.time.temporal.TemporalAdjusters
 import java.time.temporal.WeekFields
 import java.util.Locale
 
@@ -365,48 +367,6 @@ enum class MeasurementTypeIcon(val resource: IconResource) {
     IC_M_HIVE(IconResource.VectorResource(Icons.Filled.Hive));
 }
 
-enum class MeasurementTypeKey(
-    val id: Int,
-    @param:StringRes val localizedNameResId: Int,
-    val allowedUnitTypes: List<UnitType>,
-    val allowedInputType: List<InputFieldType>
-) {
-    WEIGHT(1, R.string.measurement_type_weight, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    BMI(2, R.string.measurement_type_bmi, listOf(UnitType.NONE), listOf(InputFieldType.FLOAT)),
-    BODY_FAT(3, R.string.measurement_type_body_fat, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    WATER(4, R.string.measurement_type_water, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    MUSCLE(5, R.string.measurement_type_muscle, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    LBM(6, R.string.measurement_type_lbm, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    BONE(7, R.string.measurement_type_bone, listOf(UnitType.KG, UnitType.LB), listOf(InputFieldType.FLOAT)),
-    WAIST(8, R.string.measurement_type_waist, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    WHR(9, R.string.measurement_type_whr, listOf(UnitType.NONE), listOf(InputFieldType.FLOAT)),
-    WHTR(10, R.string.measurement_type_whtr, listOf(UnitType.NONE), listOf(InputFieldType.FLOAT)),
-    HIPS(11, R.string.measurement_type_hips, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    VISCERAL_FAT(12, R.string.measurement_type_visceral_fat, listOf(UnitType.NONE), listOf(InputFieldType.FLOAT)),
-    CHEST(13, R.string.measurement_type_chest, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    THIGH(14, R.string.measurement_type_thigh, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    BICEPS(15, R.string.measurement_type_biceps, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    NECK(16, R.string.measurement_type_neck, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    CALIPER_1(17, R.string.measurement_type_caliper1, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    CALIPER_2(18, R.string.measurement_type_caliper2, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    CALIPER_3(19, R.string.measurement_type_caliper3, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    CALIPER(20, R.string.measurement_type_fat_caliper, listOf(UnitType.PERCENT), listOf(InputFieldType.FLOAT)),
-    BMR(21, R.string.measurement_type_bmr, listOf(UnitType.KCAL), listOf(InputFieldType.FLOAT)),
-    TDEE(22, R.string.measurement_type_tdee, listOf(UnitType.KCAL), listOf(InputFieldType.FLOAT)),
-    HEART_RATE(23, R.string.measurement_type_heart_rate, listOf(UnitType.BPM), listOf(InputFieldType.INT)),
-    CALORIES(24, R.string.measurement_type_calories, listOf(UnitType.KCAL), listOf(InputFieldType.FLOAT)),
-    DATE(25, R.string.measurement_type_date, listOf(UnitType.NONE), listOf(InputFieldType.DATE)),
-    TIME(26, R.string.measurement_type_time, listOf(UnitType.NONE), listOf(InputFieldType.TIME)),
-    COMMENT(27, R.string.measurement_type_comment, listOf(UnitType.NONE), listOf(InputFieldType.TEXT)),
-    USER(28, R.string.measurement_type_user, listOf(UnitType.NONE), listOf(InputFieldType.USER)),
-    IMPEDANCE(29, R.string.measurement_type_impedance, listOf(UnitType.OHM), listOf(InputFieldType.FLOAT)),
-    IMPEDANCE_LOW(30, R.string.measurement_type_impedance_low, listOf(UnitType.OHM), listOf(InputFieldType.FLOAT)),
-    ECW(31, R.string.measurement_type_ecw, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    ICW(32, R.string.measurement_type_icw, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    PROTEIN(33, R.string.measurement_type_protein, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    BCM(34, R.string.measurement_type_bcm, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    CUSTOM(99, R.string.measurement_type_custom_default_name, UnitType.entries.toList(), listOf(InputFieldType.FLOAT, InputFieldType.INT, InputFieldType.TEXT, InputFieldType.DATE, InputFieldType.TIME));
-}
 
 
 enum class UnitType(val displayName: String) {
@@ -425,6 +385,17 @@ enum class UnitType(val displayName: String) {
         return this == KG || this == LB || this == ST
     }
 
+    /**
+     * The units a value in this unit can be converted into without changing what it means.
+     * PERCENT is alone in its family on purpose: turning a percentage into a mass needs to
+     * know what it is a percentage *of*.
+     */
+    fun convertibleUnits(): List<UnitType> = when {
+        isWeightUnit() -> listOf(KG, LB, ST)
+        this == CM || this == INCH -> listOf(CM, INCH)
+        else -> listOf(this)
+    }
+
     fun toWeightUnit(): WeightUnit {
         return when (this) {
             LB -> WeightUnit.LB
@@ -432,6 +403,72 @@ enum class UnitType(val displayName: String) {
             else -> WeightUnit.KG
         }
     }
+}
+
+/**
+ * A raw scale value whose unit is part of its type. Every float-valued builtin
+ * [MeasurementType.Key] binds one of these ([Kg], [Percent], [Cm], [Kcal], [Ohm]), so a
+ * handler cannot set a value without stating the unit it is in — `m[WEIGHT] = Kg(72.5f)`
+ * compiles, `m[WEIGHT] = 72.5f` and `m[WEIGHT] = Percent(20f)` do not. The BLE connector
+ * unwraps centrally and converts to the unit the user configured.
+ *
+ * The companions carry the conversions a handler needs when its scale reports something
+ * else (`Kg.from(native, user.scaleUnit)`, `Cm.fromInch(...)`), so the right way is also
+ * the discoverable way. `toString()` prints just the number to keep log lines readable.
+ */
+sealed interface UnitValue {
+    val value: Float
+}
+
+/** A mass in kilograms — the delivery unit for WEIGHT, LBM, BONE and `deviceKg` keys. */
+@JvmInline
+value class Kg(override val value: Float) : UnitValue {
+    override fun toString(): String = value.toString()
+
+    companion object {
+        /** Converts from the unit the scale natively reports in (kg/lb/st). */
+        fun from(value: Float, unit: WeightUnit): Kg =
+            Kg(com.health.openscale.core.utils.ConverterUtils.toKilogram(value, unit))
+
+        fun fromLb(lb: Float): Kg = from(lb, WeightUnit.LB)
+
+        /** Chinese catty (市斤), used natively by some Asian scales. */
+        fun fromJin(jin: Float): Kg = Kg(jin * 0.5f)
+    }
+}
+
+/** A share of body weight in percent — BODY_FAT, WATER, MUSCLE, PROTEIN, `devicePercent`. */
+@JvmInline
+value class Percent(override val value: Float) : UnitValue {
+    override fun toString(): String = value.toString()
+}
+
+/** A length in centimeters — the circumference and caliper keys. */
+@JvmInline
+value class Cm(override val value: Float) : UnitValue {
+    override fun toString(): String = value.toString()
+
+    companion object {
+        fun fromInch(inch: Float): Cm = Cm(inch * 2.54f)
+    }
+}
+
+/** An energy in kilocalories — BMR (and CALORIES). */
+@JvmInline
+value class Kcal(override val value: Float) : UnitValue {
+    override fun toString(): String = value.toString()
+}
+
+/** An electrical resistance in ohms — the impedance keys. */
+@JvmInline
+value class Ohm(override val value: Float) : UnitValue {
+    override fun toString(): String = value.toString()
+}
+
+/** A heart rate in whole beats per minute. */
+@JvmInline
+value class Bpm(val value: Int) {
+    override fun toString(): String = value.toString()
 }
 
 enum class InputFieldType {
@@ -457,7 +494,48 @@ enum class TimeRangeFilter(@param:StringRes val displayNameResId: Int) {
     fun getDisplayName(context: Context): String {
         return context.getString(displayNameResId)
     }
+
+    /**
+     * Resolves this filter into the inclusive epoch-millisecond bounds the measurement pipeline
+     * filters on. `null` on either side means that side is unbounded.
+     *
+     * Single source of truth for the conversion: both the data pipeline (SharedViewModel) and the
+     * UI (filter title, period chart) call it, so the label a chart carries cannot drift from the
+     * data the chart shows.
+     *
+     * [customStartMillis] and [customEndMillis] are local start-of-day millis as written by the
+     * date range picker, `0L` meaning "not set". A [CUSTOM] range with a start but no end stays
+     * open-ended and keeps picking up new measurements as they arrive - that is what makes a fixed
+     * starting point (the day a diet began, say) useful over time.
+     *
+     * The rolling ranges snap their start to local midnight and leave the end open, so a
+     * measurement dated slightly in the future stays visible.
+     */
+    fun resolveBounds(
+        customStartMillis: Long = 0L,
+        customEndMillis: Long = 0L,
+        zone: ZoneId = ZoneId.systemDefault(),
+        today: LocalDate = LocalDate.now(zone),
+    ): Pair<Long?, Long?> = when (this) {
+        ALL_DAYS      -> null to null
+        LAST_7_DAYS   -> today.minusDays(7).startOfDayMillis(zone) to null
+        LAST_30_DAYS  -> today.minusDays(30).startOfDayMillis(zone) to null
+        LAST_365_DAYS -> today.minusDays(365).startOfDayMillis(zone) to null
+        CUSTOM        -> {
+            val start = customStartMillis.takeIf { it > 0L }
+            // An unset end is a deliberate choice, not missing input: the range runs up to today
+            // and stays open for whatever is measured after it.
+            val end = customEndMillis.takeIf { it > 0L }?.let { endDayStart ->
+                Instant.ofEpochMilli(endDayStart).atZone(zone).toLocalDate()
+                    .plusDays(1).startOfDayMillis(zone) - 1
+            }
+            start to end
+        }
+    }
 }
+
+private fun LocalDate.startOfDayMillis(zone: ZoneId): Long =
+    atStartOfDay(zone).toInstant().toEpochMilli()
 
 enum class AggregationLevel(@param:StringRes val displayNameResId: Int) {
     NONE(R.string.aggregation_level_none),
@@ -476,16 +554,24 @@ enum class AggregationLevel(@param:StringRes val displayNameResId: Int) {
      * as epoch milliseconds.
      *
      * For [NONE] and [DAY] the period is a single calendar day.
+     *
+     * [weekFields] must be the same rule that [periodKey] and [periodLabel] are given —
+     * a [WEEK] period bounded by a different first-day-of-week than the one used to group
+     * measurements would not contain its own members (see issue #1454).
      */
     fun periodBounds(
         timestamp: Long,
         zone: ZoneId = ZoneId.systemDefault(),
+        weekFields: WeekFields = LocaleUtils.systemWeekFields(),
     ): Pair<Long, Long> {
         val date = Instant.ofEpochMilli(timestamp).atZone(zone).toLocalDate()
         val (start, end) = when (this) {
             NONE,
             DAY   -> date to date.plusDays(1)
-            WEEK  -> { val mon = date.with(DayOfWeek.MONDAY); mon to mon.plusWeeks(1) }
+            WEEK  -> {
+                val first = date.with(TemporalAdjusters.previousOrSame(weekFields.firstDayOfWeek))
+                first to first.plusWeeks(1)
+            }
             MONTH -> { val f = date.withDayOfMonth(1); f to f.plusMonths(1) }
             YEAR  -> { val f = date.withDayOfYear(1); f to f.plusYears(1) }
         }
@@ -494,42 +580,50 @@ enum class AggregationLevel(@param:StringRes val displayNameResId: Int) {
     }
 
     /**
-     * Returns a stable, locale-independent key for the period containing [timestamp].
+     * Returns a key identifying the period containing [timestamp].
      * Suitable as a LazyColumn item key or Map key.
      *
      * Examples: "2025-04-07" (DAY/NONE), "2025-W15" (WEEK), "2025-4" (MONTH), "2025" (YEAR).
+     *
+     * Stable for a given [zone] and [weekFields]; the [WEEK] key depends on the week rule and
+     * therefore changes if the device region does. Nothing persists it — it lives in memory for
+     * one aggregation pass — and a locale change recreates the activity, so that is harmless.
+     * It is not a durable identifier and must not be written to disk or exported.
      */
     fun periodKey(
         timestamp: Long,
         zone: ZoneId = ZoneId.systemDefault(),
+        weekFields: WeekFields = LocaleUtils.systemWeekFields(),
     ): String {
         val date = Instant.ofEpochMilli(timestamp).atZone(zone).toLocalDate()
         return when (this) {
             NONE,
             DAY   -> date.toString()
-            WEEK  -> {
-                val wf = WeekFields.of(Locale.getDefault())
-                "${date.get(wf.weekBasedYear())}-W${date.get(wf.weekOfWeekBasedYear())}"
-            }
+            WEEK  -> "${date.get(weekFields.weekBasedYear())}-W${date.get(weekFields.weekOfWeekBasedYear())}"
             MONTH -> "${date.year}-${date.monthValue}"
             YEAR  -> "${date.year}"
         }
     }
 
     /**
-     * Returns a human-readable, locale-sensitive label for the period containing [timestamp].
+     * Returns a human-readable label for the period containing [timestamp].
      *
-     * Intentionally separate from [periodKey] — labels are locale-dependent and must
-     * not be used as stable identifiers.
+     * [locale] only drives presentation — month names, date style. The week *identity* comes
+     * from [weekFields], the same rule [periodKey] and [periodBounds] use, so the number shown
+     * always belongs to the period the row actually covers.
      *
      * @param calendarWeekAbbrev Localised abbreviation for "calendar week" (e.g. "CW" / "KW").
      *                           Only used for [WEEK].
+     * @param short              Renders [MONTH] as "Apr 2025" instead of "April 2025", for
+     *                           narrow layouts such as the table's period column.
      */
     fun periodLabel(
         timestamp: Long,
         calendarWeekAbbrev: String,
         locale: Locale = Locale.getDefault(),
         zone: ZoneId = ZoneId.systemDefault(),
+        weekFields: WeekFields = LocaleUtils.systemWeekFields(),
+        short: Boolean = false,
     ): String {
         val date = Instant.ofEpochMilli(timestamp).atZone(zone).toLocalDate()
         return when (this) {
@@ -537,11 +631,12 @@ enum class AggregationLevel(@param:StringRes val displayNameResId: Int) {
             DAY   -> date.format(
                 DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
             )
-            WEEK  -> {
-                val wf = WeekFields.of(locale)
-                "${date.get(wf.weekBasedYear())} – $calendarWeekAbbrev ${date.get(wf.weekOfWeekBasedYear())}"
-            }
-            MONTH -> date.format(DateTimeFormatter.ofPattern("MMMM yyyy", locale))
+            WEEK  ->
+                "${date.get(weekFields.weekBasedYear())} – " +
+                    "$calendarWeekAbbrev ${date.get(weekFields.weekOfWeekBasedYear())}"
+            MONTH -> date.format(
+                DateTimeFormatter.ofPattern(if (short) "MMM yyyy" else "MMMM yyyy", locale)
+            )
             YEAR  -> date.year.toString()
         }
     }

@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -27,6 +28,8 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.floor
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 class CustomOpenScaleHandler : ScaleDeviceHandler() {
 
@@ -194,10 +197,10 @@ class CustomOpenScaleHandler : ScaleDeviceHandler() {
 
             val m = ScaleMeasurement().apply {
                 dateTime = whenDate
-                this.weight = weight
-                this.fat = fat
-                this.water = water
-                this.muscle = muscle
+                this[MeasurementType.WEIGHT] = Kg(weight)
+                this[MeasurementType.BODY_FAT] = Percent(fat)
+                this[MeasurementType.WATER] = Percent(water)
+                this[MeasurementType.MUSCLE] = Percent(muscle)
             }
 
             publish(m)

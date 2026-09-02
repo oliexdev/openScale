@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import android.bluetooth.le.ScanResult
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.ActivityLevel
@@ -27,6 +28,8 @@ import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.ConverterUtils
 import java.util.UUID
 import kotlin.math.roundToInt
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 /**
  * Excelvan CF36xBLE (a.k.a. "Electronic Scale") GATT handler.
@@ -187,16 +190,16 @@ class ExcelvanCF36xHandler : ScaleDeviceHandler() {
         val weightKg = ConverterUtils.toKilogram(weightDeviceUnit, user.scaleUnit)
 
         val m = ScaleMeasurement().apply {
-            weight = weightKg
-            this.fat = fat
-            this.muscle = muscle
-            this.water = water
-            this.bone = bone
-            this.visceralFat = visceral
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
+            this[MeasurementType.BODY_FAT] = Percent(fat)
+            this[MeasurementType.MUSCLE] = Percent(muscle)
+            this[MeasurementType.WATER] = Percent(water)
+            this[MeasurementType.BONE] = Kg(bone)
+            this[MeasurementType.VISCERAL_FAT] = visceral
             // timestamp: device does not provide; let app fill "now" on save if needed
         }
 
-        logD("publish kg=${m.weight} fat=${m.fat} water=${m.water} muscle=${m.muscle} bone=${m.bone} visc=${m.visceralFat}")
+        logD("publish kg=${m[MeasurementType.WEIGHT]} fat=${m[MeasurementType.BODY_FAT]} water=${m[MeasurementType.WATER]} muscle=${m[MeasurementType.MUSCLE]} bone=${m[MeasurementType.BONE]} visc=${m[MeasurementType.VISCERAL_FAT]}")
         publish(m)
     }
 

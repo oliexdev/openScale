@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -25,6 +26,7 @@ import com.health.openscale.core.utils.LogManager
 import java.util.Calendar
 import java.util.Date
 import java.util.UUID
+import com.health.openscale.core.data.Kg
 
 /**
  * Handler for RENPHO ES-WBE28 (GATT; mix of standard and vendor-specific behavior).
@@ -191,7 +193,7 @@ class RenphoHandler : ScaleDeviceHandler() {
 
         LogManager.d(TAG, "RENPHO weight frame → raw=$raw, kg=$weightKg")
 
-        val m = ScaleMeasurement().apply { this.weight = weightKg }
+        val m = ScaleMeasurement().apply { this[MeasurementType.WEIGHT] = Kg(weightKg) }
         publish(m)
     }
 

@@ -19,10 +19,11 @@ package com.health.openscale.core.usecase
 
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.WeightUnit
+import android.content.Context
 import com.health.openscale.core.database.DatabaseRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
 import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.flow.first
@@ -39,18 +40,120 @@ import javax.inject.Singleton
  */
 @Singleton
 class MeasurementTypeCrudUseCases @Inject constructor(
-    private val repository: DatabaseRepository
+    private val repository: DatabaseRepository,
+    @param:ApplicationContext private val appContext: Context
 ) {
     private val TAG = "MeasurementTypeCrudUseCase"
 
-    /** Adds a new measurement type. */
+    /**
+     * Adds a new measurement type. A user-created type (the editor constructs rows with a
+     * blank identity) gets its frozen `user.*` identity assigned here.
+     */
     suspend fun add(type: MeasurementType): Result<Long> = runCatching {
-        repository.insertMeasurementType(type)
+        repository.insertMeasurementType(withIdentity(type, existing = null))
     }
 
-    /** Updates a measurement type without touching existing values. */
+    /**
+     * Updates a measurement type without touching existing values.
+     *
+     * The editor rebuilds the entity from scratch on save, so the fields it does not show
+     * — the identity and isInternal — are restored from the stored row here; without this,
+     * every edit would silently clear them.
+     */
     suspend fun update(type: MeasurementType): Result<Unit> = runCatching {
-        repository.updateMeasurementType(type)
+        val existing = repository.getMeasurementTypeById(type.id)
+        repository.updateMeasurementType(
+            withIdentity(type, existing).copy(isInternal = existing?.isInternal ?: type.isInternal)
+        )
+    }
+
+    /**
+     * Returns the measurement type backing a handler-declared [key], creating it on
+     * first use. Called while a measurement is being saved, so it never fails the
+     * measurement: on any problem it returns null and the caller drops just that value.
+     *
+     * The lookup goes through the identity, never the display name, so the type is still
+     * found after the user renamed it, switched the app language or changed its unit.
+     */
+    suspend fun resolveOrCreate(key: MeasurementType.Key<*>): MeasurementType? = runCatching {
+        repository.getMeasurementTypeByIdentity(key.identity)
+            ?.let { return@runCatching it }
+
+        // Create only in the ble.* namespace. Predefined rows come from seeding and the
+        // migrations; creating one here would mint a half-defined builtin (localized name
+        // stored, end-of-list displayOrder — or, for an identity the registry does not
+        // know, an unrenamable, undeletable ghost). The Key constructor cannot be sealed
+        // against the module, so this is the enforcement, not the factories.
+        if (!key.identity.startsWith(MeasurementType.DEVICE_PREFIX)) {
+            LogManager.e(
+                TAG,
+                "Refusing to create '${key.identity}': only ble.* keys materialize on first use."
+            )
+            return@runCatching null
+        }
+
+        val displayOrder = repository.getAllMeasurementTypes().first().size + 1
+        val newType = MeasurementType(
+            identity = key.identity,
+            name = appContext.getString(key.nameResId),
+            color = key.defaultColor,
+            icon = key.defaultIcon,
+            unit = key.defaultUnit,
+            inputType = key.inputType,
+            displayOrder = displayOrder,
+            isDerived = key.isDerived,
+            isEnabled = key.defaultEnabled,
+            isPinned = key.defaultPinned,
+            isOnRightYAxis = key.defaultOnRightYAxis,
+            isInternal = key.isInternal
+        )
+        LogManager.i(TAG, "Creating measurement type for ${key.identity}")
+        newType.copy(id = repository.insertMeasurementType(newType).toInt())
+    }.recoverCatching { error ->
+        // Lost the race on the unique index against a concurrent insert: take the winner.
+        repository.getMeasurementTypeByIdentity(key.identity) ?: throw error
+    }.getOrElse { error ->
+        LogManager.e(TAG, "Could not resolve key ${key.identity}", error)
+        null
+    }
+
+    /**
+     * The identity a row must carry, as a ranked list of rules.
+     *
+     * Identities are frozen: a builtin or ble.* one is never changed — the ble.* identity
+     * is the handler's only link to its own values, and moving it would create a second
+     * type at the next weigh-in. A user.* identity is frozen too, but the editor may
+     * replace it outright: that is the CSV column field, and the user changing it
+     * deliberately is very different from a rename silently invalidating earlier exports.
+     * Only a row with no identity at all gets one derived from its display name.
+     */
+    private suspend fun withIdentity(
+        incoming: MeasurementType,
+        existing: MeasurementType?
+    ): MeasurementType {
+        val current = existing?.identity?.takeIf { it.isNotBlank() }
+        val identity = when {
+            current != null && !existing.isUserOwned() -> current
+            incoming.identity.startsWith(MeasurementType.USER_PREFIX) &&
+                (current == null || existing.isUserOwned()) -> incoming.identity
+            current != null -> current
+            // An explicit identity is honoured only when it is a user.* one or belongs to
+            // the registry (re-seeding a predefined row). Anything else — a smuggled ble.*
+            // or an unknown builtin.* — is ignored and the type gets a fresh user identity,
+            // so no caller can claim a foreign namespace through the editor path.
+            incoming.identity.isNotBlank() &&
+                (incoming.identity.startsWith(MeasurementType.USER_PREFIX) ||
+                    MeasurementType.keyOf(incoming.identity) != null) -> incoming.identity
+            else -> {
+                val taken = repository.getAllMeasurementTypes().first()
+                    .filter { it.id != incoming.id }
+                    .filter { it.identity.isNotBlank() }
+                    .map { MeasurementType.identityColumnKey(it.identity) }
+                    .toSet()
+                MeasurementType.userIdentityFor(incoming.name, taken)
+            }
+        }
+        return incoming.copy(identity = identity)
     }
 
     /** All measurement types (predefined + custom). Used by the sync layer to build the
@@ -91,8 +194,11 @@ class MeasurementTypeCrudUseCases @Inject constructor(
         val oldUnit = originalType.unit
         val newUnit = updatedType.unit
 
-        // Update the type definition first.
+        // Update the type definition first — through the same identity rules as update(),
+        // so an edited CSV column survives a simultaneous unit change.
+        val identity = withIdentity(updatedType, originalType).identity
         val finalType = originalType.copy(
+            identity = identity,
             name = updatedType.name,
             color = updatedType.color,
             icon = updatedType.icon,
@@ -122,7 +228,7 @@ class MeasurementTypeCrudUseCases @Inject constructor(
         }
 
         // Resolve the global WEIGHT type (needed for percent<->absolute conversions)
-        val weightType = repository.getAllMeasurementTypes().first().find { it.key == MeasurementTypeKey.WEIGHT }
+        val weightType = repository.getAllMeasurementTypes().first().find { it.identity == MeasurementType.WEIGHT.identity }
 
         var updatedCount = 0
         for (mv in allValuesForType) {
@@ -130,9 +236,9 @@ class MeasurementTypeCrudUseCases @Inject constructor(
             var converted: Float?
 
             // Percent <-> absolute conversions for composition-like metrics
-            if (typeKey == MeasurementTypeKey.BODY_FAT ||
-                typeKey == MeasurementTypeKey.WATER ||
-                typeKey == MeasurementTypeKey.MUSCLE
+            if (typeKey == MeasurementType.BODY_FAT ||
+                typeKey == MeasurementType.WATER ||
+                typeKey == MeasurementType.MUSCLE
             ) {
                 if (weightType == null) {
                     // No weight type found; cannot compute percent-based conversions.

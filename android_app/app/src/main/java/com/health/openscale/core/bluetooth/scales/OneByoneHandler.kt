@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.OneByoneLib
@@ -27,6 +28,9 @@ import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Calendar
 import java.util.UUID
 import kotlin.math.max
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * OneByone (classic) handler (Service 0xFFF0, notify on 0xFFF4, write cmds on 0xFFF1).
@@ -214,20 +218,20 @@ class OneByoneHandler : ScaleDeviceHandler() {
         val m = ScaleMeasurement().apply {
             userId = user.id
             dateTime = if (hasTimestamp) whenCal.time else Calendar.getInstance().time
-            weight = weightKg
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
             // Store the raw impedance so body composition can be recomputed later.
-            impedance = impedanceOhm.toDouble()
+            this[MeasurementType.IMPEDANCE] = Ohm(impedanceOhm.toFloat())
         }
 
         try {
             // Derivations
-            val fatPct = lib.getBodyFat(m.weight, impedanceOhm)
-            m.fat = fatPct
-            m.water = lib.getWater(fatPct)
-            m.bone = lib.getBoneMass(m.weight, impedanceOhm)
-            m.visceralFat = lib.getVisceralFat(m.weight)
-            m.muscle = lib.getMuscle(m.weight, impedanceOhm)
-            m.lbm = lib.getLBM(m.weight, m.fat)
+            val fatPct = lib.getBodyFat((m[MeasurementType.WEIGHT]?.value ?: 0f), impedanceOhm)
+            m[MeasurementType.BODY_FAT] = Percent(fatPct)
+            m[MeasurementType.WATER] = Percent(lib.getWater(fatPct))
+            m[MeasurementType.BONE] = Kg(lib.getBoneMass((m[MeasurementType.WEIGHT]?.value ?: 0f), impedanceOhm))
+            m[MeasurementType.VISCERAL_FAT] = lib.getVisceralFat((m[MeasurementType.WEIGHT]?.value ?: 0f))
+            m[MeasurementType.MUSCLE] = Percent(lib.getMuscle((m[MeasurementType.WEIGHT]?.value ?: 0f), impedanceOhm))
+            m[MeasurementType.LBM] = Kg(lib.getLBM((m[MeasurementType.WEIGHT]?.value ?: 0f), (m[MeasurementType.BODY_FAT]?.value ?: 0f)))
 
             publish(m)
         } catch (t: Throwable) {

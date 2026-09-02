@@ -18,12 +18,17 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import java.util.UUID
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Handler for the **Cult Smart Scale Pro** (Espressif-based BLE scale, 8-electrode BIA).
@@ -258,7 +263,7 @@ class CultSmartScaleProHandler : ScaleDeviceHandler() {
     private fun publishMeasurement(withBodyComp: Boolean, user: ScaleUser?) {
         val m = ScaleMeasurement().apply {
             dateTime = Date()
-            weight   = pendingWeight
+            this[MeasurementType.WEIGHT] = Kg(pendingWeight)
         }
 
         if (withBodyComp && user != null && pendingImpedance > 0.0) {
@@ -270,22 +275,22 @@ class CultSmartScaleProHandler : ScaleDeviceHandler() {
                 impedance  = pendingImpedance
             )
 
-            m.fat        = lib.totalFatPercentage.toFloat().coerceIn(0f, 75f)
-            m.water      = lib.totalBodyWaterPercentage.toFloat().coerceIn(0f, 80f)
-            m.muscle     = lib.skeletalMusclePercentage.toFloat().coerceIn(0f, 100f)
-            m.bone       = lib.boneMassKg.toFloat().coerceIn(0f, 10f)
-            m.lbm        = lib.fatFreeMassKg.toFloat().coerceIn(0f, 150f)
-            m.bmr        = lib.basalMetabolicRate.toFloat().coerceIn(0f, 5000f)
-            m.impedance  = pendingImpedance
+            m[MeasurementType.BODY_FAT] = Percent(lib.totalFatPercentage.toFloat().coerceIn(0f, 75f))
+            m[MeasurementType.WATER] = Percent(lib.totalBodyWaterPercentage.toFloat().coerceIn(0f, 80f))
+            m[MeasurementType.MUSCLE] = Percent(lib.skeletalMusclePercentage.toFloat().coerceIn(0f, 100f))
+            m[MeasurementType.BONE] = Kg(lib.boneMassKg.toFloat().coerceIn(0f, 10f))
+            m[MeasurementType.LBM] = Kg(lib.fatFreeMassKg.toFloat().coerceIn(0f, 150f))
+            m[MeasurementType.BMR] = Kcal(lib.basalMetabolicRate.toFloat().coerceIn(0f, 5000f))
+            m[MeasurementType.IMPEDANCE] = Ohm(pendingImpedance.toFloat())
 
             logI(
                 "body comp (StandardImpedanceLib, impedance=${pendingImpedance}Ω): " +
-                "fat=${m.fat}% water=${m.water}% muscle=${m.muscle}% " +
-                "bone=${m.bone}kg lbm=${m.lbm}kg bmr=${m.bmr}kcal"
+                "fat=${m[MeasurementType.BODY_FAT]}% water=${m[MeasurementType.WATER]}% muscle=${m[MeasurementType.MUSCLE]}% " +
+                "bone=${m[MeasurementType.BONE]}kg lbm=${m[MeasurementType.LBM]}kg bmr=${m[MeasurementType.BMR]}kcal"
             )
         }
 
-        logI("publishing → weight=${m.weight}kg fat=${m.fat}% water=${m.water}% muscle=${m.muscle}% bmr=${m.bmr}kcal impedance=${m.impedance}Ω")
+        logI("publishing → weight=${m[MeasurementType.WEIGHT]}kg fat=${m[MeasurementType.BODY_FAT]}% water=${m[MeasurementType.WATER]}% muscle=${m[MeasurementType.MUSCLE]}% bmr=${m[MeasurementType.BMR]}kcal impedance=${m[MeasurementType.IMPEDANCE]}Ω")
         publish(m)
     }
 

@@ -18,12 +18,14 @@
 package com.health.openscale.core.bluetooth.scales
 
 import android.bluetooth.le.ScanResult
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.LogManager
 import java.util.Date
 import java.util.UUID
+import com.health.openscale.core.data.Kg
 
 /**
  * Handler for QN-lineage scales operating in non-connectable broadcast mode
@@ -146,7 +148,7 @@ class QNHandlerBroadcast : ScaleDeviceHandler() {
 
         val measurement = ScaleMeasurement().apply {
             userId   = user.id
-            weight   = weightKg
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
             dateTime = Date()
         }
 

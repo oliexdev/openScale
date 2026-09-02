@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.WeightUnit
@@ -26,6 +27,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import com.health.openscale.core.data.Kg
 
 /**
  * Runstar R5 handler.
@@ -138,7 +140,7 @@ class RunstarR5Handler : ScaleDeviceHandler() {
 
                 val measurement = ScaleMeasurement().apply {
                     dateTime = Date()
-                    weight = weightKg
+                    this[MeasurementType.WEIGHT] = Kg(weightKg)
                 }
                 publish(measurement)
                 lastPublishedWeightRaw = rawWeight

@@ -148,6 +148,10 @@ android {
         // JVM unit tests touch android.util.Log (via LogManager); return defaults
         // instead of throwing "not mocked" so pure-logic tests can run on the JVM.
         unitTests.isReturnDefaultValues = true
+        // Hand the merged resource table to Robolectric, so code that resolves a string
+        // resource (e.g. the display name of a scale-contributed measurement type) can be
+        // tested against the real string instead of a stub.
+        unitTests.isIncludeAndroidResources = true
     }
 }
 

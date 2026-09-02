@@ -19,16 +19,18 @@ package com.health.openscale.core.usecase
 
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.testutil.Fixtures
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class MeasurementFilterUseCasesTest {
 
     private val useCase = MeasurementFilterUseCases()
-    private val weight = Fixtures.type(id = 1, key = MeasurementTypeKey.WEIGHT)
-    private val fat = Fixtures.type(id = 2, key = MeasurementTypeKey.BODY_FAT)
+    private val weight = Fixtures.type(id = 1, identity = MeasurementType.WEIGHT.identity)
+    private val fat = Fixtures.type(id = 2, identity = MeasurementType.BODY_FAT.identity)
 
     private fun emWith(measurementId: Int, vararg types: MeasurementType): EnrichedMeasurement =
         Fixtures.enriched(
@@ -57,5 +59,46 @@ class MeasurementFilterUseCasesTest {
         val out = useCase.filterByTypes(input, setOf(fat.id))
         assertThat(out).hasSize(1)
         assertThat(out[0].measurementWithValues.measurement.id).isEqualTo(2)
+    }
+
+    /** Days 1..5 of April 2025, at noon each. */
+    private val fiveDays = (1..5).map { emWith(it, weight) }
+
+    private suspend fun timeFilteredIds(start: Long?, end: Long?): List<Int> =
+        useCase.getTimeFiltered(flowOf(fiveDays), start, end)
+            .first()
+            .map { it.measurementWithValues.measurement.id }
+
+    @Test
+    fun getTimeFiltered_bothBoundsNull_returnsAll() = runTest {
+        assertThat(timeFilteredIds(null, null)).containsExactly(1, 2, 3, 4, 5).inOrder()
+    }
+
+    @Test
+    fun getTimeFiltered_openEnd_keepsEverythingFromTheStartOnwards() = runTest {
+        assertThat(timeFilteredIds(Fixtures.ts(2025, 4, 3, hour = 0), null))
+            .containsExactly(3, 4, 5).inOrder()
+    }
+
+    @Test
+    fun getTimeFiltered_openStart_keepsEverythingUpToTheEnd() = runTest {
+        assertThat(timeFilteredIds(null, Fixtures.ts(2025, 4, 3, hour = 23)))
+            .containsExactly(1, 2, 3).inOrder()
+    }
+
+    @Test
+    fun getTimeFiltered_bothBounds_keepsTheEnclosedRange() = runTest {
+        assertThat(
+            timeFilteredIds(
+                Fixtures.ts(2025, 4, 2, hour = 0),
+                Fixtures.ts(2025, 4, 4, hour = 23),
+            )
+        ).containsExactly(2, 3, 4).inOrder()
+    }
+
+    @Test
+    fun getTimeFiltered_boundsAreInclusive() = runTest {
+        val exactly = Fixtures.ts(2025, 4, 3)
+        assertThat(timeFilteredIds(exactly, exactly)).containsExactly(3)
     }
 }

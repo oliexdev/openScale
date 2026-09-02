@@ -17,10 +17,9 @@
  */
 package com.health.openscale.core.usecase
 
-import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.data.EvaluationState
-import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.service.MeasurementEvaluator.evalBmi
 import com.health.openscale.core.service.MeasurementEvaluator.evalBodyFat
@@ -69,11 +68,11 @@ class MeasurementEvaluationUseCases @Inject constructor() {
             userEvaluationContext.birthDateMillis
         )
 
-        val typeKey = type.key
+        val key = type.key
         val unit = type.unit
 
-        return when (typeKey) {
-            MeasurementTypeKey.WEIGHT   -> {
+        return when (key) {
+            MeasurementType.WEIGHT   -> {
                 val weightKg = ConverterUtils.convertFloatValueUnit(value, unit, UnitType.KG)
                 evalWeightAgainstTargetRange(
                     weightKg = weightKg,
@@ -82,30 +81,30 @@ class MeasurementEvaluationUseCases @Inject constructor() {
                     gender = userEvaluationContext.gender
                 )
             }
-            MeasurementTypeKey.BODY_FAT -> {
+            MeasurementType.BODY_FAT -> {
                 val fatPercent = ConverterUtils.convertFloatValueUnit(value, unit, UnitType.PERCENT)
                 evalBodyFat(fatPercent, ageYears, userEvaluationContext.gender)
             }
-            MeasurementTypeKey.WATER    -> {
+            MeasurementType.WATER    -> {
                 val waterPercent = ConverterUtils.convertFloatValueUnit(value, unit, UnitType.PERCENT)
                 evalWater(waterPercent, ageYears, userEvaluationContext.gender)
             }
-            MeasurementTypeKey.MUSCLE   -> {
+            MeasurementType.MUSCLE   -> {
                 val musclePercent = ConverterUtils.convertFloatValueUnit(value, unit, UnitType.PERCENT)
                 evalMuscle(musclePercent, ageYears, userEvaluationContext.gender)
             }
-            MeasurementTypeKey.LBM      -> {
+            MeasurementType.LBM      -> {
                 val weightKg = ConverterUtils.convertFloatValueUnit(value, unit, UnitType.KG)
                 evalLBM(weightKg, ageYears, userEvaluationContext.gender)
             }
-            MeasurementTypeKey.WAIST    -> {
+            MeasurementType.WAIST    -> {
                 val waistCm = ConverterUtils.convertFloatValueUnit(value, unit, UnitType.CM)
                 evalWaistCm(waistCm, ageYears, userEvaluationContext.gender)
             }
-            MeasurementTypeKey.BMI      -> evalBmi(value, ageYears, userEvaluationContext.gender)
-            MeasurementTypeKey.WHTR     -> evalWHtR(value, ageYears)
-            MeasurementTypeKey.WHR      -> evalWHR(value, ageYears, userEvaluationContext.gender)
-            MeasurementTypeKey.VISCERAL_FAT -> evalVisceralFat(value, ageYears)
+            MeasurementType.BMI      -> evalBmi(value, ageYears, userEvaluationContext.gender)
+            MeasurementType.WHTR     -> evalWHtR(value, ageYears)
+            MeasurementType.WHR      -> evalWHR(value, ageYears, userEvaluationContext.gender)
+            MeasurementType.VISCERAL_FAT -> evalVisceralFat(value, ageYears)
             else -> null
         }
     }
@@ -117,15 +116,15 @@ class MeasurementEvaluationUseCases @Inject constructor() {
      * incorrect values (e.g., sensor glitches, unit mix-ups) before attempting
      * a proper evaluation. The ranges are intentionally wide.
      *
-     * @param typeKey The measurement type to check.
-     * @return A closed percent range [min .. max] if the metric is percentage-based and supported,
+     * @param key The measurement type to check.
+     * @return A closed percent range [min .. max] if the type is percentage-based and supported,
      *         or `null` if no generic plausibility range is defined for this type.
      */
-    fun plausiblePercentRangeFor(typeKey: MeasurementTypeKey): ClosedFloatingPointRange<Float>? =
-        when (typeKey) {
-            MeasurementTypeKey.WATER    -> 35f..75f
-            MeasurementTypeKey.BODY_FAT -> 3f..70f
-            MeasurementTypeKey.MUSCLE   -> 15f..60f
+    fun plausiblePercentRangeFor(key: MeasurementType.Key<*>?): ClosedFloatingPointRange<Float>? =
+        when (key) {
+            MeasurementType.WATER    -> 35f..75f
+            MeasurementType.BODY_FAT -> 3f..70f
+            MeasurementType.MUSCLE   -> 15f..60f
             else -> null
         }
 }

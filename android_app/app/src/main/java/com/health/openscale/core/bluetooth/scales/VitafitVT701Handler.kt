@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
@@ -27,6 +28,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.UUID
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Vitafit "Body Fat" smart scale (VT701), sold with the Vitafit / Fitdays app.
@@ -128,14 +133,14 @@ class VitafitVT701Handler : ScaleDeviceHandler() {
         val measurement = ScaleMeasurement().apply {
             userId = user.id
             dateTime = Date()
-            weight = weightKg
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
         }
 
         // The scale reports only weight + raw impedance; derive body composition the same way the
         // other impedance scales in this package do. The guard mirrors StandardImpedanceLib's note
         // that its formulas only hold for whole-body impedance in a sane range.
         if (impedanceOhm in 1 until 1500) {
-            measurement.impedance = impedanceOhm.toDouble()
+            measurement[MeasurementType.IMPEDANCE] = Ohm(impedanceOhm.toFloat())
             val lib = StandardImpedanceLib(
                 gender = user.gender,
                 age = user.age,
@@ -143,11 +148,11 @@ class VitafitVT701Handler : ScaleDeviceHandler() {
                 heightM = user.bodyHeight / 100.0,
                 impedance = impedanceOhm.toDouble(),
             )
-            measurement.fat = lib.totalFatPercentage.toFloat()
-            measurement.water = lib.totalBodyWaterPercentage.toFloat()
-            measurement.muscle = lib.skeletalMusclePercentage.toFloat()
-            measurement.bone = lib.boneMassKg.toFloat()
-            measurement.bmr = lib.basalMetabolicRate.toFloat()
+            measurement[MeasurementType.BODY_FAT] = Percent(lib.totalFatPercentage.toFloat())
+            measurement[MeasurementType.WATER] = Percent(lib.totalBodyWaterPercentage.toFloat())
+            measurement[MeasurementType.MUSCLE] = Percent(lib.skeletalMusclePercentage.toFloat())
+            measurement[MeasurementType.BONE] = Kg(lib.boneMassKg.toFloat())
+            measurement[MeasurementType.BMR] = Kcal(lib.basalMetabolicRate.toFloat())
         }
 
         publish(measurement)

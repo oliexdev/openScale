@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.TrisaBodyAnalyzeLib
@@ -27,6 +28,9 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Handler for ES-CS20M scales (Renpho / Lefu lineage).
@@ -441,7 +445,7 @@ class ESCS20MHandler : ScaleDeviceHandler() {
             return
         }
 
-        acc.weight = weightKg
+        acc[MeasurementType.WEIGHT] = Kg(weightKg)
         LogManager.i(TAG, "Weight: ${"%.2f".format(weightKg)}kg  BIA resistance: ${biaResistance}Ω")
 
         if (biaResistance > 0) {
@@ -456,34 +460,22 @@ class ESCS20MHandler : ScaleDeviceHandler() {
             val calc = TrisaBodyAnalyzeLib(sex, user.age, user.bodyHeight)
             val imp  = if (biaResistance < 410) 3.0f else 0.3f * (biaResistance - 400f)
             val fat  = calc.getFat(weightKg, imp)
-            acc.impedance = biaResistance.toDouble()
-            acc.fat       = fat
-            acc.muscle    = calc.getMuscle(weightKg, imp)
-            acc.water     = calc.getWater(weightKg, imp)
-            acc.bone      = calc.getBone(weightKg, imp)
-            acc.lbm       = weightKg * (100f - fat) / 100f
-            LogManager.i(TAG, "Body composition: fat=${acc.fat}% muscle=${acc.muscle}%")
+            acc[MeasurementType.IMPEDANCE] = Ohm(biaResistance.toFloat())
+            acc[MeasurementType.BODY_FAT] = Percent(fat)
+            acc[MeasurementType.MUSCLE] = Percent(calc.getMuscle(weightKg, imp))
+            acc[MeasurementType.WATER] = Percent(calc.getWater(weightKg, imp))
+            acc[MeasurementType.BONE] = Kg(calc.getBone(weightKg, imp))
+            acc[MeasurementType.LBM] = Kg(weightKg * (100f - fat) / 100f)
+            LogManager.i(TAG, "Body composition: fat=${acc[MeasurementType.BODY_FAT]}% muscle=${acc[MeasurementType.MUSCLE]}%")
         }
 
         acc.userId   = user.id
         acc.dateTime = Date()
-        publish(snapshot(acc))
+        // Snapshot: acc is reused and reset for the next weigh-in.
+        publish(acc.snapshot())
 
         resetState()
         hasPublished = true  // set after resetState so step-off STOPs are ignored
-    }
-
-    private fun snapshot(m: ScaleMeasurement) = ScaleMeasurement().apply {
-        userId      = m.userId
-        dateTime    = m.dateTime
-        weight      = m.weight
-        fat         = m.fat
-        muscle      = m.muscle
-        water       = m.water
-        bone        = m.bone
-        lbm         = m.lbm
-        visceralFat = m.visceralFat
-        impedance   = m.impedance
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -495,8 +487,8 @@ class ESCS20MHandler : ScaleDeviceHandler() {
 
     private fun resetState() {
         acc.apply {
-            userId = -1; dateTime = null; weight = 0f; fat = 0f; muscle = 0f
-            water = 0f; bone = 0f; lbm = 0f; visceralFat = 0f; impedance = 0.0
+            userId = -1; dateTime = null
+            values.clear()
         }
         connPhase     = PHASE_WAIT_PROFILE_ACK
         biaResistance = 0

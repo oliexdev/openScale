@@ -227,7 +227,7 @@ class SyncUseCases @Inject constructor(
      * Adds the full, self-describing generic value set as a JSON "values" extra (Phase 2): every
      * MeasurementValue with its type metadata (key/name/unit/inputType/isDerived), the numeric value
      * already converted to the dimension's canonical base unit, unit as a UCUM code. Custom types
-     * ride along (key=="CUSTOM", distinguished by typeId). Lets the sync app forward all 34 types +
+     * ride along (key=="CUSTOM", distinguished by typeId). Lets the sync app forward all predefined types +
      * custom without knowing openScale's enums.
      */
     private suspend fun Intent.putGenericValues(values: List<MeasurementValue>) {
@@ -250,11 +250,10 @@ class SyncUseCases @Inject constructor(
  * Builds/parses the self-describing **generic value set** shared between the sync Intent
  * ([SyncUseCases]) and the ContentProvider ([com.health.openscale.core.database.DatabaseProvider]).
  *
- * Each value carries its type metadata (`typeId`, `key` = MeasurementTypeKey enum name, `name`,
- * `unit` as a UCUM code, `inputType`, `isDerived`); the numeric value is in the **canonical base
- * unit** of its dimension. Custom types ride along (key == "CUSTOM", distinguished by `typeId`).
- * HL7 FHIR Quantity / UCUM-inspired — the sync app forwards all types incl. custom without knowing
- * openScale's enums.
+ * Each value carries its type metadata (`identity` — the namespaced, cross-installation
+ * identifier, `name`, `unit` as a UCUM code, `inputType`, `isDerived`); the numeric value is
+ * in the **canonical base unit** of its dimension. HL7 FHIR Quantity / UCUM-inspired — the
+ * sync app forwards all types incl. device and user ones without knowing openScale's internals.
  */
 object GenericValueJson {
 
@@ -263,9 +262,8 @@ object GenericValueJson {
         for (v in values) {
             val type = typesById[v.typeId] ?: continue
             val obj = JSONObject()
-            obj.put("typeId", type.id)
-            obj.put("key", type.key.name)
-            obj.put("name", type.name ?: type.key.name)
+            obj.put("identity", type.identity)
+            obj.put("name", type.name ?: MeasurementType.identityColumnKey(type.identity))
             obj.put("unit", ucumCode(type.unit))
             obj.put("inputType", type.inputType.name)
             obj.put("isDerived", type.isDerived)
@@ -288,7 +286,10 @@ object GenericValueJson {
     /**
      * Reverse of [build] (inbound): parse a generic value JSON into (type, value) pairs, the value
      * already in the user's unit and in the field the type's [MeasurementType.inputType] requires.
-     * Predefined types are matched by [typesByKey] (enum name), custom by [typesById] (typeId).
+     *
+     * Matching is by `identity` — the canonical, cross-installation identifier of API v3.
+     * Entries without one (pre-v3 peers) are skipped; the MIN_API_VERSION gate on the sync
+     * side makes such payloads a misconfiguration, not a supported input.
      *
      * The returned [MeasurementValue]s carry `measurementId = 0` — the caller owns that.
      *
@@ -298,16 +299,16 @@ object GenericValueJson {
      */
     fun parse(
         json: String,
-        typesByKey: Map<String, MeasurementType>,
-        typesById: Map<Int, MeasurementType>
+        types: List<MeasurementType>
     ): List<Pair<MeasurementType, MeasurementValue>> {
+        val typesByIdentity = types.associateBy { it.identity }
+
         val out = mutableListOf<Pair<MeasurementType, MeasurementValue>>()
         runCatching {
             val arr = JSONArray(json)
             for (i in 0 until arr.length()) {
                 val o = arr.getJSONObject(i)
-                val key = o.optString("key", "")
-                val type = if (key == "CUSTOM") typesById[o.optInt("typeId", -1)] else typesByKey[key]
+                val type = typesByIdentity[o.optString("identity", "")]
                 if (type == null) continue
                 val empty = MeasurementValue(measurementId = 0, typeId = type.id)
                 val parsed: MeasurementValue? = when (type.inputType) {

@@ -19,7 +19,6 @@ package com.health.openscale.core.database
 
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.User
 import com.health.openscale.core.data.UserGoals
@@ -222,36 +221,40 @@ class DatabaseRepository @Inject constructor(
     // --- Measurement Type Operations ---
 
     suspend fun insertAllMeasurementTypes(types: List<MeasurementType>) {
-        val existingTypes = measurementTypeDao.getAll().first()
-        val existingKeys = existingTypes.map { it.key }.toSet()
+        val existingIdentities = measurementTypeDao.getAll().first().map { it.identity }.toSet()
 
-        val typesToInsert = types.filter { type ->
-            // Allow insertion if the key is CUSTOM or if the key does not already exist in the database.
-            type.key == MeasurementTypeKey.CUSTOM || type.key !in existingKeys
-        }
+        // Plain identity check, no special cases — the unique index on `identity` is the
+        // actual guarantee; this only avoids pointless constraint violations on re-seeding.
+        val typesToInsert = types.filter { it.identity !in existingIdentities }
 
         if (typesToInsert.isNotEmpty()) {
             LogManager.i(TAG, "Found ${typesToInsert.size} new measurement types to insert.")
             measurementTypeDao.insertAll(typesToInsert)
         } else {
-            LogManager.d(TAG, "No new measurement types to insert. All provided non-custom types already exist.")
+            LogManager.d(TAG, "No new measurement types to insert.")
         }
     }
 
     fun getAllMeasurementTypes(): Flow<List<MeasurementType>> = measurementTypeDao.getAll()
 
+    suspend fun getMeasurementTypeById(id: Int): MeasurementType? =
+        measurementTypeDao.getById(id)
+
+    suspend fun getMeasurementTypeByIdentity(identity: String): MeasurementType? =
+        measurementTypeDao.getByIdentity(identity)
+
     suspend fun insertMeasurementType(type: MeasurementType): Long {
-        LogManager.d(TAG, "Inserting measurement type: ${type.key}") // Logging the key
+        LogManager.d(TAG, "Inserting measurement type: ${type.identity}")
         return measurementTypeDao.insert(type)
     }
 
     suspend fun deleteMeasurementType(type: MeasurementType) {
-        LogManager.d(TAG, "Deleting measurement type with id: ${type.id}, key: ${type.key}")
+        LogManager.d(TAG, "Deleting measurement type with id: ${type.id}, identity: ${type.identity}")
         measurementTypeDao.delete(type)
     }
 
     suspend fun updateMeasurementType(type: MeasurementType) {
-        LogManager.d(TAG, "Updating measurement type with id: ${type.id}, key: ${type.key}")
+        LogManager.d(TAG, "Updating measurement type with id: ${type.id}, identity: ${type.identity}")
         measurementTypeDao.update(type)
     }
 
