@@ -11,14 +11,14 @@
     <string name="dialog_ok">D\'accord</string>
     <string name="switch_on">Marche</string>
     <string name="switch_off">Arrêt</string>
-    <string name="open_link_content_description">Liason ouverte</string>
+    <string name="open_link_content_description">Ouvrir le lien</string>
     <string name="content_desc_warning_icon">Icône d\'alerte</string>
     <string name="content_desc_restore_icon">Icône de restauration</string>
     <string name="content_desc_information">Information</string>
-    <string name="content_desc_open_menu">Menu ouvert</string>
+    <string name="content_desc_open_menu">Ouvrir le menu</string>
     <string name="content_desc_back">Retour</string>
     <string name="content_desc_selected">Sélectionné</string>
-    <string name="derived_backfill_start">Calcul en cours des valeurs dérivées …</string>
+    <string name="derived_backfill_start">Calcul des valeurs dérivées …</string>
     <string name="derived_backfill_done">Valeurs dérivées actualisées avec succès.</string>
     <string name="error_generic">Une erreur s\'est produite.</string>
     <string name="error_loading_data">Le chargement des données a échoué.</string>
@@ -26,7 +26,7 @@
     <string name="no_data_available">Pas de données disponibles.</string>
     <string name="no_measurements_found">Aucune mesure trouvée.</string>
     <string name="no_entries_found">Pas d\'entrées disponibles.</string>
-    <string name="route_title_overview">Aperçu</string>
+    <string name="route_title_overview">Vue d'ensemble</string>
     <string name="route_title_graph">Graphiques</string>
     <string name="route_title_table">Tableau</string>
     <string name="route_title_statistics">Statistiques</string>
@@ -44,12 +44,12 @@
     <string name="content_desc_switch_user">Changer de profil. Sélectionné : %1$s</string>
     <string name="content_desc_selected_user_indicator">Indicateur de profil sélectionné</string>
     <string name="action_add_user">Ajouter un profil</string>
-    <string name="error_selecting_user">Echec de la sélection d\'un profil.</string>
+    <string name="error_selecting_user">Échec de la sélection d\'un profil.</string>
     <string name="toast_no_user_selected">Aucun profil sélectionné.</string>
     <string name="toast_select_user_first">Merci de sélectionner d\'abord un profil.</string>
     <string name="no_user_selected_title">Pas de profil actif</string>
     <string name="no_user_selected_message">Merci de créer un nouveau profil ou d\'en sélectionner un existant pour voir et gérer vos mesures.</string>
-    <string name="user_deleted_successfully">Profil %1$s a été supprimé avec succès.</string>
+    <string name="user_deleted_successfully">Le profil %1$s a été supprimé avec succès.</string>
     <string name="user_deleted_error">Erreur pendant la suppression du profil %1$s.</string>
     <string name="user_updated_successfully">Profil %1$s actualisé avec succès.</string>
     <string name="user_updated_error">Erreur en actualisant le profil %1$s.</string>
@@ -58,13 +58,13 @@
     <string name="user_detail_label_gender">Genre</string>
     <string name="gender_male">Homme</string>
     <string name="gender_female">Femme</string>
-    <string name="amputation_correction_label">Correction amputation</string>
-    <string name="amputation_none">Aucun</string>
+    <string name="amputation_correction_label">Correction d\'amputation</string>
+    <string name="amputation_none">Aucune</string>
     <string name="amputation_hand">Main</string>
     <string name="amputation_forearm">Avant-bras</string>
     <string name="amputation_full_arm">Bras complet</string>
     <string name="amputation_foot">Pied</string>
-    <string name="amputation_lower_leg">Jambe inférieur</string>
+    <string name="amputation_lower_leg">Jambe inférieure</string>
     <string name="amputation_full_leg">Jambe complète</string>
     <string name="amputation_dialog_description">Sélectionner les membres affectés et spécifier le niveau d\'amputation de chacun.</string>
     <string name="amputation_left_arm">Bras gauche</string>
@@ -74,27 +74,27 @@
     <string name="user_detail_label_activity_level">Niveau d\'activité</string>
     <string name="user_detail_label_assisted_weighting">Pesée assistée</string>
     <string name="dialog_title_select_reference_user_for">Sélectionné la personne de référence pour %1$s</string>
-    <string name="error_no_reference_users_available">Aucune personne de référence appropriée n\'est disponible. Veuillez créer un profil qui n\'utilise pas de pesage assistée.</string>
-    <string name="error_assisted_weighing_reference_user_missing">Une personne de référence doit être sélectionnée pour le pesage assisté.</string>
+    <string name="error_no_reference_users_available">Aucune personne de référence appropriée n\'est disponible. Veuillez créer un profil qui n\'utilise pas de pesée assistée.</string>
+    <string name="error_assisted_weighing_reference_user_missing">Une personne de référence doit être sélectionnée pour la pesée assistée.</string>
     <string name="user_detail_label_birth_date">Date de naissance</string>
-    <string name="user_detail_error_invalid_data">Merci d\'entrée des données valides</string>
+    <string name="user_detail_error_invalid_data">Merci d\'entrer des données valides</string>
     <string name="height_value_cm">%.1f cm</string>
-    <string name="user_settings_item_details_conditional">Age : %1$d, Genre : %2$s</string>
+    <string name="user_settings_item_details_conditional">Âge : %1$d, Genre : %2$s</string>
     <string name="user_settings_content_description_edit">Modifier les paramètres du profil</string>
-    <string name="app_logo_content_description">Logo App</string>
+    <string name="app_logo_content_description">Logo de l'App</string>
     <string name="user_settings_content_description_delete">Supprimer le profil</string>
-    <string name="user_settings_content_description_add_user">Ajouter un novueau profil</string>
+    <string name="user_settings_content_description_add_user">Ajouter un nouveau profil</string>
     <string name="user_detail_content_description_change_unit">Changer d\'unité</string>
     <string name="success_measurement_updated">Mesure mise à jour (%1$s)</string>
     <string name="success_measurement_saved">Mesure sauvegardée (%1$s)</string>
-    <string name="error_saving_measurement">La mesure n\'a pas pu être sauvegarder. Veuillez réessayer.</string>
+    <string name="error_saving_measurement">La mesure n\'a pas pu être sauvegardée. Veuillez réessayer.</string>
     <string name="success_measurement_deleted">Mesure supprimée (%1$s)</string>
-    <string name="error_deleting_measurement">La mesure n\'a pas pu être supprimer. Veuillez réessayer.</string>
+    <string name="error_deleting_measurement">La mesure n\'a pas pu être supprimée. Veuillez réessayer.</string>
     <string name="action_save_measurement">Sauvegarder la mesure</string>
     <string name="action_add_measurement">Ajouter une mesure</string>
     <string name="action_add_measurement_desc">Ajouter une nouvelle mesure</string>
-    <string name="action_edit_measurement_desc">Éditer le mesure à partir de %1$s</string>
-    <string name="action_delete_measurement_desc">Supprimer la mesure à partir de %1$s</string>
+    <string name="action_edit_measurement_desc">Éditer la mesure du %1$s</string>
+    <string name="action_delete_measurement_desc">Supprimer la mesure du %1$s</string>
     <string name="toast_duplicate_timestamp">Cet horodatage correspond à votre dernière mesure. Merci de choisir un horodatage différent.</string>
     <string name="no_measurements_title">Pas de mesure pour l\'instant</string>
     <string name="no_measurements_message">Ajouter votre première mesure pour démarrer le suivi de votre évolution.</string>
@@ -106,15 +106,15 @@
     <string name="dialog_title_edit_value">Éditer %1$s</string>
     <string name="dialog_title_change_value">Modifier %1$s</string>
     <string name="dialog_title_select_color">Choisir une couleur</string>
-    <string name="dialog_title_select_icon">Icône de sélection</string>
+    <string name="dialog_title_select_icon">Choisir une icône</string>
     <string name="dialog_title_input_value">Entrer une valeur</string>
     <string name="dialog_title_input_text">Entrer un texte</string>
     <string name="dialog_title_hour">Heure</string>
     <string name="dialog_title_minute">Minute</string>
     <string name="label_date">Date</string>
     <string name="label_time">Horaire</string>
-    <string name="content_desc_increase_value">Croissance %1$s</string>
-    <string name="content_desc_decrease_value">Décroissance %1$s</string>
+    <string name="content_desc_increase_value">Augmentation %1$s</string>
+    <string name="content_desc_decrease_value">Diminution %1$s</string>
     <string name="content_desc_edit_value">Éditer %1$s</string>
     <string name="action_show_less_desc">Voir moins</string>
     <string name="action_show_more_desc">Voir plus</string>
@@ -126,7 +126,7 @@
     <string name="content_desc_unknown_type">Type inconnu : %1$s</string>
     <string name="measurement_type_weight">Poids</string>
     <string name="measurement_type_bmi">IMC</string>
-    <string name="measurement_type_body_fat">Graisse</string>
+    <string name="measurement_type_body_fat">Masse grasse</string>
     <string name="measurement_type_water">Eau</string>
     <string name="measurement_type_muscle">Muscle</string>
     <string name="measurement_type_lbm">Masse maigre</string>
@@ -144,29 +144,31 @@
     <string name="measurement_type_caliper2">Étrier 2</string>
     <string name="measurement_type_caliper3">Étrier 3</string>
     <string name="measurement_type_fat_caliper">Étrier gras</string>
-    <string name="toast_invalid_number_format">Nombre non-valide pour %1$s : \'%2$s\'</string>
+    <string name="toast_invalid_number_format">Nombre invalide pour %1$s : \'%2$s\'</string>
     <string name="dialog_title_add_goal">Fixer l\'objectif : %1$s</string>
     <string name="info_no_targetable_types">Pas de type disponible pour définir les objectifs.</string>
     <string name="placeholder_select_type">Choisir un type</string>
-    <string name="measurement_type_label_goal_value_for">Valeur objectif pour %1$s</string>
-    <string name="toast_goal_value_cannot_be_empty">La valeur objectif ne pas être vide pour un nouvel objectif.</string>
+    <string name="measurement_type_label_goal_value_for">Valeur de l\'objectif pour %1$s</string>
+    <string name="toast_goal_value_cannot_be_empty">La valeur de l\'objectif ne peut pas être vide pour un nouvel objectif.</string>
     <string name="measurement_type_label_input_type">Type d\'entrée</string>
     <string name="measurement_type_label_pinned">Épinglé</string>
-    <string name="measurement_type_label_on_right_y_axis">Axe-Y à droite</string>
+    <string name="measurement_type_label_on_right_y_axis">Sur l\'axe-Y de droite</string>
     <string name="content_desc_selected_icon_preview">Icône d\'aperçu sélectionnée</string>
-    <string name="measurement_type_deleted_error">Erreur lors de la suppression de la mesure de type \'%1$s\'.</string>
+    <string name="measurement_type_deleted_error">Erreur lors de la suppression du type de mesure \'%1$s\'.</string>
     <string name="measurement_type_updated_error">Erreur lors de l\'actualisation du type de mesure \'%1$s\'.</string>
     <string name="measurement_type_updated_successfully">Type de mesure \'%1$s\' actualisé avec succès.</string>
     <string name="measurement_type_updated_and_values_converted_successfully">Type \'%1$s\' actualisé et valeur(s) de %2$s convertie(s) avec succès.</string>
-    <string name="measurement_type_update_error_conversion_failed">Erreur de conversion de pour les valeurs de type \'%1$s\'. La définition du type n\'a pas été actualisée.</string>
-    <string name="measurement_type_updated_unit_changed_no_values_converted">Type \'%1$s actualisé. Unité modifiée, mais il n\'existe pas de valeurs nécessitant une conversion.</string>
+    <string name="measurement_type_update_error_conversion_failed">Erreur de conversion des valeurs de type \'%1$s\'. La définition du type n\'a pas été actualisée.</string>
+    <string name="measurement_type_updated_unit_changed_no_values_converted">Type \'%1$s\' actualisé. Unité modifiée, mais aucune valeur existante ne nécessitait une conversion.</string>
     <string name="measurement_type_dialog_confirm_unit_change_title">Confirmer le changement d\'unité</string>
-    <string name="measurement_type_dialog_confirm_unit_change_message">Le changement d\'unité de %1$s\' à partir %2$s vers %3$s convertira toutes les données existantes. Cette action peut prendre du temps et ne pas être simple à annuler. Voulez-vous continuer ?</string>
+    <string name="measurement_type_dialog_confirm_unit_change_message">Changer l\'unité pour \'%1$s\' de %2$s à %3$s convertira toutes les données existantes. Cette action peut prendre du temps et ne pas être simple à annuler. Voulez-vous continuer ?</string>
+    
     <string name="formula_label_body_fat">Formule masse grasse</string>
     <string name="formula_label_body_water">Formule eau corporelle</string>
     <string name="formula_label_lbm">Formule masse maigre</string>
     <string name="formula_warning_title">Formule de calcul</string>
-    <string name="formula_warning_message">Cette métrique passe en lecture seule et est auto-calculée. Elle s\'actualise lorsque les valeurs changent. S\'applique aux nouvelles mesures et mesures éditées. Les données existantes restent inchangées.</string>
+    <string name="formula_warning_message">Cette métrique passe en lecture seule et est auto-calculée. Elle s\'actualise lorsque les valeurs de base changent. S\'applique aux nouvelles mesures et mesures éditées. Les données existantes restent inchangées.</string>
+    
     <string name="formula_off">Arrêt</string>
     <string name="formula_bf_deurenberg_1991">Deurenberg (1991)</string>
     <string name="formula_bf_deurenberg_1992">Deurenberg (1992)</string>
@@ -179,51 +181,82 @@
     <string name="formula_bw_lee_song_kim_2001">Lee, Song et Kim (2001)</string>
     <string name="formula_lbm_boer_1984">Boer (1984)</string>
     <string name="formula_lbm_hume_1966">Hume (1966)</string>
-    <string name="formula_lbm_weight_minus_body_fat">Tour de taille - Masse grasse</string>
-    <string name="formula_desc_off_short">Calcul non-automatique</string>
+    <string name="formula_lbm_weight_minus_body_fat">Poids − Masse grasse</string>
+    <string name="formula_bf_us_navy">U.S. Navy</string>
+
+    <string name="formula_desc_off_short">Pas de calcul automatique</string>
     <string name="formula_desc_off_long">Cette métrique n\'est pas auto-calculée. Vous pouvez saisir les valeurs manuellement.</string>
     <string name="bf_deurenberg_1991_short">Régression classique pour les adultes</string>
-    <string name="bf_deurenberg_1991_long">Formule de population largement utilisée depuis 1991. Adaptée aux populations adultes en général. Peut être moins pertinentes pour les individus très maigre ou très musclés.</string>
-    <string name="bf_deurenberg_1992_short">Ajusté pour les ados et les adultes</string>
-    <string name="measurement_type_bmr">BMR</string>
-    <string name="measurement_type_tdee">TDEE</string>
+    <string name="bf_deurenberg_1991_long">Formule de population largement utilisée datant de 1991. Adaptée aux populations adultes en général. Peut être moins pertinentes pour les individus très maigre ou très musclés.</string>
+    <string name="bf_deurenberg_1992_short">Ajusté pour les adolescents et les adultes</string>
+    
+    <string name="measurement_type_bmr">Métabolisme de base</string>
+    <string name="measurement_type_heart_rate">Fréquence cardiaque</string>
+    <string name="measurement_type_impedance">Impédance (haute)</string>
+    <string name="measurement_type_impedance_low">Impédance (basse)</string>
+    <string name="measurement_type_ecw">Eau extracellulaire</string>
+    <string name="measurement_type_icw">Eau intracellulaire</string>
+    <string name="measurement_type_protein">Protéine</string>
+    <string name="measurement_type_bcm">Masse cellulaire active</string>
+    <string name="measurement_type_from_scale">Ajouté depuis une balance</string>
+    <string name="measurement_type_label_csv_column">Colonne CSV</string>
+    <string name="measurement_type_csv_column_taken">Cette colonne CSV est déjà utilisée.</string>
+    <string name="measurement_type_segmental_fat_left_arm">Masse grasse (bras gauche)</string>
+    <string name="measurement_type_segmental_fat_right_arm">Masse grasse (bras droit)</string>
+    <string name="measurement_type_segmental_fat_torso">Masse grasse (torse)</string>
+    <string name="measurement_type_segmental_fat_left_leg">Masse grasse (jambe gauche)</string>
+    <string name="measurement_type_segmental_fat_right_leg">Masse grasse (jambe droite)</string>
+    <string name="measurement_type_segmental_muscle_left_arm">Muscle (bras gauche)</string>
+    <string name="measurement_type_segmental_muscle_right_arm">Muscle (bras droit)</string>
+    <string name="measurement_type_segmental_muscle_torso">Muscle (torse)</string>
+    <string name="measurement_type_segmental_muscle_left_leg">Muscle (jambe gauche)</string>
+    <string name="measurement_type_segmental_muscle_right_leg">Muscle (jambe droite)</string>
+    <string name="s400_bone_formula_label">Formule osseuse</string>
+    <string name="s400_bone_formula_mi_legacy">Régression basée sur l'impédance (Legacy)</string>
+    <string name="s400_bone_formula_heymsfield">Heymsfield (anthropométrique)</string>
+    <string name="s400_bmr_formula_label">Formule du métabolisme de base</string>
+    <string name="s400_bmr_formula_cun91">Cunningham 1991</string>
+    <string name="s400_bmr_formula_cun80">Cunningham 1980</string>
+    <string name="measurement_type_tdee">Dépense énergétique totale</string>
     <string name="measurement_type_calories">Calories</string>
     <string name="measurement_type_comment">Commentaire</string>
     <string name="measurement_type_date">Date</string>
     <string name="measurement_type_time">Heure</string>
-    <string name="measurement_type_user">Utilisateur</string>
+    <string name="measurement_type_user">Profil</string>
     <string name="measurement_type_custom_default_name">Type personnalisé</string>
     <string name="measurement_type_label_enabled">Activé</string>
     <string name="measurement_type_label_name">Nom</string>
     <string name="measurement_type_label_color">Couleur</string>
     <string name="measurement_type_label_icon">Icône</string>
     <string name="measurement_type_label_unit">Unité</string>
-    <string name="measurement_type_label_goal">But</string>
-    <string name="my_goals_label">Mes Obejectfs</string>
+    <string name="measurement_type_label_goal">Objectif</string>
+    <string name="my_goals_label">Mes Objectifs</string>
     <string name="user_detail_goals">%d Objectifs</string>
-    <string name="user_detail_no_goals">Sans objectifs</string>
+    <string name="user_detail_no_goals">Aucun objectif</string>
     <string name="delete_button_label">Supprimer</string>
-    <string name="dialog_title_edit_goal">Objectif édité  : %1$s</string>
-    <string name="toast_select_measurement_type">Veuillez sélectionner d\'abord un type de mesure.</string>
+    <string name="dialog_title_edit_goal">Éditer l\'objectif : %1$s</string>
+    <string name="toast_select_measurement_type">Veuillez d\'abord sélectionner un type de mesure.</string>
     <string name="toast_goal_deleted">Objectif supprimé</string>
-    <string name="content_desc_drag_handle_sort">Classer</string>
-    <string name="content_desc_edit_type">Édition</string>
+    <string name="content_desc_drag_handle_sort">Trier</string>
+    <string name="content_desc_edit_type">Éditer</string>
     <string name="content_desc_delete_type">Supprimer</string>
     <string name="measurement_type_added_successfully">Type de mesure \'%1$s\' ajouté avec succès.</string>
     <string name="measurement_type_added_error">Erreur de l\'ajout du type de mesure \'%1$s\'.</string>
     <string name="measurement_type_deleted_successfully">Type de mesure \'%1$s\' supprimé avec succès.</string>
+    
     <string name="bluetooth_action_disconnect_desc">Déconnecté de %1$s</string>
-    <string name="bluetooth_action_retry_connection_desc">Reconnexion avec %1$s</string>
+    <string name="bluetooth_action_retry_connection_desc">Réessayer de se connecter à %1$s</string>
     <string name="bluetooth_action_error_check_settings_desc">Erreur Bluetooth, vérifier les paramètres</string>
-    <string name="bluetooth_action_connect_to_desc">Connecté à %1$s</string>
+    <string name="bluetooth_action_connect_to_desc">Se connecter à %1$s</string>
     <string name="bluetooth_action_check_settings_desc">Vérifier les paramètres Bluetooth</string>
     <string name="snackbar_bluetooth_connecting_to">Connexion à %1$s…</string>
     <string name="snackbar_bluetooth_disconnecting_from">Déconnexion de %1$s…</string>
+    
     <string name="snackbar_bluetooth_no_scale_saved">Aucune balance Bluetooth enregistrée. Ajouter une balance dans les paramètres.</string>
     <string name="snackbar_bluetooth_retry_connection">Reconnexion à %1$s…</string>
-    <string name="snackbar_bluetooth_error_check_settings">Erreur Bluetooth. Vérifier les paramètres.</string>
-    <string name="snackbar_bluetooth_check_settings">Vérifier les paramètres Bluetooth.</string>
-    <string name="bluetooth_enable_for_scan">Activer le Bluetooth pour démarrer la recherche.</string>
+    <string name="snackbar_bluetooth_error_check_settings">Erreur Bluetooth. Veuillez vérifier les paramètres.</string>
+    <string name="snackbar_bluetooth_check_settings">Veuillez vérifier les paramètres Bluetooth.</string>
+    <string name="bluetooth_enable_for_scan">Veuillez activer le Bluetooth pour démarrer la recherche.</string>
     <string name="bluetooth_permissions_required_for_scan">Des permissions Bluetooth sont requises pour la recherche.</string>
     <string name="bluetooth_enabled_permissions_missing">Bluetooth actif, mais des permissions sont manquantes.</string>
     <string name="bluetooth_must_be_enabled_for_scan">Le Bluetooth doit être actif pour la recherche de balances.</string>
@@ -239,15 +272,45 @@
     <string name="not_supported_icon_desc">Périphérique non supporté</string>
     <string name="supported_label">Supporté</string>
     <string name="not_supported_label">Non supporté</string>
+
     <string name="content_desc_select_date">Sélectionner une date</string>
+
     <string name="bf_gallagher_2000_non_asian_short">Gallagher (non asiatique)</string>
     <string name="bf_gallagher_2000_non_asian_long">Modèle de référence de 2000 pour les populations non asiatiques. Niveau de référence utile ; la précision varie selon les types de corps.</string>
-    <string name="bf_gallagher_2000_asian_short">Gallagher (Asian)</string>
-    <string name="lbm_weight_minus_bf_short">Tour de taille − Graisse corporelle</string>
+    <string name="bf_gallagher_2000_asian_short">Gallagher (Asiatique)</string>
+    <string name="lbm_weight_minus_bf_short">Poids − Masse grasse</string>
+    
     <string name="info_bluetooth_connection_error_scale_offline">Impossible de se connecter à la balance, assurez-vous qu’elle est allumée.</string>
+    
     <string name="tolerance_desc">Écart de poids max. pour l\'assigner à un utilisateur automatiquement.</string>
     <string name="developer_section_title">Développeur</string>
     <string name="danger_zone_title">Zone de danger</string>
+    <string name="auto_connect_on_startup_title">Connexion automatique au démarrage</string>
+    
+    <!-- Configuration de la balance (générique, affichée quand un gestionnaire déclare des champs de configuration) -->
+    <string name="scale_configuration_title">Configuration de la balance</string>
+    <string name="no_special_configuration_available">Aucune configuration spéciale supplémentaire disponible pour ce périphérique.</string>
+
+    <!-- Algorithme de composition corporelle de la balance Mi -->
+    <string name="mi_body_comp_algorithm_label">Algorithme de composition corporelle</string>
+    <string name="mi_algorithm_xiaomi">Xiaomi (application d’origine)</string>
+    <string name="mi_algorithm_bodymiscale_science">Scientifique</string>
+    <string name="mi_algorithm_description">Choisissez la manière dont la composition corporelle est calculée à partir de l’impédance. « Xiaomi » reproduit l’application Mi Fit / Zepp Life d’origine. « Scientifique » utilise des formules évaluées par des pairs (Siri, Pace, Wang, Schofield) et indique également les protéines et le métabolisme de base. S’applique aux nouvelles mesures effectuées avec cette balance.</string>
+
+    <!-- Configuration de la balance S400 -->
+    <string name="s400_bind_key_label">Clé de liaison BLE</string>
+    <string name="s400_bind_key_placeholder">Clé hexadécimale de 32 caractères</string>
+    <string name="s400_bind_key_description">La balance Xiaomi S400 nécessite une clé de liaison BLE pour le déchiffrement. Extrayez cette clé depuis Xiaomi Cloud à l’aide de l’outil Xiaomi Cloud Tokens Extractor.</string>
+    <string name="s400_bind_key_error">La clé de liaison doit comporter exactement 32 caractères hexadécimaux</string>
+    <string name="bt_s400_missing_bind_key">S400 : clé de liaison non configurée. Accédez aux paramètres Bluetooth pour saisir votre clé BLE.</string>
+
+    <!-- Configuration de la balance Huawei Hagrid -->
+    <string name="huawei_hagrid_secrets_title">Secrets WSP Huawei Hagrid</string>
+    <string name="huawei_hagrid_secrets_description">Configurez CAK, C1 et C2 avec 32 caractères hexadécimaux chacun. Les valeurs restent dans les paramètres de l’application propres au pilote.</string>
+    <string name="huawei_hagrid_secret_invalid">32 caractères hexadécimaux sont attendus</string>
+    <string name="huawei_hagrid_secret_saved">Enregistré</string>
+
+    <!-- Connecteur Bluetooth -->
     <string name="bluetooth_connector_connected_to">Connecté à %1$s</string>
     <string name="bluetooth_connector_connection_failed">Échec de la connexion à %1$s: %2$s</string>
     <string name="bluetooth_connector_device_error">Erreur avec %1$s : %2$s</string>
@@ -256,33 +319,37 @@
     <string name="bluetooth_connector_measurement_user_missing">La mesure depuis %1$s ne peut pas être assigné à un profil.</string>
     <string name="bluetooth_connector_measurement_types_not_loaded">Erreur : Les types de mesure n\'ont pas été chargés.</string>
     <string name="bluetooth_connector_measurement_no_values">Pas de mesure valide reçu à partir de %1$s.</string>
-    <string name="bluetooth_connector_measurement_saved">La mesure (%1$.1f kg) à partir de %2$s a été sauvée.</string>
-    <string name="bluetooth_connector_measurement_save_error">Erreur enregistrement de la ma mesure à partir de %1$s.</string>
+    <string name="bluetooth_connector_measurement_saved">La mesure (%1$.1f kg) à partir de %2$s a été sauvegardée.</string>
+    <string name="bluetooth_connector_measurement_save_error">Erreur d'enregistrement de la mesure venant de %1$s.</string>
     <string name="bluetooth_connector_device_message">%1$s : %2$s</string>
     <string name="bluetooth_connector_listening_for_device">À l\'écoute de %1$s …</string>
-    <string name="bluetooth_connector_broadcast_complete">Mesure reçu depuis %1$s.</string>
-    <string name="permissions_required_icon_desc">Icône des permissions nécessaires</string>
+    <string name="bluetooth_connector_broadcast_complete">Mesure reçue depuis %1$s.</string>
+
+    <!-- Cartes d’autorisation et d’activation du Bluetooth -->
+    <string name="permissions_required_icon_desc">Icône des permissions requises</string>
     <string name="permissions_required_title">Permissions requises</string>
     <string name="permissions_required_message_bluetooth">Pour chercher les balances, nous avons besoin d\'accéder au Bluetooth.</string>
-    <string name="grant_permissions_button">Attribuer des permissions</string>
+    <string name="grant_permissions_button">Donner les permissions</string>
     <string name="bluetooth_disabled_icon_desc">Icône du Bluetooth désactivé</string>
     <string name="bluetooth_disabled_title">Bluetooth désactivé</string>
     <string name="bluetooth_disabled_message_enable_for_scan">Merci d\'activer le Bluetooth pour rechercher les balances.</string>
-    <string name="enable_bluetooth_button">Bluetooth actif</string>
+    <string name="enable_bluetooth_button">Activer le Bluetooth</string>
     <string name="error_icon_desc">Icône d\'erreur</string>
     <string name="compatibility_dialog_title">Note importante</string>
-    <string name="bluetooth_compatibility_disclaimer">openScale est un projet open-source, et je ne possède pas toutes les balances. Merci de noter que la compatibilité n\'est pas garantie dans tous les cas, d\'autant que les protocoles Bluetooth peuvent changer ou peu documentés.\n\nComme projet open-source, les propositions de code et les contributions pour améliore le support des balances sont les bienvenues !</string>
-    <string name="compatibility_dialog_confirm_button">Connaissance et enregistrement</string>
+    <string name="bluetooth_compatibility_disclaimer">openScale est un projet open-source, et je ne possède pas toutes les balances. Merci de noter que la compatibilité n\'est pas garantie dans tous les cas, d\'autant que les protocoles Bluetooth peuvent changer ou être peu documentés.\n\nEn tant que projet open-source, les propositions de code et les contributions pour améliorer le support des balances sont les bienvenues !</string>
+    <string name="compatibility_dialog_confirm_button">Accepter et enregistrer</string>
     <string name="go_to_project_website_button">Visiter le site web du projet</string>
-    <string name="legacy_adapter_event_initializing">Processus d\'initialisation…</string>
+    
+    <!-- LegacyScaleAdapter (Driver Bluetooth) -->
+    <string name="legacy_adapter_event_initializing">Initialisation…</string>
     <string name="legacy_adapter_event_connection_lost">Connexion perdue</string>
     <string name="legacy_adapter_event_connection_disconnected">Connexion fermée</string>
     <string name="legacy_adapter_event_device_not_found">Appareil non trouvé. %s</string>
     <string name="legacy_adapter_event_unexpected_error">Erreur inattendue : %s</string>
     <string name="legacy_adapter_event_unexpected_data">Type de donnée inattendu reçu : %s</string>
     <string name="legacy_adapter_event_scale_message_fallback">Message de la balance (ID : %1$d, Valeur : %2$s)</string>
-    <string name="legacy_adapter_event_user_selection_required">Sélection profil requise</string>
-    <string name="legacy_adapter_event_user_details">Profil #%1$d \'Age : %2$d, Taille : %3$d)</string>
+    <string name="legacy_adapter_event_user_selection_required">Sélection d'un profil requise</string>
+    <string name="legacy_adapter_event_user_details">Profil #%1$d (Age : %2$d, Taille : %3$d)</string>
     <string name="legacy_adapter_event_user_consent_required">Accord du profil %1$d (Index %2$d) requis.</string>
     <string name="legacy_adapter_event_unknown_status">Statut ou message inconnu du pilote : %s</string>
     <string name="legacy_adapter_connect_busy">L\'adaptateur est déjà occupé par un autre appareil (%s).</string>
@@ -293,8 +360,10 @@
     <string name="legacy_adapter_event_invalid_consent_data">Erreur : Réception des données d\'accord invalide.</string>
     <string name="legacy_adapter_event_missing_consent_data">Erreur : Données d\'accord manquantes.</string>
     <string name="legacy_adapter_event_invalid_interaction_payload">Erreur : Chargement utile des données reçu invalide pour les interaction avec le profil.</string>
-    <string name="content_description_time_range_icon">Icône de tri temporel</string>
-    <string name="content_description_filter_chart_data">Filtre des diagrammes de données</string>
+    
+    <!-- Graphiques (LineChart) -->
+    <string name="content_description_time_range_icon">Icône d'intervalle de temps</string>
+    <string name="content_description_filter_chart_data">Filtrer les données des graphiques</string>
     <string name="content_description_time_range_selected">%s sélectionné</string>
     <string name="content_description_measurement_filter_visible">Filtre de mesure visible</string>
     <string name="content_description_measurement_filter_hidden">Filtre de mesure masqué</string>
@@ -304,44 +373,130 @@
     <string name="time_range_last_30_days">30 derniers jours</string>
     <string name="time_range_last_365_days">365 derniers jours</string>
     <string name="time_range_custom">Jours personnalisé</string>
-    <string name="time_range_custom_from_to">À partir de %1$s jusqu\'à %2$s</string>
-    <string name="line_chart_no_plottable_types">Aucun type de diagramme disponible.</string>
+    <string name="time_range_custom_from_to">Du %1$s jusqu\'au %2$s</string>
+    <string name="time_range_custom_since">Depuis le %1$s</string>
+    <string name="time_range_custom_dialog_title">Sélectionner l'intervalle de temps</string>
+    <string name="time_range_custom_hint_open_end">Pas de date de fin — toujours jusqu'à aujourd'hui.</string>
+    <string name="time_range_custom_hint_fixed_end">Effacez la date de fin pour toujours inclure aujourd'hui.</string>
+    <string name="time_range_custom_clear_end">Effacer la date de fin</string>
+    <string name="filter_section_time_range">Intervalle de temps</string>
+    <string name="filter_section_aggregation">Agrégation</string>
+    <string name="content_description_time_range_linked">L'intervalle de temps s'applique à tous les écrans</string>
+    <string name="content_description_time_range_unlinked">L'intervalle de temps ne s'applique qu'à cet écran</string>
+    <string name="content_description_aggregation_linked">L'agrégation s'applique à tous les écrans</string>
+    <string name="content_description_aggregation_unlinked">L'agrégation ne s'applique qu'à cet écran</string>
+    <string name="content_description_aggregation_selected">%1$s sélectionné</string>
+    <string name="aggregation_level_none">Pas d'agrégation</string>
+    <string name="aggregation_level_day">Jour</string>
+    <string name="aggregation_level_week">Semaine</string>
+    <string name="aggregation_level_month">Mois</string>
+    <string name="aggregation_level_year">Année</string>
+    <string name="line_chart_no_plottable_types">Aucun type de graphique disponible.</string>
     <string name="line_chart_no_data_to_display">Aucune donnée à afficher.</string>
     <string name="line_chart_no_data_for_type_in_range">Aucune donnée pour %1$s dans l\'intervalle sélectionné.</string>
     <string name="line_chart_this_type_placeholder">ce type</string>
-    <string name="line_chart_please_select_types">Merci de choisir un type de mesure pour ce diagramme.</string>
+    <string name="line_chart_please_select_types">Merci de choisir un type de mesure pour ce graphique.</string>
     <string name="line_chart_no_data_or_types_to_select">Aucune donnée à afficher ou type sélectionné.</string>
     <string name="line_chart_no_data_for_selected_types">Aucune donnée disponible pour le type sélectionné.</string>
     <string name="menu_item_measurement_filter">Montrer/Masquer le filtre de mesure</string>
-    <string name="table_header_date">Écran tableau</string>
-    <string name="table_message_no_columns_or_measurements">Aucune colonne sélectionnée ou mesure disponible.</string>
+    
+    <!-- Table Screen -->
+    <string name="table_header_date">Date</string>
+    <string name="table_message_no_columns_or_measurements">Aucune colonne sélectionnée ou aucune mesure disponible.</string>
     <string name="table_message_no_columns_selected">Aucune colonne sélectionnée pour l\'affichage.</string>
     <string name="table_message_no_data_for_selection">Aucune donnée disponible dans la colonne actuellement sélectionnée.</string>
     <string name="table_trend_up">Tendance en hausse</string>
     <string name="table_trend_down">Tendance en baisse</string>
-    <string name="desc_enter_selection_mode">Choisir des items</string>
-    <string name="items_selected_count">%1$d sélectionné</string>
+    <string name="desc_enter_selection_mode">Sélectionner des entrées</string>
+    <string name="items_selected_count">%1$d sélectionné(s)</string>
     <string name="desc_cancel_selection_mode">Annuler la sélection</string>
-    <string name="desc_change_user">Changer de profil pour les items sélectionnés</string>
-    <string name="desc_export_selected">Exporter les items sélectionnés</string>
-    <string name="desc_delete_selected">Supprimer les items sélectionnés</string>
+    <string name="desc_change_user">Changer de profil pour les entrées sélectionnées</string>
+    <string name="desc_export_selected">Exporter les entrées sélectionnées</string>
+    <string name="desc_delete_selected">Supprimer les entrées sélectionnées</string>
     <string name="dialog_title_delete_user">Supprimer le profil %1$s ?</string>
     <string name="dialog_text_delete_user">Toutes les données de ce profil seront définitivement supprimées. Cette action ne peut pas être annulée.</string>
     <string name="dialog_title_delete_goal">Supprimer l\'objectif pour %1$s ?</string>
     <string name="dialog_text_delete_goal">Ceci supprimera l\'objectif. Votre historique de mesure ne sera pas impacté.</string>
     <string name="dialog_title_delete_item">Supprimer la mesure ?</string>
-    <string name="dialog_message_delete_item">Voulez-vous vraiment supprimer la mesure à partir de %1$s (%2$s) ? Cette action ne peut être annulée.</string>
-    <string name="dialog_title_delete_selected_items">Supprimer les items ?</string>
+    <string name="dialog_message_delete_item">Voulez-vous vraiment supprimer la mesure de %1$s (%2$s) ? Cette action ne peut être annulée.</string>
+    <string name="dialog_title_delete_selected_items">Supprimer les entrées sélectionnées ?</string>
     <string name="dialog_message_delete_selected_item">Voulez-vous vraiment supprimer les données sélectionnées ? Cette action ne peut être annulée.</string>
-    <string name="dialog_message_delete_selected_items">Voulez- vous vraiment supprimer les %1$d items sélectionnées ? Cette action ne peut pas être annulée.</string>
-    <string name="dialog_title_delete_type">Suppression de type ?</string>
+    <string name="dialog_message_delete_selected_items">Voulez-vous vraiment supprimer les %1$d entrées sélectionnées ? Cette action ne peut pas être annulée.</string>
+    <string name="dialog_title_delete_type">Suppression du type ?</string>
     <string name="dialog_text_delete_type">Voulez-vous vraiment supprimer le type personnalisé \"%1$s\" ? Toutes les données associées seront définitivement supprimées. Cette action ne peut pas être annulée.</string>
-    <string name="snackbar_items_deleted_successfully">%1$d items supprimés avec succès.</string>
+    <string name="snackbar_items_deleted_successfully">%1$d entrée(s) supprimée(s) avec succès.</string>
+    <string name="snackbar_items_delete_partial_failure">%1$d sur %2$d entrées n\'ont pas pu être supprimées.</string>
     <string name="dialog_title_select_user_for_assignment">Choisir un profil pour assignation</string>
-    <string name="snackbar_no_other_users_to_change_to">Pas d\'autre profil disponible pour modifier.</string>
-    <string name="goal_target_date_label">Date de l\'objectif cible</string>
-    <string name="bf_deurenberg_1992_long">Variation adaptée aux jeunes profils. C\'est une estimation générale, les profils athlétiques ou atypiques peuvent dévier.</string>
-    <string name="bf_eddy_1976_short">Modèle sexospécifique initial</string>
+    <string name="snackbar_no_other_users_to_change_to">Pas d\'autre profil disponible pour l\'assignation.</string>
+    <string name="snackbar_items_move_partial_failure">%1$d sur %2$d entrées n\'ont pas pu être déplacées (déjà existantes pour ce profil).</string>
+
+    <!-- Insights Screen -->
+    <string name="insights_confidence_low">Données limitées</string>
+    <string name="insights_section_measurement_analysis">Analyse de votre %1$s</string>
+    <string name="insights_label_recomposition">Recomposition</string>
+    <string name="insights_label_bulking">Prise de masse</string>
+    <string name="insights_label_mixed_loss">Perte mixte</string>
+    <string name="insights_label_fat_gain">Prise de graisse</string>
+    <string name="insights_placeholder_measurement_analysis">Au moins %1$d mesures sont nécessaires pour analyser l\'évolution de votre corps au fil du temps.</string>
+    <string name="insights_placeholder_weekday">Au moins %1$d mesures par jour de la semaine sont nécessaires pour détecter vos habitudes hebdomadaires.</string>
+    <string name="insights_placeholder_seasonal">Au moins %1$d années de données sont nécessaires pour détecter les tendances saisonnières.</string>
+    <string name="insights_placeholder_anomalies">Au moins %1$d mesures sont nécessaires pour détecter les valeurs inhabituelles.</string>
+    <string name="insights_best_period_label">Meilleur mois</string>
+    <string name="insights_trend_up">En hausse</string>
+    <string name="insights_trend_down">En baisse</string>
+    <string name="insights_trend_stable">Stable</string>
+    <string name="insights_rate_per_month">Évolution / mois</string>
+    <string name="insights_volatility">Variabilité</string>
+    <string name="insights_volatility_stable">Stable</string>
+    <string name="insights_volatility_moderate">Modérée</string>
+    <string name="insights_volatility_high">Élevée</string>
+    <string name="insights_plateau_label">Période stable</string>
+    <string name="insights_plateau_days">%1$d jours</string>
+    <string name="insights_section_weekday">Vos habitudes hebdomadaires</string>
+    <string name="insights_weekday_summary_high">Vous avez tendance à mesurer le plus haut le %1$s et le plus bas le %2$s</string>
+    <string name="insights_weekday_summary_low">Tendance préliminaire — mesurez plus régulièrement pour obtenir des résultats fiables</string>
+    <string name="insights_section_seasonal">Votre année en revue</string>
+    <string name="insights_seasonal_summary_high">Vos valeurs ont tendance à culminer en %1$s et à baisser en %2$s</string>
+    <string name="insights_seasonal_summary_low">Une seule année de données — continuez à mesurer pour révéler les tendances saisonnières</string>
+    <string name="insights_section_anomalies">Mesures inhabituelles</string>
+    <string name="insights_anomalies_none">Aucune mesure inhabituelle détectée.</string>
+    <string name="insights_anomaly_deviation">%1$s par rapport à la valeur attendue %2$s</string>
+    <string name="insights_anomaly_comment">"%1$s"</string>
+    <string name="insights_summary_plateau">Aucun changement significatif depuis %1$d jours — votre corps est peut-être en train de s\'adapter.</string>
+    <string name="insights_summary_trend_change_down">Tendance récente à la baisse — évolution positive par rapport à votre direction à long terme.</string>
+    <string name="insights_summary_trend_change_up">Tendance récente à la hausse — surveillez son évolution à long terme.</string>
+    <string name="insights_summary_volatility_high">Forte fluctuation détectée — c\'est courant et cela peut refléter des changements naturels comme la rétention d\'eau.</string>
+    <string name="insights_summary_volatility_stable">Vos valeurs sont très cohérentes — la base de données est fiable.</string>
+    <string name="insights_section_body_pattern">Votre composition corporelle</string>
+    <string name="insights_placeholder_body_pattern">Au moins %1$d mesures comprenant les quatre indicateurs (poids, masse grasse, muscle, eau) au cours des %2$d derniers jours sont nécessaires pour calculer cette analyse.</string>
+    <string name="insights_pattern_summary_fat_loss">Vous perdez principalement de la masse grasse : le poids et la masse grasse diminuent tandis que la masse musculaire est préservée ou augmente légèrement.</string>
+    <string name="insights_pattern_summary_recomposition">Votre corps se recompose efficacement : vous perdez de la graisse tout en développant simultanément une masse musculaire importante.</string>
+    <string name="insights_pattern_summary_muscle_gain">Évolution positive de votre composition corporelle : Vous gagnez de la masse musculaire tandis que la masse grasse reste stable ou diminue.</string>
+    <string name="insights_pattern_summary_weight_loss_mixed">Attention : vous perdez du poids, mais votre masse musculaire diminue également.</string>
+    <string name="insights_pattern_summary_fat_gain">La masse grasse augmente. Si ce n’est pas une prise de masse volontaire, envisagez de revoir votre niveau d\'activité.</string>
+    <string name="insights_pattern_summary_fat_gain_with_muscle">La masse grasse et la masse musculaire augmentent — cela ressemble à une phase de prise de masse. Si votre objectif est de gagner du muscle, vérifiez que l\'augmentation de la masse grasse reste dans la fourchette souhaitée.</string>
+    <string name="insights_pattern_summary_stable">Tous les indicateurs sont stables — vous êtes en phase de maintien.</string>
+    <string name="insights_pattern_summary_undefined">Aucune dynamique claire n’est encore détectée — davantage de mesures incluant le poids, la masse grasse, le muscle et l\'eau sont nécessaires.</string>
+    <string name="insights_pattern_summary_undefined_with_data">Signaux contradictoires dans %1$s — les tendances du poids, de la masse grasse et du muscle ne correspondent pas encore à une dynamique claire.</string>
+    <string name="insights_zone_tooltip_recomposition">La masse grasse diminue tandis que la masse musculaire augmente — le meilleur résultat possible.</string>
+    <string name="insights_zone_tooltip_bulking">La masse grasse et la masse musculaire augmentent toutes deux.</string>
+    <string name="insights_zone_tooltip_mixed_loss">La masse grasse et la masse musculaire diminuent toutes deux. Le poids baisse, mais vous perdez aussi de la masse musculaire.</string>
+    <string name="insights_zone_tooltip_fat_gain">La masse grasse augmente tandis que la masse musculaire diminue ou reste stable — le résultat le moins favorable.</string>
+    <string name="insights_stat_start">Début</string>
+    <string name="insights_stat_now">Maintenant</string>
+    <string name="insights_stat_rate_month">Évolution / mois</string>
+    <string name="insights_stat_on_average">en moyenne</string>
+    <string name="insights_chip_volatility_stable">stable</string>
+    <string name="insights_chip_volatility_moderate">modérée</string>
+    <string name="insights_chip_volatility_high">variable</string>
+    <string name="insights_chip_plateau_days">plateau de %1$d jours</string>
+    <string name="insights_short_term_trend">court terme</string>
+    <string name="insights_long_term_trend">long terme</string>
+
+    <string name="goal_target_date_label">Date cible de l\'objectif</string>
+
+    <string name="bf_deurenberg_1992_long">Variation adaptée aux jeunes profils. C\'est une estimation polyvalente ; les profils athlétiques ou atypiques peuvent dévier.</string>
+    <string name="bf_eddy_1976_short">Ancien modèle sexospécifique</string>
     <string name="bf_eddy_1976_long">Ancienne régression avec des coefficients distincts pour les hommes et les femmes. Simple et rapide mais non taillé pour les populations singulières.</string>
     <string name="bf_gallagher_2000_asian_long">Modèle assistant adapté aux populations asiatiques. A utiliser lorsque plus en phase avec le contexte du profil.</string>
     <string name="bw_behnke_1963_short">Estimation ECT de Behnke</string>
@@ -352,14 +507,17 @@
     <string name="bw_hume_weyers_1971_long">Modèle ECT commun utilisant la taille et le poids avec des coefficients sexospécifiques.</string>
     <string name="bw_lee_song_kim_2001_short">Lee-Song-Kim</string>
     <string name="bw_lee_song_kim_2001_long">Plus récent ECT estimés sur des cohortes coréennes. À considérer si proche de ce type de population.</string>
-    <string name="lbm_boer_1984_short">Masse coporelle de Boer (LBM clinique)</string>
+    <string name="lbm_boer_1984_short">Masse maigre de Boer (LBM clinique)</string>
     <string name="lbm_boer_1984_long">Masse maigre estimée à partir de paramètres clinique populaire. Régressions sexospécifique à partir de la taille et du poids.</string>
+    
     <string name="status_enabled">Activé</string>
     <string name="status_disabled">Désactivé</string>
     <string name="status_axis_right">Déplacé vers l\'axe droit</string>
     <string name="status_axis_left">Déplacé vers l\'axe gauche</string>
+
     <string name="fallback_device_name_saved_scale">Balance enregistrée</string>
     <string name="bluetooth_action_connecting_disconnecting_desc">Bluetooth en cours</string>
+    
     <string name="menu_save_as_preferred">Enregistrer comme préféré</string>
     <string name="menu_save_as_developer">Enregistrer en mode développeur</string>
     <string name="snackbar_saved_device_removed">Appareil enregistré supprimé.</string>
@@ -367,6 +525,12 @@
     <string name="snackbar_developer_for_device_enable_logs">Mode développeur activé pour cet appareil. Merci d\'activer le fichier journal : Paramètres → Général → Activer le fichier journal.</string>
     <string name="developer_banner_active">Mode développeur activé — Aucune mesure ne sera sauvegardée.</string>
     <string name="developer_banner_enable_logs_hint">Merci d\'activer le fichier journal : Paramètres → Général → Activer le fichier journal.</string>
+    <string name="developer_mode_dialog_title">Activer le mode développeur ?</string>
+    <string name="developer_mode_dialog_message">openScale va seulement enregistrer le traffic Bluetooth de %1$s pour les diagnostics. Du moment que le mode développeur est actif, aucune mesure n\'est sauvegardée. Vous pouvez le désactiver à nouveau sur l\'écran Bluetooth ou dans les paramètres de l\'appareil.</string>
+    <string name="developer_mode_dialog_replaces">%1$s devient votre balance enregistrée et remplace %2$s.</string>
+    <string name="developer_mode_dialog_confirm_button">Activer</string>
+    <string name="developer_mode_disable_action">Désactiver</string>
+    <string name="developer_mode_active_icon_desc">Le mode développeur est actif</string>
     <string name="capabilities_header">Capacités</string>
     <string name="cap_body_composition">Composition corporelle</string>
     <string name="cap_time_sync">Synchro temporelle</string>
@@ -378,6 +542,7 @@
     <string name="cap_state_implemented">Implémentée : %1$s</string>
     <string name="cap_state_supported_only">Supporté (non implémenté) : %1$s</string>
     <string name="more_options_cd">Plus d\'options</string>
+
     <string name="title_device_settings_for">Paramètres %1$s</string>
     <string name="bluetooth_tuning_title">Réglage Bluetooth</string>
     <string name="tuning_profile_label">Réglage profil</string>
@@ -394,7 +559,10 @@
     <string name="tuning_balanced">Équilibré</string>
     <string name="tuning_conservative">Conservateur</string>
     <string name="tuning_aggressive">Agressif</string>
-    <string name="snackbar_items_user_changed_successfully">Le profil a changé %1$d items avec succès.</string>
+
+    <string name="snackbar_items_user_changed_successfully">%1$d entrée(s) ont changé de profil avec succès.</string>
+    
+    <!-- Écran des statistiques -->
     <string name="statistics_no_relevant_types">Aucun type de mesure pertinent disponible ou configuré pour les statistiques.</string>
     <string name="statistics_label_min">Min.</string>
     <string name="statistics_label_max">Max.</string>
@@ -402,6 +570,8 @@
     <string name="statistics_content_desc_increase">Hausse</string>
     <string name="statistics_content_desc_decrease">Baisse</string>
     <string name="statistics_content_desc_no_change">Pareil</string>
+    
+    <!-- Écran des paramètres généraux -->
     <string name="settings_item_general">Général</string>
     <string name="settings_item_user">Profil</string>
     <string name="settings_item_measurement_types">Types de mesure</string>
@@ -412,17 +582,18 @@
     <string name="settings_general_title">Paramètres généraux</string>
     <string name="settings_language_label">Langue</string>
     <string name="settings_reminder_title">Rappel</string>
-    <string name="settings_reminder_enable_label">Fonction rappel</string>
-    <string name="settings_reminder_text_label">Texte rappel</string>
-    <string name="settings_reminder_text_placeholder">Tapez le texte rappel ici</string>
+    <string name="settings_reminder_enable_label">Fonctionnalité de rappel</string>
+    <string name="settings_reminder_text_label">Texte du rappel</string>
+    <string name="settings_reminder_text_placeholder">Tapez le texte du rappel ici</string>
     <string name="settings_reminder_time_label">Moment</string>
     <string name="reminder_enabled_snackbar">Rappel activé</string>
     <string name="reminder_disabled_snackbar">Rappel désactivé</string>
-    <string name="reminder_default_text">Heure de pesée</string>
+    <string name="reminder_default_text">C'est l'heure de vous peser</string>
     <string name="reminder_channel_name">Rappels</string>
     <string name="reminder_notification_title">openScale</string>
     <string name="settings_reminder_days_label">Jours</string>
     <string name="permission_denied">Permission de notifications refusée</string>
+    
     <string name="monday_short">Lun.</string>
     <string name="tuesday_short">Mar.</string>
     <string name="wednesday_short">Mer.</string>
@@ -431,15 +602,18 @@
     <string name="saturday_short">Sam.</string>
     <string name="sunday_short">Dim.</string>
     <string name="all">Tous</string>
+
     <string name="settings_feedback_title">Retour</string>
     <string name="settings_haptics_label">Vibration lors de la nouvelle mesure</string>
     <string name="settings_haptics_enabled_snackbar">Vibration lors des mesures activée</string>
     <string name="settings_haptics_disabled_snackbar">Vibration lors des mesures désactivée</string>
+    
+    <!-- Écran de paramètres des graphiques -->
     <string name="setting_show_chart_points">Paramètres de l\'écran des graphiques</string>
     <string name="setting_show_chart_goal_lines">Montrer les lignes d\'objectifs</string>
     <string name="setting_smoothing_algorithm">Algorithme de lissage</string>
     <string name="setting_smoothing_alpha">Alpha</string>
-    <string name="setting_smoothing_window_size">Taille fenêtre</string>
+    <string name="setting_smoothing_window_size">Taille de fenêtre</string>
     <string name="setting_smoothing_max_gap_days">Écart max. de lissage (jours)</string>
     <string name="smoothing_algorithm_none">Pas de lissage</string>
     <string name="smoothing_algorithm_sma">Moyenne Glissante</string>
@@ -447,12 +621,14 @@
     <string name="setting_show_chart_projection">Montrer la projection</string>
     <string name="setting_projection_days_in_the_past">Bases pour la projection (jours)</string>
     <string name="setting_projection_days_to_project">Project pour (jours)</string>
-    <string name="setting_projection_polynomial_degree">Model de projection</string>
+    <string name="setting_projection_polynomial_degree">Modèle de projection</string>
     <string name="poly_degree_linear">Linéaire</string>
     <string name="poly_degree_quadratic">Quadratique</string>
     <string name="poly_degree_cubic">Cubique</string>
+
+    <!-- Écran "À propos" et "Diagnostiques" -->
     <string name="version_info">Version : %1$s (%2$s)</string>
-    <string name="project_information_title">Information sur le projet</string>
+    <string name="project_information_title">Informations sur le projet</string>
     <string name="maintainer_label">Mainteneur</string>
     <string name="maintainer_icon_content_description">Icône mainteneur</string>
     <string name="project_homepage_display">Projet sur Github</string>
@@ -475,8 +651,10 @@
     <string name="log_export_cancelled">Export annulé.</string>
     <string name="log_export_no_app_error">Pas d\'application adaptée trouvée pour exporter le fichier.</string>
     <string name="export_log_file_button">Exporter le fichier de journalisation</string>
-    <string name="settings_export_measurements_csv">Export des mesures (CSV)</string>
-    <string name="settings_import_measurements_csv">Import des mesures (CSV)</string>
+
+    <!-- Data Management (Export, Import, Backup, Restore, Delete) -->
+    <string name="settings_export_measurements_csv">Exporter des mesures (CSV)</string>
+    <string name="settings_import_measurements_csv">Importer des mesures (CSV)</string>
     <string name="settings_backup_database">Sauvegarde de la base de données</string>
     <string name="settings_restore_database">Restaurer la base de données</string>
     <string name="settings_delete_all_measurement_data">Supprimer toutes les données de mesure</string>
@@ -488,36 +666,42 @@
     <string name="content_desc_auto_backups_toggle">Inverser le statut des sauvegardes automatiques</string>
     <string name="settings_last_backup_status_label">Statut de la dernière sauvegarde</string>
     <string name="content_desc_backup_status_icon">Information de statut de la sauvegarde</string>
-    <string name="settings_backup_location_label">Localisation de la sauvegarde</string>
-    <string name="content_desc_backup_location_icon">Paramètre de localisation de la sauvegarde</string>
-    <string name="content_desc_open_backup_location_icon">Ouvrir la localisation de la sauvegarde</string>
-    <string name="content_desc_change_backup_location_icon">Modifier la localisation de sauvegarde</string>
-    <string name="settings_backup_interval_label">Intervalles de sauvegarde</string>
-    <string name="content_desc_backup_interval_icon">Paramètres d\'intervalles de sauvegarde</string>
-    <string name="content_desc_change_interval_icon">Modifier l\'intervalle des sauvegarde</string>
+    <string name="settings_backup_location_label">Emplacement de la sauvegarde</string>
+    <string name="content_desc_backup_location_icon">Paramètre d'emplacement de la sauvegarde</string>
+    <string name="content_desc_open_backup_location_icon">Ouvrir l'emplacement de la sauvegarde</string>
+    <string name="content_desc_change_backup_location_icon">Modifier l'emplacement de sauvegarde</string>
+    <string name="settings_backup_interval_label">Fréquence de sauvegarde</string>
+    <string name="content_desc_backup_interval_icon">Paramètres de fréquence de sauvegarde</string>
+    <string name="content_desc_change_interval_icon">Modifier la fréquence des sauvegarde</string>
     <string name="settings_backup_behavior_label">Comportement de sauvegarde</string>
     <string name="content_desc_backup_behavior_icon">Paramétrage du comportement de sauvegarde</string>
     <string name="settings_last_backup_status_placeholder">Dernière sauvegarde : %1$s</string>
     <string name="settings_auto_backups_disabled">Sauvegardes automatiques désactivée</string>
     <string name="settings_backup_behavior_new_file">Toujours créer un nouveau fichier de sauvegarde</string>
     <string name="settings_backup_behavior_overwrite">Écraser le fichier de sauvegarde existant</string>
-    <string name="settings_backup_location_default">Défaut : Répertoire spécifique de l\'application</string>
+    <string name="settings_backup_location_default">Par défaut : Répertoire spécifique de l\'application</string>
     <string name="settings_backup_location_simulated_user_choice">Simulé : Choix utilisateur d\'un répertoire</string>
-    <string name="dialog_title_select_backup_interval">Choisir un intervalle de sauvegarde</string>
-    <string name="settings_backup_location_not_configured">Localisation de la sauvegarde non-configurée</string>
-    <string name="settings_backup_location_not_configured_for_auto">Localisation de sauvegarde non-configurée. Sauvegardes automatiques mises en pause.</string>
-    <string name="settings_backup_location_error_accessing">Erreur d\'accès à la localisation de sauvegarde</string>
-    <string name="content_desc_delete_icon">Icon de suppression</string>
+    <string name="dialog_title_select_backup_interval">Choisir une fréquence de sauvegarde</string>
+    <string name="settings_backup_location_not_configured">Emplacement de la sauvegarde non-configuré</string>
+    <string name="settings_backup_location_not_configured_for_auto">Emplacement de sauvegarde non-configuré. Sauvegardes automatiques mises en pause.</string>
+    <string name="settings_backup_location_error_accessing">Erreur d\'accès à l'emplacement de sauvegarde</string>
+    <string name="content_desc_delete_icon">Îcone de suppression</string>
     <string name="dialog_title_select_backup_directory">Choisir un répertoire de sauvegarde</string>
+
     <string name="settings_backup_location_selected_folder">Répertoire sélectionné</string>
     <string name="settings_backup_location_open_error_no_app">Aucune application trouvée pour ouvrir le répertoire.</string>
+    
     <string name="settings_backup_location_selection_cancelled">Sélection du dossier annulée. Les sauvegarde automatiques sont désactivées.</string>
+
     <string name="lbm_hume_1966_short">Masse Maigre selon Hume</string>
-    <string name="lbm_hume_1966_long">Modèle Masse Maigre récent. Simple et largement utilisé ; pas taillé pour les corpulences athlétiques.</string>
+    <string name="lbm_hume_1966_long">Modèle Masse Maigre ancien. Simple et largement utilisé ; pas taillé pour les corpulences athlétiques.</string>
     <string name="lbm_weight_minus_bf_long">Calcule la masse maigre comme poids total moins masse grasse obtenue à partir de la formule de graisse corporelle choisie. La précision dépend de l\'estimation de la graisse corporelle.</string>
+    <string name="bf_us_navy_short">Méthode de la Marine des États-Unis</string>
+    <string name="bf_us_navy_long">Calcule le pourcentage de graisse corporelle en fonction du tour de taille, de cou et (pour les femmes) du tour de hanches selon le standard de la Marine des États-Unis.</string>
+    
     <string name="batch_update_status_report">%1$d : %2$s</string>
     <string name="dialog_title_confirm_generic">Confirmer %1$s ?</string>
-    <string name="dialog_text_confirm_generic_verb">Êtes-vous sûr de vouloir pour %2$s de %1$d item(s)  ?</string>
+    <string name="dialog_text_confirm_generic_verb">Êtes-vous sûr de vouloir %2$s %1$d objet(s) ?</string>
     <string name="action_pin">Épingler</string>
     <string name="action_unpin">Désépingler</string>
     <string name="action_enable">activer</string>
@@ -526,72 +710,125 @@
     <string name="action_move_to_right_axis">déplacer vers l\'axe droit</string>
     <string name="status_pinned">Épinglé</string>
     <string name="status_unpinned">Désépinglé</string>
+
     <string name="bluetooth_action_no_scale_saved_desc">Paramétrer la balance Bluetooth</string>
+    
     <string name="snackbar_bluetooth_processing_with">En cours avec %1$s …</string>
+    
     <string name="snackbar_bluetooth_attempting_connection">Tentative de connexion à %1$s …</string>
     <string name="search_for_scales_button_desc">Bouton de recherche des balances</string>
     <string name="saved_scale_icon_desc">Indicateur de balance enregistrée</string>
+    
     <string name="rssi_format">%1$d dBm</string>
-    <string name="settings_backup_location_select_action">Choisir une localisation de sauvegarde</string>
-    <string name="settings_backup_location_open_error">Impossible d\'ouvrir la localisation de la sauvegarde.</string>
-    <string name="settings_backup_location_selected_toast">Localisation de sauvegarde défini à : %1$s</string>
+
+    <string name="settings_backup_location_select_action">Choisir un emplacement de sauvegarde</string>
+    <string name="settings_backup_location_open_error">Impossible d\'ouvrir l'emplacement de la sauvegarde.</string>
+    <string name="settings_backup_location_selected_toast">Emplacement de sauvegarde défini à : %1$s</string>
+
     <string name="settings_last_backup_status_successful">Dernière sauvegarde : %1$s</string>
     <string name="settings_last_backup_status_never">Dernière sauvegarde : Jamais</string>
-    <string name="interval_daily">Quotidiennement</string>
-    <string name="interval_weekly">Hebdomadairement</string>
-    <string name="interval_monthly">Mensuellement</string>
+    <string name="settings_last_backup_status_failed">La dernière sauvegarde a échoué le %1$s: %2$s</string>
+    <string name="settings_next_backup_scheduled">Prochaine sauvegarde: %1$s</string>
+    <string name="settings_next_backup_not_scheduled">Prochaine sauvegarde: non planifiée</string>
+    <string name="settings_backup_error_location_inaccessible">Le dossier de sauvegarde n\'est plus accessible. Veuillez le sélectionner à nouveau.</string>
+    <string name="settings_backup_error_file_creation_failed">Le fichier de sauvegarde n\'a pas pu être créé dans le dossier sélectionné.</string>
+    <string name="settings_backup_error_write_failed">La base de données n\'a pas pu être écrite dans le fichier de sauvegarde.</string>
+    <string name="interval_daily">Quotidienne</string>
+    <string name="interval_weekly">Hebdomadaire</string>
+    <string name="interval_monthly">Mensuelle</string>
+
+    <!-- Titres des boîtes de dialogue de gestion des données -->
     <string name="dialog_title_export_select_user">Export : Choisir le profil</string>
     <string name="dialog_title_import_select_user">Import : Choisir le profil</string>
     <string name="dialog_title_delete_select_user">Suppression : Choisir le profil</string>
     <string name="dialog_title_delete_user_data_confirmation">Supprimer définitivement ?</string>
     <string name="dialog_title_delete_entire_database_confirmation">ATTENTION : Suppression complète de la base de données ?</string>
     <string name="dialog_title_restore_database_confirmation">Restaurer la base de données ?</string>
-    <string name="delete_db_confirmation_title">Confirmation de la suppression de la base de données</string>
-    <string name="dialog_message_delete_user_data_confirmation">Êtes-vous d\'accord de supprimer définitivement TOUTES les mesures du profil \"%1$s\" ? Cette action ne peut pas être annulée.</string>
+    <string name="delete_db_confirmation_title">Confirmer la suppression de la base de données</string>
+    
+    <!-- Messages des boîtes de dialogue de gestion des données -->
+    <string name="dialog_message_delete_user_data_confirmation">Voulez-vous vraiment supprimer définitivement TOUTES les mesures du profil \"%1$s\" ? Cette action ne peut pas être annulée.</string>
     <string name="button_yes_delete_all">OUI, TOUT SUPPRIMER</string>
-    <string name="dialog_message_delete_entire_database_confirmation">Ceci supprimera de manière IRRÉVERSIBLE TOUTES LES DONNÉES de l\'application, incluant tous les profils, paramétrages et mesures. Cette action NE PEUT PAS ÊTRE ANNULÉE. Vraiment ?\n\nLe redémarrage de l\'application sera nécessaire après cette action.</string>
-    <string name="dialog_message_restore_database_confirmation">D\'accord pour écraser la base de données actuelle avec une sauvegarde ? Toutes les données en cours ou non sauvegardées seront perdues. L\'application peut avoir besoin de redémarrer après la restauration.</string>
+    <string name="dialog_message_delete_entire_database_confirmation">Ceci supprimera de manière IRRÉVERSIBLE TOUTES LES DONNÉES de l\'application, incluant tous les profils, paramétrages et mesures. Cette action NE PEUT PAS ÊTRE ANNULÉE. Étes-vous absolument sûr ?\n\nLe redémarrage de l\'application sera nécessaire après cette action.</string>
+    <string name="dialog_message_restore_database_confirmation">Êtes-vous sûr de vouloir écraser la base de données actuelle avec une sauvegarde ? Toutes les données en cours ou non sauvegardées seront perdues. L\'application peut avoir besoin de redémarrer après la restauration.</string>
     <string name="button_yes_restore">OUI, RESTAURER</string>
+
     <string name="dialog_bt_enter_valid_code_prompt">Merci d\'entrer un code valide.</string>
-    <string name="saved_measurements_message">%1$d mesures enregistrées</string>
+    
+    <string name="saved_measurements_message">%1$d mesure(s) enregistrée(s)</string>
+
+    <!-- Informations générales -->
     <string name="bt_info_step_on_scale">Merci de montrer pieds-nus sur la balance</string>
+    
     <string name="bt_info_suggest_create_new_user">Pour l\'ensemble des fonctionnalité, créer un nouveau profil sur la balance.</string>
     <string name="bt_info_register_new_user_started">Création d\'un nouveau profil sur la balance …</string>
+
     <string name="bt_info_no_mapping_creating_user">Pas de liaison trouvée ; création en cours d\'un nouveau profil sur la balance …</string>
     <string name="bt_info_waiting_for_measurements">En attente de mesure via les notifications.</string>
     <string name="bt_info_linked_app_user_to_slot">Liaison entre le profil app %1$d et le profil balance %2$d.</string>
+
+    <!-- Balances Omron WLC (famille HBF-702T) -->
+    <string name="bt_info_omron_pairing_mode_required">Maintenez le bouton Bluetooth de la balance enfoncé jusqu\'à ce que l’indicateur d\'appairage clignote.</string>
+    <string name="bt_info_omron_paired">Balance appairée avec openScale.</string>
+    <string name="bt_info_omron_measurements_read">%1$d nouvelle(s) mesure(s) lue(s) depuis la balance.</string>
+    <string name="bt_info_omron_no_new_measurements">Aucune nouvelle mesure enregistrée sur la balance.</string>
+    <string name="bt_omron_slot_with_measurement">Utilisateur %1$d de la balance — %2$.1f kg le %3$s</string>
+    <string name="bt_omron_slot_empty">Utilisateur %1$d de la balance — aucune mesure</string>
+    <string name="bt_error_omron_unknown_model">Modèle Omron non pris en charge \"%1$s\" ; impossible de décoder ses enregistrements de mesures.</string>
+    <string name="bt_error_omron_service_missing">Cet appareil n\'expose pas le service de transfert Omron.</string>
+    <string name="bt_error_omron_pairing_mode_required">La balance n\'est pas en mode d\'appairage. Maintenez son bouton Bluetooth enfoncé jusqu\'à ce que l\'indicateur d\'appairage clignote, puis réessayez.</string>
+    <string name="bt_error_omron_pairing_failed">Impossible d\'enregistrer la clé d\'appairage sur la balance.</string>
+    <string name="bt_error_omron_session_failed">La balance a refusé de démarrer un transfert de données.</string>
+    <string name="bt_error_omron_read_failed">Échec de la lecture des mesures enregistrées sur la balance.</string>
+    <string name="bt_error_omron_timeout">La balance ne répond plus ; le transfert a été annulé.</string>
+
+    <!-- Avertissements -->
     <string name="bt_warn_low_battery">La batterie de la balance est faible (%1$d%%).</string>
+    <!-- Utilisé par les balances qui signalent uniquement que la batterie est faible, sans donner un pourcentage -->
+    <string name="bt_warn_low_battery_unknown">La batterie de la balance est faible.</string>
     <string name="bt_warn_register_failed_with_code">La création du profil sur la balance a échoué (code %1$d).</string>
-    <string name="bt_warn_slots_full">La balance n\'a plus de profil libre disponible. Supprimer un profil existant sur l\'appareil et recommencer.</string>
+    <string name="bt_warn_slots_full">La balance n\'a plus de profil libre disponible. Veuillez supprimer un profil existant sur l\'appareil et recommencer.</string>
     <string name="bt_warn_notify_failed">Échec de l\'activation des notifications pour %1$s.</string>
     <string name="bt_warn_write_failed">L\'écriture sur %1$s a échoué.</string>
-    <string name="bt_warn_notify_state_failed">Changer le statut de notification pour %1$s a échoué.</string>
+    <string name="bt_warn_notify_state_failed">Le changement du statut de notification pour %1$s a échoué.</string>
     <string name="bt_warn_consent_wrong_retry">Le code d\'accord n\'a pas été accepté. Merci de vérifier et essayer à nouveau.</string>
+
+    <!-- Erreurs -->
     <string name="bt_error_ucp_not_authorized">Le code d\'accord n\'a pas été accepté. Merci de vérifier et d\'essayer à nouveau.</string>
     <string name="bt_error_delivery_user_feedback">Erreur de transmission du retour du profil : %1$s</string>
     <string name="bt_info_reconnecting_try">Reconnexion en cours… (essai %1$d/%2$d)</string>
     <string name="bt_info_waiting_for_measurement">En attente de la mesure via les notifications.</string>
+
     <string name="bt_warn_no_peripheral_for_setnotify">Aucun périphérique pour setNotifyOn (%1$s)</string>
     <string name="bt_warn_characteristic_not_found">Caractéristique %1$s non trouvé</string>
     <string name="bt_warn_no_peripheral_for_write">Pas de périphérique pour écrire (%1$s)</string>
     <string name="bt_warn_no_peripheral_for_read">Pas de périphérique pour lire (%1$s)</string>
     <string name="bt_warn_write_failed_status">Échec d\'écriture sur %1$s : %2$s</string>
     <string name="bt_warn_notify_state_failed_status">Échec de l\'état de notification pour %1$s : %2$s</string>
+    
+    <!-- Avertissements/Erreurs -->
     <string name="bt_error_no_user_selected">Aucun profil sélectionné</string>
     <string name="bt_error_generic">Erreur</string>
+    
     <string name="bt_error_handler_connect_failed">Échec de la gestion de la connexion : %1$s</string>
     <string name="bt_error_handler_parse_error">Erreur d\'analyse du gestionnaire pour %1$s : %2$s</string>
     <string name="bt_error_no_bluetooth_adapter">Pas d\'adaptateur Bluetooth détecté sur cet appareil.</string>
     <string name="bt_error_no_device_found">Appareil introuvable. Assurez-vous qu\'il est allumé et à proximité.</string>
     <string name="bt_info_using_existing_mapping_auto_consent">Utilisation de la liaison entre le profil %1$s et le profil %2$s de la balance. Tentative d\'auto-accord en cours.</string>
+    
     <string name="dialog_bt_interaction_title_enter_consent">Saisir le code de confirmation</string>
     <string name="dialog_bt_interaction_desc_enter_consent_default">Merci de saisir le code affiché sur votre balance.</string>
     <string name="dialog_bt_icon_desc_enter_consent">Saisie du code</string>
     <string name="dialog_bt_label_consent_code">Confirmation du code</string>
-    <string name="bt_info_consent_needed">Merci de saisir le cade d\'accord pour le profil %1$d.</string>
+
+    <string name="bt_info_consent_needed">Merci de saisir le code d\'accord pour le profil %1$d.</string>
     <string name="bt_info_read_only_mode_no_consent">Pas de code d\'accord valide. Les mesures peuvent être lues, mais les paramètres profil ne peuvent être changés.</string>
+
     <string name="bt_error_uds_consent_failed">Échec de confirmation du profil sur la balance. Erreur : %1$s</string>
+    
     <string name="delete_db_confirmation_message">Êtes-vous sûr de vouloir supprimer la totalité de la base de données ? Ceci supprimera TOUS les profils et TOUTES les données sans annulation possible.</string>
+    
+    <!-- Messages d'export des données -->
     <string name="export_successful">Données exportées avec succès.</string>
     <string name="export_error_no_specific_fields">Export impossible : Pas de champs de données spécifiquement définis pour un export.</string>
     <string name="export_error_no_measurements">Pas de mesure valide exportable pour ce profil.</string>
@@ -599,73 +836,102 @@
     <string name="export_error_cannot_create_file">Échec de l\'export : Création de fichier impossible.</string>
     <string name="export_error_generic">Erreur pendant l\'export : %1$s</string>
     <string name="export_no_users_available">Pas de profil valide pour un export.</string>
+    
+    <!-- Messages d'import des données -->
     <string name="import_successful_records">Les enregistrements de mesure de %1$d ont été importés avec succès.</string>
     <string name="import_successful_records_with_details">%1$d enregistrements importés avec succès %2$s.</string>
     <string name="import_summary_details_base">%1$d enregistrements de mesure importés avec succès.</string>
     <string name="import_summary_ignored_duplicated_timestamp">%1$d lignes ignorées (horodatage dupliqué).</string>
     <string name="import_summary_skipped_missing_dates">%1$d lignes sautés en raison des dates manquantes.</string>
-    <string name="import_summary_skipped_date_parse_errors">%1$d lignes sautés en raison d\'erreurs d\'analyse des datations.</string>
-    <string name="import_summary_values_skipped_parse_errors">%1$d valeurs individuelles qui n\'ont pas été analysées.</string>
+    <string name="import_summary_skipped_date_parse_errors">%1$d lignes sautés en raison d\'erreurs d\'identification des datations.</string>
+    <string name="import_summary_values_skipped_parse_errors">%1$d valeurs individuelles qui n\'ont pas été identifiées.</string>
     <string name="import_error_no_valid_data">Pas de données valides trouvées dans le fichier CSV, ou toutes les lignes contiennent des erreurs.</string>
     <string name="import_error_missing_date_column">Échec de l\'import : La colonne date obligatoire est manquante dans l\'en-tête du CSV.</string>
     <string name="import_error_cannot_read_file">Échec de l\'import : Impossible de lire le fichier.</string>
     <string name="import_error_generic">Erreur pendant l\'import : %1$s</string>
     <string name="import_no_users_available">Pas de profil valide pour l\'import.</string>
+    
+    <!-- Messages de suppression des données (Spécifique aux profils) -->
     <string name="delete_data_no_users_available">Pas de données profil valable pour être supprimées.</string>
     <string name="delete_data_user_successful">Toutes les données de mesure pour %1$s ont été supprimées.</string>
     <string name="delete_data_user_no_data_found">Aucune donnée de mesure trouvé pour %1$s.</string>
     <string name="delete_data_user_error">Erreur lors de la suppression des données de %1$s.</string>
     <string name="delete_data_error_no_user_selected">Le processus de suppression ne peut commencer : Aucun profil sélectionné.</string>
+   
+    <!-- Messages de sauvegarde -->
     <string name="backup_error_db_name_not_retrieved">Erreur : le nom de la base de données ne peut être trouvé.</string>
     <string name="backup_error_main_db_not_found">Erreur : Le fichier de la base de données principales \'%1$s\' n\'a pas été trouvé.</string>
     <string name="backup_error_no_output_stream">Échec de sauvegarde : Impossible de créer un fichier de sauvegarde à l\'endroit sélectionné.</string>
     <string name="backup_error_generic">Erreur pendant la sauvegarde de la base de données : %1$s</string>
     <string name="backup_successful">Base de données sauvegardée avec succès.</string>
+    
+    <!-- Messages de restauration -->
     <string name="restore_error_no_input_stream">Échec de restauration : Impossible de lire le fichier de sauvegarde.</string>
-    <string name="restore_error_zip_format">Échec de restauration : Le fichier de sauvegarde n\'est un ZIP valide ou il est corrompu.</string>
+    <string name="restore_error_zip_format">Échec de restauration : Le fichier de sauvegarde n\'est pas une archive ZIP valide ou il est corrompu.</string>
     <string name="restore_error_db_files_missing">Échec de restauration : Les fichiers essenteils de base de données n\'ont pas été trouvés dans la sauvegarde.</string>
     <string name="restore_error_generic">Erreur pendant la restauration : %1$s</string>
     <string name="restore_successful">Base de données restaurée avec succès. Merci de redémarrer l\'application.</string>
+    
+    <!-- Messages de suppression de la base de données -->
     <string name="delete_db_successful">La totalité de la base de données a été supprimée.</string>
     <string name="delete_db_error">Erreur lors de la suppression de la totalité de la base de données.</string>
-    <string name="eval_no_age_band">Pas d\'évaluation possible : Pas de correspondance pour cette tranche d\'âge pour le temps de mesure.</string>
+    
+    <!-- Messages d'évaluation -->
+    <string name="eval_no_age_band">Pas d\'évaluation possible : Pas de correspondance pour cette tranche d\'âge au moment de la mesure.</string>
     <string name="eval_out_of_plausible_range_percent">Valeur inhabituelle : en dehors de la tranche plausible (%1$.0f-%2$.0f).</string>
+    
+    <!-- Messages de communication Bluetooth -->
     <string name="bluetooth_scale_trisa_message_not_paired_instruction">Cette balance n\'a pas été appairée.\n\nMaintenez enfoncé le bouton au dos de la balance pour passer en mode appairement, et reconnecter pour récupérer le mot de passe de l\'appareil.</string>
     <string name="bluetooth_scale_trisa_success_pairing">Appairement réussi.\n\nReconnecter pour récupérer les données de mesure.</string>
+    <string name="bluetooth_scale_weightgurus_slot_empty">vide</string>
+    <string name="bluetooth_scale_weightgurus_slot">Profil %1$d - %2$s</string>
+    <string name="bluetooth_scale_weightgurus_slot_match">Profil %1$d - %2$s (correspond à votre nom)</string>
     <string name="bluetooth_scale_info_create_user_instruction">Créer un nouveau profil sur la balance.</string>
     <string name="bluetooth_scale_warning_low_battery">Niveau de batterie faible (%d%%), merci de recharger ou remplacer les piles de la balance</string>
     <string name="bluetooth_scale_info_step_on_for_reference">Merci de montrer pieds nus sur la balance pour les mesures de référence</string>
     <string name="bluetooth_scale_info_measuring_weight">Mesure du poids : %.2f</string>
     <string name="bluetooth_scale_error_max_users_reached">Nombre max. de profils trouvés sur la balance</string>
+    
     <string name="permission_read_write_data_description">lecture/écriture des données openScale, incluant les informations profil et toutes les mesures enregistrées</string>
     <string name="permission_read_write_data_label">Lecture et écriture des données openScale</string>
+    
     <string name="dialog_bt_interaction_title_choose_user">Choix de profil sur la balance</string>
     <string name="dialog_bt_interaction_desc_choose_user_default">Choisir le profil à partir de la liste ou en créer un nouveau.</string>
-    <string name="dialog_bt_icon_desc_choose_user">Sélection profil</string>
+    <string name="dialog_bt_icon_desc_choose_user">Sélection du profil</string>
+
     <string name="dialog_bt_error_loading_user_list_empty">Liste de profil vide ou corrompue.</string>
     <string name="dialog_bt_error_loading_user_list_format">Erreur : Les données profil n\'ont pu être chargées correctement.</string>
     <string name="dialog_bt_select_user_prompt">Merci de choisir un profil.</string>
+
+    <!-- Associations -->
     <string name="bt_info_using_existing_mapping">Utiliser une relation existante : profil app %1$d ↔ profil balance %2$d.</string>
+
     <string name="bt_error_pin_format_invalid">Format PIN non valide : Merci de saisir un nombre correct.</string>
     <string name="bt_error_uds_register_failed">Échec d\'enregistrement d\'un profil sur la balance. Erreur : %1$s</string>
+
     <string name="bt_error_uds_list_users_failed">Échec de récupération de la liste des profils de la balance. Erreur : %1$s</string>
     <string name="bt_error_user_setup_failed_no_list">Échec du paramétrage profil. Impossible de récupérer la liste des profils de la balance.</string>
+
     <string name="bluetooth_scale_info_create_user_instruction_uds">Créer un nouveau profil sur la balance (emplacement assigné par la balance)</string>
     <string name="bt_uds_choice_slot_current_user">Emplacement P%1$d : %2$s (Profil application courant)</string>
     <string name="bt_uds_choice_slot_other_user">Emplacement p%1$d : Utilisé par %2$s (Choisir pour remplacer ?)</string>
     <string name="bt_uds_choice_slot_occupied_unmapped">Emplacement p%1$d : Occupé (non relié)</string>
-    <string name="bt_sbf72_choice_slot_current_user">P%1$d : %2$s (actuel)</string>
+
+    <string name="bt_sbf72_choice_slot_current_user">P%1$d : %2$s (Actuel)</string>
     <string name="bt_sbf72_choice_slot_other_user">P%1$d : Utilisé par %2$s (Remplacer ?)</string>
-    <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d : Occupé (Pas lié)</string>
+    <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d : Occupé (Non lié)</string>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d : Créer \'%2$s\' ici</string>
+    
     <string name="settings_dynamic_color_label">Couleurs dynamiques</string>
+    
     <string name="settings_appearance_title">Apparence</string>
     <string name="settings_high_contrast_label">Contraste élevé</string>
+    
     <string name="sync_app_unreachable_hint">La dernière modification n\'a pas été synchronisée. Veuillez ouvrir openScale-sync et lancer une synchronisation manuelle.</string>
     <string name="sync_app_open_action">Ouvrir</string>
     <string name="clear_button">Effacer</string>
     <string name="saved">Enregistré</string>
-    <string name="route_title_insights">Insights</string>
+    <string name="route_title_insights">Tendances</string>
     <string name="route_title_table_drilldown">Détails</string>
     <string name="calendar_week_abbrev">Sem.</string>
     <string name="user_added_successfully">Profil %1$s ajouté avec succès.</string>
@@ -673,6 +939,8 @@
     <string name="action_undo">Annuler</string>
     <string name="cd_chart_handle_resize">Faites glisser pour redimensionner le graphique, ou appuyez dessus pour le réduire</string>
     <string name="cd_chart_handle_show">Appuyez pour afficher le graphique</string>
-    <string name="dialog_title_discard_changes">Annuler les modifications ?</string>
+    <string name="dialog_title_discard_changes">Abandonner les modifications ?</string>
     <string name="dialog_message_discard_changes">Vos modifications n\'ont pas été sauvegardées et seront perdues.</string>
+    <string name="action_discard">Abandonner</string>
+    <string name="action_keep_editing">Continuer à modifier</string>
 </resources>
