@@ -92,6 +92,7 @@ object SettingsPreferenceKeys {
     val SAVED_BLUETOOTH_TOLERANCE_PERCENT = intPreferencesKey("saved_bluetooth_tolerance_percent")
     val SAVED_BLUETOOTH_IGNORE_OUTSIDE_TOLERANCE = booleanPreferencesKey("saved_bluetooth_ignore_outside_tolerance")
     val SAVED_BLUETOOTH_AUTO_CONNECT = booleanPreferencesKey("saved_bluetooth_auto_connect")
+    val SAVED_BLUETOOTH_DEVELOPER_MODE = booleanPreferencesKey("saved_bluetooth_developer_mode")
 
     // Settings for chart
     val CHART_SHOW_DATA_POINTS = booleanPreferencesKey("chart_show_data_points")
@@ -287,6 +288,17 @@ interface SettingsFacade {
 
     val autoConnectOnStartup: Flow<Boolean>
     suspend fun setAutoConnectOnStartup(enabled: Boolean)
+
+    /**
+     * Developer mode for the saved scale: every connection is routed to the diagnostic handler,
+     * which dumps the GATT tree and logs notifications but never stores a measurement.
+     *
+     * Deliberately a flag of its own instead of a marker inside the saved device snapshot, so the
+     * device keeps its real identity (name, handler hint, advertisement payloads) while the mode
+     * is on and toggling it stays lossless.
+     */
+    val developerModeEnabled: Flow<Boolean>
+    suspend fun setDeveloperModeEnabled(enabled: Boolean)
 
     // Generic Settings Accessors
     /**
@@ -572,6 +584,8 @@ class SettingsFacadeImpl @Inject constructor(
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_MANUFACTURER_DATA)
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_DATA)
             prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_AUTO_CONNECT)
+            // Removing the scale always leaves developer mode behind as well.
+            prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVELOPER_MODE)
         }
     }
 
@@ -618,6 +632,16 @@ class SettingsFacadeImpl @Inject constructor(
 
     override suspend fun setAutoConnectOnStartup(enabled: Boolean) {
         saveSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_AUTO_CONNECT.name, enabled)
+    }
+
+    override val developerModeEnabled: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVELOPER_MODE.name,
+        false
+    )
+
+    override suspend fun setDeveloperModeEnabled(enabled: Boolean) {
+        LogManager.i(TAG, "Bluetooth developer mode ${if (enabled) "enabled" else "disabled"}.")
+        saveSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVELOPER_MODE.name, enabled)
     }
 
     override val isSmartAssignmentEnabled: Flow<Boolean> = observeSetting(

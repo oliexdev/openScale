@@ -17,8 +17,10 @@
  */
 package com.health.openscale.ui.screen.overview
 
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +45,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -64,7 +67,6 @@ import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeIcon
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.utils.LocaleUtils
@@ -100,6 +102,16 @@ fun MeasurementDetailScreen(
     userId: Int,
     sharedViewModel: SharedViewModel
 ) {
+    // Entering values while standing on the scale means not touching the phone for a while, so
+    // keep the display awake. The flag is cleared on dispose, so it only affects this screen (and
+    // the system drops it anyway once the activity leaves the foreground).
+    LocalActivity.current?.window?.let { window ->
+        DisposableEffect(window) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            onDispose { window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
+        }
+    }
+
     val context = LocalContext.current
     val resources = LocalResources.current
 
@@ -516,7 +528,7 @@ fun MeasurementDetailScreen(
                 .format(Date(measurementTimestampState))
         }
 
-        val weightType = allMeasurementTypes.find { it.key == MeasurementTypeKey.WEIGHT }
+        val weightType = allMeasurementTypes.find { it.key == MeasurementType.WEIGHT }
         val weightValue = weightType?.let { type ->
             valuesState[type.id]?.let { value ->
                 LocaleUtils.formatValueForDisplay(value, type.unit)
@@ -560,7 +572,7 @@ fun MeasurementDetailScreen(
             }.timeInMillis
         }
 
-        val triggeringType = allMeasurementTypes.find { it.key == MeasurementTypeKey.DATE }
+        val triggeringType = allMeasurementTypes.find { it.key == MeasurementType.DATE }
         val dateDialogTitle = stringResource(
             R.string.dialog_title_change_value,
             triggeringType?.getDisplayName(context) ?: stringResource(R.string.label_date)
@@ -601,7 +613,7 @@ fun MeasurementDetailScreen(
     }
 
     if (showTimePickerForMainTimestamp) {
-        val triggeringType = allMeasurementTypes.find { it.key == MeasurementTypeKey.TIME }
+        val triggeringType = allMeasurementTypes.find { it.key == MeasurementType.TIME }
         val timeDialogTitle = stringResource(
             R.string.dialog_title_change_value,
             triggeringType?.getDisplayName(context) ?: stringResource(R.string.label_time)
@@ -629,7 +641,7 @@ fun MeasurementDetailScreen(
     }
 
     if (showUserPicker) {
-        val triggeringType = allMeasurementTypes.find { it.key == MeasurementTypeKey.USER }
+        val triggeringType = allMeasurementTypes.find { it.key == MeasurementType.USER }
         val userDialogTitle = stringResource(R.string.dialog_title_change_value, triggeringType?.getDisplayName(context) ?: stringResource(R.string.measurement_type_user))
 
         UserInputDialog(

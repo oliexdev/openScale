@@ -29,6 +29,7 @@ import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.BluetoothConnected
 import androidx.compose.material.icons.filled.BluetoothDisabled
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -36,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.ConnectionStatus
@@ -80,8 +82,18 @@ fun rememberBluetoothActionButton(
     val savedDevice by bluetoothViewModel.savedDevice.collectAsState()
     val connectedDevice by bluetoothViewModel.connectedDeviceAddress.collectAsState()
     val currentUser by sharedViewModel.selectedUser.collectAsState()
+    val developerMode by bluetoothViewModel.developerModeEnabled.collectAsStateWithLifecycle(false)
 
-    return remember(connStatus, savedDevice, connectedDevice, currentUser) {
+    // Developer mode never stores a measurement, so mark the icon where the user actually weighs –
+    // as a tint, so the connection state stays readable from the icon itself.
+    val developerModeTint = MaterialTheme.colorScheme.error.takeIf { developerMode }
+
+    /** Keeps the action's own description and only appends the developer-mode note for screen readers. */
+    fun withDeveloperNote(description: String): String =
+        if (developerMode) "$description – ${context.getString(R.string.developer_mode_active_icon_desc)}"
+        else description
+
+    return remember(connStatus, savedDevice, connectedDevice, currentUser, developerMode) {
         val savedAddr = savedDevice?.address
         val deviceName = savedDevice?.name ?: context.getString(R.string.fallback_device_name_saved_scale)
 
@@ -125,7 +137,10 @@ fun rememberBluetoothActionButton(
             // 3. Already connected -> Disconnect on click
             connStatus == ConnectionStatus.CONNECTED -> TopBarAction(
                 icon = Icons.Filled.BluetoothConnected,
-                contentDescription = context.getString(R.string.bluetooth_action_disconnect_desc, deviceName),
+                tint = developerModeTint,
+                contentDescription = withDeveloperNote(
+                    context.getString(R.string.bluetooth_action_disconnect_desc, deviceName)
+                ),
                 onClick = {
                     sharedViewModel.setPendingReferenceUserForBle(null)
                     bluetoothViewModel.disconnectDevice()
@@ -139,7 +154,10 @@ fun rememberBluetoothActionButton(
             // 4. Disconnected -> Request permissions/enable BT/connect
             else -> TopBarAction(
                 icon = Icons.Filled.BluetoothDisabled,
-                contentDescription = context.getString(R.string.bluetooth_action_disconnect_desc, deviceName),
+                tint = developerModeTint,
+                contentDescription = withDeveloperNote(
+                    context.getString(R.string.bluetooth_action_disconnect_desc, deviceName)
+                ),
                 onClick = {
                     // Check for BOTH permissions (Scan and Connect)
                     val hasScanPerm = ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED

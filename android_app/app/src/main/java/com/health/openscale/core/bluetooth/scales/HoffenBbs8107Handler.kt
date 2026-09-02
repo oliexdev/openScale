@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.WeightUnit
@@ -28,14 +29,21 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.max
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 /**
- * Handler for the Hoffen BBS-8107 scale.
+ * Handler for the Hoffen BBS-8107 and its rebrands.
  *
  * Protocol (single custom characteristic):
  *  - Service 0xFFB0, Characteristic 0xFFB2 (notify + write with response)
  *  - Packets start with 0xFA, then `cmdOrResp`, `len`, `payload`, `checksum`
  *  - Checksum = XOR of bytes 1..(n-2); some final measurement frames deliver checksum in a follow-up notify.
+ *
+ * This is the Chipsea "WeChat scale" protocol: the same firmware is sold under several brands,
+ * all advertising the WeChat service 0xFEE7 alongside the 0xFFB0 service they actually talk on.
+ * Verified against the stock "Dr.Curve+" app (`com.yilai.DrCurvePlus`), whose `onWeixinFatScale`
+ * routine decodes exactly the offsets [parseFinalMeasurement] uses.
  */
 class HoffenBbs8107Handler : ScaleDeviceHandler() {
 
@@ -46,9 +54,20 @@ class HoffenBbs8107Handler : ScaleDeviceHandler() {
 
     // --- DeviceSupport --------------------------------------------------------
 
+    /**
+     * Advertised name (lowercased) → name to show in the UI.
+     *
+     * Matched by exact name on purpose. These scales also advertise service 0xFEE7, but that is
+     * the generic WeChat BLE service used by all kinds of unrelated devices, so claiming it
+     * outright would produce false positives in the scan list.
+     */
+    private val KNOWN_DEVICES = mapOf(
+        "hoffen bs-8107" to "Hoffen BBS-8107",
+        "pc-pw 3008 bt" to "ProfiCare PC-PW 3008 BT",
+    )
+
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = device.name.lowercase(Locale.US)
-        if (name != "hoffen bs-8107") return null
+        val displayName = KNOWN_DEVICES[device.name.trim().lowercase(Locale.US)] ?: return null
 
         val caps = setOf(
             DeviceCapability.BODY_COMPOSITION,
@@ -57,7 +76,7 @@ class HoffenBbs8107Handler : ScaleDeviceHandler() {
         )
         // We implement everything we claim above.
         return DeviceSupport(
-            displayName = "Hoffen BBS-8107",
+            displayName = displayName,
             capabilities = caps,
             implemented = caps,
             linkMode = LinkMode.CONNECT_GATT
@@ -215,18 +234,18 @@ class HoffenBbs8107Handler : ScaleDeviceHandler() {
 
         val m = ScaleMeasurement().apply {
             dateTime = Date()
-            this.weight = max(0f, weight)
+            this[MeasurementType.WEIGHT] = Kg(max(0f, weight))
         }
 
         // If barefoot (contact) → extra composition values
         when (frame[5]) {
             0x00.toByte() -> {
-                m.fat = ConverterUtils.fromUnsignedInt16Le(frame, 6) / 10.0f
-                m.water = ConverterUtils.fromUnsignedInt16Le(frame, 8) / 10.0f
-                m.muscle = ConverterUtils.fromUnsignedInt16Le(frame, 10) / 10.0f
+                m[MeasurementType.BODY_FAT] = Percent(ConverterUtils.fromUnsignedInt16Le(frame, 6) / 10.0f)
+                m[MeasurementType.WATER] = Percent(ConverterUtils.fromUnsignedInt16Le(frame, 8) / 10.0f)
+                m[MeasurementType.MUSCLE] = Percent(ConverterUtils.fromUnsignedInt16Le(frame, 10) / 10.0f)
                 // Bone mass is returned in deci-kg at index 14 (single byte)
-                m.bone = (frame[14].toInt() and 0xFF) / 10.0f
-                m.visceralFat = ConverterUtils.fromUnsignedInt16Le(frame, 17) / 10.0f
+                m[MeasurementType.BONE] = Kg((frame[14].toInt() and 0xFF) / 10.0f)
+                m[MeasurementType.VISCERAL_FAT] = ConverterUtils.fromUnsignedInt16Le(frame, 17) / 10.0f
             }
             0x04.toByte() -> {
                 LogManager.d(TAG, "No impedance/contact data")

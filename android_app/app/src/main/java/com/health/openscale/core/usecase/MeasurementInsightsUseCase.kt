@@ -19,7 +19,6 @@ package com.health.openscale.core.usecase
 
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.model.BodyCompositionPattern
 import com.health.openscale.core.model.CompositionPatternType
 import com.health.openscale.core.model.InsightConfidence
@@ -252,16 +251,19 @@ class MeasurementInsightsUseCase @Inject constructor() {
     private fun computeBodyCompositionPattern(
         sorted: List<MeasurementWithValues>,
     ): BodyCompositionPattern? {
-        val typesByKey: Map<MeasurementTypeKey, MeasurementType> = sorted
+        // Only predefined types take part in the pattern; ble.*/user.* rows have no Key
+        // and are skipped — before the identity refactor they fell out via the CUSTOM
+        // branch, now they fall out here.
+        val typesByKey: Map<MeasurementType.Key<*>, MeasurementType> = sorted
             .flatMap { it.values }
             .filter { isNumeric(it.type) }
-            .associateBy { it.type.key }
-            .mapValues { it.value.type }
+            .mapNotNull { v -> v.type.key?.let { it to v.type } }
+            .toMap()
 
-        val weightType = typesByKey[MeasurementTypeKey.WEIGHT]    ?: return null
-        val fatType    = typesByKey[MeasurementTypeKey.BODY_FAT]  ?: return null
-        val muscleType = typesByKey[MeasurementTypeKey.MUSCLE]    ?: return null
-        val waterType  = typesByKey[MeasurementTypeKey.WATER]     ?: return null
+        val weightType = typesByKey[MeasurementType.WEIGHT]    ?: return null
+        val fatType    = typesByKey[MeasurementType.BODY_FAT]  ?: return null
+        val muscleType = typesByKey[MeasurementType.MUSCLE]    ?: return null
+        val waterType  = typesByKey[MeasurementType.WATER]     ?: return null
 
         data class QuadPoint(
             val date: LocalDate,

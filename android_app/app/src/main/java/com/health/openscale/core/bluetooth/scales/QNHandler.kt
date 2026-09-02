@@ -20,6 +20,7 @@ package com.health.openscale.core.bluetooth.scales
 import android.os.Handler
 import android.os.Looper
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.TrisaBodyAnalyzeLib
@@ -27,6 +28,9 @@ import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.UUID
 import kotlin.experimental.and
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * QN / FITINDEX ES-26M style scales (vendor protocol on 0xFFE0/0xFFF0).
@@ -526,9 +530,9 @@ class QNHandler : ScaleDeviceHandler() {
     private fun publishQnMeasurement(user: ScaleUser, weightKg: Float, r1: Float, source: String) {
         val m = ScaleMeasurement().apply {
             userId = user.id
-            weight = weightKg
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
             // Store the raw resistance so body composition can be recomputed later.
-            impedance = r1.toDouble()
+            this[MeasurementType.IMPEDANCE] = Ohm(r1)
         }
 
         val impedance = if (r1 < 410f) 3.0f else 0.3f * (r1 - 400f)
@@ -539,26 +543,14 @@ class QNHandler : ScaleDeviceHandler() {
             user.bodyHeight
         )
 
-        m.fat = trisa.getFat(weightKg, impedance)
-        m.water = trisa.getWater(weightKg, impedance)
-        m.muscle = trisa.getMuscle(weightKg, impedance)
-        m.bone = trisa.getBone(weightKg, impedance)
+        m[MeasurementType.BODY_FAT] = Percent(trisa.getFat(weightKg, impedance))
+        m[MeasurementType.WATER] = Percent(trisa.getWater(weightKg, impedance))
+        m[MeasurementType.MUSCLE] = Percent(trisa.getMuscle(weightKg, impedance))
+        m[MeasurementType.BONE] = Kg(trisa.getBone(weightKg, impedance))
 
         logD("QN: publishing $source measurement weight=$weightKg kg r1=$r1 impedance=$impedance")
-        publish(snapshot(m))
+        // Snapshot: the accumulator keeps being mutated after this publish.
+        publish(m.snapshot())
     }
 
-    /** Make a defensive snapshot so later mutations don’t affect published data. */
-    private fun snapshot(m: ScaleMeasurement) = ScaleMeasurement().also {
-        it.userId      = m.userId
-        it.dateTime    = m.dateTime
-        it.weight      = m.weight
-        it.fat         = m.fat
-        it.water       = m.water
-        it.muscle      = m.muscle
-        it.bone        = m.bone
-        it.lbm         = m.lbm
-        it.visceralFat = m.visceralFat
-        it.impedance   = m.impedance
-    }
 }

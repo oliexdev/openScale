@@ -25,7 +25,6 @@ import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.User
 import kotlinx.coroutines.flow.first
@@ -87,7 +86,7 @@ class MeasurementDaoTest {
     @Test
     fun deleteUser_cascadesToMeasurementsAndValues() = runBlocking {
         val typeId = db.measurementTypeDao().insert(
-            MeasurementType(key = MeasurementTypeKey.WEIGHT, inputType = InputFieldType.FLOAT)
+            MeasurementType(identity = MeasurementType.WEIGHT.identity, inputType = InputFieldType.FLOAT)
         ).toInt()
         val measurementId = db.measurementDao().insert(
             Measurement(userId = userId, timestamp = 2_000L)

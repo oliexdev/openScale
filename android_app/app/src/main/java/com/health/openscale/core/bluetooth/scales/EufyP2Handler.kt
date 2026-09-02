@@ -25,6 +25,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.EufyAuthHandler
@@ -33,6 +34,8 @@ import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
 
 /**
  * Eufy Smart Scale P2 (T9148) and P2 Pro (T9149).
@@ -105,9 +108,9 @@ class EufyP2Handler : ScaleDeviceHandler() {
                 val reading = EufyP2Lib.parseWeightNotification(data) ?: return
                 publish(ScaleMeasurement().apply {
                     dateTime = Date()
-                    weight = reading.weightKg
+                    this[MeasurementType.WEIGHT] = Kg(reading.weightKg)
                     userId = user.id
-                    if (reading.impedanceOhm > 0) impedance = reading.impedanceOhm.toDouble()
+                    if (reading.impedanceOhm > 0) this[MeasurementType.IMPEDANCE] = Ohm(reading.impedanceOhm.toFloat())
                 })
             }
         }

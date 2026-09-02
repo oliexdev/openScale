@@ -73,6 +73,7 @@ class BluetoothViewModel @Inject constructor(
     val smartAssignmentTolerancePercent = settingsFacade.smartAssignmentTolerancePercent
     val smartAssignmentIgnoreOutsideTolerance = settingsFacade.smartAssignmentIgnoreOutsideTolerance
     val autoConnectOnStartup = settingsFacade.autoConnectOnStartup
+    val developerModeEnabled = settingsFacade.developerModeEnabled
 
     fun setSmartAssignmentEnabled(enabled: Boolean) = viewModelScope.launch {
         settingsFacade.setSmartAssignmentEnabled(enabled)
@@ -88,6 +89,10 @@ class BluetoothViewModel @Inject constructor(
 
     fun setAutoConnectOnStartup(enabled: Boolean) = viewModelScope.launch {
         settingsFacade.setAutoConnectOnStartup(enabled)
+    }
+
+    fun setDeveloperMode(enabled: Boolean) = viewModelScope.launch {
+        settingsFacade.setDeveloperModeEnabled(enabled)
     }
     // --- Snackbar events for UI ---
     private val _snackbarEvents = MutableSharedFlow<SnackbarEvent>(replay = 0, extraBufferCapacity = 1)

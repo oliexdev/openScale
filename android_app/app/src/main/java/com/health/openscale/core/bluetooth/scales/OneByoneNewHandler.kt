@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.OneByoneNewLib
@@ -26,6 +27,9 @@ import com.health.openscale.core.utils.ConverterUtils
 import java.util.Date
 import java.util.UUID
 import kotlin.math.roundToInt
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * OneByone (new) handler
@@ -116,7 +120,7 @@ class OneByoneNewHandler : ScaleDeviceHandler() {
                 pending = ScaleMeasurement().apply {
                     this.userId = user.id
                     this.dateTime = Date()
-                    this.weight = weightKg
+                    this[MeasurementType.WEIGHT] = Kg(weightKg)
                 }
             }
 
@@ -131,7 +135,7 @@ class OneByoneNewHandler : ScaleDeviceHandler() {
 
                 populateBodyComp(m, imp, currentAppUser())
                 // Store the raw impedance so body composition can be recomputed later.
-                m.impedance = imp.toDouble()
+                m[MeasurementType.IMPEDANCE] = Ohm(imp.toFloat())
                 publish(m)
                 pending = null
 
@@ -158,11 +162,11 @@ class OneByoneNewHandler : ScaleDeviceHandler() {
                 val hist = ScaleMeasurement().apply {
                     userId = user.id
                     dateTime = ts
-                    weight = weightKg
+                    this[MeasurementType.WEIGHT] = Kg(weightKg)
                 }
                 populateBodyComp(hist, imp, currentAppUser())
                 // Store the raw impedance so body composition can be recomputed later.
-                hist.impedance = imp.toDouble()
+                hist[MeasurementType.IMPEDANCE] = Ohm(imp.toFloat())
                 publish(hist)
             }
 
@@ -181,12 +185,12 @@ class OneByoneNewHandler : ScaleDeviceHandler() {
 
         val lib = OneByoneNewLib(gender, u.age, heightForLib, u.activityLevel.toInt())
 
-        m.fat         = lib.getBodyFatPercentage(m.weight, impedanceOhm)
-        m.water       = lib.getWaterPercentage(m.weight, impedanceOhm)
-        m.bone        = lib.getBoneMass(m.weight, impedanceOhm)
-        m.visceralFat = lib.getVisceralFat(m.weight)
-        m.muscle      = lib.getSkeletonMusclePercentage(m.weight, impedanceOhm)
-        m.lbm         = lib.getLBM(m.weight, impedanceOhm)
+        m[MeasurementType.BODY_FAT] = Percent(lib.getBodyFatPercentage((m[MeasurementType.WEIGHT]?.value ?: 0f), impedanceOhm))
+        m[MeasurementType.WATER] = Percent(lib.getWaterPercentage((m[MeasurementType.WEIGHT]?.value ?: 0f), impedanceOhm))
+        m[MeasurementType.BONE] = Kg(lib.getBoneMass((m[MeasurementType.WEIGHT]?.value ?: 0f), impedanceOhm))
+        m[MeasurementType.VISCERAL_FAT] = lib.getVisceralFat((m[MeasurementType.WEIGHT]?.value ?: 0f))
+        m[MeasurementType.MUSCLE] = Percent(lib.getSkeletonMusclePercentage((m[MeasurementType.WEIGHT]?.value ?: 0f), impedanceOhm))
+        m[MeasurementType.LBM] = Kg(lib.getLBM((m[MeasurementType.WEIGHT]?.value ?: 0f), impedanceOhm))
     }
 
     // ---- Outbound commands ----------------------------------------------------
@@ -237,7 +241,7 @@ class OneByoneNewHandler : ScaleDeviceHandler() {
                 val u = users[idx]
                 val last = lastMeasurementFor(u.id)
 
-                val weight = last?.weight ?: 0f
+                val weight = last?.get(MeasurementType.WEIGHT)?.value ?: 0f
                 val imp = if (last != null) getImpedanceFromLBM(u, last) else 0
 
                 setMeasurementEntry(
@@ -284,7 +288,7 @@ class OneByoneNewHandler : ScaleDeviceHandler() {
 
         // seed with current user's last known values (if any)
         val last = lastMeasurementFor(user.id)
-        val weight = last?.weight ?: 0f
+        val weight = last?.get(MeasurementType.WEIGHT)?.value ?: 0f
         val imp = if (last != null) getImpedanceFromLBM(user, last) else 0
 
         setMeasurementEntry(
@@ -401,10 +405,10 @@ class OneByoneNewHandler : ScaleDeviceHandler() {
      * estimate it from LBM the app already has.
      */
     private fun getImpedanceFromLBM(user: ScaleUser, measurement: ScaleMeasurement): Int {
-        val finalLbm = measurement.lbm
+        val finalLbm = (measurement[MeasurementType.LBM]?.value ?: 0f)
         val postImpedanceLbm = finalLbm + user.age * 0.0542f
         val hM = user.bodyHeight / 100f
-        val preImpedanceLbm = hM * hM * 9.058f + 12.226f + measurement.weight * 0.32f
+        val preImpedanceLbm = hM * hM * 9.058f + 12.226f + (measurement[MeasurementType.WEIGHT]?.value ?: 0f) * 0.32f
         return ((preImpedanceLbm - postImpedanceLbm) / 0.0068f).roundToInt()
     }
 }

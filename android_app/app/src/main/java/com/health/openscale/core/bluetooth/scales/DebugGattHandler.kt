@@ -25,7 +25,8 @@ import java.util.UUID
  *
  * A pure **inspection** handler that:
  *
- * - Only activates when the scanned device name equals `"Debug"` (case-insensitive).
+ * - Only activates while developer mode is enabled in the Bluetooth settings; it is not part of
+ *   the handler registry and never claims a device on its own.
  * - On connect, **dumps the full GATT table** (all services and characteristics) by
  *   asking the adapter/transport for the current `BluetoothPeripheral`.
  * - Optionally performs a few safe reads/subscriptions on common services to trigger
@@ -43,15 +44,13 @@ import java.util.UUID
  * the adapter stays minimal and unopinionated.
  */
 class DebugGattHandler : ScaleDeviceHandler() {
-    /**
-     * Only claim the device if the UI/scan explicitly selected the **Debug** handler.
-     * This prevents us from hijacking real devices during normal operation.
-     */
-    override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val isDebug = device.name.equals("debug", ignoreCase = true)
-        if (!isDebug) return null
-
-        return DeviceSupport(
+    companion object {
+        /**
+         * The support descriptor this handler runs with. Exposed because the handler is no longer
+         * part of the registry: [com.health.openscale.core.bluetooth.ScaleFactory] instantiates it
+         * directly when developer mode is on and needs the descriptor to pick the adapter.
+         */
+        val SUPPORT = DeviceSupport(
             displayName = "Debug",
             capabilities = emptySet(),   // no functional features
             implemented = emptySet(),
@@ -59,6 +58,14 @@ class DebugGattHandler : ScaleDeviceHandler() {
             linkMode = LinkMode.CONNECT_GATT
         )
     }
+
+    /**
+     * Never claims a device by itself. Developer mode is a separate setting
+     * ([com.health.openscale.core.facade.SettingsFacade.developerModeEnabled]); routing it through
+     * the device name used to overwrite the saved scale's identity, which silently broke the
+     * pairing (issue #1478).
+     */
+    override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? = null
 
     /**
      * On connect:

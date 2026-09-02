@@ -28,7 +28,6 @@ import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.SmoothingAlgorithm
 import com.health.openscale.core.data.TimeRangeFilter
@@ -841,8 +840,8 @@ class SharedViewModel @Inject constructor(
         measuredAtMillis: Long,
     ) = measurementFacade.evaluate(type, value, userEvaluationContext, measuredAtMillis)
 
-    fun getPlausiblePercentRange(typeKey: MeasurementTypeKey) =
-        measurementFacade.plausiblePercentRangeFor(typeKey)
+    fun getPlausiblePercentRange(key: MeasurementType.Key<*>?) =
+        measurementFacade.plausiblePercentRangeFor(key)
 
     fun performCsvExport(
         userId: Int,
@@ -898,7 +897,7 @@ class SharedViewModel @Inject constructor(
                     return@launch
                 }
 
-                val bmiType = types.firstOrNull { it.key == MeasurementTypeKey.BMI } ?: run {
+                val bmiType = types.firstOrNull { it.key == MeasurementType.BMI } ?: run {
                     LogManager.w(TAG, "Backfill skip: BMI type not found.")
                     return@launch
                 }

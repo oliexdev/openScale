@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.bluetooth.scales
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
@@ -24,6 +25,8 @@ import com.health.openscale.core.service.ScannedDeviceInfo
 import com.welie.blessed.BluetoothBytesParser
 import java.util.GregorianCalendar
 import java.util.UUID
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Handler for Beurer BF450.
@@ -280,14 +283,14 @@ class BeurerBF450Handler : StandardWeightProfileHandler() {
         val transformed = super.transformBeforePublish(m)
 
         if (pendingBodyComposition) {
-            transformed.fat        = lastFatPct
-            transformed.muscle     = lastMusclePct
-            transformed.water      = (lastBodyWater / (transformed.weight.takeIf {it > 0f} ?: 1f) * 100f)
+            transformed[MeasurementType.BODY_FAT] = Percent(lastFatPct)
+            transformed[MeasurementType.MUSCLE] = Percent(lastMusclePct)
+            transformed[MeasurementType.WATER] = Percent((lastBodyWater / ((transformed[MeasurementType.WEIGHT]?.value ?: 0f).takeIf {it > 0f} ?: 1f) * 100f))
             if (lastImpedance > 0.0) {
-                transformed.impedance = lastImpedance
+                transformed[MeasurementType.IMPEDANCE] = Ohm(lastImpedance.toFloat())
             }
 
-            logD("Added values to measurement in BF450: fat=%.1f%% musc=%.1f%% water=%.1f%% impd=%.1fΩ".format(transformed.fat, transformed.muscle, transformed.water, transformed.impedance))
+            logD("Added values to measurement in BF450: fat=%.1f%% musc=%.1f%% water=%.1f%% impd=%.1fΩ".format((transformed[MeasurementType.BODY_FAT]?.value ?: 0f), (transformed[MeasurementType.MUSCLE]?.value ?: 0f), (transformed[MeasurementType.WATER]?.value ?: 0f), (transformed[MeasurementType.IMPEDANCE]?.value ?: 0f)))
             pendingBodyComposition = false
         }
 

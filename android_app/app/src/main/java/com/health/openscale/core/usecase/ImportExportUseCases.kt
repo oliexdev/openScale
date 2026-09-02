@@ -24,7 +24,6 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.model.MeasurementWithValues
@@ -54,6 +53,8 @@ data class ImportReport(
     val linesSkippedMissingDate: Int,
     val linesSkippedDateParseError: Int,
     val valuesSkippedParseError: Int,
+    /** Headers that matched no measurement type; their whole column was skipped. */
+    val skippedColumns: List<String> = emptyList(),
 )
 
 /**
@@ -68,6 +69,11 @@ class ImportExportUseCases @Inject constructor(
 ) {
 
     private val TAG = "ImportExportUseCase"
+
+    // Only ISO 8601 is accepted on import; spreadsheets tend to rewrite these columns
+    // in the device locale (e.g. "8:30:00 AM"), so name the expected format in the log.
+    private val DATE_FORMAT_HINT = "yyyy-MM-dd"
+    private val TIME_FORMAT_HINT = "HH:mm[:ss], 24h, zero-padded"
 
     // Shared formatters (same semantics wie in deinem VM)
     private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
@@ -100,21 +106,19 @@ class ImportExportUseCases @Inject constructor(
         val allAppTypes: List<MeasurementType> = repository.getAllMeasurementTypes().first()
 
         val exportableValueTypes = allAppTypes.filter {
-            it.key != MeasurementTypeKey.DATE &&
-            it.key != MeasurementTypeKey.TIME &&
-            it.key != MeasurementTypeKey.USER
+            it.key != MeasurementType.DATE &&
+            it.key != MeasurementType.TIME &&
+            it.key != MeasurementType.USER
         }
 
-        val valueColumnKeys = exportableValueTypes.map {
-            if (it.key == MeasurementTypeKey.CUSTOM) {
-                it.name ?: it.key.name
-            } else {
-                it.key.name
-            }
-        }.distinct()
+        // One header per type, guaranteed unique. Identities make that automatic; only
+        // rows without one (inserted straight through the DAO) fall back to their display
+        // name and get numbered instead of silently collapsing into one column.
+        val columnKeyByTypeId = uniqueColumnKeysByTypeId(exportableValueTypes)
+        val valueColumnKeys = columnKeyByTypeId.values.toList()
 
-        val dateColumnKey = MeasurementTypeKey.DATE.name
-        val timeColumnKey = MeasurementTypeKey.TIME.name
+        val dateColumnKey = MeasurementType.identityColumnKey(MeasurementType.DATE.identity)
+        val timeColumnKey = MeasurementType.identityColumnKey(MeasurementType.TIME.identity)
 
         val allCsvColumnKeys = buildList {
             add(dateColumnKey)
@@ -147,14 +151,10 @@ class ImportExportUseCases @Inject constructor(
                 val type = mwvSingle.type
                 val value = mwvSingle.value
 
-                val currentColumnKey = if (type.key == MeasurementTypeKey.CUSTOM) {
-                    type.name ?: type.key.name
-                } else {
-                    type.key.name
-                }
+                val currentColumnKey = columnKeyByTypeId[type.id]
 
-                if (type.key != MeasurementTypeKey.DATE && type.key != MeasurementTypeKey.TIME &&
-                    valueColumnKeys.contains(currentColumnKey)
+                if (currentColumnKey != null &&
+                    type.key != MeasurementType.DATE && type.key != MeasurementType.TIME
                 ) {
                     val s = when (type.inputType) {
                         InputFieldType.TEXT  -> value.textValue
@@ -194,6 +194,34 @@ class ImportExportUseCases @Inject constructor(
 
 
     /**
+     * The CSV column header for one type — one style for the whole file: the identity,
+     * uppercased (`WEIGHT`, `SEGMENTAL_FAT_LEFT_ARM`, `SCHRITTE`). Identities are frozen
+     * and unique, so the header is stable across renames and languages. Only a row that
+     * somehow has no identity — one inserted straight through the DAO — falls back to its
+     * display name. Lives here because the column key is CSV vocabulary, not part of the
+     * type's identity mechanics.
+     */
+    private fun MeasurementType.csvColumnKey(): String =
+        if (identity.isNotBlank()) MeasurementType.identityColumnKey(identity)
+        else name?.takeIf { it.isNotBlank() } ?: "CUSTOM"
+
+    private fun uniqueColumnKeysByTypeId(types: List<MeasurementType>): Map<Int, String> {
+        val used = mutableSetOf<String>()
+        val result = LinkedHashMap<Int, String>()
+        types.forEach { type ->
+            val base = type.csvColumnKey()
+            var candidate = base
+            var suffix = 1
+            while (!used.add(candidate.uppercase())) {
+                suffix++
+                candidate = "${base}_$suffix"
+            }
+            result[type.id] = candidate
+        }
+        return result
+    }
+
+    /**
      * Import measurements for a user from a CSV file at [uri].
      * The CSV format matches the exporter (first row is header).
      * Returns an [ImportReport] with success/skip counts.
@@ -207,14 +235,15 @@ class ImportExportUseCases @Inject constructor(
 
         val allAppTypes: List<MeasurementType> = repository.getAllMeasurementTypes().first()
 
-        val dateColumnKey = MeasurementTypeKey.DATE.name
-        val timeColumnKey = MeasurementTypeKey.TIME.name
+        val dateColumnKey = MeasurementType.identityColumnKey(MeasurementType.DATE.identity)
+        val timeColumnKey = MeasurementType.identityColumnKey(MeasurementType.TIME.identity)
         val dateTimeColumnKey = "dateTime"
         val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
         var linesSkippedMissingDate = 0
         var linesSkippedDateParseError = 0
         var valuesSkippedParseError = 0
+        val skippedColumns = mutableListOf<String>()
         var importedMeasurementsCount = 0
         var ignoredMeasurementsCount = 0
 
@@ -248,24 +277,36 @@ class ImportExportUseCases @Inject constructor(
                         row.forEachIndexed { colIdx, colName ->
                             if (colIdx == dateIdx || colIdx == timeIdx || colIdx == dateTimeIdx) return@forEachIndexed
 
-                            // 1) map by MeasurementTypeKey.name
+                            // 1) the identity-derived column key — the same derivation the
+                            //    exporter uses. List order (displayOrder, predefined first)
+                            //    keeps the historical precedence: a user type named
+                            //    "COMMENT" cannot hijack the predefined column.
                             var matched = allAppTypes.find { t ->
-                                t.key.name.equals(colName, ignoreCase = true) &&
-                                        t.key != MeasurementTypeKey.DATE &&
-                                        t.key != MeasurementTypeKey.TIME
+                                t.key != MeasurementType.DATE &&
+                                    t.key != MeasurementType.TIME &&
+                                    t.csvColumnKey().equals(colName, ignoreCase = true)
                             }
-                            // 2) fallback: custom name for CUSTOM types
+                            // 2) fallback for files written before identity headers: user
+                            //    types used to export under their display name.
                             if (matched == null) {
                                 matched = allAppTypes.find { t ->
-                                    t.key == MeasurementTypeKey.CUSTOM &&
-                                            (t.name?.equals(colName, ignoreCase = true) == true)
+                                    t.isUserOwned() &&
+                                        (t.name?.equals(colName, ignoreCase = true) == true)
                                 }
                             }
                             // Internal raw inputs (e.g. impedance bands) are disabled by
                             // default but must still be importable for re-derivation.
                             if (matched != null && (matched.isEnabled || matched.isInternal)) {
                                 valueColumnMap[colIdx] = matched
-                                LogManager.d(TAG, "Header map: '$colName' -> ${matched.key} (id=${matched.id})")
+                                LogManager.d(TAG, "Header map: '$colName' -> ${matched.identity} (id=${matched.id})")
+                            } else {
+                                // Columns used to vanish in complete silence here.
+                                skippedColumns.add(colName)
+                                LogManager.w(
+                                    TAG,
+                                    "CSV column '$colName' matches no enabled measurement type; " +
+                                        "the whole column is skipped."
+                                )
                             }
                         }
                         return@forEachIndexed
@@ -294,12 +335,18 @@ class ImportExportUseCases @Inject constructor(
                         try {
                             parsedDate = LocalDate.parse(d, dateFormatter)
                         } catch (_: DateTimeParseException) {
+                            LogManager.w(
+                                TAG,
+                                "Line ${rowIndex + 1}: cannot parse date '$d', expected ISO 8601 " +
+                                        "($DATE_FORMAT_HINT). Skipping this line."
+                            )
                             linesSkippedDateParseError++
                             return@forEachIndexed
                         }
                     }
 
                     if (parsedDate == null) {
+                        LogManager.w(TAG, "Line ${rowIndex + 1}: no date column value. Skipping this line.")
                         linesSkippedMissingDate++
                         return@forEachIndexed
                     }
@@ -311,8 +358,16 @@ class ImportExportUseCases @Inject constructor(
                             try {
                                 LocalTime.parse(t, timeFormatter)
                             } catch (_: DateTimeParseException) {
-                                try { LocalTime.parse(t, flexibleTimeFormatter) }
-                                catch (_: DateTimeParseException) { LocalTime.NOON }
+                                try {
+                                    LocalTime.parse(t, flexibleTimeFormatter)
+                                } catch (_: DateTimeParseException) {
+                                    LogManager.w(
+                                        TAG,
+                                        "Line ${rowIndex + 1}: cannot parse time '$t', expected ISO 8601 " +
+                                                "($TIME_FORMAT_HINT). Falling back to 12:00."
+                                    )
+                                    LocalTime.NOON
+                                }
                             }
                         }
                     }
@@ -394,7 +449,8 @@ class ImportExportUseCases @Inject constructor(
             ignoredMeasurementsCount = ignoredMeasurementsCount,
             linesSkippedMissingDate = linesSkippedMissingDate,
             linesSkippedDateParseError = linesSkippedDateParseError,
-            valuesSkippedParseError = valuesSkippedParseError
+            valuesSkippedParseError = valuesSkippedParseError,
+            skippedColumns = skippedColumns.toList()
         )
     }
 }

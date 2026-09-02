@@ -40,6 +40,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
 import androidx.compose.material.icons.filled.BluetoothDisabled
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Info
@@ -90,6 +91,7 @@ import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.shared.SharedViewModel
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.health.openscale.ui.navigation.Routes
 
@@ -124,12 +126,14 @@ fun BluetoothScreen(
     val scanError by bluetoothViewModel.scanError.collectAsState()
     val connectionError by bluetoothViewModel.connectionError.collectAsState()
     val savedSupport by bluetoothViewModel.savedDeviceSupport.collectAsState()
+    val developerModeEnabled by bluetoothViewModel.developerModeEnabled.collectAsStateWithLifecycle(false)
 
     // Local UI state
     var hasPermissions by remember { mutableStateOf(false) }
     var pendingScan by remember { mutableStateOf(false) }
     var showCompatibilityDialog by remember { mutableStateOf(false) }
     var deviceToSave by remember { mutableStateOf<ScannedDeviceInfo?>(null) }
+    var deviceToDebug by remember { mutableStateOf<ScannedDeviceInfo?>(null) }
 
     LaunchedEffect(Unit) {
         hasPermissions = hasBtPermissions(context)
@@ -272,6 +276,34 @@ fun BluetoothScreen(
                             }
                         }
 
+                        // Developer mode silently suppresses every measurement, so say so here and
+                        // offer the way back on the spot (issue #1478).
+                        if (developerModeEnabled) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 16.dp, end = 8.dp, bottom = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.BugReport,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(R.string.developer_banner_active),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                TextButton(onClick = { bluetoothViewModel.setDeveloperMode(false) }) {
+                                    Text(stringResource(R.string.developer_mode_disable_action))
+                                }
+                            }
+                        }
+
                         // Read-only DeviceSupport details (compact icons)
                         savedSupport?.let { support ->
                             CapabilityIconsRow(
@@ -353,6 +385,28 @@ fun BluetoothScreen(
             )
         }
 
+        deviceToDebug?.let { device ->
+            DeveloperModeAlertDialog(
+                deviceName = device.name.ifEmpty { stringResource(R.string.unknown_device) },
+                replacedDeviceName = savedDevice
+                    ?.takeIf { it.address != device.address }
+                    ?.let { it.name.ifEmpty { stringResource(R.string.unknown_device) } },
+                onConfirm = {
+                    // The device is stored with its real identity; only the setting marks the
+                    // developer session, so turning it off later restores normal operation.
+                    bluetoothViewModel.saveDeviceAsPreferred(device.copy(isSupported = true))
+                    bluetoothViewModel.setDeveloperMode(true)
+                    scope.launch {
+                        sharedViewModel.showSnackbar(
+                            message = resources.getString(R.string.snackbar_developer_for_device_enable_logs),
+                            duration = SnackbarDuration.Long
+                        )
+                    }
+                },
+                onDismiss = { deviceToDebug = null }
+            )
+        }
+
         // Combined scan/connection error presentation
         if (hasPermissions && btEnabled) {
             val errorToShow = connectionError ?: scanError
@@ -395,24 +449,7 @@ fun BluetoothScreen(
                             },
                             onSaveDebug = {
                                 bluetoothViewModel.requestStopDeviceScan()
-                                // Save same MAC but with name "Debug" to force Debug handler on connect
-                                bluetoothViewModel.saveDeviceAsPreferred(
-                                    ScannedDeviceInfo(
-                                        name = "Debug",
-                                        address = device.address,
-                                        rssi = 0,
-                                        serviceUuids = device.serviceUuids,
-                                        manufacturerData = device.manufacturerData,
-                                        isSupported = true,
-                                        determinedHandlerDisplayName = device.name
-                                    )
-                                )
-                                scope.launch {
-                                    sharedViewModel.showSnackbar(
-                                        message = resources.getString(R.string.snackbar_developer_for_device_enable_logs),
-                                        duration = SnackbarDuration.Long
-                                    )
-                                }
+                                deviceToDebug = device
                             }
                         )
                     }
@@ -497,6 +534,52 @@ private fun CompatibilityAlertDialog(
                 }
             ) {
                 Text(stringResource(R.string.compatibility_dialog_confirm_button))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel_button))
+            }
+        }
+    )
+}
+
+/**
+ * Warns before a scan result is put into developer mode: the diagnostic handler only logs the GATT
+ * traffic, so no measurement is stored until the mode is switched off again.
+ */
+@Composable
+private fun DeveloperModeAlertDialog(
+    deviceName: String,
+    replacedDeviceName: String?,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(Icons.Default.BugReport, contentDescription = null) },
+        title = { Text(stringResource(R.string.developer_mode_dialog_title)) },
+        text = {
+            Column {
+                Text(stringResource(R.string.developer_mode_dialog_message, deviceName))
+                // Picking a different scale here silently swapped the saved one before.
+                replacedDeviceName?.let { replaced ->
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(R.string.developer_mode_dialog_replaces, deviceName, replaced),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirm()
+                    onDismiss()
+                }
+            ) {
+                Text(stringResource(R.string.developer_mode_dialog_confirm_button))
             }
         },
         dismissButton = {
