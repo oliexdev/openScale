@@ -67,7 +67,7 @@ class RyFitHandler : ScaleDeviceHandler() {
 
     override fun onConnected(user: ScaleUser) {
         heightCm = user.bodyHeight.toInt().coerceIn(50, 250)
-        age = user.getAge()
+        age = user.age.coerceIn(10, 100)
         gender = if (user.gender == GenderType.MALE) "男" else "女"
 
         setNotifyOn(SERVICE_UUID, CHAR_UUID)
@@ -127,7 +127,7 @@ class RyFitHandler : ScaleDeviceHandler() {
     private fun refreshUserFromApp(): Boolean {
         val appUser = currentAppUser()
         heightCm = appUser.bodyHeight.toInt().coerceIn(50, 250)
-        age = appUser.getAge()
+        age = appUser.age.coerceIn(10, 100)
         gender = if (appUser.gender == GenderType.MALE) "男" else "女"
         return true
     }
@@ -285,15 +285,4 @@ class RyFitHandler : ScaleDeviceHandler() {
         }
     }
 
-    // ---------------------------------------------------------------
-    // 辅助方法
-    // ---------------------------------------------------------------
-
-    private fun ScaleUser.getAge(): Int {
-        val calNow = Calendar.getInstance()
-        val calBirth = Calendar.getInstance().apply { time = this@getAge.birthday }
-        var age = calNow.get(Calendar.YEAR) - calBirth.get(Calendar.YEAR)
-        if (calNow.get(Calendar.DAY_OF_YEAR) < calBirth.get(Calendar.DAY_OF_YEAR)) age--
-        return age.coerceIn(10, 100)
-    }
 }

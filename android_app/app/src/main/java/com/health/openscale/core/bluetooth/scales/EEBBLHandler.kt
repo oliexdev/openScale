@@ -52,8 +52,7 @@ class EEBBLHandler : ScaleDeviceHandler() {
                     DeviceCapability.LIVE_WEIGHT_STREAM,
                     DeviceCapability.TIME_SYNC,
                     DeviceCapability.USER_SYNC,
-                    DeviceCapability.UNIT_CONFIG,
-                    DeviceCapability.BODY_COMPOSITION   // partial: weight reliable; full metrics need parse impl + good measurement log
+                    DeviceCapability.UNIT_CONFIG
                 ),
                 linkMode = LinkMode.CONNECT_GATT
             )
