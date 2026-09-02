@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -24,6 +25,8 @@ import com.health.openscale.core.utils.ConverterUtils
 import java.util.Date
 import java.util.UUID
 import kotlin.math.min
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
 
 /**
  * RENPHO ES-26BB-B GATT handler (legacy: BluetoothES26BBB).
@@ -166,11 +169,11 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
 
     private fun saveMeasurement(weightX100: Long, resistance: Int, timestampMs: Long?) {
         val m = ScaleMeasurement().apply {
-            weight = weightX100 / 100f
+            this[MeasurementType.WEIGHT] = Kg(weightX100 / 100f)
             if (timestampMs != null) dateTime = Date(timestampMs)
             // No BIA library is hooked here, but store the raw resistance so
             // body composition can be computed/recomputed later.
-            if (resistance > 0) impedance = resistance.toDouble()
+            if (resistance > 0) this[MeasurementType.IMPEDANCE] = Ohm(resistance.toFloat())
         }
         publish(m)
     }

@@ -42,6 +42,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.UnitType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.BmrFormula
@@ -56,6 +59,11 @@ import java.util.Date
 import java.util.Locale
 import kotlin.text.isNotEmpty
 import kotlin.text.lowercase
+import com.health.openscale.core.data.Bpm
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Xiaomi Body Composition Scale S400 handler.
@@ -79,6 +87,22 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
 
     companion object {
         // Settings keys for S400 configuration
+        // Flat paths on purpose: the derived CSV column stays the ECW / ICW / BCM these
+        // quantities exported as when they were predefined. Colour, icon and unit match
+        // their former seeds, so nothing changes visually for anyone upgrading.
+        val EXTRACELLULAR_WATER = MeasurementType.devicePercent(
+            "ecw", R.string.measurement_type_ecw,
+            icon = MeasurementTypeIcon.IC_M_SCATTER_PLOT, color = 0xFF4FC3F7.toInt()
+        )
+        val INTRACELLULAR_WATER = MeasurementType.devicePercent(
+            "icw", R.string.measurement_type_icw,
+            icon = MeasurementTypeIcon.IC_M_BUBBLE_CHART, color = 0xFF0288D1.toInt()
+        )
+        val BODY_CELL_MASS = MeasurementType.deviceKg(
+            "bcm", R.string.measurement_type_bcm,
+            icon = MeasurementTypeIcon.IC_M_HIVE, color = 0xFF558B2F.toInt()
+        )
+
         private const val SETTINGS_KEY_BIND_KEY = "s400_bind_key"
         private const val SETTINGS_KEY_MAC_ADDRESS = "s400_mac_address"
         private const val SETTINGS_KEY_BONE_FORMULA = "s400_bone_formula"
@@ -349,23 +373,27 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
 
         val scaleMeasurement = ScaleMeasurement().apply {
             dateTime = Date()
-            weight = finalized.weightKg
             userId = user.id
-            heartRate = finalized.heartRate ?: 0
-            impedance = finalized.impedanceHigh.toDouble()
-            finalized.impedanceLow?.let { impedanceLow = it.toDouble() }
+            this[MeasurementType.WEIGHT] = Kg(finalized.weightKg)
+            finalized.heartRate?.let { this[MeasurementType.HEART_RATE] = Bpm(it) }
+            this[MeasurementType.IMPEDANCE] = Ohm(finalized.impedanceHigh.toFloat())
+            finalized.impedanceLow?.let { this[MeasurementType.IMPEDANCE_LOW] = Ohm(it.toFloat()) }
 
-            fat = composition.bfPct ?: 0f
-            water = composition.tbwPct ?: 0f
-            muscle = composition.smmPct ?: 0f
-            bone = composition.boneKg ?: 0f
-            lbm = composition.ffmKg ?: 0f
-            visceralFat = composition.vfi ?: 0f
-            bmr = composition.bmrKcal ?: 0f
-            ecw = composition.ecwPct ?: 0f
-            icw = composition.icwPct ?: 0f
-            protein = composition.proteinPct ?: 0f
-            bcm = composition.bcmKg ?: 0f
+            this[MeasurementType.BODY_FAT] = Percent(composition.bfPct ?: 0f)
+            this[MeasurementType.WATER] = Percent(composition.tbwPct ?: 0f)
+            this[MeasurementType.MUSCLE] = Percent(composition.smmPct ?: 0f)
+            this[MeasurementType.BONE] = Kg(composition.boneKg ?: 0f)
+            this[MeasurementType.LBM] = Kg(composition.ffmKg ?: 0f)
+            this[MeasurementType.VISCERAL_FAT] = composition.vfi ?: 0f
+            this[MeasurementType.BMR] = Kcal(composition.bmrKcal ?: 0f)
+            this[MeasurementType.PROTEIN] = Percent(composition.proteinPct ?: 0f)
+
+            // Dual-frequency BIA outputs, contributed as device values: the S400 is the
+            // only scale in the catalogue measuring at two frequencies, and a future one
+            // reuses these identities.
+            composition.ecwPct?.let { this[EXTRACELLULAR_WATER] = Percent(it) }
+            composition.icwPct?.let { this[INTRACELLULAR_WATER] = Percent(it) }
+            composition.bcmKg?.let { this[BODY_CELL_MASS] = Kg(it) }
         }
 
         publish(scaleMeasurement)

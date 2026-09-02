@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.google.common.truth.Truth.assertThat
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.GenderType
@@ -374,17 +375,17 @@ class PicoocHandlerTest {
 
         val measurement = setup.callbacks.published.single()
         assertThat(measurement.userId).isEqualTo(setup.user.id)
-        assertThat(measurement.weight).isWithin(0.0001f).of(70.0f)
-        assertThat(measurement.fat).isWithin(0.0001f).of(18.5f)
-        assertThat(measurement.water).isWithin(0.0001f).of(55.2f)
-        assertThat(measurement.bone).isWithin(0.0001f).of(3.0f)
-        assertThat(measurement.visceralFat).isWithin(0.0001f).of(8.0f)
-        assertThat(measurement.lbm).isWithin(0.001f).of(57.05f)
-        assertThat(measurement.heartRate).isEqualTo(72)
-        assertThat(measurement.impedance).isWithin(0.0001).of(500.0)
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(70.0f)
+        assertThat(measurement[MeasurementType.BODY_FAT]?.value).isWithin(0.0001f).of(18.5f)
+        assertThat(measurement[MeasurementType.WATER]?.value).isWithin(0.0001f).of(55.2f)
+        assertThat(measurement[MeasurementType.BONE]?.value).isWithin(0.0001f).of(3.0f)
+        assertThat(measurement[MeasurementType.VISCERAL_FAT]).isWithin(0.0001f).of(8.0f)
+        assertThat(measurement[MeasurementType.LBM]?.value).isWithin(0.001f).of(57.05f)
+        assertThat(measurement[MeasurementType.HEART_RATE]?.value).isEqualTo(72)
+        assertThat(measurement[MeasurementType.IMPEDANCE]?.value).isWithin(0.0001f).of(500f)
         // 0x32 carries neither of these, so they come from the impedance estimator.
-        assertThat(measurement.muscle).isGreaterThan(0f)
-        assertThat(measurement.bmr).isGreaterThan(0f)
+        assertThat(measurement[MeasurementType.MUSCLE]?.value).isGreaterThan(0f)
+        assertThat(measurement[MeasurementType.BMR]?.value).isGreaterThan(0f)
     }
 
     @Test
@@ -398,7 +399,7 @@ class PicoocHandlerTest {
         advanceTimeBy(PicoocHandler.SETTLE_WAIT_MS)
         runCurrent()
 
-        assertThat(setup.callbacks.published.single().heartRate).isEqualTo(72)
+        assertThat(setup.callbacks.published.single()[MeasurementType.HEART_RATE]?.value).isEqualTo(72)
     }
 
     @Test
@@ -411,12 +412,12 @@ class PicoocHandlerTest {
         runCurrent()
 
         val measurement = setup.callbacks.published.single()
-        assertThat(measurement.weight).isWithin(0.0001f).of(70.0f)
-        assertThat(measurement.impedance).isWithin(0.0001).of(500.0)
-        assertThat(measurement.fat).isGreaterThan(0f)
-        assertThat(measurement.water).isGreaterThan(0f)
-        assertThat(measurement.muscle).isGreaterThan(0f)
-        assertThat(measurement.bmr).isGreaterThan(0f)
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(70.0f)
+        assertThat(measurement[MeasurementType.IMPEDANCE]?.value).isWithin(0.0001f).of(500f)
+        assertThat(measurement[MeasurementType.BODY_FAT]?.value).isGreaterThan(0f)
+        assertThat(measurement[MeasurementType.WATER]?.value).isGreaterThan(0f)
+        assertThat(measurement[MeasurementType.MUSCLE]?.value).isGreaterThan(0f)
+        assertThat(measurement[MeasurementType.BMR]?.value).isGreaterThan(0f)
     }
 
     @Test
@@ -430,7 +431,7 @@ class PicoocHandlerTest {
         setup.handler.handleDisconnected()
 
         assertThat(setup.callbacks.published).hasSize(1)
-        assertThat(setup.callbacks.published.single().weight).isWithin(0.0001f).of(70.0f)
+        assertThat(setup.callbacks.published.single()[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(70.0f)
     }
 
     @Test
@@ -480,11 +481,11 @@ class PicoocHandlerTest {
         setup.handler.handleDisconnected()
 
         val measurement = setup.callbacks.published.single()
-        assertThat(measurement.weight).isWithin(0.0001f).of(72.1f)
-        assertThat(measurement.impedance).isWithin(0.0001).of(505.0)
-        assertThat(measurement.heartRate).isEqualTo(68)
-        assertThat(measurement.fat).isGreaterThan(0f)
-        assertThat(measurement.bmr).isGreaterThan(0f)
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(72.1f)
+        assertThat(measurement[MeasurementType.IMPEDANCE]?.value).isWithin(0.0001f).of(505f)
+        assertThat(measurement[MeasurementType.HEART_RATE]?.value).isEqualTo(68)
+        assertThat(measurement[MeasurementType.BODY_FAT]?.value).isGreaterThan(0f)
+        assertThat(measurement[MeasurementType.BMR]?.value).isGreaterThan(0f)
     }
 
     @Test
@@ -644,7 +645,7 @@ class PicoocHandlerTest {
         val published = mutableListOf<ScaleMeasurement>()
 
         override fun onPublish(measurement: ScaleMeasurement) {
-            published += measurement.copy()
+            published += measurement.snapshot()
         }
 
         override fun resolveString(resId: Int, vararg args: Any): String = "res:$resId"

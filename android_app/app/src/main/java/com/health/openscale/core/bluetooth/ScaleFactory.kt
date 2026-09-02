@@ -24,6 +24,7 @@ import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
 import com.health.openscale.core.bluetooth.scales.AfuB1Handler
+import com.health.openscale.core.bluetooth.scales.AiLinkBroadcastHandler
 import com.health.openscale.core.bluetooth.scales.FitTrackDaraHandler
 import com.health.openscale.core.bluetooth.scales.ScaleupHandler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
@@ -155,6 +156,7 @@ class ScaleFactory @Inject constructor(
             SinocareHandler(),
             SenssunHandler(),
             RenphoHandler(),
+            AiLinkBroadcastHandler(),
             QNHandlerBroadcast(),
             QNHandler(),
             OneByoneHandler(),

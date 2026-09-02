@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
@@ -25,6 +26,10 @@ import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import java.util.UUID
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 // Based on https://github.com/ronnnnnnnnnnnnn/etekcity_esf551_ble
 
@@ -118,9 +123,10 @@ class EtekcityESF551Handler : ScaleDeviceHandler() {
         val measurement = ScaleMeasurement(
             userId = user.id,
             dateTime = Date(),
-            weight = weightKg.toFloat(),
-            impedance = impedance,
-        )
+        ).also { m ->
+            m[MeasurementType.WEIGHT] = Kg(weightKg.toFloat())
+            m[MeasurementType.IMPEDANCE] = Ohm(impedance.toFloat())
+        }
 
         if (impedance > 0 && impedance < 1500) {
             val lib = StandardImpedanceLib(
@@ -130,11 +136,11 @@ class EtekcityESF551Handler : ScaleDeviceHandler() {
                 heightM = user.bodyHeight / 100.0,
                 impedance = impedance,
             )
-            measurement.fat = lib.totalFatPercentage.toFloat()
-            measurement.water = lib.totalBodyWaterPercentage.toFloat()
-            measurement.muscle = lib.skeletalMusclePercentage.toFloat()
-            measurement.bone = lib.boneMassKg.toFloat()
-            measurement.bmr = lib.basalMetabolicRate.toFloat()
+            measurement[MeasurementType.BODY_FAT] = Percent(lib.totalFatPercentage.toFloat())
+            measurement[MeasurementType.WATER] = Percent(lib.totalBodyWaterPercentage.toFloat())
+            measurement[MeasurementType.MUSCLE] = Percent(lib.skeletalMusclePercentage.toFloat())
+            measurement[MeasurementType.BONE] = Kg(lib.boneMassKg.toFloat())
+            measurement[MeasurementType.BMR] = Kcal(lib.basalMetabolicRate.toFloat())
         }
 
         if (data[20] == 1.toByte() && impedance > 0) {

@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.OmronBodyCompositionLib
@@ -32,6 +33,9 @@ import java.text.DateFormat
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.min
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 /**
  * Handler for Omron body composition monitors that speak the WLC ("Wellness Link") transfer
@@ -492,12 +496,13 @@ class OmronWlcHandler : ScaleDeviceHandler() {
     private fun OmronBodyCompositionLib.Record.toMeasurement(userId: Int) = ScaleMeasurement(
         userId = userId,
         dateTime = timestamp,
-        weight = weightKg,
-        fat = bodyFatPercent ?: 0f,
-        muscle = skeletalMusclePercent ?: 0f,
-        visceralFat = visceralFatLevel ?: 0f,
-        bmr = bmrKcal?.toFloat() ?: 0f
-    )
+    ).also { m ->
+        m[MeasurementType.WEIGHT] = Kg(weightKg)
+        m[MeasurementType.BODY_FAT] = Percent(bodyFatPercent ?: 0f)
+        m[MeasurementType.MUSCLE] = Percent(skeletalMusclePercent ?: 0f)
+        m[MeasurementType.VISCERAL_FAT] = visceralFatLevel ?: 0f
+        m[MeasurementType.BMR] = Kcal(bmrKcal?.toFloat() ?: 0f)
+    }
 
     // ---- chunked EEPROM reads ------------------------------------------------------------------
 

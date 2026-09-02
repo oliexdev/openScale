@@ -6,7 +6,6 @@ import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -313,7 +312,7 @@ class MeasurementDemoUseCase @Inject constructor(
     private suspend fun generateSparseMetrics(userId: Int, count: Int, daysBack: Int) {
         // Deliberately use only weight type to simulate incomplete scale data
         val weightType = query.getAllMeasurementTypes().first()
-            .firstOrNull { it.key == MeasurementTypeKey.WEIGHT && it.isEnabled }
+            .firstOrNull { it.key == MeasurementType.WEIGHT && it.isEnabled }
             ?: return
 
         val now = System.currentTimeMillis()
@@ -382,25 +381,25 @@ class MeasurementDemoUseCase @Inject constructor(
                 }
                 InputFieldType.INT -> {
                     val v = when (type.key) {
-                        MeasurementTypeKey.HEART_RATE -> (60..85).random()
+                        MeasurementType.HEART_RATE -> (60..85).random()
                         else                          -> (10..100).random()
                     }
                     MeasurementValue(measurementId = 0, typeId = type.id, intValue = v)
                 }
                 InputFieldType.FLOAT -> {
                     val v = when (type.key) {
-                        MeasurementTypeKey.WEIGHT       -> w
-                        MeasurementTypeKey.BODY_FAT     -> f.coerceIn(3f, 50f)
-                        MeasurementTypeKey.MUSCLE       -> m.coerceIn(10f, 75f)
-                        MeasurementTypeKey.WATER        -> (100f - f - noise(1f, 4f)).coerceIn(40f, 75f)
-                        MeasurementTypeKey.BONE         -> (w * 0.04f + noise(-0.2f, 0.2f)).coerceIn(1f, 10f)
-                        MeasurementTypeKey.VISCERAL_FAT -> (f / 3f + noise(-1f, 1f)).coerceIn(1f, 20f)
-                        MeasurementTypeKey.WAIST,
-                        MeasurementTypeKey.HIPS,
-                        MeasurementTypeKey.CHEST,
-                        MeasurementTypeKey.THIGH,
-                        MeasurementTypeKey.BICEPS,
-                        MeasurementTypeKey.NECK         -> (w * 1.1f + noise(-2f, 2f)).coerceIn(20f, 150f)
+                        MeasurementType.WEIGHT       -> w
+                        MeasurementType.BODY_FAT     -> f.coerceIn(3f, 50f)
+                        MeasurementType.MUSCLE       -> m.coerceIn(10f, 75f)
+                        MeasurementType.WATER        -> (100f - f - noise(1f, 4f)).coerceIn(40f, 75f)
+                        MeasurementType.BONE         -> (w * 0.04f + noise(-0.2f, 0.2f)).coerceIn(1f, 10f)
+                        MeasurementType.VISCERAL_FAT -> (f / 3f + noise(-1f, 1f)).coerceIn(1f, 20f)
+                        MeasurementType.WAIST,
+                        MeasurementType.HIPS,
+                        MeasurementType.CHEST,
+                        MeasurementType.THIGH,
+                        MeasurementType.BICEPS,
+                        MeasurementType.NECK         -> (w * 1.1f + noise(-2f, 2f)).coerceIn(20f, 150f)
                         else                            -> w * 0.5f
                     }
                     MeasurementValue(measurementId = 0, typeId = type.id, floatValue = v)

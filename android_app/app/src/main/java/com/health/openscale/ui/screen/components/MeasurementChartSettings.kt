@@ -52,7 +52,9 @@ internal fun rememberResolvedTimeRangeState(
     sharedViewModel: SharedViewModel,
     defaultFilter: TimeRangeFilter = TimeRangeFilter.ALL_DAYS
 ): State<Triple<TimeRangeFilter, Long?, Long?>> {
-    val timeRangeKey = remember(screenContextName) { "${screenContextName}${TIME_RANGE_SUFFIX}" }
+    val context by sharedViewModel.filterContext(screenContextName, TIME_RANGE_SUFFIX)
+        .collectAsState(initial = screenContextName)
+    val timeRangeKey = remember(context) { "${context}${TIME_RANGE_SUFFIX}" }
     val persistedTimeRangeName by sharedViewModel
         .observeSetting(timeRangeKey, defaultFilter.name)
         .collectAsState(initial = defaultFilter.name)
@@ -61,40 +63,15 @@ internal fun rememberResolvedTimeRangeState(
         TimeRangeFilter.entries.find { it.name == persistedTimeRangeName } ?: defaultFilter
     }
 
-    val customStartKey = remember(screenContextName) { "${screenContextName}${CUSTOM_START_DATE_MILLIS_SUFFIX}" }
-    val customStartMillis by sharedViewModel.observeSetting(customStartKey, -1L).collectAsState(initial = -1L)
+    val customStartKey = remember(context) { "${context}${CUSTOM_START_DATE_MILLIS_SUFFIX}" }
+    val customStartMillis by sharedViewModel.observeSetting(customStartKey, 0L).collectAsState(initial = 0L)
 
-    val customEndKey = remember(screenContextName) { "${screenContextName}${CUSTOM_END_DATE_MILLIS_SUFFIX}" }
-    val customEndMillis by sharedViewModel.observeSetting(customEndKey, -1L).collectAsState(initial = -1L)
+    val customEndKey = remember(context) { "${context}${CUSTOM_END_DATE_MILLIS_SUFFIX}" }
+    val customEndMillis by sharedViewModel.observeSetting(customEndKey, 0L).collectAsState(initial = 0L)
 
     return remember(activeTimeRange, customStartMillis, customEndMillis) {
-        mutableStateOf(
-            run {
-                val (start, end) = when (activeTimeRange) {
-                    TimeRangeFilter.ALL_DAYS -> null to null
-                    TimeRangeFilter.CUSTOM -> {
-                        val customStart = if (customStartMillis != -1L) customStartMillis else null
-                        val customEnd = if (customEndMillis != -1L) customEndMillis else null
-                        customStart to customEnd
-                    }
-                    else -> {
-                        val cal = java.util.Calendar.getInstance()
-                        val endTime = cal.timeInMillis
-                        when (activeTimeRange) {
-                            TimeRangeFilter.LAST_7_DAYS -> cal.add(java.util.Calendar.DAY_OF_YEAR, -7)
-                            TimeRangeFilter.LAST_30_DAYS -> cal.add(java.util.Calendar.DAY_OF_YEAR, -30)
-                            TimeRangeFilter.LAST_365_DAYS -> cal.add(java.util.Calendar.DAY_OF_YEAR, -365)
-                        }
-                        cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
-                        cal.set(java.util.Calendar.MINUTE, 0)
-                        cal.set(java.util.Calendar.SECOND, 0)
-                        cal.set(java.util.Calendar.MILLISECOND, 0)
-                        cal.timeInMillis to endTime
-                    }
-                }
-                Triple(activeTimeRange, start, end)
-            }
-        )
+        val (start, end) = activeTimeRange.resolveBounds(customStartMillis, customEndMillis)
+        mutableStateOf(Triple(activeTimeRange, start, end))
     }
 }
 
@@ -104,7 +81,9 @@ internal fun rememberResolvedAggregationLevel(
     sharedViewModel: SharedViewModel,
     defaultLevel: AggregationLevel = AggregationLevel.NONE
 ): State<AggregationLevel> {
-    val key = remember(screenContextName) { "${screenContextName}${AGGREGATION_LEVEL_SUFFIX}" }
+    val context by sharedViewModel.filterContext(screenContextName, AGGREGATION_LEVEL_SUFFIX)
+        .collectAsState(initial = screenContextName)
+    val key = remember(context) { "${context}${AGGREGATION_LEVEL_SUFFIX}" }
     val persisted by sharedViewModel
         .observeSetting(key, defaultLevel.name)
         .collectAsState(initial = defaultLevel.name)
@@ -129,12 +108,22 @@ internal fun rememberFilterTitle(
     val dateFormat = remember { DateFormat.getDateFormat(context) }
 
     return when {
-        activeFilter == TimeRangeFilter.CUSTOM && startTimeMillis != null && endTimeMillis != null -> {
-            val startDate = dateFormat.format(Date(startTimeMillis))
-            val endDate = dateFormat.format(Date(endTimeMillis))
-            stringResource(R.string.time_range_custom_from_to, startDate, endDate)
-        }
-        else -> activeFilter.getDisplayName(context)
+        activeFilter != TimeRangeFilter.CUSTOM || startTimeMillis == null ->
+            activeFilter.getDisplayName(context)
+
+        // An open end is the point of a fixed starting date, so name it rather than falling back
+        // to the generic "Custom Days".
+        endTimeMillis == null ->
+            stringResource(
+                R.string.time_range_custom_since,
+                dateFormat.format(Date(startTimeMillis))
+            )
+
+        else -> stringResource(
+            R.string.time_range_custom_from_to,
+            dateFormat.format(Date(startTimeMillis)),
+            dateFormat.format(Date(endTimeMillis))
+        )
     }
 }
 

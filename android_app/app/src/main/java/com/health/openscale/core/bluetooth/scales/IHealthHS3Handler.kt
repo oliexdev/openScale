@@ -17,11 +17,13 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import java.util.UUID
+import com.health.openscale.core.data.Kg
 
 /**
  * iHealth HS3 (HS33FA4A) classic SPP handler.
@@ -149,7 +151,7 @@ class IHealthHS3Handler : ScaleDeviceHandler() {
         }
         val m = ScaleMeasurement().apply {
             dateTime = Date()
-            this.weight = weight
+            this[MeasurementType.WEIGHT] = Kg(weight)
         }
         logD("Parsed weight: $weight kg")
         publish(m)

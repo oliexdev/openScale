@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.SoehnleLib
@@ -29,6 +30,8 @@ import java.util.Calendar
 import java.util.GregorianCalendar
 import java.util.TimeZone
 import java.util.UUID
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 /**
  * SoehnleHandler
@@ -261,11 +264,11 @@ class SoehnleHandler : ScaleDeviceHandler() {
 
         val m = ScaleMeasurement().apply {
             userId = openScaleUserId
-            weight = weightKg
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
             dateTime = cal.time
-            water = lib.getWater(weightKg, imp50.toFloat())
-            fat = lib.getFat(weightKg, imp50.toFloat())
-            muscle = lib.getMuscle(weightKg, imp50.toFloat(), imp5.toFloat())
+            this[MeasurementType.WATER] = Percent(lib.getWater(weightKg, imp50.toFloat()))
+            this[MeasurementType.BODY_FAT] = Percent(lib.getFat(weightKg, imp50.toFloat()))
+            this[MeasurementType.MUSCLE] = Percent(lib.getMuscle(weightKg, imp50.toFloat(), imp5.toFloat()))
         }
         publish(m)
     }

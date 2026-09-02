@@ -4,6 +4,7 @@ import android.bluetooth.le.ScanResult
 import android.util.SparseArray
 import androidx.core.util.isEmpty
 import androidx.core.util.size
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.MiScaleLib
@@ -11,6 +12,10 @@ import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import java.util.Locale
+import com.health.openscale.core.data.Bpm
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 class EufyC20Handler : ScaleDeviceHandler() {
     private val MANUFACTURER_ID = 48228
@@ -76,19 +81,19 @@ class EufyC20Handler : ScaleDeviceHandler() {
             if (hasWeight && payload.size >= 14) {
                 val rawWeight = ((payload[13].toInt() and 0xFF) shl 8) or (payload[12].toInt() and 0xFF)
                 val weightKg = rawWeight / 100.0f
-                if (weightKg != 0.0f) m.weight = weightKg
+                if (weightKg != 0.0f) m[MeasurementType.WEIGHT] = Kg(weightKg)
             }
             if (hasHeartRate && payload.size >= 16) {
                 val hr = payload[15].toInt() and 0xFF
-                if (hr != 0) m.heartRate = hr
+                if (hr != 0) m[MeasurementType.HEART_RATE] = Bpm(hr)
             }
             if (hasImpedance && payload.size >= 19) {
                 val rawImp = ((payload[18].toInt() and 0xFF) shl 8) or (payload[17].toInt() and 0xFF)
                 val imp = rawImp / 10.0
-                if (imp != 0.0) m.impedance = imp
+                if (imp != 0.0) m[MeasurementType.IMPEDANCE] = Ohm(imp.toFloat())
             }
 
-            if (!m.hasWeight() && m.impedance <= 0.0 && m.heartRate <= 0) {
+            if (!m.hasWeight() && (m[MeasurementType.IMPEDANCE]?.value ?: 0f) <= 0.0 && (m[MeasurementType.HEART_RATE]?.value ?: 0) <= 0) {
                 return BroadcastAction.IGNORED
             }
 
@@ -100,23 +105,23 @@ class EufyC20Handler : ScaleDeviceHandler() {
 
             // merge m into global stored (use local alias s, no !!)
             s.mergeWith(m)
-            if (m.hasWeight() && (s.weight != m.weight)) s.weight = m.weight
+            if (m.hasWeight() && ((s[MeasurementType.WEIGHT]?.value ?: 0f) != (m[MeasurementType.WEIGHT]?.value ?: 0f))) s[MeasurementType.WEIGHT] = Kg((m[MeasurementType.WEIGHT]?.value ?: 0f))
             
             // compute composition if possible
-            if (s.hasWeight() && s.impedance > 0.0) {
+            if (s.hasWeight() && (s[MeasurementType.IMPEDANCE]?.value ?: 0f) > 0.0) {
                 val sex = if (user.gender == GenderType.MALE) 1 else 0
                 val lib = MiScaleLib(sex, user.age, user.bodyHeight)
-                val wf = s.weight
-                s.fat = lib.getBodyFat(wf, s.impedance.toFloat())
-                s.water = lib.getWater(wf, s.impedance.toFloat())
-                s.muscle = lib.getMuscle(wf, s.impedance.toFloat())
-                s.bone = lib.getBoneMass(wf, s.impedance.toFloat())
-                s.lbm = lib.getLBM(wf, s.impedance.toFloat())
-                s.visceralFat = lib.getVisceralFat(wf)
+                val wf = (s[MeasurementType.WEIGHT]?.value ?: 0f)
+                s[MeasurementType.BODY_FAT] = Percent(lib.getBodyFat(wf, (s[MeasurementType.IMPEDANCE]?.value ?: 0f).toFloat()))
+                s[MeasurementType.WATER] = Percent(lib.getWater(wf, (s[MeasurementType.IMPEDANCE]?.value ?: 0f).toFloat()))
+                s[MeasurementType.MUSCLE] = Percent(lib.getMuscle(wf, (s[MeasurementType.IMPEDANCE]?.value ?: 0f).toFloat()))
+                s[MeasurementType.BONE] = Kg(lib.getBoneMass(wf, (s[MeasurementType.IMPEDANCE]?.value ?: 0f).toFloat()))
+                s[MeasurementType.LBM] = Kg(lib.getLBM(wf, (s[MeasurementType.IMPEDANCE]?.value ?: 0f).toFloat()))
+                s[MeasurementType.VISCERAL_FAT] = lib.getVisceralFat(wf)
             }
             
             // if full measurement -> clear stored and stop
-            return if (s.hasWeight() && s.impedance > 0.0 && s.heartRate > 0) {
+            return if (s.hasWeight() && (s[MeasurementType.IMPEDANCE]?.value ?: 0f) > 0.0 && (s[MeasurementType.HEART_RATE]?.value ?: 0) > 0) {
                 s.dateTime = Date()
                 publish(s)
                 stored = null

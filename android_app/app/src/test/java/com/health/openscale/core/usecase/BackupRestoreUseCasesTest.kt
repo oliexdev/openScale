@@ -104,7 +104,7 @@ class BackupRestoreUseCasesTest {
             produceFile = { File(sandboxRoot, "settings.preferences_pb") }
         )
         val settings = SettingsFacadeImpl(dataStore)
-        val sync = SyncUseCases(baseContext as Application, MeasurementTypeCrudUseCases(repository))
+        val sync = SyncUseCases(baseContext as Application, MeasurementTypeCrudUseCases(repository, ApplicationProvider.getApplicationContext()))
         useCases = BackupRestoreUseCases(sandboxContext, repository, settings, sync)
 
         repository.insertUser(

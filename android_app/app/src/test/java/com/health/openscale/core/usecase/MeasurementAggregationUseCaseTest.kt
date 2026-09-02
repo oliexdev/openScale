@@ -20,7 +20,7 @@ package com.health.openscale.core.usecase
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.InputFieldType
-import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.testutil.Fixtures
 import org.junit.Test
@@ -31,7 +31,7 @@ import java.util.Locale
 class MeasurementAggregationUseCaseTest {
 
     private val useCase = MeasurementAggregationUseCase()
-    private val weight = Fixtures.type(id = 1, key = MeasurementTypeKey.WEIGHT)
+    private val weight = Fixtures.type(id = 1, identity = MeasurementType.WEIGHT.identity)
 
     private fun em(measurementId: Int, timestamp: Long, weightValue: Float): EnrichedMeasurement =
         Fixtures.enriched(
@@ -93,7 +93,7 @@ class MeasurementAggregationUseCaseTest {
 
     private val heartRate = Fixtures.type(
         id = 2,
-        key = MeasurementTypeKey.HEART_RATE,
+        identity = MeasurementType.HEART_RATE.identity,
         inputType = InputFieldType.INT,
     )
 

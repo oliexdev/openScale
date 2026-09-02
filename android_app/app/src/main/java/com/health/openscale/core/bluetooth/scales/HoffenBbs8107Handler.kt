@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.WeightUnit
@@ -28,6 +29,8 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.max
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 /**
  * Handler for the Hoffen BBS-8107 and its rebrands.
@@ -231,18 +234,18 @@ class HoffenBbs8107Handler : ScaleDeviceHandler() {
 
         val m = ScaleMeasurement().apply {
             dateTime = Date()
-            this.weight = max(0f, weight)
+            this[MeasurementType.WEIGHT] = Kg(max(0f, weight))
         }
 
         // If barefoot (contact) → extra composition values
         when (frame[5]) {
             0x00.toByte() -> {
-                m.fat = ConverterUtils.fromUnsignedInt16Le(frame, 6) / 10.0f
-                m.water = ConverterUtils.fromUnsignedInt16Le(frame, 8) / 10.0f
-                m.muscle = ConverterUtils.fromUnsignedInt16Le(frame, 10) / 10.0f
+                m[MeasurementType.BODY_FAT] = Percent(ConverterUtils.fromUnsignedInt16Le(frame, 6) / 10.0f)
+                m[MeasurementType.WATER] = Percent(ConverterUtils.fromUnsignedInt16Le(frame, 8) / 10.0f)
+                m[MeasurementType.MUSCLE] = Percent(ConverterUtils.fromUnsignedInt16Le(frame, 10) / 10.0f)
                 // Bone mass is returned in deci-kg at index 14 (single byte)
-                m.bone = (frame[14].toInt() and 0xFF) / 10.0f
-                m.visceralFat = ConverterUtils.fromUnsignedInt16Le(frame, 17) / 10.0f
+                m[MeasurementType.BONE] = Kg((frame[14].toInt() and 0xFF) / 10.0f)
+                m[MeasurementType.VISCERAL_FAT] = ConverterUtils.fromUnsignedInt16Le(frame, 17) / 10.0f
             }
             0x04.toByte() -> {
                 LogManager.d(TAG, "No impedance/contact data")

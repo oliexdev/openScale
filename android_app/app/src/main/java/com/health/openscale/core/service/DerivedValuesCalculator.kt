@@ -21,7 +21,7 @@ import androidx.annotation.VisibleForTesting
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.MeasureUnit
-import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.WeightUnit
@@ -73,7 +73,7 @@ class DerivedValuesCalculator @Inject constructor(
        //         "${allGlobalTypes.size} global types, and user '${user.name}' for measurement $measurementId.")
 
         // Helper to find a raw value and its unit from the persisted MeasurementValues and MeasurementTypes
-        val findValueAndUnit = { key: MeasurementTypeKey ->
+        val findValueAndUnit = { key: MeasurementType.Key<*> ->
             val measurementTypeObject = allGlobalTypes.find { it.key == key }
             if (measurementTypeObject == null) {
                 LogManager.w(DERIVED_VALUES_TAG, "MeasurementType for key '$key' not found in global types list.")
@@ -82,13 +82,12 @@ class DerivedValuesCalculator @Inject constructor(
                 val valueObject = currentMeasurementValues.find { it.typeId == measurementTypeObject.id }
                 val value = valueObject?.floatValue
                 val unit = measurementTypeObject.unit // The unit is defined in the MeasurementType object
-               // LogManager.v(DERIVED_VALUES_TAG, "findValueAndUnit for $key (typeId: ${measurementTypeObject.id}, unit: $unit): ${value ?: "not found"}")
                 Pair(value, unit)
             }
         }
 
         // Helper to save or update a derived measurement value
-        val saveOrUpdateDerivedValue: suspend (value: Float?, typeKey: MeasurementTypeKey) -> Unit =
+        val saveOrUpdateDerivedValue: suspend (value: Float?, typeKey: MeasurementType.Key<*>) -> Unit =
             save@{ derivedValue, derivedValueTypeKey ->
                 val derivedTypeObject = allGlobalTypes.find { it.key == derivedValueTypeKey }
 
@@ -105,7 +104,6 @@ class DerivedValuesCalculator @Inject constructor(
                         measurementValueDao.deleteById(existingDerivedValueObject.id)
                         //LogManager.d(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} is null. Deleted existing value (ID: ${existingDerivedValueObject.id}).")
                     } else {
-                        //LogManager.v(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} is null. No existing value to delete.")
                     }
                 } else {
                     // If derived value is not null, insert or update it
@@ -115,7 +113,6 @@ class DerivedValuesCalculator @Inject constructor(
                             measurementValueDao.update(existingDerivedValueObject.copy(floatValue = roundedValue))
                          //   LogManager.d(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} updated from ${existingDerivedValueObject.floatValue} to $roundedValue.")
                         } else {
-                            //LogManager.v(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} is $roundedValue (unchanged). No update needed.")
                         }
                     } else {
                         measurementValueDao.insert(
@@ -131,13 +128,13 @@ class DerivedValuesCalculator @Inject constructor(
             }
 
         // Fetch raw values and their original units
-        val (weightValue, weightUnitType) = findValueAndUnit(MeasurementTypeKey.WEIGHT)
-        val (bodyFatValue, _) = findValueAndUnit(MeasurementTypeKey.BODY_FAT) // Unit usually % (UnitType.PERCENT)
-        val (waistValue, waistUnitType) = findValueAndUnit(MeasurementTypeKey.WAIST)
-        val (hipsValue, hipsUnitType) = findValueAndUnit(MeasurementTypeKey.HIPS)
-        val (caliper1Value, caliper1UnitType) = findValueAndUnit(MeasurementTypeKey.CALIPER_1)
-        val (caliper2Value, caliper2UnitType) = findValueAndUnit(MeasurementTypeKey.CALIPER_2)
-        val (caliper3Value, caliper3UnitType) = findValueAndUnit(MeasurementTypeKey.CALIPER_3)
+        val (weightValue, weightUnitType) = findValueAndUnit(MeasurementType.WEIGHT)
+        val (bodyFatValue, _) = findValueAndUnit(MeasurementType.BODY_FAT) // Unit usually % (UnitType.PERCENT)
+        val (waistValue, waistUnitType) = findValueAndUnit(MeasurementType.WAIST)
+        val (hipsValue, hipsUnitType) = findValueAndUnit(MeasurementType.HIPS)
+        val (caliper1Value, caliper1UnitType) = findValueAndUnit(MeasurementType.CALIPER_1)
+        val (caliper2Value, caliper2UnitType) = findValueAndUnit(MeasurementType.CALIPER_2)
+        val (caliper3Value, caliper3UnitType) = findValueAndUnit(MeasurementType.CALIPER_3)
 
         // --- CONVERT VALUES TO REQUIRED UNITS FOR CALCULATIONS ---
 
@@ -148,7 +145,7 @@ class DerivedValuesCalculator @Inject constructor(
                 UnitType.LB -> ConverterUtils.toKilogram(weightValue, WeightUnit.LB)
                 UnitType.ST -> ConverterUtils.toKilogram(weightValue, WeightUnit.ST)
                 else -> {
-                    LogManager.w(DERIVED_VALUES_TAG, "Unsupported unit $weightUnitType for weight conversion. Assuming KG if value present for ${MeasurementTypeKey.WEIGHT}.")
+                    LogManager.w(DERIVED_VALUES_TAG, "Unsupported unit $weightUnitType for weight conversion. Assuming KG if value present for ${MeasurementType.WEIGHT}.")
                     weightValue // Fallback or handle error appropriately
                 }
             }
@@ -160,7 +157,7 @@ class DerivedValuesCalculator @Inject constructor(
                 UnitType.CM -> waistValue
                 UnitType.INCH -> ConverterUtils.toCentimeter(waistValue, MeasureUnit.INCH)
                 else -> {
-                    LogManager.w(DERIVED_VALUES_TAG, "Unsupported unit $waistUnitType for waist conversion. Assuming CM if value present for ${MeasurementTypeKey.WAIST}.")
+                    LogManager.w(DERIVED_VALUES_TAG, "Unsupported unit $waistUnitType for waist conversion. Assuming CM if value present for ${MeasurementType.WAIST}.")
                     waistValue
                 }
             }
@@ -172,7 +169,7 @@ class DerivedValuesCalculator @Inject constructor(
                 UnitType.CM -> hipsValue
                 UnitType.INCH -> ConverterUtils.toCentimeter(hipsValue, MeasureUnit.INCH)
                 else -> {
-                    LogManager.w(DERIVED_VALUES_TAG, "Unsupported unit $hipsUnitType for hips conversion. Assuming CM if value present for ${MeasurementTypeKey.HIPS}.")
+                    LogManager.w(DERIVED_VALUES_TAG, "Unsupported unit $hipsUnitType for hips conversion. Assuming CM if value present for ${MeasurementType.HIPS}.")
                     hipsValue
                 }
             }
@@ -212,14 +209,14 @@ class DerivedValuesCalculator @Inject constructor(
         // --- PERFORM DERIVED VALUE CALCULATIONS ---
         // Pass the converted values (e.g., weightKg, waistCm) to the processing functions
 
-        processBmiCalculation(weightKg, userHeightCm).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.BMI) }
-        processWhrCalculation(waistCm, hipsCm).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.WHR) }
-        processWhtrCalculation(waistCm, userHeightCm).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.WHTR) }
+        processBmiCalculation(weightKg, userHeightCm).also { saveOrUpdateDerivedValue(it, MeasurementType.BMI) }
+        processWhrCalculation(waistCm, hipsCm).also { saveOrUpdateDerivedValue(it, MeasurementType.WHR) }
+        processWhtrCalculation(waistCm, userHeightCm).also { saveOrUpdateDerivedValue(it, MeasurementType.WHTR) }
         // BMR: when the source device already supplied one (e.g. S400 BIA-based BMR
         // via FFM), keep it. Mifflin-St Jeor is an anthropometric fallback used
         // only when no BMR landed on the row. TDEE always derives from whichever
         // BMR is actually persisted.
-        val bmrTypeId = allGlobalTypes.find { it.key == MeasurementTypeKey.BMR }?.id
+        val bmrTypeId = allGlobalTypes.find { it.key == MeasurementType.BMR }?.id
         val existingBmr = bmrTypeId?.let { id ->
             currentMeasurementValues.find { it.typeId == id }?.floatValue
         }
@@ -228,8 +225,8 @@ class DerivedValuesCalculator @Inject constructor(
             heightCm = user.heightCm,
             ageYears = ageAtMeasurementYears,
             gender = user.gender
-        )?.also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.BMR) }
-        processTDEECalculation(bmr, user.activityLevel).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.TDEE) }
+        )?.also { saveOrUpdateDerivedValue(it, MeasurementType.BMR) }
+        processTDEECalculation(bmr, user.activityLevel).also { saveOrUpdateDerivedValue(it, MeasurementType.TDEE) }
 
         processFatCaliperCalculation(
             caliper1Cm = caliper1Cm,
@@ -237,7 +234,7 @@ class DerivedValuesCalculator @Inject constructor(
             caliper3Cm = caliper3Cm,
             ageYears = ageAtMeasurementYears,
             gender = user.gender
-        ).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.CALIPER) }
+        ).also { saveOrUpdateDerivedValue(it, MeasurementType.CALIPER) }
 
         val endTime = System.nanoTime()
         val durationMillis = (endTime - startTime) / 1_000_000

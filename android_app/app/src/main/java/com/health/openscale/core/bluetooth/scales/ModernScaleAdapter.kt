@@ -31,7 +31,7 @@ import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.ScaleCommunicator
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
-import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
@@ -64,6 +64,8 @@ import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.min
 import kotlin.time.Duration.Companion.milliseconds
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 // -------------------------------------------------------------------------------------------------
 // Shared tuning for BLE pacing & retry (used by GATT adapter).
@@ -476,18 +478,20 @@ abstract class ModernScaleAdapter(
                 runBlocking(scope.coroutineContext) {
                     val userGoals = userFacade.getAllGoalsForUser(u.id).first()
 
-                    val goalWeightGoal = userGoals.find { it.measurementTypeId == MeasurementTypeKey.WEIGHT.id }
-                    if (goalWeightGoal != null) {
-                        val goalType = measurementFacade.getAllMeasurementTypes().first()
-                            .find { it.id == goalWeightGoal.measurementTypeId }
-
-                        if (goalType != null) {
-                            goalWeight = ConverterUtils.convertFloatValueUnit(
-                                value = goalWeightGoal.goalValue,
-                                fromUnit = goalType.unit,
-                                toUnit = UnitType.KG
-                            )
-                        }
+                    // Resolve the weight type row first: goals reference the row id, and
+                    // the pre-16 code compared it against the enum's ordinal, which only
+                    // worked because WEIGHT happened to be seeded as row 1.
+                    val weightRow = measurementFacade.getAllMeasurementTypes().first()
+                        .find { it.key == MeasurementType.WEIGHT }
+                    val goalWeightGoal = weightRow?.let { row ->
+                        userGoals.find { it.measurementTypeId == row.id }
+                    }
+                    if (goalWeightGoal != null && weightRow != null) {
+                        goalWeight = ConverterUtils.convertFloatValueUnit(
+                            value = goalWeightGoal.goalValue,
+                            fromUnit = weightRow.unit,
+                            toUnit = UnitType.KG
+                        )
                     }
 
                     val allMeasurements = measurementFacade.getMeasurementsForUser(u.id).first()
@@ -495,7 +499,7 @@ abstract class ModernScaleAdapter(
                     val oldestWeightMeasurementValue = allMeasurements
                         .sortedBy { it.measurement.timestamp }
                         .firstNotNullOfOrNull { measurementWithValues ->
-                            measurementWithValues.values.find { it.type.key == MeasurementTypeKey.WEIGHT }
+                            measurementWithValues.values.find { it.type.key == MeasurementType.WEIGHT }
                         }
 
                     if (oldestWeightMeasurementValue != null) {
@@ -508,7 +512,7 @@ abstract class ModernScaleAdapter(
 
                     val allTypes = measurementFacade.getAllMeasurementTypes().first()
 
-                    val weightType = allTypes.find { it.key == MeasurementTypeKey.WEIGHT }
+                    val weightType = allTypes.find { it.key == MeasurementType.WEIGHT }
                     if (weightType != null) {
                         scaleUnit = weightType.unit.toWeightUnit()
                     }
@@ -522,16 +526,16 @@ abstract class ModernScaleAdapter(
         runCatching { m.userId = mwv.measurement.userId }
         runCatching { m.dateTime = Date(mwv.measurement.timestamp) }
 
-        fun valueOf(key: MeasurementTypeKey): MeasurementValue? =
+        fun valueOf(key: com.health.openscale.core.data.MeasurementType.Key<*>): MeasurementValue? =
             mwv.values.firstOrNull { it.type.key == key }?.value
 
-        valueOf(MeasurementTypeKey.WEIGHT)?.let { m.weight = it.floatValue ?: 0f }
-        valueOf(MeasurementTypeKey.BODY_FAT)?.let { m.fat = it.floatValue ?: 0f }
-        valueOf(MeasurementTypeKey.WATER)?.let { m.water = it.floatValue ?: 0f }
-        valueOf(MeasurementTypeKey.MUSCLE)?.let { m.muscle = it.floatValue ?: 0f }
-        valueOf(MeasurementTypeKey.VISCERAL_FAT)?.let { m.visceralFat = it.floatValue ?: 0f }
-        valueOf(MeasurementTypeKey.LBM)?.let { m.lbm = it.floatValue ?: 0f }
-        valueOf(MeasurementTypeKey.BONE)?.let { m.bone = it.floatValue ?: 0f }
+        valueOf(MeasurementType.WEIGHT)?.let { m[MeasurementType.WEIGHT] = Kg(it.floatValue ?: 0f) }
+        valueOf(MeasurementType.BODY_FAT)?.let { m[MeasurementType.BODY_FAT] = Percent(it.floatValue ?: 0f) }
+        valueOf(MeasurementType.WATER)?.let { m[MeasurementType.WATER] = Percent(it.floatValue ?: 0f) }
+        valueOf(MeasurementType.MUSCLE)?.let { m[MeasurementType.MUSCLE] = Percent(it.floatValue ?: 0f) }
+        valueOf(MeasurementType.VISCERAL_FAT)?.let { m[MeasurementType.VISCERAL_FAT] = it.floatValue ?: 0f }
+        valueOf(MeasurementType.LBM)?.let { m[MeasurementType.LBM] = Kg(it.floatValue ?: 0f) }
+        valueOf(MeasurementType.BONE)?.let { m[MeasurementType.BONE] = Kg(it.floatValue ?: 0f) }
 
         return m
     }

@@ -132,6 +132,8 @@ object SettingsPreferenceKeys {
     const val TABLE_SCREEN_CONTEXT = "table_screen"
     const val STATISTICS_SCREEN_CONTEXT = "statistics_screen"
     const val INSIGHTS_SCREEN_CONTEXT = "insights_screen"
+    const val SHARED_FILTER_CONTEXT = "shared_screen"
+    const val LINK_ACROSS_SCREENS_PREFIX = "link_across_screens"
 }
 
 @Module
@@ -224,6 +226,9 @@ interface SettingsFacade {
 
     val chartSmoothingMaxGapDays: Flow<Int>
     suspend fun setChartSmoothingMaxGapDays(days: Int)
+
+    fun linkedAcrossScreens(settingSuffix: String): Flow<Boolean>
+    suspend fun setLinkedAcrossScreens(settingSuffix: String, linked: Boolean)
 
     val showChartGoalLines: Flow<Boolean>
     suspend fun setShowChartGoalLines(show: Boolean)
@@ -748,6 +753,21 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun setChartSmoothingMaxGapDays(days: Int) {
         LogManager.d(TAG, "Setting chart smoothing max gap to: $days days")
         saveSetting(SettingsPreferenceKeys.CHART_SMOOTHING_MAX_GAP_DAYS.name, days)
+    }
+
+    override fun linkedAcrossScreens(settingSuffix: String): Flow<Boolean> = observeSetting(
+        "${SettingsPreferenceKeys.LINK_ACROSS_SCREENS_PREFIX}$settingSuffix",
+        // Off by default: every screen keeps its own settings until the user links them from
+        // the filter menu, so neither an update nor a fresh install changes anything unasked.
+        false
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing linkedAcrossScreens for $settingSuffix", exception)
+        emit(false)
+    }
+
+    override suspend fun setLinkedAcrossScreens(settingSuffix: String, linked: Boolean) {
+        LogManager.d(TAG, "Setting $settingSuffix linked across screens to: $linked")
+        saveSetting("${SettingsPreferenceKeys.LINK_ACROSS_SCREENS_PREFIX}$settingSuffix", linked)
     }
 
     override val showChartGoalLines: Flow<Boolean> = observeSetting(

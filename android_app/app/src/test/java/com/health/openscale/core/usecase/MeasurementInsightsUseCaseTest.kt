@@ -18,7 +18,7 @@
 package com.health.openscale.core.usecase
 
 import com.google.common.truth.Truth.assertThat
-import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.TrendDirection
 import com.health.openscale.testutil.Fixtures
@@ -32,7 +32,7 @@ import org.junit.Test
 class MeasurementInsightsUseCaseTest {
 
     private val useCase = MeasurementInsightsUseCase()
-    private val weight = Fixtures.type(id = 1, key = MeasurementTypeKey.WEIGHT)
+    private val weight = Fixtures.type(id = 1, identity = MeasurementType.WEIGHT.identity)
 
     private fun m(day: Int, value: Float): MeasurementWithValues =
         Fixtures.mwv(
@@ -78,5 +78,21 @@ class MeasurementInsightsUseCaseTest {
         assertThat(analysis.maxValue).isWithin(1e-3f).of(75f)
         assertThat(analysis.longTermTrend).isEqualTo(TrendDirection.UP)
         assertThat(insight.basedOnCount).isEqualTo(6)
+    }
+
+    @Test
+    fun compute_survivesNumericValuesOfTypesWithoutAPredefinedKey() {
+        // Regression: the body-composition pattern used to force-unwrap type.key, which is
+        // null for every ble.*/user.* row — crashing exactly for the users the identity
+        // refactor was built for.
+        val leftArm = Fixtures.type(id = 99, identity = "ble.segmental.fat.left_arm")
+        val series = risingSeries().mapIndexed { i, mwv ->
+            mwv.copy(values = mwv.values + Fixtures.valueWithType(leftArm, 12f + i, 50 + i))
+        }
+
+        val insight = useCase.compute(series, primaryTypeId = weight.id)
+
+        assertThat(insight.basedOnCount).isEqualTo(series.size)
+        assertThat(insight.measurementAnalysis).isNotNull()
     }
 }
