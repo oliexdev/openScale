@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import android.bluetooth.BluetoothGattCharacteristic
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.AfuB1Lib
@@ -34,6 +35,9 @@ import java.util.Locale
 import java.util.UUID
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.milliseconds
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 class AfuB1Handler : ScaleDeviceHandler() {
 
@@ -488,7 +492,7 @@ class AfuB1Handler : ScaleDeviceHandler() {
         val measurement = ScaleMeasurement().apply {
             userId = user.id
             dateTime = timestamp?.let { plausibleDate(it) } ?: Date()
-            this.weight = weightKg
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
             // Composition chain: resistance -> body-fat % -> report. Nothing derived is
             // published outside the reference implementation's validated input ranges.
             if (impedanceOhms != null && impedanceOhms > 0f) {
@@ -500,14 +504,14 @@ class AfuB1Handler : ScaleDeviceHandler() {
                 if (bodyFat != null) {
                     val comp = AfuB1Lib.bodyComposition(sexFlag, user.age, user.bodyHeight, weightKg, bodyFat)
                     if (comp != null) {
-                        this.impedance = impedanceOhms.toDouble()
-                        fat = bodyFat
-                        water = comp.waterPercent.toFloat()
-                        muscle = comp.skeletalMusclePercent.toFloat()
-                        bone = comp.boneMassKg
-                        visceralFat = comp.visceralFatIndex.toFloat()
-                        protein = comp.proteinPercent.toFloat()
-                        lbm = comp.fatFreeMassKg
+                        this[MeasurementType.IMPEDANCE] = Ohm(impedanceOhms)
+                        this[MeasurementType.BODY_FAT] = Percent(bodyFat)
+                        this[MeasurementType.WATER] = Percent(comp.waterPercent.toFloat())
+                        this[MeasurementType.MUSCLE] = Percent(comp.skeletalMusclePercent.toFloat())
+                        this[MeasurementType.BONE] = Kg(comp.boneMassKg)
+                        this[MeasurementType.VISCERAL_FAT] = comp.visceralFatIndex.toFloat()
+                        this[MeasurementType.PROTEIN] = Percent(comp.proteinPercent.toFloat())
+                        this[MeasurementType.LBM] = Kg(comp.fatFreeMassKg)
                     }
                 }
             }

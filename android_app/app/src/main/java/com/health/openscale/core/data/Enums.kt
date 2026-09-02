@@ -366,48 +366,6 @@ enum class MeasurementTypeIcon(val resource: IconResource) {
     IC_M_HIVE(IconResource.VectorResource(Icons.Filled.Hive));
 }
 
-enum class MeasurementTypeKey(
-    val id: Int,
-    @param:StringRes val localizedNameResId: Int,
-    val allowedUnitTypes: List<UnitType>,
-    val allowedInputType: List<InputFieldType>
-) {
-    WEIGHT(1, R.string.measurement_type_weight, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    BMI(2, R.string.measurement_type_bmi, listOf(UnitType.NONE), listOf(InputFieldType.FLOAT)),
-    BODY_FAT(3, R.string.measurement_type_body_fat, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    WATER(4, R.string.measurement_type_water, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    MUSCLE(5, R.string.measurement_type_muscle, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    LBM(6, R.string.measurement_type_lbm, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    BONE(7, R.string.measurement_type_bone, listOf(UnitType.KG, UnitType.LB), listOf(InputFieldType.FLOAT)),
-    WAIST(8, R.string.measurement_type_waist, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    WHR(9, R.string.measurement_type_whr, listOf(UnitType.NONE), listOf(InputFieldType.FLOAT)),
-    WHTR(10, R.string.measurement_type_whtr, listOf(UnitType.NONE), listOf(InputFieldType.FLOAT)),
-    HIPS(11, R.string.measurement_type_hips, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    VISCERAL_FAT(12, R.string.measurement_type_visceral_fat, listOf(UnitType.NONE), listOf(InputFieldType.FLOAT)),
-    CHEST(13, R.string.measurement_type_chest, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    THIGH(14, R.string.measurement_type_thigh, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    BICEPS(15, R.string.measurement_type_biceps, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    NECK(16, R.string.measurement_type_neck, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    CALIPER_1(17, R.string.measurement_type_caliper1, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    CALIPER_2(18, R.string.measurement_type_caliper2, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    CALIPER_3(19, R.string.measurement_type_caliper3, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
-    CALIPER(20, R.string.measurement_type_fat_caliper, listOf(UnitType.PERCENT), listOf(InputFieldType.FLOAT)),
-    BMR(21, R.string.measurement_type_bmr, listOf(UnitType.KCAL), listOf(InputFieldType.FLOAT)),
-    TDEE(22, R.string.measurement_type_tdee, listOf(UnitType.KCAL), listOf(InputFieldType.FLOAT)),
-    HEART_RATE(23, R.string.measurement_type_heart_rate, listOf(UnitType.BPM), listOf(InputFieldType.INT)),
-    CALORIES(24, R.string.measurement_type_calories, listOf(UnitType.KCAL), listOf(InputFieldType.FLOAT)),
-    DATE(25, R.string.measurement_type_date, listOf(UnitType.NONE), listOf(InputFieldType.DATE)),
-    TIME(26, R.string.measurement_type_time, listOf(UnitType.NONE), listOf(InputFieldType.TIME)),
-    COMMENT(27, R.string.measurement_type_comment, listOf(UnitType.NONE), listOf(InputFieldType.TEXT)),
-    USER(28, R.string.measurement_type_user, listOf(UnitType.NONE), listOf(InputFieldType.USER)),
-    IMPEDANCE(29, R.string.measurement_type_impedance, listOf(UnitType.OHM), listOf(InputFieldType.FLOAT)),
-    IMPEDANCE_LOW(30, R.string.measurement_type_impedance_low, listOf(UnitType.OHM), listOf(InputFieldType.FLOAT)),
-    ECW(31, R.string.measurement_type_ecw, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    ICW(32, R.string.measurement_type_icw, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    PROTEIN(33, R.string.measurement_type_protein, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    BCM(34, R.string.measurement_type_bcm, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
-    CUSTOM(99, R.string.measurement_type_custom_default_name, UnitType.entries.toList(), listOf(InputFieldType.FLOAT, InputFieldType.INT, InputFieldType.TEXT, InputFieldType.DATE, InputFieldType.TIME));
-}
 
 
 enum class UnitType(val displayName: String) {
@@ -426,6 +384,17 @@ enum class UnitType(val displayName: String) {
         return this == KG || this == LB || this == ST
     }
 
+    /**
+     * The units a value in this unit can be converted into without changing what it means.
+     * PERCENT is alone in its family on purpose: turning a percentage into a mass needs to
+     * know what it is a percentage *of*.
+     */
+    fun convertibleUnits(): List<UnitType> = when {
+        isWeightUnit() -> listOf(KG, LB, ST)
+        this == CM || this == INCH -> listOf(CM, INCH)
+        else -> listOf(this)
+    }
+
     fun toWeightUnit(): WeightUnit {
         return when (this) {
             LB -> WeightUnit.LB
@@ -433,6 +402,72 @@ enum class UnitType(val displayName: String) {
             else -> WeightUnit.KG
         }
     }
+}
+
+/**
+ * A raw scale value whose unit is part of its type. Every float-valued builtin
+ * [MeasurementType.Key] binds one of these ([Kg], [Percent], [Cm], [Kcal], [Ohm]), so a
+ * handler cannot set a value without stating the unit it is in — `m[WEIGHT] = Kg(72.5f)`
+ * compiles, `m[WEIGHT] = 72.5f` and `m[WEIGHT] = Percent(20f)` do not. The BLE connector
+ * unwraps centrally and converts to the unit the user configured.
+ *
+ * The companions carry the conversions a handler needs when its scale reports something
+ * else (`Kg.from(native, user.scaleUnit)`, `Cm.fromInch(...)`), so the right way is also
+ * the discoverable way. `toString()` prints just the number to keep log lines readable.
+ */
+sealed interface UnitValue {
+    val value: Float
+}
+
+/** A mass in kilograms — the delivery unit for WEIGHT, LBM, BONE and `deviceKg` keys. */
+@JvmInline
+value class Kg(override val value: Float) : UnitValue {
+    override fun toString(): String = value.toString()
+
+    companion object {
+        /** Converts from the unit the scale natively reports in (kg/lb/st). */
+        fun from(value: Float, unit: WeightUnit): Kg =
+            Kg(com.health.openscale.core.utils.ConverterUtils.toKilogram(value, unit))
+
+        fun fromLb(lb: Float): Kg = from(lb, WeightUnit.LB)
+
+        /** Chinese catty (市斤), used natively by some Asian scales. */
+        fun fromJin(jin: Float): Kg = Kg(jin * 0.5f)
+    }
+}
+
+/** A share of body weight in percent — BODY_FAT, WATER, MUSCLE, PROTEIN, `devicePercent`. */
+@JvmInline
+value class Percent(override val value: Float) : UnitValue {
+    override fun toString(): String = value.toString()
+}
+
+/** A length in centimeters — the circumference and caliper keys. */
+@JvmInline
+value class Cm(override val value: Float) : UnitValue {
+    override fun toString(): String = value.toString()
+
+    companion object {
+        fun fromInch(inch: Float): Cm = Cm(inch * 2.54f)
+    }
+}
+
+/** An energy in kilocalories — BMR (and CALORIES). */
+@JvmInline
+value class Kcal(override val value: Float) : UnitValue {
+    override fun toString(): String = value.toString()
+}
+
+/** An electrical resistance in ohms — the impedance keys. */
+@JvmInline
+value class Ohm(override val value: Float) : UnitValue {
+    override fun toString(): String = value.toString()
+}
+
+/** A heart rate in whole beats per minute. */
+@JvmInline
+value class Bpm(val value: Int) {
+    override fun toString(): String = value.toString()
 }
 
 enum class InputFieldType {

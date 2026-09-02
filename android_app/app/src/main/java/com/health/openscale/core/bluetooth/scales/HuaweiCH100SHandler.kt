@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.EtekcityLib
@@ -33,6 +34,10 @@ import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.math.min
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Honor Smart Scale CH100S body fat scale (Chipsea CST34M97 chipset).
@@ -264,10 +269,10 @@ class HuaweiCH100SHandler : ScaleDeviceHandler() {
         val m = ScaleMeasurement().apply {
             this.userId = userId
             this.dateTime = dt
-            this.weight = weight
-            this.fat = fat
+            this[MeasurementType.WEIGHT] = Kg(weight)
+            this[MeasurementType.BODY_FAT] = Percent(fat)
             if (impedance in 1..3999) {
-                this.impedance = impedance.toDouble()
+                this[MeasurementType.IMPEDANCE] = Ohm(impedance.toFloat())
                 // Water%, muscle%, bone, BMR, visceral fat are not sent by the scale.
                 // Compute app-side from impedance using BIA formulas (Chipsea chipset).
                 val user = currentAppUser()
@@ -278,11 +283,11 @@ class HuaweiCH100SHandler : ScaleDeviceHandler() {
                     heightM = user.bodyHeight.toDouble() / 100.0,
                     impedance = impedance.toDouble()
                 )
-                this.water = lib.water.toFloat()
-                this.muscle = lib.skeletalMusclePercentage.toFloat()
-                this.bone = lib.boneMass.toFloat()
-                this.bmr = lib.basalMetabolicRate.toFloat()
-                this.visceralFat = lib.visceralFat.toFloat()
+                this[MeasurementType.WATER] = Percent(lib.water.toFloat())
+                this[MeasurementType.MUSCLE] = Percent(lib.skeletalMusclePercentage.toFloat())
+                this[MeasurementType.BONE] = Kg(lib.boneMass.toFloat())
+                this[MeasurementType.BMR] = Kcal(lib.basalMetabolicRate.toFloat())
+                this[MeasurementType.VISCERAL_FAT] = lib.visceralFat.toFloat()
             }
         }
         publish(m)
@@ -328,7 +333,7 @@ class HuaweiCH100SHandler : ScaleDeviceHandler() {
      * weight, then a BMI-22 estimate from body height.
      */
     private fun profileWeightKg(user: ScaleUser): Float {
-        lastMeasurementFor(user.id)?.weight?.takeIf { it.isFinite() && it > 0f }?.let { return it }
+        lastMeasurementFor(user.id)?.get(MeasurementType.WEIGHT)?.value?.takeIf { it.isFinite() && it > 0f }?.let { return it }
         user.initialWeight.takeIf { it.isFinite() && it > 0f }?.let { return it }
         val heightM = user.bodyHeight / 100f
         return if (heightM.isFinite() && heightM > 0.5f) 22f * heightM * heightM else 70f

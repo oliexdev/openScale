@@ -62,7 +62,6 @@ import com.health.openscale.R
 import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.SmoothingAlgorithm
 import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.core.model.EnrichedMeasurement
@@ -147,19 +146,19 @@ fun MeasurementChart(
 
     val allAvailableMeasurementTypes by sharedViewModel.measurementTypes.collectAsState()
 
-    // Resolved via MeasurementTypeKey, never via MeasurementTypeKey.id: the row id of a
+    // Resolved via the predefined Key constants, never via MeasurementType.id: the row id of a
     // MeasurementType is auto-generated on insert and does not match the enum id.
     val defaultSelectedTypesValue = remember(targetMeasurementTypeId, allAvailableMeasurementTypes) {
         if (targetMeasurementTypeId != null) {
             setOf(targetMeasurementTypeId.toString())
         } else {
             val defaultKeys = setOf(
-                MeasurementTypeKey.WEIGHT,
-                MeasurementTypeKey.BMI,
-                MeasurementTypeKey.BODY_FAT,
-                MeasurementTypeKey.WATER,
-                MeasurementTypeKey.MUSCLE,
-                MeasurementTypeKey.COMMENT,
+                MeasurementType.WEIGHT,
+                MeasurementType.BMI,
+                MeasurementType.BODY_FAT,
+                MeasurementType.WATER,
+                MeasurementType.MUSCLE,
+                MeasurementType.COMMENT,
             )
             allAvailableMeasurementTypes
                 .filter { it.key in defaultKeys }
@@ -365,7 +364,7 @@ fun MeasurementChart(
                             .find { it.id == targetMeasurementTypeId }
                             ?.let { listOf(it.id) } ?: emptyList()
                     } else {
-                        val defaultKeys = setOf(MeasurementTypeKey.WEIGHT, MeasurementTypeKey.BODY_FAT)
+                        val defaultKeys = setOf(MeasurementType.WEIGHT, MeasurementType.BODY_FAT)
                         selectableFilteredTypes
                             .filter { it.key in defaultKeys }
                             .map { it.id }

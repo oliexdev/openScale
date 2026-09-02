@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -29,6 +30,8 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Percent
 
 /**
  * FitTrack Dara 2.0 body-composition scale.
@@ -261,13 +264,13 @@ class FitTrackDaraHandler : ScaleDeviceHandler() {
     /** Store the dump indices that map to a [ScaleMeasurement] field (see class docs for the full set). */
     private fun applyDumpIndex(idx: Int, value: Int) {
         when (idx) {
-            0 -> pending.weight = ConverterUtils.toKilogram(value / 10.0f, currentAppUser().scaleUnit)
-            2 -> pending.fat = value / 10.0f            // %
-            4 -> pending.visceralFat = value.toFloat()  // index (no ÷10)
-            5 -> pending.lbm = value / 10.0f            // kg
-            7 -> pending.bone = value / 10.0f           // kg
-            8 -> pending.water = value / 10.0f          // %
-            10 -> pending.protein = value / 10.0f       // %
+            0 -> pending[MeasurementType.WEIGHT] = Kg.from(value / 10.0f, currentAppUser().scaleUnit)
+            2 -> pending[MeasurementType.BODY_FAT] = Percent(value / 10.0f)            // %
+            4 -> pending[MeasurementType.VISCERAL_FAT] = value.toFloat()  // index (no ÷10)
+            5 -> pending[MeasurementType.LBM] = Kg(value / 10.0f)            // kg
+            7 -> pending[MeasurementType.BONE] = Kg(value / 10.0f)           // kg
+            8 -> pending[MeasurementType.WATER] = Percent(value / 10.0f)          // %
+            10 -> pending[MeasurementType.PROTEIN] = Percent(value / 10.0f)       // %
         }
     }
 
@@ -281,15 +284,15 @@ class FitTrackDaraHandler : ScaleDeviceHandler() {
      */
     private fun publishFinal() {
         if (published) return
-        val weightKg = if (pending.weight > 0f) pending.weight else pendingWeightKg
+        val weightKg = if ((pending[MeasurementType.WEIGHT]?.value ?: 0f) > 0f) (pending[MeasurementType.WEIGHT]?.value ?: 0f) else pendingWeightKg
         if (weightKg <= 0f) return
         published = true
         dumpJob?.cancel()
         dumpJob = null
-        pending.weight = weightKg
+        pending[MeasurementType.WEIGHT] = Kg(weightKg)
         pending.dateTime = Date()
-        logD("publishing weight=${pending.weight} fat=${pending.fat} water=${pending.water} " +
-                "lbm=${pending.lbm} bone=${pending.bone} visceral=${pending.visceralFat} protein=${pending.protein}")
+        logD("publishing weight=${pending[MeasurementType.WEIGHT]} fat=${pending[MeasurementType.BODY_FAT]} water=${pending[MeasurementType.WATER]} " +
+                "lbm=${pending[MeasurementType.LBM]} bone=${pending[MeasurementType.BONE]} visceral=${pending[MeasurementType.VISCERAL_FAT]} protein=${pending[MeasurementType.PROTEIN]}")
         publish(pending)
         requestDisconnect()
     }

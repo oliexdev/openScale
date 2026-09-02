@@ -1,11 +1,13 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Calendar
 import java.util.UUID
+import com.health.openscale.core.data.Kg
 
 /**
  * Handler for EEBBL Body Fat Scale (P1) - 8-electrode with handle.
@@ -50,8 +52,7 @@ class EEBBLHandler : ScaleDeviceHandler() {
                     DeviceCapability.LIVE_WEIGHT_STREAM,
                     DeviceCapability.TIME_SYNC,
                     DeviceCapability.USER_SYNC,
-                    DeviceCapability.UNIT_CONFIG,
-                    DeviceCapability.BODY_COMPOSITION   // partial: weight reliable; full metrics need parse impl + good measurement log
+                    DeviceCapability.UNIT_CONFIG
                 ),
                 linkMode = LinkMode.CONNECT_GATT
             )
@@ -145,7 +146,7 @@ class EEBBLHandler : ScaleDeviceHandler() {
             }
 
             if (!weightPublished && stableCount >= REQUIRED_STABLE_COUNT && weight in 30f..250f) {
-                pendingMeasurement = ScaleMeasurement().apply { this.weight = weight }
+                pendingMeasurement = ScaleMeasurement().apply { this[MeasurementType.WEIGHT] = Kg(weight) }
                 logI("*** STABLE WEIGHT DETECTED: $weight kg (raw=$raw) — publishing + disconnecting immediately so measurement is tied to the correct user (fixes assisted weighing / baby mode) ***")
                 publish(pendingMeasurement!!)
                 weightPublished = true
@@ -230,9 +231,9 @@ class EEBBLHandler : ScaleDeviceHandler() {
         logI("*** RICH BODY-COMP INDICATION (alternative path) weight=$weight kg at idx=$weightStartIdx ***")
 
         if (pendingMeasurement == null) {
-            pendingMeasurement = ScaleMeasurement().apply { this.weight = weight }
+            pendingMeasurement = ScaleMeasurement().apply { this[MeasurementType.WEIGHT] = Kg(weight) }
         } else {
-            pendingMeasurement!!.weight = weight
+            pendingMeasurement!![MeasurementType.WEIGHT] = Kg(weight)
         }
 
         publish(pendingMeasurement!!)

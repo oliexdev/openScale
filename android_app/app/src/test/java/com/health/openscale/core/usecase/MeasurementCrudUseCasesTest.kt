@@ -23,12 +23,11 @@ import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.Measurement
-import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.User
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
-import com.health.openscale.getDefaultMeasurementTypes
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,7 +64,7 @@ class MeasurementCrudUseCasesTest {
     fun setUp() = runBlocking {
         db = RoomTestSupport.inMemory(app)
         repo = RoomTestSupport.repositoryFor(db)
-        repo.insertAllMeasurementTypes(getDefaultMeasurementTypes())
+        repo.insertAllMeasurementTypes(MeasurementType.seedRows())
         val settings = RoomTestSupport.settingsFacadeFor(
             CoroutineScope(SupervisorJob() + Dispatchers.IO),
             File(app.cacheDir, "crud-${System.nanoTime()}.preferences_pb"),
@@ -73,9 +72,9 @@ class MeasurementCrudUseCasesTest {
         crud = RoomTestSupport.measurementCrudFor(app, repo, settings)
 
         val types = repo.getAllMeasurementTypes().first()
-        weightId = types.first { it.key == MeasurementTypeKey.WEIGHT }.id
-        waistId = types.first { it.key == MeasurementTypeKey.WAIST }.id
-        neckId = types.first { it.key == MeasurementTypeKey.NECK }.id
+        weightId = types.first { it.key == MeasurementType.WEIGHT }.id
+        waistId = types.first { it.key == MeasurementType.WAIST }.id
+        neckId = types.first { it.key == MeasurementType.NECK }.id
 
         userId = repo.insertUser(
             User(
@@ -150,7 +149,7 @@ class MeasurementCrudUseCasesTest {
 
     @Test
     fun saveMeasurement_editWeight_recalculatesDerivedWithoutChurningIds() = runBlocking {
-        val bmiId = repo.getAllMeasurementTypes().first().first { it.key == MeasurementTypeKey.BMI }.id
+        val bmiId = repo.getAllMeasurementTypes().first().first { it.key == MeasurementType.BMI }.id
 
         val id = crud.saveMeasurement(
             Measurement(userId = userId, timestamp = 3_000L),

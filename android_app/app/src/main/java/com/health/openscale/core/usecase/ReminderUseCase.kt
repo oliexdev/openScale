@@ -23,7 +23,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.worker.ReminderWorker
 import dagger.Module
@@ -84,7 +84,7 @@ class ReminderUseCase @Inject constructor(
 
         if (!isSameDay) return true
 
-        val hasWeightValue = closestMatchResult.second.values.any { it.type.key == MeasurementTypeKey.WEIGHT }
+        val hasWeightValue = closestMatchResult.second.values.any { it.type.key == MeasurementType.WEIGHT }
 
         return !hasWeightValue
     }

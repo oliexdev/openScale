@@ -25,13 +25,11 @@ import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
-import com.health.openscale.getDefaultMeasurementTypes
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -73,26 +71,26 @@ class MeasurementValueInheritanceTest {
     fun setUp() = runBlocking {
         db = RoomTestSupport.inMemory(app)
         repo = RoomTestSupport.repositoryFor(db)
-        repo.insertAllMeasurementTypes(getDefaultMeasurementTypes())
+        repo.insertAllMeasurementTypes(MeasurementType.seedRows())
 
         val settings = RoomTestSupport.settingsFacadeFor(
             CoroutineScope(SupervisorJob() + Dispatchers.IO),
             File(app.cacheDir, "inheritance-${System.nanoTime()}.preferences_pb"),
         )
         val query = MeasurementQueryUseCases(repo)
-        val sync = SyncUseCases(app, MeasurementTypeCrudUseCases(repo))
+        val sync = SyncUseCases(app, MeasurementTypeCrudUseCases(repo, ApplicationProvider.getApplicationContext()))
         transformation = MeasurementTransformationUseCase(
             settings, UserUseCases(repo, settings, sync), query
         )
 
         val types = repo.getAllMeasurementTypes().first()
-        weightId = types.first { it.key == MeasurementTypeKey.WEIGHT }.id
-        waistId = types.first { it.key == MeasurementTypeKey.WAIST }.id
-        hipsId = types.first { it.key == MeasurementTypeKey.HIPS }.id
-        heartRateId = types.first { it.key == MeasurementTypeKey.HEART_RATE }.id
-        commentId = types.first { it.key == MeasurementTypeKey.COMMENT }.id
-        bmiId = types.first { it.key == MeasurementTypeKey.BMI }.id
-        impedanceId = types.first { it.key == MeasurementTypeKey.IMPEDANCE }.id
+        weightId = types.first { it.key == MeasurementType.WEIGHT }.id
+        waistId = types.first { it.key == MeasurementType.WAIST }.id
+        hipsId = types.first { it.key == MeasurementType.HIPS }.id
+        heartRateId = types.first { it.key == MeasurementType.HEART_RATE }.id
+        commentId = types.first { it.key == MeasurementType.COMMENT }.id
+        bmiId = types.first { it.key == MeasurementType.BMI }.id
+        impedanceId = types.first { it.key == MeasurementType.IMPEDANCE }.id
 
         userId = repo.insertUser(
             User(
@@ -214,7 +212,7 @@ class MeasurementValueInheritanceTest {
         )
         // The insert triggers the derived recalculation, so BMI exists on the predecessor.
         assertThat(repo.getMeasurementsWithValuesForUser(userId).first()
-            .single().values.any { it.type.key == MeasurementTypeKey.BMI }).isTrue()
+            .single().values.any { it.type.key == MeasurementType.BMI }).isTrue()
 
         val result = transformation.applyValueInheritance(
             incoming(2_000L), listOf(float(weightId, 71f))
@@ -231,23 +229,23 @@ class MeasurementValueInheritanceTest {
     @Test
     fun inherits_coversNumericCustomTypesButNoOthers() = runBlocking {
         val customFloatId = repo.insertMeasurementType(
-            MeasurementType(key = MeasurementTypeKey.CUSTOM, name = "Blood pressure",
+            MeasurementType(identity = "user.blood_pressure", name = "Blood pressure",
                 unit = UnitType.NONE, inputType = InputFieldType.FLOAT)
         ).toInt()
         val customIntId = repo.insertMeasurementType(
-            MeasurementType(key = MeasurementTypeKey.CUSTOM, name = "Steps",
+            MeasurementType(identity = "user.steps", name = "Steps",
                 unit = UnitType.NONE, inputType = InputFieldType.INT)
         ).toInt()
         val customTextId = repo.insertMeasurementType(
-            MeasurementType(key = MeasurementTypeKey.CUSTOM, name = "Mood",
+            MeasurementType(identity = "user.mood", name = "Mood",
                 unit = UnitType.NONE, inputType = InputFieldType.TEXT)
         ).toInt()
         val customDateId = repo.insertMeasurementType(
-            MeasurementType(key = MeasurementTypeKey.CUSTOM, name = "Last blood test",
+            MeasurementType(identity = "user.last_blood_test", name = "Last blood test",
                 unit = UnitType.NONE, inputType = InputFieldType.DATE)
         ).toInt()
         val disabledCustomId = repo.insertMeasurementType(
-            MeasurementType(key = MeasurementTypeKey.CUSTOM, name = "Retired",
+            MeasurementType(identity = "user.retired", name = "Retired",
                 unit = UnitType.NONE, inputType = InputFieldType.FLOAT, isEnabled = false)
         ).toInt()
 

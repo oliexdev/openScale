@@ -18,10 +18,12 @@
 package com.health.openscale.core.bluetooth.scales
 
 import android.bluetooth.le.ScanResult
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import androidx.core.util.isEmpty
+import com.health.openscale.core.data.Kg
 
 /**
  * AAAxHandler
@@ -118,7 +120,7 @@ class AAAxHandler : ScaleDeviceHandler() {
                         publish(
                             ScaleMeasurement().apply {
                                 dateTime = Date()
-                                weight = kg
+                                this[MeasurementType.WEIGHT] = Kg(kg)
                             }
                         )
                         publishedOnce = true

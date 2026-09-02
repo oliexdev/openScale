@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.TrisaBodyAnalyzeLib
@@ -25,6 +26,9 @@ import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.ConverterUtils
 import java.util.Date
 import java.util.UUID
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * TrisaBodyAnalyzeHandler
@@ -192,7 +196,7 @@ class TrisaBodyAnalyzeHandler : ScaleDeviceHandler() {
 
         val measurement = ScaleMeasurement().apply {
             dateTime = Date(convertDeviceTimestampToJava(deviceTs))
-            weight = weightKg
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
         }
 
         // Only resistance2 is used for derived composition fields
@@ -202,12 +206,12 @@ class TrisaBodyAnalyzeHandler : ScaleDeviceHandler() {
             val impedance = if (resistance2 < 410f) 3.0f else 0.3f * (resistance2 - 400f)
             val sexFlag = if (user!!.gender.isMale()) 1 else 0
             val lib = TrisaBodyAnalyzeLib(sexFlag, user.age, user.bodyHeight)
-            measurement.fat = lib.getFat(weightKg, impedance)
-            measurement.water = lib.getWater(weightKg, impedance)
-            measurement.muscle = lib.getMuscle(weightKg, impedance)
-            measurement.bone = lib.getBone(weightKg, impedance)
+            measurement[MeasurementType.BODY_FAT] = Percent(lib.getFat(weightKg, impedance))
+            measurement[MeasurementType.WATER] = Percent(lib.getWater(weightKg, impedance))
+            measurement[MeasurementType.MUSCLE] = Percent(lib.getMuscle(weightKg, impedance))
+            measurement[MeasurementType.BONE] = Kg(lib.getBone(weightKg, impedance))
             // Store the raw resistance so body composition can be recomputed later.
-            measurement.impedance = resistance2.toDouble()
+            measurement[MeasurementType.IMPEDANCE] = Ohm(resistance2)
         }
         return measurement
     }

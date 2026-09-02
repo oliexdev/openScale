@@ -23,6 +23,11 @@ import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.AiLinkLib
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import java.util.UUID
@@ -149,28 +154,30 @@ class AiLinkBroadcastHandler : ScaleDeviceHandler() {
         val measurement = ScaleMeasurement().apply {
             userId = user.id
             dateTime = Date()
-            weight = weightKg
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
         }
 
         // The scale zeroes the impedance when its BIA pass fails (status 0x03 in the vendor app),
-        // so only derive body composition when it actually reported one.
-        if (frame.impedance > 0) {
-            measurement.impedance = frame.impedance.toDouble()
+        // so only derive body composition when it actually reported one. Height and age are
+        // required inputs: ScaleUser defaults bodyHeight to -1, and the equations still return
+        // positive, plausible-looking numbers from it.
+        if (frame.impedance > 0 && user.bodyHeight > 0f && user.age > 0) {
+            measurement[MeasurementType.IMPEDANCE] = Ohm(frame.impedance.toFloat())
 
             val lib = StandardImpedanceLib(
                 gender = user.gender,
                 age = user.age,
                 weightKg = weightKg.toDouble(),
                 heightM = user.bodyHeight / 100.0,
-                impedance = measurement.impedance,
+                impedance = frame.impedance.toDouble(),
             )
 
-            measurement.fat = lib.totalFatPercentage.toFloat()
-            measurement.water = lib.totalBodyWaterPercentage.toFloat()
-            measurement.muscle = lib.skeletalMusclePercentage.toFloat()
-            measurement.bone = lib.boneMassKg.toFloat()
-            measurement.bmr = lib.basalMetabolicRate.toFloat()
-            measurement.lbm = lib.fatFreeMassKg.toFloat()
+            measurement[MeasurementType.BODY_FAT] = Percent(lib.totalFatPercentage.toFloat())
+            measurement[MeasurementType.WATER] = Percent(lib.totalBodyWaterPercentage.toFloat())
+            measurement[MeasurementType.MUSCLE] = Percent(lib.skeletalMusclePercentage.toFloat())
+            measurement[MeasurementType.BONE] = Kg(lib.boneMassKg.toFloat())
+            measurement[MeasurementType.BMR] = Kcal(lib.basalMetabolicRate.toFloat())
+            measurement[MeasurementType.LBM] = Kg(lib.fatFreeMassKg.toFloat())
         } else {
             logD("scale reported no impedance; publishing weight only")
         }

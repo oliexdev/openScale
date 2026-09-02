@@ -48,7 +48,6 @@ import androidx.lifecycle.viewModelScope
 import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.usecase.MeasurementQueryUseCases
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import dagger.hilt.android.AndroidEntryPoint
@@ -178,7 +177,7 @@ private fun WidgetConfigScreen(
 
     // Default selection: WEIGHT if available, else first entry
     LaunchedEffect(types) {
-        selectedId = types.firstOrNull { it.key == MeasurementTypeKey.WEIGHT }?.id
+        selectedId = types.firstOrNull { it.key == MeasurementType.WEIGHT }?.id
             ?: types.firstOrNull()?.id
         selectedTheme = WidgetTheme.LIGHT
     }

@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -29,6 +30,10 @@ import java.util.Date
 import java.util.TimeZone
 import java.util.UUID
 import kotlin.random.Random
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Weight Gurus Bluetooth Smart Scale 0376 (Greater Goods / DMD Brands, Transtek A3).
@@ -417,8 +422,8 @@ class WeightGurusA3Handler : ScaleDeviceHandler() {
 
         val measurement = ScaleMeasurement().apply {
             dateTime = Date(timestamp?.let(::deviceTimeToJava) ?: System.currentTimeMillis())
-            this.weight = weight
-            impedance?.let { this.impedance = it.toDouble() }
+            this[MeasurementType.WEIGHT] = Kg(weight)
+            impedance?.let { this[MeasurementType.IMPEDANCE] = Ohm(it.toFloat()) }
         }
 
         logD("Weight frame → ${weight}kg at ${measurement.dateTime}, impedance=$impedance, append=$hasAppendFrame")
@@ -468,33 +473,33 @@ class WeightGurusA3Handler : ScaleDeviceHandler() {
         if (flags and 0x01 != 0) off += 1 // scale-side user slot
         if (flags and 0x02 != 0) {
             if (off + 2 > data.size) return
-            measurement.bmr = ConverterUtils.fromUnsignedInt16Le(data, off).toFloat()
+            measurement[MeasurementType.BMR] = Kcal(ConverterUtils.fromUnsignedInt16Le(data, off).toFloat())
             off += 2
         }
         if (flags and 0x04 != 0) {
             if (off + 2 > data.size) return
-            measurement.fat = sfloatFrom16(data, off)
+            measurement[MeasurementType.BODY_FAT] = Percent(sfloatFrom16(data, off))
             off += 2
         }
         if (flags and 0x08 != 0) {
             if (off + 2 > data.size) return
-            measurement.water = sfloatFrom16(data, off)
+            measurement[MeasurementType.WATER] = Percent(sfloatFrom16(data, off))
             off += 2
         }
         if (flags and 0x10 != 0) {
             if (off + 2 > data.size) return
-            measurement.visceralFat = sfloatFrom16(data, off)
+            measurement[MeasurementType.VISCERAL_FAT] = sfloatFrom16(data, off)
             off += 2
         }
         if (flags and 0x20 != 0) {
             if (off + 2 > data.size) return
-            measurement.muscle = sfloatFrom16(data, off)
+            measurement[MeasurementType.MUSCLE] = Percent(sfloatFrom16(data, off))
             off += 2
         }
         if (flags and 0x40 != 0) {
             if (off + 2 > data.size) return
             // The scale sends bone as a percentage, but openScale stores it as a mass in kg.
-            measurement.bone = bonePercentToKg(sfloatFrom16(data, off), measurement.weight)
+            measurement[MeasurementType.BONE] = Kg(bonePercentToKg(sfloatFrom16(data, off), (measurement[MeasurementType.WEIGHT]?.value ?: 0f)))
             off += 2
         }
 
@@ -530,9 +535,9 @@ class WeightGurusA3Handler : ScaleDeviceHandler() {
             return
         }
         logD(
-            "Decoded ${measurement.dateTime}: weight=${measurement.weight}kg fat=${measurement.fat}% " +
-                "water=${measurement.water}% muscle=${measurement.muscle}% bone=${measurement.bone}kg " +
-                "visceral=${measurement.visceralFat} bmr=${measurement.bmr}kcal"
+            "Decoded ${measurement.dateTime}: weight=${measurement[MeasurementType.WEIGHT]}kg fat=${measurement[MeasurementType.BODY_FAT]}% " +
+                "water=${measurement[MeasurementType.WATER]}% muscle=${measurement[MeasurementType.MUSCLE]}% bone=${measurement[MeasurementType.BONE]}kg " +
+                "visceral=${measurement[MeasurementType.VISCERAL_FAT]} bmr=${measurement[MeasurementType.BMR]}kcal"
         )
         publish(measurement)
     }

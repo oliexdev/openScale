@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -27,6 +28,9 @@ import java.util.Timer
 import java.util.TimerTask
 import java.util.UUID
 import kotlin.math.roundToInt
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Handler for the Realme Smart Scale (Lifesense A6 lineage).
@@ -131,12 +135,12 @@ class RealmeSmartScaleHandler : ScaleDeviceHandler() {
         val measurement = ScaleMeasurement().apply {
             this.userId = user.id
             this.dateTime = if (scaleTime > 0) Date(scaleTime * 1000L) else Date()
-            this.weight = weightKg
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
         }
 
         // --- LOCAL BIA CALCULATION ENGINE ---
         if (impedance > 0) {
-            measurement.impedance = impedance.toDouble()
+            measurement[MeasurementType.IMPEDANCE] = Ohm(impedance.toFloat())
 
             val sex = if (user.gender.isMale()) 1 else 0
             val calc = com.health.openscale.core.bluetooth.libs.YunmaiLib(sex, user.bodyHeight, user.activityLevel)
@@ -144,16 +148,16 @@ class RealmeSmartScaleHandler : ScaleDeviceHandler() {
             val fatPct = calc.getFat(user.age, weightKg, impedance)
 
             if (fatPct > 0f) {
-                measurement.fat = fatPct
-                measurement.muscle = calc.getMuscle(fatPct) / weightKg * 100.0f
-                measurement.water = calc.getWater(fatPct)
-                measurement.bone = calc.getBoneMass(measurement.muscle, weightKg)
-                measurement.lbm = calc.getLeanBodyMass(weightKg, fatPct)
-                measurement.visceralFat = calc.getVisceralFat(fatPct, user.age)
+                measurement[MeasurementType.BODY_FAT] = Percent(fatPct)
+                measurement[MeasurementType.MUSCLE] = Percent(calc.getMuscle(fatPct) / weightKg * 100.0f)
+                measurement[MeasurementType.WATER] = Percent(calc.getWater(fatPct))
+                measurement[MeasurementType.BONE] = Kg(calc.getBoneMass((measurement[MeasurementType.MUSCLE]?.value ?: 0f), weightKg))
+                measurement[MeasurementType.LBM] = Kg(calc.getLeanBodyMass(weightKg, fatPct))
+                measurement[MeasurementType.VISCERAL_FAT] = calc.getVisceralFat(fatPct, user.age)
             }
         }
 
-        LogManager.i(TAG, "Measurement: Weight=$weightKg kg, Fat=${measurement.fat}%, Date=${measurement.dateTime}")
+        LogManager.i(TAG, "Measurement: Weight=$weightKg kg, Fat=${measurement[MeasurementType.BODY_FAT]}%, Date=${measurement.dateTime}")
         publish(measurement)
     }
 

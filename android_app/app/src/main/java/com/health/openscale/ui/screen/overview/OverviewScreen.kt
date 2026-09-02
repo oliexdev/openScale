@@ -106,7 +106,6 @@ import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.EvaluationState
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.Trend
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.UserGoals
@@ -270,7 +269,7 @@ fun OverviewScreen(
     var measurementToDelete by remember { mutableStateOf<AggregatedMeasurement?>(null) }
     measurementToDelete?.let { aggItem ->
         val enrichedItem  = aggItem.enriched
-        val weightValue   = enrichedItem.valuesWithTrend.find { it.currentValue.type.key == MeasurementTypeKey.WEIGHT }
+        val weightValue   = enrichedItem.valuesWithTrend.find { it.currentValue.type.key == MeasurementType.WEIGHT }
         val weightString  = weightValue?.currentValue?.let {
             LocaleUtils.formatValueForDisplay(it.value.floatValue.toString(), it.type.unit)
         } ?: ""
@@ -1206,8 +1205,8 @@ fun MeasurementRowExpandable(
                     val (displayValue, displayLow, displayHigh) = remember(evalResult, type.unit) {
                         val targetUnit = type.unit
                         val baseUnit   = when (type.key) {
-                            MeasurementTypeKey.WEIGHT, MeasurementTypeKey.LBM -> UnitType.KG
-                            MeasurementTypeKey.WAIST                          -> UnitType.CM
+                            MeasurementType.WEIGHT, MeasurementType.LBM -> UnitType.KG
+                            MeasurementType.WAIST                          -> UnitType.CM
                             else                                               -> UnitType.PERCENT
                         }
                         // The noAgeBand branch above already handled negative limits,

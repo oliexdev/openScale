@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -32,6 +33,9 @@ import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.math.min
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Huawei AH100 / CH100 body-fat scale handler.
@@ -333,13 +337,13 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
         val sm = ScaleMeasurement().apply {
             this.userId = m.userId
             this.dateTime = m.dateTime ?: Date()
-            this.weight = m.weightKg
-            this.fat = m.fatPct
+            this[MeasurementType.WEIGHT] = Kg(m.weightKg)
+            this[MeasurementType.BODY_FAT] = Percent(m.fatPct)
             // The scale reports impedance but the v2.5.4 reference doesn't
             // derive water/muscle/bone from it; openScale's existing
             // StandardImpedanceLib can be wired in later for that.
             if (m.impedanceOhm in 1..3999) {
-                this.impedance = m.impedanceOhm.toDouble()
+                this[MeasurementType.IMPEDANCE] = Ohm(m.impedanceOhm.toFloat())
             }
         }
         publish(sm)
@@ -416,7 +420,7 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
      * height — wrong but physiologically sane, and replaced by the first real reading.
      */
     private fun profileWeightKg(user: ScaleUser): Float {
-        lastMeasurementFor(user.id)?.weight?.takeIf { it.isFinite() && it > 0f }?.let { return it }
+        lastMeasurementFor(user.id)?.get(MeasurementType.WEIGHT)?.value?.takeIf { it.isFinite() && it > 0f }?.let { return it }
         user.initialWeight.takeIf { it.isFinite() && it > 0f }?.let { return it }
         val heightM = user.bodyHeight / 100f
         return if (heightM.isFinite() && heightM > 0.5f) 22f * heightM * heightM else 70f

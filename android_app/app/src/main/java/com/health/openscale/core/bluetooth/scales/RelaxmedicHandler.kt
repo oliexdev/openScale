@@ -17,6 +17,7 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.Wla25BodyComposition
@@ -26,6 +27,10 @@ import java.util.Locale
 import java.util.TimeZone
 import java.util.UUID
 import kotlin.math.abs
+import com.health.openscale.core.data.Kcal
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * Relaxmedic body-composition scale (Fitdays app, icomon protocol version 107).
@@ -193,27 +198,27 @@ class RelaxmedicHandler : ScaleDeviceHandler() {
 
         val measurement = ScaleMeasurement().apply {
             dateTime = Date()
-            weight = grams / 1000.0f
-            if (imps.isNotEmpty()) impedance = imps[0]
+            this[MeasurementType.WEIGHT] = Kg(grams / 1000.0f)
+            if (imps.isNotEmpty()) this[MeasurementType.IMPEDANCE] = Ohm(imps[0].toFloat())
         }
 
         val result = Wla25BodyComposition.compute(
             heightCm = user.bodyHeight.toInt(),
-            rawWeightKg = measurement.weight.toDouble(),
+            rawWeightKg = (measurement[MeasurementType.WEIGHT]?.value ?: 0f).toDouble(),
             imps = imps
         )
 
         if (result != null) {
             measurement.apply {
-                weight = result.weightKg
-                fat = result.fat
-                water = result.water
-                muscle = result.musclePercent
-                bone = result.boneKg
-                visceralFat = result.visceralFat.toFloat()
-                protein = result.protein
-                bmr = result.bmrKcal.toFloat()
-                lbm = result.lbmKg
+                this[MeasurementType.WEIGHT] = Kg(result.weightKg)
+                this[MeasurementType.BODY_FAT] = Percent(result.fat)
+                this[MeasurementType.WATER] = Percent(result.water)
+                this[MeasurementType.MUSCLE] = Percent(result.musclePercent)
+                this[MeasurementType.BONE] = Kg(result.boneKg)
+                this[MeasurementType.VISCERAL_FAT] = result.visceralFat.toFloat()
+                this[MeasurementType.PROTEIN] = Percent(result.protein)
+                this[MeasurementType.BMR] = Kcal(result.bmrKcal.toFloat())
+                this[MeasurementType.LBM] = Kg(result.lbmKg)
             }
         } else {
             // The impedances failed the algorithm's validity gate; the weight is

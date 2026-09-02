@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import android.util.SparseArray
 import com.google.common.truth.Truth.assertThat
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
@@ -99,7 +100,7 @@ class HuaweiHagridWspHandlerTest {
 
         assertThat(callbacks.published).hasSize(1)
         assertThat(callbacks.published.single().userId).isEqualTo(7)
-        assertThat(callbacks.published.single().weight).isWithin(0.0001f).of(77.5f)
+        assertThat(callbacks.published.single()[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(77.5f)
     }
 
     @Test
@@ -181,7 +182,7 @@ class HuaweiHagridWspHandlerTest {
         sendWspNotification(handler, CHR_REALTIME_WEIGHT, realtimePayload())
 
         assertThat(callbacks.published).hasSize(1)
-        assertThat(callbacks.published.single().weight).isWithin(0.0001f).of(77.32f)
+        assertThat(callbacks.published.single()[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(77.32f)
         assertThat(callbacks.infos.map { it.resId })
             .contains(R.string.bluetooth_scale_info_measuring_weight)
     }
@@ -217,12 +218,12 @@ class HuaweiHagridWspHandlerTest {
             impedanceOhm = 350.0,
         )
         assertThat(expectedComposition).isNotNull()
-        assertThat(measurement.weight).isWithin(0.0001f).of(77.32f)
-        assertThat(measurement.fat).isWithin(0.0001f).of(expectedComposition!!.bodyFatPercent)
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(77.32f)
+        assertThat(measurement[MeasurementType.BODY_FAT]?.value).isWithin(0.0001f).of(expectedComposition!!.bodyFatPercent)
         // The stored low-frequency impedance is the very value the composition model was fed,
         // so a measurement can still be interpreted from what is in the database.
-        assertThat(measurement.impedanceLow).isWithin(0.0001).of(350.0)
-        assertThat(measurement.impedance).isWithin(0.0001).of(600.0)
+        assertThat(measurement[MeasurementType.IMPEDANCE_LOW]?.value).isWithin(0.0001f).of(350f)
+        assertThat(measurement[MeasurementType.IMPEDANCE]?.value).isWithin(0.0001f).of(600f)
 
         // Subsequent realtime notifications in the same cycle are ignored for persistence.
         sendWspNotification(handler, CHR_REALTIME_WEIGHT, scale3CompositionRealtimePayload())
@@ -247,7 +248,7 @@ class HuaweiHagridWspHandlerTest {
         // Realtime arrives first and is published immediately.
         sendWspNotification(handler, CHR_REALTIME_WEIGHT, realtimePayload())
         assertThat(callbacks.published).hasSize(1)
-        assertThat(callbacks.published.single().weight).isWithin(0.0001f).of(77.32f)
+        assertThat(callbacks.published.single()[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(77.32f)
         assertThat(callbacks.infos.map { it.resId })
             .contains(R.string.bluetooth_scale_info_measuring_weight)
 
@@ -277,13 +278,13 @@ class HuaweiHagridWspHandlerTest {
 
         assertThat(callbacks.published).hasSize(1)
         val measurement = callbacks.published.single()
-        assertThat(measurement.weight).isWithin(0.0001f).of(77.32f)
-        assertThat(measurement.fat).isWithin(0.0001f).of(18.5f)
-        assertThat(measurement.heartRate).isEqualTo(72)
-        assertThat(measurement.impedanceLow).isWithin(0.0001).of(500.0)
-        assertThat(measurement.impedance).isWithin(0.0001).of(600.0)
-        assertThat(measurement.lbm).isEqualTo(0f)
-        assertThat(measurement.bmr).isEqualTo(0f)
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(77.32f)
+        assertThat(measurement[MeasurementType.BODY_FAT]?.value).isWithin(0.0001f).of(18.5f)
+        assertThat(measurement[MeasurementType.HEART_RATE]?.value).isEqualTo(72)
+        assertThat(measurement[MeasurementType.IMPEDANCE_LOW]?.value).isWithin(0.0001f).of(500f)
+        assertThat(measurement[MeasurementType.IMPEDANCE]?.value).isWithin(0.0001f).of(600f)
+        assertThat(measurement[MeasurementType.LBM]).isNull()
+        assertThat(measurement[MeasurementType.BMR]).isNull()
         assertThat(transport.reassembleWriteMessagesTo(CHR_HISTORY_WEIGHT).last())
             .isEqualTo(byteArrayOf(0x00))
     }
