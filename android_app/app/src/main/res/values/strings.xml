@@ -919,6 +919,8 @@
     <string name="bt_error_omron_session_failed">The scale refused to start a data transfer.</string>
     <string name="bt_error_omron_read_failed">Failed to read stored measurements from the scale.</string>
     <string name="bt_error_omron_timeout">The scale stopped responding; the transfer was cancelled.</string>
+    <string name="bt_error_mi_scale_service_missing">This device does not expose a supported Mi Scale service.</string>
+    <string name="bt_warn_mi_scale_variant_downgraded">This scale is advertised as a v2 model, but it only reports weight. Body composition is not available on this device.</string>
 
     <!-- Warnings -->
     <string name="bt_warn_low_battery">Scale battery is low (%1$d%%).</string>
