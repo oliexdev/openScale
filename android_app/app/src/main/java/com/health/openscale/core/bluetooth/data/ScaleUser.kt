@@ -32,7 +32,8 @@ data class ScaleUser (
     var initialWeight: Float = 0f, // always in kg
     var goalWeight: Float = 0f, // always in kg
     var scaleUnit: WeightUnit = WeightUnit.KG,
-    var activityLevel: ActivityLevel = ActivityLevel.SEDENTARY
+    var activityLevel: ActivityLevel = ActivityLevel.SEDENTARY,
+    var useAssistedWeighing: Boolean = false,
 ){
     fun getAge(todayDate: Date?): Int {
         val calToday = Calendar.getInstance()
