@@ -52,8 +52,8 @@ class S400BodyCompositionTest {
         val r = S400BodyComposition.compute(swapped)
         assertThat(r.labelSwapApplied).isTrue()
         // After swap, result must equal §7.1 Subject A.
-        assertThat(r.tbwKg!!).isWithin(tolKg).of(48.13f)
-        assertThat(r.ffmKg!!).isWithin(tolKg).of(65.75f)
+        assertThat(r.tbwKg!!).isWithin(tolKg).of(45.08f)
+        assertThat(r.ffmKg!!).isWithin(tolKg).of(61.58f)
     }
 
     @Test
@@ -94,21 +94,21 @@ class S400BodyCompositionTest {
     fun subjectA_defaultOptions_matchesSpec() {
         val r = subjectA()
         assertThat(r.reliability).isAnyOf(Reliability.OK, Reliability.APPROXIMATE)
-        assertThat(r.tbwKg!!).isWithin(tolKg).of(48.13f)
-        assertThat(r.tbwPct!!).isWithin(tolPct).of(62.9f)
+        assertThat(r.tbwKg!!).isWithin(tolKg).of(45.08f)
+        assertThat(r.tbwPct!!).isWithin(tolPct).of(58.92f)
         assertThat(r.ecwKg!!).isWithin(tolKg).of(21.47f)
-        assertThat(r.ecwPct!!).isWithin(tolPct).of(28.1f)
-        assertThat(r.icwKg!!).isWithin(tolKg).of(26.66f)
-        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.446f)
-        assertThat(r.ffmKg!!).isWithin(tolKg).of(65.75f)
-        assertThat(r.bfKg!!).isWithin(tolKg).of(10.75f)
-        assertThat(r.bfPct!!).isWithin(tolPct).of(14.1f)
-        assertThat(r.smmKg!!).isWithin(tolKg).of(36.56f)
-        assertThat(r.smmPct!!).isWithin(tolPct).of(47.8f)
+        assertThat(r.ecwPct!!).isWithin(tolPct).of(28.06f)
+        assertThat(r.icwKg!!).isWithin(tolKg).of(23.61f)
+        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.476f)
+        assertThat(r.ffmKg!!).isWithin(tolKg).of(61.58f)
+        assertThat(r.bfKg!!).isWithin(tolKg).of(14.92f)
+        assertThat(r.bfPct!!).isWithin(tolPct).of(19.50f)
+        assertThat(r.smmKg!!).isWithin(tolKg).of(33.84f)
+        assertThat(r.smmPct!!).isWithin(tolPct).of(44.23f)
         assertThat(r.boneKg!!).isWithin(tolKg).of(2.99f)  // Option A default
-        assertThat(r.vfi!!).isWithin(0.1f).of(13.2f)
-        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1790f)  // Cun91 default
-        assertThat(r.bcmKg!!).isWithin(tolKg).of(38.09f)
+        assertThat(r.vfi!!).isWithin(0.1f).of(13.24f)
+        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1700f)  // Cun91 default
+        assertThat(r.bcmKg!!).isWithin(tolKg).of(33.73f)
         assertThat(r.phaseAngleDeg).isNull()
     }
 
@@ -121,7 +121,7 @@ class S400BodyCompositionTest {
     @Test
     fun subjectA_bmrCunningham1980_matchesSpec() {
         val r = subjectA(bmrFormula = BmrFormula.CUNNINGHAM_1980)
-        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1946f)
+        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1855f)
     }
 
     // ---------- §7.2 — Subject B (middle-aged female) ----------
@@ -132,18 +132,18 @@ class S400BodyCompositionTest {
             age = 55, sexMale = false, heightCm = 162f, weightKg = 68f,
             rHighRaw = 600f, rLowRaw = 690f,
         ))
-        assertThat(r.tbwKg!!).isWithin(tolKg).of(29.12f)
-        assertThat(r.tbwPct!!).isWithin(tolPct).of(42.8f)
+        assertThat(r.tbwKg!!).isWithin(tolKg).of(26.79f)
+        assertThat(r.tbwPct!!).isWithin(tolPct).of(39.40f)
         assertThat(r.ecwKg!!).isWithin(tolKg).of(12.96f)
-        assertThat(r.icwKg!!).isWithin(tolKg).of(16.16f)
-        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.445f)
-        assertThat(r.ffmKg!!).isWithin(tolKg).of(39.79f)
-        assertThat(r.bfKg!!).isWithin(tolKg).of(28.21f)
-        assertThat(r.bfPct!!).isWithin(tolPct).of(41.5f)
-        assertThat(r.smmKg!!).isWithin(tolKg).of(17.14f)
+        assertThat(r.icwKg!!).isWithin(tolKg).of(13.83f)
+        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.484f)
+        assertThat(r.ffmKg!!).isWithin(tolKg).of(36.60f)
+        assertThat(r.bfKg!!).isWithin(tolKg).of(31.40f)
+        assertThat(r.bfPct!!).isWithin(tolPct).of(46.18f)
+        assertThat(r.smmKg!!).isWithin(tolKg).of(15.06f)
         assertThat(r.boneKg!!).isWithin(tolKg).of(2.47f)
-        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1229f)
-        assertThat(r.bcmKg!!).isWithin(tolKg).of(23.09f)
+        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1161f)
+        assertThat(r.bcmKg!!).isWithin(tolKg).of(19.75f)
     }
 
     @Test
@@ -163,18 +163,18 @@ class S400BodyCompositionTest {
             age = 70, sexMale = true, heightCm = 170f, weightKg = 80f,
             rHighRaw = 520f, rLowRaw = 610f,
         ))
-        assertThat(r.tbwKg!!).isWithin(tolKg).of(38.34f)
-        assertThat(r.tbwPct!!).isWithin(tolPct).of(47.9f)
+        assertThat(r.tbwKg!!).isWithin(tolKg).of(34.98f)
+        assertThat(r.tbwPct!!).isWithin(tolPct).of(43.73f)
         assertThat(r.ecwKg!!).isWithin(tolKg).of(16.24f)
-        assertThat(r.icwKg!!).isWithin(tolKg).of(22.09f)
-        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.424f)
-        assertThat(r.ffmKg!!).isWithin(tolKg).of(52.37f)
-        assertThat(r.bfKg!!).isWithin(tolKg).of(27.63f)
-        assertThat(r.bfPct!!).isWithin(tolPct).of(34.5f)
-        assertThat(r.smmKg!!).isWithin(tolKg).of(24.22f)
+        assertThat(r.icwKg!!).isWithin(tolKg).of(18.74f)
+        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.464f)
+        assertThat(r.ffmKg!!).isWithin(tolKg).of(47.79f)
+        assertThat(r.bfKg!!).isWithin(tolKg).of(32.21f)
+        assertThat(r.bfPct!!).isWithin(tolPct).of(40.26f)
+        assertThat(r.smmKg!!).isWithin(tolKg).of(21.23f)
         assertThat(r.boneKg!!).isWithin(tolKg).of(2.84f)
-        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1501f)
-        assertThat(r.bcmKg!!).isWithin(tolKg).of(31.56f)
+        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1402f)
+        assertThat(r.bcmKg!!).isWithin(tolKg).of(26.77f)
     }
 
     @Test
@@ -207,6 +207,21 @@ class S400BodyCompositionTest {
     fun rejectsOutOfRangeImpedance() {
         val r = S400BodyComposition.compute(S400Inputs(30, true, 175f, 75f, 50f, 600f))
         assertThat(r.reliability).isEqualTo(Reliability.NOT_AVAILABLE)
+    }
+
+    @Test
+    fun usesLowFrequencyForPrediction() {
+        // Previously this used rHigh, causing the TBW/FFM predictions to land out of range.
+        val r = S400BodyComposition.compute(
+            S400Inputs(
+                age = 45, sexMale = true, heightCm = 196f, weightKg = 112.5f,
+                rHighRaw = 226.0f, rLowRaw = 305.0f,
+            ),
+        )
+        assertThat(r.bfPct).isNotNull()
+        assertThat(r.bfPct!!).isGreaterThan(3f)
+        assertThat(r.bfPct!!).isLessThan(40f)
+        assertThat(r.ffmKg!!).isLessThan(112.5f)
     }
 
     // ---------- foot-to-foot correction injection ----------
