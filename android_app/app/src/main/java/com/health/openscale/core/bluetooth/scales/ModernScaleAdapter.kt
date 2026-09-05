@@ -473,7 +473,6 @@ abstract class ModernScaleAdapter(
             runCatching { bodyHeight = u.heightCm }
             runCatching { gender = u.gender }
             runCatching { activityLevel = u.activityLevel }
-            runCatching { useAssistedWeighing = u.useAssistedWeighing }
 
             runCatching {
                 runBlocking(scope.coroutineContext) {

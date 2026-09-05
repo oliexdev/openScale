@@ -191,12 +191,9 @@ object Wla25BodyComposition {
     /**
      * Metabolic age: the user's age nudged by a per-sex body-fat band.
      *
-     * Currently unused — [com.health.openscale.core.bluetooth.data.ScaleMeasurement]
-     * has no field for it, so there is nowhere to publish it. `EtekcityLib` and
-     * `HesleyHandler` hit the same wall: one computes metabolic age and the
-     * other reads it off the wire, and both discard it. Kept here because it is
-     * part of the algorithm and is verified against the vendor library; wiring
-     * it up is a data-model change, not a driver one.
+     * Published by `RelaxmedicHandler` on the handler-local `ble.metabolic_age` type, the same
+     * identity the other drivers that report a body age use, so the column stays continuous
+     * across scales. Verified against the vendor library.
      *
      * The offsets skip zero — the healthy band steps straight from -1 to +1.
      * The female band at [45, 46) returning +0 while >=46 gives +5 is not a

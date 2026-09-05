@@ -534,7 +534,13 @@ internal object PicoocAnchorLearner {
         rawOhm: Int,
         calculatedBeta: Int,
     ): Update {
-        require(calculatedBeta >= 19) { "PICOOC beta must be initialized" }
+        // Every entry of the reverse-engineered beta tables is >= 19, so this cannot normally
+        // happen. Should a table ever be corrected into a smaller value, count the measurement
+        // as processed and keep it out of the clusters rather than throwing: this runs inside
+        // the BLE advertisement callback, where an exception costs the whole measurement.
+        if (calculatedBeta < 19) {
+            return Update(state = skip(state), fixedBeta = null, progress = state.progress)
+        }
         val weightGrams = (weightKg * 1_000f).roundToInt()
         val groups = state.clusters.toMutableList()
         val updated: Cluster

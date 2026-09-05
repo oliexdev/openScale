@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,8 +31,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
@@ -44,6 +41,7 @@ import com.health.openscale.core.bluetooth.libs.PicoocWhiteBodyComposition
 import com.health.openscale.core.data.Kg
 import com.health.openscale.core.data.Kcal
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.Percent
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -139,13 +137,16 @@ class PicoocBroadcastHandler : ScaleDeviceHandler() {
         private const val KEY_UI_ANCHOR_WEIGHT = "ui/anchorWeight"
         private const val KEY_UI_FIXED = "ui/fixed"
 
+        // Generic paths on purpose: both quantities are reported by scales of several vendors
+        // (total muscle = lean mass minus bone, metabolic age), so a user switching brands
+        // keeps one continuous history instead of a second vendor-bound column.
         val TOTAL_MUSCLE = MeasurementType.devicePercent(
-            "picooc.total_muscle",
-            R.string.measurement_type_picooc_total_muscle,
+            "total_muscle", R.string.measurement_type_total_muscle,
+            icon = MeasurementTypeIcon.IC_M_WORKOUT, color = 0xFF2E7D32.toInt()
         )
         val METABOLIC_AGE = MeasurementType.deviceInt(
-            "picooc.metabolic_age",
-            R.string.measurement_type_picooc_metabolic_age,
+            "metabolic_age", R.string.measurement_type_metabolic_age,
+            icon = MeasurementTypeIcon.IC_M_TIMER, color = 0xFF795548.toInt()
         )
     }
 
@@ -173,10 +174,6 @@ class PicoocBroadcastHandler : ScaleDeviceHandler() {
         var beta by remember { mutableIntStateOf(settingsGetInt(KEY_UI_BETA, 0)) }
         var anchorWeight by remember { mutableIntStateOf(settingsGetInt(KEY_UI_ANCHOR_WEIGHT, 0)) }
         var fixed by remember { mutableStateOf(settingsGetInt(KEY_UI_FIXED, 0) == 1) }
-        var manualBeta by remember(beta) { mutableStateOf(beta.takeIf { it > 0 }?.toString().orEmpty()) }
-        var manualAnchorWeight by remember(anchorWeight) {
-            mutableStateOf(anchorWeight.takeIf { it > 0 }?.toString().orEmpty())
-        }
 
         Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
@@ -218,50 +215,6 @@ class PicoocBroadcastHandler : ScaleDeviceHandler() {
                     if (lastUserName.isBlank()) stringResource(R.string.picooc_calibration_reset_generic)
                     else stringResource(R.string.picooc_calibration_reset, lastUserName)
                 )
-            }
-            Text(
-                text = stringResource(R.string.picooc_calibration_manual_description),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            OutlinedTextField(
-                value = manualAnchorWeight,
-                onValueChange = { manualAnchorWeight = it.filter(Char::isDigit).take(3) },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.picooc_calibration_anchor_weight_label)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-            )
-            OutlinedTextField(
-                value = manualBeta,
-                onValueChange = { manualBeta = it.filter(Char::isDigit).take(2) },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.picooc_calibration_beta_label)) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-            )
-            val parsedManualWeight = manualAnchorWeight.toIntOrNull()
-            val parsedManualBeta = manualBeta.toIntOrNull()
-            Button(
-                onClick = {
-                    val importedWeight = parsedManualWeight ?: return@Button
-                    val importedBeta = parsedManualBeta ?: return@Button
-                    settingsPutInt(userKey(KEY_ANCHOR_WEIGHT, lastUserId), importedWeight)
-                    settingsPutInt(userKey(KEY_ANCHOR_BETA, lastUserId), importedBeta)
-                    settingsPutString(userKey(KEY_LEARNER_STATE, lastUserId), "")
-                    settingsPutInt(userKey(KEY_MEASUREMENT_ANCHOR, lastUserId), importedBeta * 10)
-                    progress = PicoocAnchorLearner.REQUIRED_MEASUREMENTS
-                    beta = importedBeta
-                    anchorWeight = importedWeight
-                    fixed = true
-                    settingsPutInt(KEY_UI_PROGRESS, progress)
-                    settingsPutInt(KEY_UI_BETA, beta)
-                    settingsPutInt(KEY_UI_ANCHOR_WEIGHT, anchorWeight)
-                    settingsPutInt(KEY_UI_FIXED, 1)
-                },
-                enabled = lastUserId >= 0 && parsedManualWeight in 1..300 && parsedManualBeta in 19..41,
-            ) {
-                Text(stringResource(R.string.picooc_calibration_apply_manual))
             }
         }
     }
@@ -308,7 +261,6 @@ class PicoocBroadcastHandler : ScaleDeviceHandler() {
 
         parsed.impedanceOhm
             ?.takeIf { it >= 50f }
-            ?.takeUnless { user.useAssistedWeighing }
             ?.let { rawImpedance ->
                 populateBodyComposition(measurement, user, parsed.weightKg, rawImpedance, now)
             }
@@ -471,7 +423,7 @@ class PicoocBroadcastHandler : ScaleDeviceHandler() {
     /**
      * openScale's built-in MUSCLE reference ranges describe skeletal muscle. PICOOC's primary
      * "muscle" value is broader (lean mass minus bone) and commonly exceeds openScale's 60%
-     * plausibility ceiling, so retain it as a separate vendor measurement instead.
+     * plausibility ceiling, so it lands on the separate [TOTAL_MUSCLE] type instead.
      */
     internal fun applyBodyCompositionMeasurements(
         measurement: ScaleMeasurement,
@@ -483,11 +435,10 @@ class PicoocBroadcastHandler : ScaleDeviceHandler() {
         measurement[MeasurementType.BONE] = Kg(result.boneMassKg)
         measurement[MeasurementType.BMR] = Kcal(result.basalMetabolicRateKcal.toFloat())
         measurement[MeasurementType.PROTEIN] = Percent(result.proteinPercent)
-        measurement[MeasurementType.BMI] = result.bmi
         measurement[MeasurementType.VISCERAL_FAT] = result.visceralFatLevel.toFloat()
         measurement[MeasurementType.LBM] = Kg(result.leanBodyMassKg)
         measurement[TOTAL_MUSCLE] = Percent(result.totalMusclePercent)
-        measurement[METABOLIC_AGE] = result.metabolicAge
+        result.metabolicAge.takeIf { it in 10..99 }?.let { measurement[METABOLIC_AGE] = it }
     }
 
     private fun userKey(base: String, userId: Int): String = "$base/$userId"
