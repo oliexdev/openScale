@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
@@ -37,6 +38,17 @@ import com.health.openscale.core.data.Percent
  *  - Enable NOTIFY on char 0xFFF4 and parse a 20-byte frame with composition values
  */
 class HesleyHandler : ScaleDeviceHandler() {
+
+    companion object {
+        /**
+         * Metabolic age the scale reports in byte 17. The identity stays vendor-neutral so a
+         * user switching brands keeps one continuous column.
+         */
+        val METABOLIC_AGE = MeasurementType.deviceInt(
+            "metabolic_age", R.string.measurement_type_metabolic_age,
+            icon = MeasurementTypeIcon.IC_M_TIMER, color = 0xFF795548.toInt()
+        )
+    }
 
     private val SERVICE: UUID = uuid16(0xFFF0)
     private val CHAR_CMD: UUID = uuid16(0xFFF1) // write-only
@@ -86,7 +98,7 @@ class HesleyHandler : ScaleDeviceHandler() {
         val water = (((frame[8].toInt() and 0xFF) shl 8) or (frame[9].toInt() and 0xFF)) / 10.0f
         val muscle = (((frame[10].toInt() and 0xFF) shl 8) or (frame[11].toInt() and 0xFF)) / 10.0f
         val bone = (((frame[12].toInt() and 0xFF) shl 8) or (frame[13].toInt() and 0xFF)) / 10.0f
-        // val bodyAge = frame[17].toInt() and 0xFF // 10..99 (unused)
+        val bodyAge = frame[17].toInt() and 0xFF // 10..99
         // val kcal = (((frame[14].toInt() and 0xFF) shl 8) or (frame[15].toInt() and 0xFF)) // not stored
 
         val m = ScaleMeasurement().apply {
@@ -96,6 +108,7 @@ class HesleyHandler : ScaleDeviceHandler() {
             this[MeasurementType.MUSCLE] = Percent(muscle)
             this[MeasurementType.WATER] = Percent(water)
             this[MeasurementType.BONE] = Kg(bone)
+            bodyAge.takeIf { it in 10..99 }?.let { this[METABOLIC_AGE] = it }
         }
 
         logD( "Hesley result kg=${m[MeasurementType.WEIGHT]} fat=${m[MeasurementType.BODY_FAT]} water=${m[MeasurementType.WATER]} muscle=${m[MeasurementType.MUSCLE]} bone=${m[MeasurementType.BONE]}")

@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
@@ -369,10 +370,8 @@ class PicoocHandler : ScaleDeviceHandler() {
             logI("Picooc body composition unavailable: impedance=$pendingImpedance height=${user.bodyHeight}")
         }
 
-        // openScale has no measurement type for the metabolic body age the 0x32 packet reports,
-        // nor for the phase angle in the live frames. Re-enabling either needs a
-        // MeasurementTypeKey, a ScaleMeasurement field, a DB migration and BleConnector wiring.
-        composition?.bodyAge?.takeIf { it > 0 }?.let { logI("Picooc metabolic body age: $it (not stored)") }
+        // The phase angle in the live frames still has no measurement type and stays unpublished.
+        composition?.bodyAge?.takeIf { it in 10..99 }?.let { measurement[METABOLIC_AGE] = it }
 
         logI(
             "Picooc publishing ($reason) → weight=${measurement[MeasurementType.WEIGHT]}kg fat=${measurement[MeasurementType.BODY_FAT]}% " +
@@ -442,6 +441,15 @@ class PicoocHandler : ScaleDeviceHandler() {
     )
 
     companion object {
+        /**
+         * Metabolic body age the 0x32 packet reports. The identity stays vendor-neutral so a
+         * user switching brands keeps one continuous column.
+         */
+        val METABOLIC_AGE = MeasurementType.deviceInt(
+            "metabolic_age", R.string.measurement_type_metabolic_age,
+            icon = MeasurementTypeIcon.IC_M_TIMER, color = 0xFF795548.toInt()
+        )
+
         // App→scale frame prefixes.
         const val PREFIX_LATIN = 0xF1
         const val PREFIX_MODERN = 0xA1

@@ -64,6 +64,7 @@ import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
 import com.health.openscale.core.bluetooth.scales.OmronWlcHandler
 import com.health.openscale.core.bluetooth.scales.PicoocHandler
+import com.health.openscale.core.bluetooth.scales.PicoocBroadcastHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
 import com.health.openscale.core.bluetooth.scales.QNHandler
@@ -138,6 +139,8 @@ class ScaleFactory @Inject constructor(
             AndUC352BLEHandler(),
             HealthKeep280Handler(),
             PicoocHandler(),
+            // Exact PICOOC-L match must precede ScaleupHandler's generic 0xD0 manufacturer match.
+            PicoocBroadcastHandler(),
             ActiveEraBF06Handler(),
             AfuB1Handler(),
             KeepS3Handler(),

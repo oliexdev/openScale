@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.EtekcityLib
@@ -54,6 +55,18 @@ import com.health.openscale.core.data.Percent
  *   from impedance using BIA formulas, as the scale only transmits weight, fat%, and impedance.
  */
 class HuaweiCH100SHandler : ScaleDeviceHandler() {
+
+    companion object {
+        /**
+         * Metabolic age the Chipsea BIA model derives together with the other composition
+         * values. The identity stays vendor-neutral so a user switching brands keeps one
+         * continuous column.
+         */
+        val METABOLIC_AGE = MeasurementType.deviceInt(
+            "metabolic_age", R.string.measurement_type_metabolic_age,
+            icon = MeasurementTypeIcon.IC_M_TIMER, color = 0xFF795548.toInt()
+        )
+    }
 
     // --- BLE identifiers ------------------------------------------------------
 
@@ -288,6 +301,7 @@ class HuaweiCH100SHandler : ScaleDeviceHandler() {
                 this[MeasurementType.BONE] = Kg(lib.boneMass.toFloat())
                 this[MeasurementType.BMR] = Kcal(lib.basalMetabolicRate.toFloat())
                 this[MeasurementType.VISCERAL_FAT] = lib.visceralFat.toFloat()
+                lib.metabolicAge.takeIf { it in 10..99 }?.let { this[METABOLIC_AGE] = it }
             }
         }
         publish(m)
