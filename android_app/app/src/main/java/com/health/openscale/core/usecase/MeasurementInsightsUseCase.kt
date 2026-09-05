@@ -54,6 +54,8 @@ class MeasurementInsightsUseCase @Inject constructor() {
         private const val SHORT_TERM_TREND_DAYS = 30L
         private const val VOLATILITY_STABLE_THRESHOLD   = 0.01f
         private const val VOLATILITY_MODERATE_THRESHOLD = 0.03f
+        private const val PLATEAU_TOTAL_CHANGE_THRESHOLD = 0.0025f
+        private const val MIN_RELATIVE_DENOMINATOR = 1e-6f
         const val CORRELATION_WINDOW_DAYS = 90L
         const val CORRELATION_MIN_MEASUREMENTS = 4
         const val PATTERN_HISTORY_WINDOWS = 5
@@ -138,11 +140,11 @@ class MeasurementInsightsUseCase @Inject constructor() {
         val minPoint = dataPoints.minBy { it.second }
         val maxPoint = dataPoints.maxBy { it.second }
 
-        // Volatility via standard deviation relative to the mean
+        // Volatility via detrended residual standard deviation relative to the mean
         val rawValues  = dataPoints.map { it.second }
         val mean       = rawValues.average().toFloat()
-        val stdDev     = stdDev(rawValues, mean)
-        val relStdDev  = if (mean != 0f) stdDev / mean else 0f
+        val stdDev     = detrendedStdDev(dataPoints)
+        val relStdDev  = if (abs(mean) > MIN_RELATIVE_DENOMINATOR) stdDev / abs(mean) else 0f
         val volatility = when {
             relStdDev < VOLATILITY_STABLE_THRESHOLD   -> Volatility.STABLE
             relStdDev < VOLATILITY_MODERATE_THRESHOLD -> Volatility.MODERATE
@@ -174,14 +176,18 @@ class MeasurementInsightsUseCase @Inject constructor() {
         ) / 30.44f
         val ratePerMonth = if (totalMonths > 0f) deltaAbs / totalMonths else 0f
 
-        // Plateau detection at the tail of the series using half the stdDev as threshold
+        // Plateau detection at the tail of the series using total change within the window.
         val (plateauDays, plateauStartDate) = run {
             if (dataPoints.size < 3) return@run null to null
-            val threshold = stdDev * 0.5f
+            val threshold = abs(mean) * PLATEAU_TOTAL_CHANGE_THRESHOLD
             if (threshold < 1e-6f) return@run null to null
             var plateauStartIndex = dataPoints.size - 1
+            var windowMin = dataPoints.last().second
+            var windowMax = dataPoints.last().second
             for (i in dataPoints.indices.reversed().drop(1)) {
-                if (abs(dataPoints[i + 1].second - dataPoints[i].second) > threshold) break
+                windowMin = minOf(windowMin, dataPoints[i].second)
+                windowMax = maxOf(windowMax, dataPoints[i].second)
+                if (windowMax - windowMin > threshold) break
                 plateauStartIndex = i
             }
             if (plateauStartIndex == dataPoints.size - 1) return@run null to null
@@ -552,5 +558,32 @@ class MeasurementInsightsUseCase @Inject constructor() {
         if (values.size < 2) return 0f
         val variance = values.sumOf { ((it - mean) * (it - mean)).toDouble() } / values.size
         return sqrt(variance).toFloat()
+    }
+
+    private fun detrendedStdDev(dataPoints: List<Pair<LocalDate, Float>>): Float {
+        if (dataPoints.size < 2) return 0f
+
+        val firstDate = dataPoints.first().first
+        val xs = dataPoints.map {
+            ChronoUnit.DAYS.between(firstDate, it.first).toFloat()
+        }
+        val xMean = xs.average().toFloat()
+        val yMean = dataPoints.map { it.second }.average().toFloat()
+        val denominator = xs.sumOf { ((it - xMean) * (it - xMean)).toDouble() }.toFloat()
+
+        if (denominator < MIN_RELATIVE_DENOMINATOR) {
+            return stdDev(dataPoints.map { it.second }, yMean)
+        }
+
+        val numerator = dataPoints.indices.sumOf { i ->
+            ((xs[i] - xMean) * (dataPoints[i].second - yMean)).toDouble()
+        }.toFloat()
+        val slope = numerator / denominator
+        val intercept = yMean - slope * xMean
+        val residuals = dataPoints.indices.map { i ->
+            dataPoints[i].second - (intercept + slope * xs[i])
+        }
+        val residualMean = residuals.average().toFloat()
+        return stdDev(residuals, residualMean)
     }
 }
