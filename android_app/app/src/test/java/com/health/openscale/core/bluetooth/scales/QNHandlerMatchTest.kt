@@ -26,10 +26,16 @@ import org.robolectric.annotation.Config
 import java.util.UUID
 
 /**
- * Tests for [QNHandler.supportFor] device matching, in particular the AE00 vendor-service
- * path ported from ble-scale-sync 6a12687 (#235): a QN scale that advertises the QN-only
- * ae00 service under a non-QN name (e.g. GE CS 10 G "Fit Plus") must be claimed, while the
- * ae00 service alone (no fff0/ffe0 channel this handler can drive) must NOT be claimed.
+ * Tests for [QNHandler.supportFor] device matching.
+ *
+ * Two independent paths matter here:
+ *  - The AE00 vendor-service path ported from ble-scale-sync 6a12687 (#235): a QN scale that
+ *    advertises the QN-only ae00 service under a non-QN name must be claimed, while ae00 alone
+ *    (no fff0/ffe0 channel this handler can drive) must NOT be claimed.
+ *  - The "fit plus" name match: a real BTSnoop capture of GE CS 10 G "Fit Plus" showed its
+ *    pre-connect advertisement carries ONLY FFE0 — no AE00, no FFF0 (those are real GATT
+ *    services but only discoverable post-connection) — so the AE00 relaxation above never
+ *    fires for it in practice, and the name match is what actually claims the device.
  *
  * Robolectric is required because QNHandler constructs a main-looper Handler.
  */
@@ -57,7 +63,16 @@ class QNHandlerMatchTest {
     @Test
     fun `does not claim a bare fff0 device with a non-QN name`() {
         // No ae00 and no QN-family name -> not ours (leave to other fff0 handlers).
-        assertThat(QNHandler().supportFor(device("Fit Plus", 0xFFF0))).isNull()
+        assertThat(QNHandler().supportFor(device("Unrelated Scale", 0xFFF0))).isNull()
+    }
+
+    @Test
+    fun `claims Fit Plus advertising only FFE0 (name match, no AE00 needed)`() {
+        // GE CS 10 G "Fit Plus": confirmed via BTSnoop capture to advertise pre-connect with
+        // ONLY FFE0 in its 16-bit service UUID list — AE00 and FFF0 are real GATT services but
+        // only visible after connecting, so the AE00 relaxation never fires here. "fit plus" is
+        // therefore matched directly as a QN-family name (#Fit-Plus-not-supported).
+        assertThat(QNHandler().supportFor(device("Fit Plus", 0xFFE0))).isNotNull()
     }
 
     @Test
