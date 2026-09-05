@@ -535,7 +535,7 @@ class BleConnector(
                     "Measurement from $deviceName for User $currentAppUserId saved (ID: $measurementId). Values: ${values.size}"
                 )
                 pendingSavedCount.incrementAndGet()
-                lastSavedArgs = listOf(measurementData[MeasurementType.WEIGHT] ?: 0f, deviceName)
+                lastSavedArgs = listOf(measurementData[MeasurementType.WEIGHT]?.value ?: 0f, deviceName)
                 savedBurstSignal.tryEmit(Unit)
             } catch (e: Exception) {
                 LogManager.e(TAG, "Error saving measurement from $deviceName.", e)
