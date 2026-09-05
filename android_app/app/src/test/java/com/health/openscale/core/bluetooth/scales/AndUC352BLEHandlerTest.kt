@@ -20,6 +20,7 @@ package com.health.openscale.core.bluetooth.scales
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.service.ScannedDeviceInfo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,8 +42,9 @@ class AndUC352BLEHandlerTest {
         assertThat(support).isNotNull()
         assertThat(support!!.displayName).isEqualTo("A&D UC-352BLE")
         assertThat(support.capabilities).containsExactly(
-            DeviceCapability.LIVE_WEIGHT_STREAM,
             DeviceCapability.TIME_SYNC,
+            DeviceCapability.USER_SYNC,
+            DeviceCapability.BATTERY_LEVEL,
         )
         assertThat(support.implemented).isEqualTo(support.capabilities)
         assertThat(support.linkMode).isEqualTo(LinkMode.CONNECT_GATT)
@@ -76,7 +78,7 @@ class AndUC352BLEHandlerTest {
 
             assertThat(callbacks.published).hasSize(1)
             val measurement = callbacks.published.single()
-            assertThat(measurement.weight).isWithin(0.001f).of(expected.weight)
+            assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(0.001f).of(expected.weight)
             val calendar = Calendar.getInstance().apply { time = requireNotNull(measurement.dateTime) }
             assertThat(calendar.get(Calendar.YEAR)).isEqualTo(2026)
             assertThat(calendar.get(Calendar.MONTH)).isEqualTo(Calendar.AUGUST)
@@ -106,7 +108,7 @@ class AndUC352BLEHandlerTest {
 
     private class CapturingCallbacks : ScaleDeviceHandler.Callbacks {
         val published = mutableListOf<ScaleMeasurement>()
-        override fun onPublish(measurement: ScaleMeasurement) { published += measurement.copy() }
+        override fun onPublish(measurement: ScaleMeasurement) { published += measurement.snapshot() }
         override fun resolveString(resId: Int, vararg args: Any) = "res:$resId"
     }
 
