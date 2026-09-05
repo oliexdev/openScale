@@ -21,6 +21,7 @@ import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.io.ByteArrayOutputStream
 import java.security.GeneralSecurityException
@@ -33,6 +34,7 @@ import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.math.min
+import com.health.openscale.core.data.Kcal
 import com.health.openscale.core.data.Kg
 import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.Percent
@@ -258,7 +260,7 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
                     // tuning sometimes packs the whole composition into one fat
                     // notification because the negotiated MTU is large enough.
                     if (deobfTail.size >= 15) {
-                        tryDecodeFirstHalfImmediately(op)
+                        tryDecodeFirstHalfImmediately(op, user)
                     }
                 }
             }
@@ -270,7 +272,7 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
                     pendingFirst = null
                     pendingType = 0x00
                     if (first != null) {
-                        decodeAndPublish(first, type)
+                        decodeAndPublish(first, type, user)
                     }
                 }
             }
@@ -295,12 +297,12 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
         }
     }
 
-    private fun tryDecodeFirstHalfImmediately(type: Byte) {
+    private fun tryDecodeFirstHalfImmediately(type: Byte, user: ScaleUser) {
         val first = pendingFirst ?: return
         val mk = magicKey ?: return
         try {
             val m = decodeFirstHalf(first, mk, macBytes())
-            publishMeasurement(m, viaSingleFrame = true)
+            publishMeasurement(m, user, viaSingleFrame = true)
             // We've consumed the data; if the second half ever arrives the
             // 0x8E branch will see pendingFirst = null and silently drop it.
             pendingFirst = null
@@ -313,14 +315,14 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
         }
     }
 
-    private fun decodeAndPublish(first: ByteArray, type: Byte) {
+    private fun decodeAndPublish(first: ByteArray, type: Byte, user: ScaleUser) {
         val mk = magicKey ?: run {
             logW("magicKey missing; dropping measurement")
             return
         }
         try {
             val m = decodeFirstHalf(first, mk, macBytes())
-            publishMeasurement(m, viaSingleFrame = false)
+            publishMeasurement(m, user, viaSingleFrame = false)
         } catch (e: GeneralSecurityException) {
             logW("AES-CTR failed on measurement: ${e.message}")
             return
@@ -331,25 +333,38 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
         if (type == NTFY_HISTORY_RECORD) sendGetHistoryNext()
     }
 
-    private fun publishMeasurement(m: Measurement, viaSingleFrame: Boolean) {
+    private fun publishMeasurement(m: Measurement, user: ScaleUser, viaSingleFrame: Boolean) {
         lastMeasuredWeightTenthKg = (m.weightKg * 10f).toInt()
 
         val sm = ScaleMeasurement().apply {
-            this.userId = m.userId
+            // The frame's user byte is the scale's own hardware slot (1..10),
+            // not an openScale user id. Store the app user this session runs for.
+            this.userId = user.id
             this.dateTime = m.dateTime ?: Date()
             this[MeasurementType.WEIGHT] = Kg(m.weightKg)
             this[MeasurementType.BODY_FAT] = Percent(m.fatPct)
-            // The scale reports impedance but the v2.5.4 reference doesn't
-            // derive water/muscle/bone from it; openScale's existing
-            // StandardImpedanceLib can be wired in later for that.
             if (m.impedanceOhm in 1..3999) {
                 this[MeasurementType.IMPEDANCE] = Ohm(m.impedanceOhm.toFloat())
+                // Derive the composition the scale does not report from the raw
+                // impedance, the same way the other impedance scales here do.
+                val lib = StandardImpedanceLib(
+                    gender = user.gender,
+                    age = user.age,
+                    weightKg = m.weightKg.toDouble(),
+                    heightM = user.bodyHeight / 100.0,
+                    impedance = m.impedanceOhm.toDouble(),
+                )
+                this[MeasurementType.WATER] = Percent(lib.totalBodyWaterPercentage.toFloat())
+                this[MeasurementType.MUSCLE] = Percent(lib.skeletalMusclePercentage.toFloat())
+                this[MeasurementType.BONE] = Kg(lib.boneMassKg.toFloat())
+                this[MeasurementType.BMR] = Kcal(lib.basalMetabolicRate.toFloat())
+                this[MeasurementType.LBM] = Kg(lib.fatFreeMassKg.toFloat())
             }
         }
         publish(sm)
         logI(
             "Measurement: ${m.weightKg} kg, fat=${m.fatPct}%, impedance=${m.impedanceOhm} Ω, " +
-                "userId=${m.userId} @ ${m.dateTime?.let(::ts) ?: "now"} " +
+                "scaleSlot=${m.userId} appUser=${user.id} @ ${m.dateTime?.let(::ts) ?: "now"} " +
                 "(${if (viaSingleFrame) "single-frame" else "paired"})"
         )
 
@@ -793,11 +808,18 @@ class HuaweiAhCh100Handler : ScaleDeviceHandler() {
             val impedance = u16le(decrypted, 13)
 
             val date: Date? = try {
-                val cal = Calendar.getInstance().apply {
-                    clear()
-                    set(year, month - 1, day, hour, minute, second)
+                if (year < 2015) {
+                    // A scale whose clock was lost (dead battery) reports year 2
+                    // and similar nonsense; treat it as "no timestamp" so the
+                    // caller stamps the record with "now" instead.
+                    null
+                } else {
+                    val cal = Calendar.getInstance().apply {
+                        clear()
+                        set(year, month - 1, day, hour, minute, second)
+                    }
+                    cal.time
                 }
-                cal.time
             } catch (_: Throwable) {
                 null
             }
