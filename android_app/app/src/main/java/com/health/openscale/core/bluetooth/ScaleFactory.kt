@@ -136,7 +136,6 @@ class ScaleFactory @Inject constructor(
         @VisibleForTesting
         internal fun createHandlers(): List<ScaleDeviceHandler> = listOf(
             AndUC352BLEHandler(),
-            // Exact-name match must precede generic LeFu/0xFFF0 handlers (first match wins).
             HealthKeep280Handler(),
             PicoocHandler(),
             ActiveEraBF06Handler(),
