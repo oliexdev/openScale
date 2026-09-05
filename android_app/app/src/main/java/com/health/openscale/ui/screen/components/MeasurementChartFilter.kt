@@ -380,8 +380,14 @@ fun provideFilterTopBarAction(
                 }
             }
 
-            // --- Section 3: Type filter row toggle (not for Statistics) ---
-            if (screenContextName != SettingsPreferenceKeys.STATISTICS_SCREEN_CONTEXT) {
+            // --- Section 3: Type filter row toggle (not for Statistics and Insights) ---
+            // Insights renders its row unconditionally — it is the only way to pick the type the
+            // whole screen is about — so the toggle would be a dead entry there.
+            if (screenContextName !in listOf(
+                    SettingsPreferenceKeys.STATISTICS_SCREEN_CONTEXT,
+                    SettingsPreferenceKeys.INSIGHTS_SCREEN_CONTEXT,
+                )
+            ) {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.menu_item_measurement_filter)) },

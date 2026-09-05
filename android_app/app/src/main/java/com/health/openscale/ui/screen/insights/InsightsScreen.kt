@@ -120,6 +120,7 @@ import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.screen.components.MeasurementTypeFilterRow
 import com.health.openscale.ui.screen.components.SELECTED_TYPES_SUFFIX
+import com.health.openscale.ui.screen.components.provideFilterTopBarAction
 import com.health.openscale.ui.screen.components.rememberAddMeasurementActionButton
 import com.health.openscale.ui.screen.components.rememberBluetoothActionButton
 import com.health.openscale.ui.screen.components.rememberContextualSelectedTypeIds
@@ -176,11 +177,16 @@ fun InsightsScreen(
 
     val bluetoothAction      = rememberBluetoothActionButton(bluetoothViewModel, sharedViewModel, navController)
     val addMeasurementAction = rememberAddMeasurementActionButton(sharedViewModel, navController)
+    val filterAction         = provideFilterTopBarAction(
+        sharedViewModel   = sharedViewModel,
+        screenContextName = INSIGHTS_SCREEN_CONTEXT,
+    )
     val title                = stringResource(R.string.route_title_insights)
 
+    // Use Unit as key — filterAction is recreated on every recomposition
     LaunchedEffect(Unit) {
         sharedViewModel.setTopBarTitle(title)
-        sharedViewModel.setTopBarActions(listOfNotNull(bluetoothAction, addMeasurementAction))
+        sharedViewModel.setTopBarActions(listOfNotNull(bluetoothAction, addMeasurementAction, filterAction))
     }
 
     Column(modifier = Modifier.fillMaxSize()) {

@@ -369,12 +369,15 @@ class SharedViewModel @Inject constructor(
             buildScreenFlow(screenContextName, useSmoothing)
         }
 
-    private fun buildScreenFlow(
-        screenContextName: String,
-        useSmoothing: Boolean,
-    ): StateFlow<UiState<List<AggregatedMeasurement>>> {
-        // Combine the three persisted settings into a single resolved time-range pair
-        val timeRangeFlow: Flow<Pair<Long?, Long?>> = filterContext(screenContextName, TIME_RANGE_SUFFIX)
+    /**
+     * The persisted time range of [screenContextName], resolved into the inclusive epoch-millisecond
+     * bounds the data layer filters on (`null` on a side = unbounded).
+     *
+     * Shared by every screen that carries the filter menu, so the range a screen shows and the range
+     * it computes on cannot drift apart.
+     */
+    private fun timeRangeBoundsFlow(screenContextName: String): Flow<Pair<Long?, Long?>> =
+        filterContext(screenContextName, TIME_RANGE_SUFFIX)
             .flatMapLatest { context ->
                 combine(
                     observeSetting("${context}${TIME_RANGE_SUFFIX}", TimeRangeFilter.ALL_DAYS.name),
@@ -386,6 +389,12 @@ class SharedViewModel @Inject constructor(
                     range.resolveBounds(customStart, customEnd)
                 }
             }
+
+    private fun buildScreenFlow(
+        screenContextName: String,
+        useSmoothing: Boolean,
+    ): StateFlow<UiState<List<AggregatedMeasurement>>> {
+        val timeRangeFlow: Flow<Pair<Long?, Long?>> = timeRangeBoundsFlow(screenContextName)
 
         val aggregationFlow: Flow<AggregationLevel> = observeAggregationLevel(screenContextName)
 
@@ -468,11 +477,17 @@ class SharedViewModel @Inject constructor(
     private val insightsFlowCache = mutableMapOf<Int?, StateFlow<UiState<MeasurementInsight>>>()
 
     fun insightsFlow(primaryTypeId: Int?): StateFlow<UiState<MeasurementInsight>> =
+        // The cache key stays the type alone: the flow reads the time range from settings and
+        // re-emits on its own when the filter menu changes it.
         insightsFlowCache.getOrPut(primaryTypeId) {
-            selectedUserId
-                .flatMapLatest { uid ->
+            combine(
+                selectedUserId,
+                timeRangeBoundsFlow(SettingsPreferenceKeys.INSIGHTS_SCREEN_CONTEXT),
+            ) { uid, timeRange -> uid to timeRange }
+                .flatMapLatest { (uid, timeRange) ->
                     if (uid == null) return@flatMapLatest flowOf(UiState.Loading)
-                    measurementFacade.insightsForUser(uid, primaryTypeId)
+                    val (startMs, endMs) = timeRange
+                    measurementFacade.insightsForUser(uid, primaryTypeId, startMs, endMs)
                         .map<MeasurementInsight, UiState<MeasurementInsight>> { UiState.Success(it) }
                         .onStart { emit(UiState.Loading) }
                         .catch { emit(UiState.Error(it.message)) }

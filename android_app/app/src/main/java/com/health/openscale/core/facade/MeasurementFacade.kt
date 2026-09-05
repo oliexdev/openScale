@@ -208,13 +208,32 @@ class MeasurementFacade @Inject constructor(
      * @param primaryTypeId Optional explicit primary type ID for weekday and seasonal
      *                      pattern computation. If null, the use case selects the type
      *                      with the most measurements automatically.
+     * @param startMillis   Inclusive start of the time range; `null` = unbounded.
+     * @param endMillis     Inclusive end of the time range; `null` = unbounded. Same
+     *                      semantics as the pipeline's time filter, so a range picked in
+     *                      the filter menu narrows the insights the same way it narrows a
+     *                      chart.
      */
-    fun insightsForUser(userId: Int, primaryTypeId: Int? = null): Flow<MeasurementInsight> =
+    fun insightsForUser(
+        userId: Int,
+        primaryTypeId: Int? = null,
+        startMillis: Long? = null,
+        endMillis: Long? = null,
+    ): Flow<MeasurementInsight> =
         getMeasurementsForUser(userId)
             .distinctUntilChanged()
             .map { measurements ->
                 withContext(Dispatchers.Default) {
-                    insights.compute(measurements, primaryTypeId)
+                    val inRange = if (startMillis == null && endMillis == null) {
+                        measurements
+                    } else {
+                        measurements.filter { mwv ->
+                            val ts = mwv.measurement.timestamp
+                            (startMillis == null || ts >= startMillis) &&
+                                (endMillis == null || ts <= endMillis)
+                        }
+                    }
+                    insights.compute(inRange, primaryTypeId)
                 }
             }
 
