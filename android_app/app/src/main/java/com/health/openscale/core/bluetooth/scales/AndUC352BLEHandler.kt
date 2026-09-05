@@ -33,8 +33,9 @@ class AndUC352BLEHandler : StandardWeightProfileHandler() {
         if (!device.name.uppercase(Locale.US).startsWith(DEVICE_NAME_PREFIX)) return null
 
         val capabilities = setOf(
-            DeviceCapability.LIVE_WEIGHT_STREAM,
             DeviceCapability.TIME_SYNC,
+            DeviceCapability.USER_SYNC,
+            DeviceCapability.BATTERY_LEVEL,
         )
         return DeviceSupport(
             displayName = "A&D UC-352BLE",
