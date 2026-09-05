@@ -22,6 +22,7 @@ import com.health.openscale.core.bluetooth.scales.AAAxHandler
 import com.health.openscale.core.bluetooth.scales.HealthKeep280Handler
 import com.health.openscale.core.bluetooth.scales.AiLinkBroadcastHandler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
+import com.health.openscale.core.bluetooth.scales.AndUC352BLEHandler
 import com.health.openscale.core.bluetooth.scales.AfuB1Handler
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
@@ -180,6 +181,7 @@ object ScaleCatalog {
      */
     val fixtures: List<Fixture> = listOf(
         // --- Matched by advertised name ---
+        device("A&D_UC-352BLE_123456", uuid16(0x181D)) claimedBy AndUC352BLEHandler::class.java,
         device("HEALTHKEEP 280") claimedBy HealthKeep280Handler::class.java,
         device("AE BS-06") claimedBy ActiveEraBF06Handler::class.java,
         device("AFU-BH-TZ-B1", uuid16(0xFC50)) claimedBy AfuB1Handler::class.java,
