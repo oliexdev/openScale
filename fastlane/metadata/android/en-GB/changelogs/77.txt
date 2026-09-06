@@ -1,0 +1,6 @@
+* New scale support: PICOOC, Huawei Scale 3, Omron HBF-702T, Hume Dara 2.0, Terraillon X-LINE, Beurer BF1000, Etekcity Fit 8S, A&D UC-352BLE and more.
+* Segmental body fat and muscle per arm, leg and torso, plus metabolic age.
+* Scales can add their own measurement types, each with its own CSV column.
+* Insights can now be limited to a time range.
+* Time range and aggregation can be linked across screens or kept per screen.
+* New sync API: openScale-sync 0.6.3 or newer is required.
