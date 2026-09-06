@@ -29,6 +29,7 @@ import com.health.openscale.core.bluetooth.scales.FitTrackDaraHandler
 import com.health.openscale.core.bluetooth.scales.HumeDara2Handler
 import com.health.openscale.core.bluetooth.scales.MGBHandler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
+import com.health.openscale.core.bluetooth.scales.PicoocBroadcastHandler
 import com.health.openscale.core.bluetooth.scales.QNHandlerBroadcast
 import com.health.openscale.core.bluetooth.scales.ScaleupHandler
 import com.health.openscale.core.bluetooth.scales.SinocareHandler
@@ -320,6 +321,28 @@ class ScaleFactoryTest {
 
         assertClaimedBy(scaleup, ScaleupHandler::class.java)
         assertThat(EtekcityFit8SHandler().supportFor(scaleup)).isNull()
+    }
+
+    /** PICOOC-L's embedded MAC starts with 0xD0, which also triggers ScaleupHandler's broad match. */
+    @Test
+    fun `PICOOC Mini Lite is matched ahead of the generic Scaleup handler`() {
+        val picooc = advertisement(
+            name = "PICOOC-L",
+            manufacturerData = listOf(
+                0x49D0 to byteArrayOf(
+                    0x00, 0x4B, 0x4F, 0x1E, 0x39, 0x1F, 0x06, 0x76,
+                    0x13, 0x60, 0x87.toByte(), 0x20, 0x00, 0x40,
+                )
+            ),
+        )
+
+        assertClaimedBy(picooc, PicoocBroadcastHandler::class.java)
+        assertThat(claimants(picooc).map { it.javaClass.simpleName })
+            .containsExactly("PicoocBroadcastHandler", "ScaleupHandler").inOrder()
+
+        val order = ScaleFactory.createHandlers().map { it.javaClass.simpleName }
+        assertThat(order.indexOf("PicoocBroadcastHandler"))
+            .isLessThan(order.indexOf("ScaleupHandler"))
     }
 
     /**

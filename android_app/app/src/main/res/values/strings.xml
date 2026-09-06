@@ -190,6 +190,14 @@
     <string name="measurement_type_ecw">Extracellular water</string>
     <string name="measurement_type_icw">Intracellular water</string>
     <string name="measurement_type_protein">Protein</string>
+    <string name="measurement_type_total_muscle">Total muscle</string>
+    <string name="measurement_type_metabolic_age">Metabolic age</string>
+    <string name="picooc_calibration_description">PICOOC learns a stable body-composition anchor from four nearby BIA measurements.</string>
+    <string name="picooc_calibration_no_measurements">Calibration has not started yet.</string>
+    <string name="picooc_calibration_learning">%1$s: learning %2$d of 4, preliminary beta %3$d, anchor %4$d kg</string>
+    <string name="picooc_calibration_fixed">%1$s: calibrated, beta %2$d, anchor %3$d kg</string>
+    <string name="picooc_calibration_reset">Reset calibration for %1$s</string>
+    <string name="picooc_calibration_reset_generic">Reset PICOOC calibration</string>
     <string name="measurement_type_bcm">Body cell mass</string>
     <string name="measurement_type_from_scale">Added by a scale</string>
     <string name="measurement_type_label_csv_column">CSV column</string>

@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.KeepS3BodyComposition
@@ -644,12 +645,12 @@ class KeepS3Handler : ScaleDeviceHandler() {
                 // 15-60%). Keep's broader "muscle" value is FFM minus bone and can exceed that
                 // range, so publish the separately decoded skeletal-muscle percentage here.
                 this[MeasurementType.MUSCLE] = Percent(composition.skeletalMusclePercent)
-                // Keep's broader composition.musclePercent remains decoded by the model but is
-                // not published because openScale has no lean-soft-tissue measurement type.
+                // Keep's broader "muscle" (FFM minus bone) goes to its own type instead.
+                this[TOTAL_MUSCLE] = Percent(composition.musclePercent)
+                composition.bodyAge.takeIf { it in 10..99 }?.let { this[METABOLIC_AGE] = it }
                 // Not published yet — wiring them up would be handler-local now
                 // (MeasurementType.deviceFloat), but stays a deliberate follow-up.
                 // subcutaneousFat = composition.subcutaneousFatPercent
-                // bodyAge = composition.bodyAge
                 // bmi22ReferenceWeight = composition.bmi22ReferenceWeightKg
                 logI("Keep S3 body composition calculated with offline BHKeep SDK-compatible model")
             }
@@ -786,6 +787,25 @@ class KeepS3Handler : ScaleDeviceHandler() {
     }
 
     companion object {
+        /**
+         * Metabolic age the offline BHKeep model computes. The identity stays vendor-neutral so
+         * a user switching brands keeps one continuous column.
+         */
+        val METABOLIC_AGE = MeasurementType.deviceInt(
+            "metabolic_age", R.string.measurement_type_metabolic_age,
+            icon = MeasurementTypeIcon.IC_M_TIMER, color = 0xFF795548.toInt()
+        )
+
+        /**
+         * Keep's broad "muscle" figure: fat-free mass minus bone, as a percentage of weight.
+         * [MeasurementType.MUSCLE] is evaluated as skeletal muscle (plausible 15-60 %), which
+         * this value regularly exceeds, so it needs a type of its own.
+         */
+        val TOTAL_MUSCLE = MeasurementType.devicePercent(
+            "total_muscle", R.string.measurement_type_total_muscle,
+            icon = MeasurementTypeIcon.IC_M_WORKOUT, color = 0xFF2E7D32.toInt()
+        )
+
         private const val DEVICE_NAME = "Keep_S3"
         private const val FINAL_RECORD_WAIT_MS = 2_000L
         private const val DISCONNECT_DELAY_MS = 6_000L

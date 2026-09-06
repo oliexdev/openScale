@@ -59,6 +59,7 @@ import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
 import com.health.openscale.core.bluetooth.scales.OmronWlcHandler
 import com.health.openscale.core.bluetooth.scales.PicoocHandler
+import com.health.openscale.core.bluetooth.scales.PicoocBroadcastHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
 import com.health.openscale.core.bluetooth.scales.QNHandler
@@ -189,6 +190,7 @@ object ScaleCatalog {
         // The S3 Lite V2.0 advertises as PICOOC-CQ; the Latin series carries no vendor prefix.
         device("PICOOC-CQ") claimedBy PicoocHandler::class.java,
         device("Latin-S") claimedBy PicoocHandler::class.java,
+        device("PICOOC-L") claimedBy PicoocBroadcastHandler::class.java,
         device("Beurer BF450") claimedBy BeurerBF450Handler::class.java,
         device("BIA SCALE", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
         device("RYFIT") claimedBy RyFitHandler::class.java,

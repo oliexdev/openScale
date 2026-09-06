@@ -128,7 +128,10 @@ class OkOkV2Lib(
         val bodyAge =
             if (sex == MALE) (height * -0.7471f) + (weight * 0.9161f) + (age * 0.4184f) + (impedance * 0.0517f) + 54.2267f
             else (height * -1.1165f) + (weight * 1.5784f) + (age * 0.4615f) + (impedance * 0.0415f) + 83.2548f
-        return min(18, max(bodyAge.toInt(), 80))
+        // The vendor's own clamp reads min(18, max(age, 80)), which can only ever return 18.
+        // The value was never published, so the slip stayed invisible; keep the intended
+        // 18..80 window now that it is.
+        return bodyAge.toInt().coerceIn(18, 80)
     }
 
     private fun getIdealWeight(): Float =
