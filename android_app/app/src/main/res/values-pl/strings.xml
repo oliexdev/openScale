@@ -226,4 +226,19 @@
     <string name="formula_bf_deurenberg_1991">Deurenberg (1991)</string>
     <string name="formula_bf_deurenberg_1992">Deurenberg (1992)</string>
     <string name="formula_bf_eddy_1976">Eddy et al. (1976)</string>
+    <string name="sync_app_unreachable_hint">Ostatnia zmiana nie została zsynchronizowana. Otwórz openScale-sync i uruchom ręczną synchronizację.</string>
+    <string name="sync_app_open_action">Otwórz</string>
+    <string name="user_added_successfully">Użytkownik %1$s dodany pomyślnie.</string>
+    <string name="action_undo">Cofnij</string>
+    <string name="settings_language_label">Język</string>
+    <string name="settings_appearance_title">Wygląd</string>
+    <string name="settings_dynamic_color_label">Dynamiczne kolory</string>
+    <string name="settings_high_contrast_label">Wysoki kontrast</string>
+    <string name="settings_haptics_label">Wibruj przy pomiarze</string>
+    <string name="settings_haptics_enabled_snackbar">Włączono wibracje przy pomiarze</string>
+    <string name="settings_haptics_disabled_snackbar">Wyłączono wibracje przy pomiarze</string>
+    <string name="settings_unknown_error">Nieznany błąd</string>
+    <string name="settings_delete_entire_database">Usuń bazę danych</string>
+    <string name="settings_auto_backup_title">Automatyczna kopia zapasowa</string>
+    <string name="settings_enable_auto_backups">Włącz automatyczną kopię zapasową</string>
 </resources>

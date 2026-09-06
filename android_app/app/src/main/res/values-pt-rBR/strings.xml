@@ -542,7 +542,7 @@
     <string name="settings_auto_backup_title">Backups Automáticos</string>
     <string name="settings_enable_auto_backups">Ativar backups automáticos</string>
     <string name="content_desc_auto_backups_toggle">Alternar backups automáticos</string>
-    <string name="settings_last_backup_status_label">Status do último backup</string>
+    <string name="settings_last_backup_status_label">Status do backup</string>
     <string name="content_desc_backup_status_icon">Informações do status do backup</string>
     <string name="settings_backup_location_label">Diretório de backup</string>
     <string name="content_desc_backup_location_icon">Configuração do diretório de backup</string>
@@ -770,6 +770,16 @@
     <string name="action_keep_editing">Continuar editando</string>
     <string name="snackbar_items_delete_partial_failure">Não foi possível excluir %1$d de %2$d medições.</string>
     <string name="snackbar_items_move_partial_failure">Não foi possível mover %1$d de %2$d medições (já existem para esse usuário).</string>
-    <string name="sync_app_unreachable_hint">A última mudança não foi sincronizada. Por favor abra openScale-sync e execute a sincronização manual</string>
+    <string name="sync_app_unreachable_hint">A última alteração não foi sincronizada. Por favor, abra o openScale-sync e execute uma sincronização manual.</string>
     <string name="sync_app_open_action">Abrir</string>
+    <string name="mi_body_comp_algorithm_label">Algoritmo de composição corporal</string>
+    <string name="mi_algorithm_xiaomi">Xiaomi (app original)</string>
+    <string name="mi_algorithm_bodymiscale_science">Científico</string>
+    <string name="mi_algorithm_description">Escolha como a composição corporal é derivada da impedância. A opção \"Xiaomi\" reproduz o aplicativo original Mi Fit / Zepp Life. A opção \"Científico\" utiliza fórmulas revisadas por pares (Siri, Pace, Wang, Schofield) e também informa os níveis de proteína e a TMB. Aplica-se a novas medições a partir desta balança.</string>
+    <string name="settings_last_backup_status_failed">O último backup falhou em %1$s: %2$s</string>
+    <string name="settings_next_backup_scheduled">Próximo backup: %1$s</string>
+    <string name="settings_next_backup_not_scheduled">Próximo backup: não agendado</string>
+    <string name="settings_backup_error_location_inaccessible">A pasta de backup não está mais acessível. Por favor, selecione-a novamente.</string>
+    <string name="settings_backup_error_file_creation_failed">Não foi possível criar o arquivo de backup na pasta selecionada.</string>
+    <string name="settings_backup_error_write_failed">Não foi possível gravar o banco de dados no arquivo de backup.</string>
 </resources>
