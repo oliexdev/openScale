@@ -34,7 +34,7 @@ import com.health.openscale.core.data.Kg
  * in manufacturer data advertisements. No GATT connection is used.
  *
  * Frame notes (derived from legacy implementation):
- * - Manufacturer ID: 0xFF64
+ * - Manufacturer ID observerd: 0xFF64 and 0x0000
  * - Manufacturer data length must be > 16
  * - Checksum: XOR of bytes [6..15] (inclusive) must equal data[16]
  * - Weight: 16-bit: MSB at index 10, LSB at index 9; unit = kg/100
@@ -49,6 +49,7 @@ class SinocareHandler : ScaleDeviceHandler() {
         private const val TAG = "SinocareHandler"
 
         private const val MANUFACTURER_DATA_ID = 0xFF64
+        private const val MANUFACTURER_DATA_ID_ALT = 0x0000
         private const val WEIGHT_MSB = 10
         private const val WEIGHT_LSB = 9
         private const val CHECKSUM_INDEX = 16
@@ -80,7 +81,7 @@ class SinocareHandler : ScaleDeviceHandler() {
      */
     override fun onAdvertisement(result: ScanResult, user: ScaleUser): BroadcastAction {
         val msd: SparseArray<ByteArray> = result.scanRecord?.manufacturerSpecificData ?: return BroadcastAction.IGNORED
-        val data = msd.get(MANUFACTURER_DATA_ID) ?: return BroadcastAction.IGNORED
+        val data = msd.get(MANUFACTURER_DATA_ID) ?: msd.get(MANUFACTURER_DATA_ID_ALT) ?: return BroadcastAction.IGNORED
 
         // Sanity: need at least up to checksum index
         if (data.size <= CHECKSUM_INDEX) return BroadcastAction.IGNORED
