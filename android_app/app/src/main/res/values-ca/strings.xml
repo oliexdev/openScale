@@ -832,4 +832,12 @@
     <string name="content_description_aggregation_linked">L’agregació s’aplica a totes les pantalles</string>
     <string name="content_description_aggregation_unlinked">L’agregació només s’aplica a aquesta pantalla</string>
     <string name="import_summary_skipped_unknown_columns">%1$d columnes no coincidien amb cap mesura i s’han omès.</string>
+    <string name="measurement_type_total_muscle">Múscul total</string>
+    <string name="measurement_type_metabolic_age">Edat metabòlica</string>
+    <string name="picooc_calibration_description">PICOOC aprèn una àncora estable de composició corporal a partir de quatre mesures BIA properes.</string>
+    <string name="picooc_calibration_no_measurements">Encara no s’ha iniciat la calibració.</string>
+    <string name="picooc_calibration_learning">%1$s: aprenentatge %2$d de 4, beta preliminar %3$d, àncora %4$d kg</string>
+    <string name="picooc_calibration_fixed">%1$s: calibrada, beta %2$d, àncora %3$d kg</string>
+    <string name="picooc_calibration_reset">Restableix la calibració de %1$s</string>
+    <string name="picooc_calibration_reset_generic">Restableix la calibració de PICOOC</string>
 </resources>
