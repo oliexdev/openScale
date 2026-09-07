@@ -26,7 +26,7 @@
     <string name="no_data_available">Pas de données disponibles.</string>
     <string name="no_measurements_found">Aucune mesure trouvée.</string>
     <string name="no_entries_found">Pas d\'entrées disponibles.</string>
-    <string name="route_title_overview">Vue d'ensemble</string>
+    <string name="route_title_overview">Vue d\'ensemble</string>
     <string name="route_title_graph">Graphiques</string>
     <string name="route_title_table">Tableau</string>
     <string name="route_title_statistics">Statistiques</string>
@@ -81,7 +81,7 @@
     <string name="height_value_cm">%.1f cm</string>
     <string name="user_settings_item_details_conditional">Âge : %1$d, Genre : %2$s</string>
     <string name="user_settings_content_description_edit">Modifier les paramètres du profil</string>
-    <string name="app_logo_content_description">Logo de l'App</string>
+    <string name="app_logo_content_description">Logo de l\'App</string>
     <string name="user_settings_content_description_delete">Supprimer le profil</string>
     <string name="user_settings_content_description_add_user">Ajouter un nouveau profil</string>
     <string name="user_detail_content_description_change_unit">Changer d\'unité</string>
@@ -212,7 +212,7 @@
     <string name="measurement_type_segmental_muscle_left_leg">Muscle (jambe gauche)</string>
     <string name="measurement_type_segmental_muscle_right_leg">Muscle (jambe droite)</string>
     <string name="s400_bone_formula_label">Formule osseuse</string>
-    <string name="s400_bone_formula_mi_legacy">Régression basée sur l'impédance (Legacy)</string>
+    <string name="s400_bone_formula_mi_legacy">Régression basée sur l\'impédance (Legacy)</string>
     <string name="s400_bone_formula_heymsfield">Heymsfield (anthropométrique)</string>
     <string name="s400_bmr_formula_label">Formule du métabolisme de base</string>
     <string name="s400_bmr_formula_cun91">Cunningham 1991</string>
@@ -320,7 +320,7 @@
     <string name="bluetooth_connector_measurement_types_not_loaded">Erreur : Les types de mesure n\'ont pas été chargés.</string>
     <string name="bluetooth_connector_measurement_no_values">Pas de mesure valide reçu à partir de %1$s.</string>
     <string name="bluetooth_connector_measurement_saved">La mesure (%1$.1f kg) à partir de %2$s a été sauvegardée.</string>
-    <string name="bluetooth_connector_measurement_save_error">Erreur d'enregistrement de la mesure venant de %1$s.</string>
+    <string name="bluetooth_connector_measurement_save_error">Erreur d\'enregistrement de la mesure venant de %1$s.</string>
     <string name="bluetooth_connector_device_message">%1$s : %2$s</string>
     <string name="bluetooth_connector_listening_for_device">À l\'écoute de %1$s …</string>
     <string name="bluetooth_connector_broadcast_complete">Mesure reçue depuis %1$s.</string>
@@ -348,7 +348,7 @@
     <string name="legacy_adapter_event_unexpected_error">Erreur inattendue : %s</string>
     <string name="legacy_adapter_event_unexpected_data">Type de donnée inattendu reçu : %s</string>
     <string name="legacy_adapter_event_scale_message_fallback">Message de la balance (ID : %1$d, Valeur : %2$s)</string>
-    <string name="legacy_adapter_event_user_selection_required">Sélection d'un profil requise</string>
+    <string name="legacy_adapter_event_user_selection_required">Sélection d\'un profil requise</string>
     <string name="legacy_adapter_event_user_details">Profil #%1$d (Age : %2$d, Taille : %3$d)</string>
     <string name="legacy_adapter_event_user_consent_required">Accord du profil %1$d (Index %2$d) requis.</string>
     <string name="legacy_adapter_event_unknown_status">Statut ou message inconnu du pilote : %s</string>
@@ -362,7 +362,7 @@
     <string name="legacy_adapter_event_invalid_interaction_payload">Erreur : Chargement utile des données reçu invalide pour les interaction avec le profil.</string>
     
     <!-- Graphiques (LineChart) -->
-    <string name="content_description_time_range_icon">Icône d'intervalle de temps</string>
+    <string name="content_description_time_range_icon">Icône d\'intervalle de temps</string>
     <string name="content_description_filter_chart_data">Filtrer les données des graphiques</string>
     <string name="content_description_time_range_selected">%s sélectionné</string>
     <string name="content_description_measurement_filter_visible">Filtre de mesure visible</string>
@@ -375,18 +375,18 @@
     <string name="time_range_custom">Jours personnalisé</string>
     <string name="time_range_custom_from_to">Du %1$s jusqu\'au %2$s</string>
     <string name="time_range_custom_since">Depuis le %1$s</string>
-    <string name="time_range_custom_dialog_title">Sélectionner l'intervalle de temps</string>
-    <string name="time_range_custom_hint_open_end">Pas de date de fin — toujours jusqu'à aujourd'hui.</string>
-    <string name="time_range_custom_hint_fixed_end">Effacez la date de fin pour toujours inclure aujourd'hui.</string>
+    <string name="time_range_custom_dialog_title">Sélectionner l\'intervalle de temps</string>
+    <string name="time_range_custom_hint_open_end">Pas de date de fin — toujours jusqu\'à aujourd\'hui.</string>
+    <string name="time_range_custom_hint_fixed_end">Effacez la date de fin pour toujours inclure aujourd\'hui.</string>
     <string name="time_range_custom_clear_end">Effacer la date de fin</string>
     <string name="filter_section_time_range">Intervalle de temps</string>
     <string name="filter_section_aggregation">Agrégation</string>
-    <string name="content_description_time_range_linked">L'intervalle de temps s'applique à tous les écrans</string>
-    <string name="content_description_time_range_unlinked">L'intervalle de temps ne s'applique qu'à cet écran</string>
-    <string name="content_description_aggregation_linked">L'agrégation s'applique à tous les écrans</string>
-    <string name="content_description_aggregation_unlinked">L'agrégation ne s'applique qu'à cet écran</string>
+    <string name="content_description_time_range_linked">L\'intervalle de temps s\'applique à tous les écrans</string>
+    <string name="content_description_time_range_unlinked">L\'intervalle de temps ne s\'applique qu\'à cet écran</string>
+    <string name="content_description_aggregation_linked">L\'agrégation s\'applique à tous les écrans</string>
+    <string name="content_description_aggregation_unlinked">L\'agrégation ne s\'applique qu\'à cet écran</string>
     <string name="content_description_aggregation_selected">%1$s sélectionné</string>
-    <string name="aggregation_level_none">Pas d'agrégation</string>
+    <string name="aggregation_level_none">Pas d\'agrégation</string>
     <string name="aggregation_level_day">Jour</string>
     <string name="aggregation_level_week">Semaine</string>
     <string name="aggregation_level_month">Mois</string>
@@ -588,7 +588,7 @@
     <string name="settings_reminder_time_label">Moment</string>
     <string name="reminder_enabled_snackbar">Rappel activé</string>
     <string name="reminder_disabled_snackbar">Rappel désactivé</string>
-    <string name="reminder_default_text">C'est l'heure de vous peser</string>
+    <string name="reminder_default_text">C\'est l\'heure de vous peser</string>
     <string name="reminder_channel_name">Rappels</string>
     <string name="reminder_notification_title">openScale</string>
     <string name="settings_reminder_days_label">Jours</string>
@@ -667,9 +667,9 @@
     <string name="settings_last_backup_status_label">Statut de la dernière sauvegarde</string>
     <string name="content_desc_backup_status_icon">Information de statut de la sauvegarde</string>
     <string name="settings_backup_location_label">Emplacement de la sauvegarde</string>
-    <string name="content_desc_backup_location_icon">Paramètre d'emplacement de la sauvegarde</string>
-    <string name="content_desc_open_backup_location_icon">Ouvrir l'emplacement de la sauvegarde</string>
-    <string name="content_desc_change_backup_location_icon">Modifier l'emplacement de sauvegarde</string>
+    <string name="content_desc_backup_location_icon">Paramètre d\'emplacement de la sauvegarde</string>
+    <string name="content_desc_open_backup_location_icon">Ouvrir l\'emplacement de la sauvegarde</string>
+    <string name="content_desc_change_backup_location_icon">Modifier l\'emplacement de sauvegarde</string>
     <string name="settings_backup_interval_label">Fréquence de sauvegarde</string>
     <string name="content_desc_backup_interval_icon">Paramètres de fréquence de sauvegarde</string>
     <string name="content_desc_change_interval_icon">Modifier la fréquence des sauvegarde</string>
@@ -684,7 +684,7 @@
     <string name="dialog_title_select_backup_interval">Choisir une fréquence de sauvegarde</string>
     <string name="settings_backup_location_not_configured">Emplacement de la sauvegarde non-configuré</string>
     <string name="settings_backup_location_not_configured_for_auto">Emplacement de sauvegarde non-configuré. Sauvegardes automatiques mises en pause.</string>
-    <string name="settings_backup_location_error_accessing">Erreur d\'accès à l'emplacement de sauvegarde</string>
+    <string name="settings_backup_location_error_accessing">Erreur d\'accès à l\'emplacement de sauvegarde</string>
     <string name="content_desc_delete_icon">Îcone de suppression</string>
     <string name="dialog_title_select_backup_directory">Choisir un répertoire de sauvegarde</string>
 
@@ -722,7 +722,7 @@
     <string name="rssi_format">%1$d dBm</string>
 
     <string name="settings_backup_location_select_action">Choisir un emplacement de sauvegarde</string>
-    <string name="settings_backup_location_open_error">Impossible d\'ouvrir l'emplacement de la sauvegarde.</string>
+    <string name="settings_backup_location_open_error">Impossible d\'ouvrir l\'emplacement de la sauvegarde.</string>
     <string name="settings_backup_location_selected_toast">Emplacement de sauvegarde défini à : %1$s</string>
 
     <string name="settings_last_backup_status_successful">Dernière sauvegarde : %1$s</string>
