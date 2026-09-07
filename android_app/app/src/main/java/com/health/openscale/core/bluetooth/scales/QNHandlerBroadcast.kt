@@ -40,7 +40,9 @@ import com.health.openscale.core.data.Kg
  * so index 0 is the first application byte):
  *   [0-1]   0xAA 0xBB  magic header
  *   [2-7]   device MAC address (6 bytes, big-endian)
- *   [15]    status flags: bit 5 (0x20) = measurement stable
+ *   [15]    status flags: measurement stable. Which bit carries it varies by model:
+ *           bit 5 (0x20) on the ES-CS20M variant, bit 0 (0x01) on the FITINDEX
+ *           FT-26R / FT-30D, which run 0x14 -> 0x15 and never set 0x20.
  *   [17-18] weight: little-endian uint16 / 100 = kg
  *
  * Body composition is not available without GATT/BIA.
@@ -55,6 +57,14 @@ class QNHandlerBroadcast : ScaleDeviceHandler() {
         private const val MAGIC_BYTE_1     = 0xBB.toByte()
         private const val STATUS_IDX       = 15
         private const val FLAG_STABLE_BIT  = 0x20   // bit 5 of STATUS_IDX byte
+        /**
+         * FITINDEX FT-26R / FT-30D signal a settled measurement with bit 0 of the status
+         * byte instead of bit 5: the status runs 0x14 while the weight is still moving and
+         * latches to 0x15 the moment the display settles, never setting 0x20 at all.
+         * Verified against two captures from a physical FT-26R-W (see FT26RTest) where the
+         * 0x14 -> 0x15 transition coincides exactly with the weight becoming constant.
+         */
+        private const val FLAG_STABLE_BIT_ALT = 0x01
         private const val WEIGHT_IDX_LO    = 17     // little-endian LSB
         private const val WEIGHT_IDX_HI    = 18     // little-endian MSB
         private const val MIN_DATA_LEN     = 19
@@ -87,6 +97,30 @@ class QNHandlerBroadcast : ScaleDeviceHandler() {
             implemented  = setOf(DeviceCapability.LIVE_WEIGHT_STREAM),
             linkMode     = LinkMode.BROADCAST_ONLY
         )
+    }
+
+    /**
+     * A settled AABB frame must never be throttled away.
+     *
+     * The FT-26R advertises roughly every 130 ms but only holds the stable status for a
+     * second or two before sleeping, so the adapter's 1200 ms stabilize window drops the
+     * decisive frame on most weighings — the measurement is received and then discarded
+     * before this handler ever sees it.
+     */
+    override fun isTimeCriticalAdvertisement(result: ScanResult): Boolean {
+        if (hasPublished) return false
+        val data = result.scanRecord?.getManufacturerSpecificData(COMPANY_ID_QN) ?: return false
+        if (data.size < MIN_DATA_LEN) return false
+        if (data[0] != MAGIC_BYTE_0 || data[1] != MAGIC_BYTE_1) return false
+
+        val statusByte = data[STATUS_IDX].toInt() and 0xFF
+        if ((statusByte and (FLAG_STABLE_BIT or FLAG_STABLE_BIT_ALT)) == 0) return false
+
+        // Ignore the idle advertisement, which sets bit 0 but carries no weight.
+        val rawWeight = (data[WEIGHT_IDX_LO].toInt() and 0xFF) or
+                ((data[WEIGHT_IDX_HI].toInt() and 0xFF) shl 8)
+        val weightKg = rawWeight / 100.0f
+        return weightKg >= WEIGHT_MIN_KG && weightKg <= WEIGHT_MAX_KG
     }
 
     // ── GATT hooks (intentional no-ops — device is non-connectable) ───────────
@@ -130,7 +164,12 @@ class QNHandlerBroadcast : ScaleDeviceHandler() {
             return BroadcastAction.IGNORED
         }
 
-        val stable = (data[STATUS_IDX].toInt() and FLAG_STABLE_BIT) != 0
+        // Accept either stable encoding: bit 5 (the ES-CS20M variant this handler was written
+        // for) or bit 0 (FITINDEX FT-26R / FT-30D). The two are safe to test together because
+        // the plausible-weight range check below rejects the idle/zero-weight advertisement,
+        // which is the only frame where an FT-26R sets bit 0 without a real measurement.
+        val statusByte = data[STATUS_IDX].toInt() and 0xFF
+        val stable = (statusByte and (FLAG_STABLE_BIT or FLAG_STABLE_BIT_ALT)) != 0
 
         // Weight: little-endian uint16, unit 0.01 kg
         val rawWeight = (data[WEIGHT_IDX_LO].toInt() and 0xFF) or
@@ -142,7 +181,8 @@ class QNHandlerBroadcast : ScaleDeviceHandler() {
             return BroadcastAction.IGNORED
         }
 
-        LogManager.d(TAG, "AABB weight=${"%.2f".format(weightKg)} kg stable=$stable")
+        LogManager.d(TAG, "AABB weight=${"%.2f".format(weightKg)} kg stable=$stable " +
+                "status=0x${statusByte.toString(16).padStart(2, '0')}")
 
         if (!stable) return BroadcastAction.CONSUMED_KEEP_SCANNING
 

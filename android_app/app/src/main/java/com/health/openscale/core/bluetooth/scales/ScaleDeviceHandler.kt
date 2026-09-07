@@ -216,6 +216,22 @@ abstract class ScaleDeviceHandler {
      */
     open fun onAdvertisement(result: ScanResult, user: ScaleUser): BroadcastAction = BroadcastAction.IGNORED
 
+    /**
+     * Whether this advertisement must bypass [BroadcastScaleAdapter]'s stabilize-window
+     * throttle and always reach [onAdvertisement].
+     *
+     * The throttle exists to avoid forwarding bursts of near-identical frames, but it is
+     * purely time-based: it drops whatever arrives inside the window, including the one
+     * frame that carries the final reading. Scales that flag their settled measurement in
+     * the advertisement itself (and stop advertising shortly afterwards) can lose that
+     * frame entirely, so the whole weighing is missed even though it was received.
+     *
+     * Handlers override this to recognise their own "measurement is final" marker.
+     * Returning false (the default) preserves the existing throttling behaviour for every
+     * handler that does not opt in.
+     */
+    open fun isTimeCriticalAdvertisement(result: ScanResult): Boolean = false
+
     // --- Protected helper methods (use these from your handler) ----------------
 
     /** Enable notifications for a characteristic. */

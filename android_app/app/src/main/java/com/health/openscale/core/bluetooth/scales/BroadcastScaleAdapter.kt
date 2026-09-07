@@ -88,7 +88,12 @@ class BroadcastScaleAdapter(
             val hash = contentHash(bytes, rssi)
             val t = now()
             val last = dedupSeen[hash]
-            if (last != null && (t - last) <= tuning.packetDedupWindowMs) {
+            // Time-critical frames skip de-dup for the same reason they skip the stabilize
+            // window below: a scale that repeats its stable frame and then sleeps would
+            // otherwise have the repeat collapsed and the measurement lost.
+            if (last != null && (t - last) <= tuning.packetDedupWindowMs &&
+                !handler.isTimeCriticalAdvertisement(scanResult)
+            ) {
                 LogManager.w(TAG, "Deduplicated packet hash=$hash from ${peripheral.address}")
                 return
             }
@@ -98,8 +103,14 @@ class BroadcastScaleAdapter(
             // Attach handler as soon as we see the target device (if not already)
             ensureAttached(peripheral.address)
 
-            // Optional stabilization: avoid forwarding bursts too quickly
-            if (t - lastForwardAtMs < tuning.stabilizeWindowMs) {
+            // Optional stabilization: avoid forwarding bursts too quickly.
+            // Frames the handler marks as time-critical (i.e. carrying a settled
+            // measurement) always get through: a broadcast-only scale advertises its stable
+            // frame for a second or two and then sleeps, so throttling that frame loses the
+            // entire weighing rather than merely delaying it.
+            if (t - lastForwardAtMs < tuning.stabilizeWindowMs &&
+                !handler.isTimeCriticalAdvertisement(scanResult)
+            ) {
                 LogManager.w(TAG, "Skipping forwarding to handler (stabilize window) from ${peripheral.address}")
                 return
             }
