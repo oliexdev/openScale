@@ -434,6 +434,10 @@
     <string name="s400_bind_key_error">Bind key must be exactly 32 hex characters</string>
     <string name="bt_s400_missing_bind_key">S400: Bind key not configured. Go to Bluetooth settings to enter your BLE key.</string>
 
+    <!-- S200 Scale Configuration -->
+    <string name="s200_bind_key_description">The Xiaomi Smart Scale S200 requires a BLE bind key for decryption. Extract this key from Xiaomi Cloud using the Xiaomi Cloud Tokens Extractor tool. Stand on the scale while pairing — its idle broadcast carries no measurement data.</string>
+    <string name="bt_s200_missing_bind_key">S200: Bind key not configured. Go to Bluetooth settings to enter your BLE key.</string>
+
     <!-- Huawei Hagrid Scale Configuration -->
     <string name="huawei_hagrid_secrets_title">Huawei Hagrid WSP secrets</string>
     <string name="huawei_hagrid_secrets_description">Configure CAK, C1, and C2 as 32 hex characters each. Values stay in per-driver app settings.</string>
