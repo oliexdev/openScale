@@ -74,6 +74,7 @@ object SettingsPreferenceKeys {
     val HAPTIC_ON_MEASUREMENT = booleanPreferencesKey("haptic_on_measurement")
     val USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
     val USE_HIGH_CONTRAST = booleanPreferencesKey("use_high_contrast")
+    val USE_PURE_BLACK = booleanPreferencesKey("use_pure_black")
 
     // Settings for specific UI components
     val SELECTED_TYPES_TABLE = stringSetPreferencesKey("selected_types_table") // IDs of measurement types selected for the data table
@@ -180,6 +181,9 @@ interface SettingsFacade {
 
     val useHighContrast: Flow<Boolean>
     suspend fun setHighContrast(enabled: Boolean)
+
+    val usePureBlack: Flow<Boolean>
+    suspend fun setUsePureBlack(enabled: Boolean)
 
     val currentUserId: Flow<Int?>
     suspend fun setCurrentUserId(userId: Int?)
@@ -408,6 +412,15 @@ class SettingsFacadeImpl @Inject constructor(
 
     override suspend fun setHighContrast(enabled: Boolean) {
         saveSetting(SettingsPreferenceKeys.USE_HIGH_CONTRAST.name, enabled)
+    }
+
+    override val usePureBlack: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.USE_PURE_BLACK.name,
+        false
+    )
+
+    override suspend fun setUsePureBlack(enabled: Boolean) {
+        saveSetting(SettingsPreferenceKeys.USE_PURE_BLACK.name, enabled)
     }
 
     override val currentUserId: Flow<Int?> = dataStore.data

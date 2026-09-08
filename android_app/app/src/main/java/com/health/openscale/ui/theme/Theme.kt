@@ -26,6 +26,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val lightScheme = lightColorScheme(
@@ -253,6 +254,25 @@ private val highContrastDarkScheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDarkHighContrast,
 )
 
+// ── Pure Black (OLED) ─────────────────────────────────────────────────────────
+
+/**
+ * Turns any dark [ColorScheme] into a pure black one for OLED/AMOLED displays, where a black
+ * pixel is simply switched off and therefore draws no power.
+ *
+ * Only the flat backgrounds are pushed to black. The surfaceContainer* roles deliberately keep
+ * their grey tones, because Material uses them for the elevated surfaces (cards, sheets, menus,
+ * navigation bar). Blacking those out as well would collapse the whole elevation hierarchy — the
+ * very reason the Material dark theme baseline is #121212 instead of #000000. Keeping them also
+ * preserves the tint of a dynamic color scheme.
+ */
+private fun ColorScheme.toPureBlack(): ColorScheme = copy(
+    background             = Color.Black,
+    surface                = Color.Black,
+    surfaceDim             = Color.Black,
+    surfaceContainerLowest = Color.Black,
+)
+
 // ── Theme Entry Point ─────────────────────────────────────────────────────────
 
 @Composable
@@ -260,20 +280,28 @@ fun OpenScaleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     highContrast: Boolean = false,
     useDynamicColor: Boolean = true,
+    pureBlack: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
 
-    val colorScheme: ColorScheme = when {
+    // Pure black is a dark theme in its own right: switching it on forces the dark variant even
+    // when the system runs in light mode.
+    val useDarkScheme = darkTheme || pureBlack
+
+    val baseScheme: ColorScheme = when {
         useDynamicColor ->
-            if (darkTheme) dynamicDarkColorScheme(context)
+            if (useDarkScheme) dynamicDarkColorScheme(context)
             else dynamicLightColorScheme(context)
 
-        darkTheme && highContrast  -> highContrastDarkScheme
-        darkTheme                  -> darkScheme
-        !darkTheme && highContrast -> highContrastLightScheme
-        else                       -> lightScheme
+        useDarkScheme && highContrast  -> highContrastDarkScheme
+        useDarkScheme                  -> darkScheme
+        !useDarkScheme && highContrast -> highContrastLightScheme
+        else                           -> lightScheme
     }
+
+    // Applies on top of every dark variant: static, high contrast and dynamic.
+    val colorScheme = if (pureBlack) baseScheme.toPureBlack() else baseScheme
 
     MaterialTheme(
         colorScheme = colorScheme,
