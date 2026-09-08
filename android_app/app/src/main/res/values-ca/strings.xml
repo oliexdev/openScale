@@ -840,4 +840,5 @@
     <string name="picooc_calibration_fixed">%1$s: calibrada, beta %2$d, àncora %3$d kg</string>
     <string name="picooc_calibration_reset">Restableix la calibració de %1$s</string>
     <string name="picooc_calibration_reset_generic">Restableix la calibració de PICOOC</string>
+    <string name="settings_pure_black_label">Negre pur</string>
 </resources>
