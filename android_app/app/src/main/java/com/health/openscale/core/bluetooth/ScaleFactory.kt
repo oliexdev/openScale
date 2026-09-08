@@ -59,6 +59,7 @@ import com.health.openscale.core.bluetooth.scales.MGBHandler
 import com.health.openscale.core.bluetooth.scales.MedisanaBs44xHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
+import com.health.openscale.core.bluetooth.scales.XiaomiS200Handler
 import com.health.openscale.core.bluetooth.scales.XiaomiS800Handler
 import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
@@ -168,6 +169,7 @@ class ScaleFactory @Inject constructor(
             OkOkHandler(),
             MiScaleS400Handler(),
             XiaomiS800Handler(),
+            XiaomiS200Handler(),
             MiScaleHandler(),
             RunstarR6Handler(),
             RunstarR5Handler(),

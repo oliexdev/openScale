@@ -83,6 +83,7 @@ import com.health.openscale.core.bluetooth.scales.TaylorBIAHandler
 import com.health.openscale.core.bluetooth.scales.TrisaBodyAnalyzeHandler
 import com.health.openscale.core.bluetooth.scales.VitafitVT701Handler
 import com.health.openscale.core.bluetooth.scales.WeightGurusA3Handler
+import com.health.openscale.core.bluetooth.scales.XiaomiS200Handler
 import com.health.openscale.core.bluetooth.scales.XiaomiS800Handler
 import com.health.openscale.core.bluetooth.scales.YunmaiHandler
 import com.health.openscale.core.bluetooth.scales.YunmaiXHandler
@@ -243,6 +244,10 @@ object ScaleCatalog {
         device("1byone scale") claimedBy OneByoneNewHandler::class.java,
         device("XMTZC14HM") claimedBy MiScaleS400Handler::class.java,
         device("MIJIA SCALE S800") claimedBy XiaomiS800Handler::class.java,
+        // supportFor() matches via contains("SCALE S200")/"MJTZC02YM", uppercased — the trailing
+        // "ABC6" here is just the last 4 hex of a MAC, an arbitrary per-device suffix Xiaomi
+        // appends to the advertised name, not part of the match itself.
+        device("Xiaomi Scale S200 ABC6") claimedBy XiaomiS200Handler::class.java,
         device("MI_SCALE") claimedBy MiScaleHandler::class.java,
         device("MIBFS") claimedBy MiScaleHandler::class.java,
         device("runstar-r6") claimedBy RunstarR6Handler::class.java,
