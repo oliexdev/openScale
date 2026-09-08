@@ -25,6 +25,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.util.UUID
+import com.health.openscale.core.bluetooth.ScaleCatalog.uuid16
 
 /**
  * Tests for [YunmaiXAdv] frame parsing and [YunmaiXHandler.supportFor] matching.
@@ -67,8 +68,6 @@ class YunmaiXHandlerTest {
         return body + xor.toByte()
     }
 
-    private fun uuid16(short: Int): UUID =
-        UUID.fromString(String.format("0000%04x-0000-1000-8000-00805f9b34fb", short))
 
     private fun device(
         payload: ByteArray? = null,

@@ -61,6 +61,7 @@ import com.health.openscale.core.data.Kcal
 import com.health.openscale.core.data.Kg
 import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.Percent
+import com.health.openscale.core.bluetooth.libs.HuaweiScale3BodyComposition
 
 /**
  * Huawei/Honor Hagrid WSP scale handler.

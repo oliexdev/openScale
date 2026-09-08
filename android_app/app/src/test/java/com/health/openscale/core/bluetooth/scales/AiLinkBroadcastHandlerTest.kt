@@ -25,6 +25,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.util.UUID
+import com.health.openscale.core.bluetooth.ScaleCatalog.hex
 
 /**
  * Device-matching tests for [AiLinkBroadcastHandler].
@@ -51,8 +52,6 @@ class AiLinkBroadcastHandlerTest {
     /** A completed measurement (status 0xFF, 70.0 kg, impedance 500). */
     private val RECORD = hex("01 5f4e3d2c1b0a 8f 10e69cf7cb452cccffff")
 
-    private fun hex(s: String) = s.replace(" ", "").chunked(2)
-        .map { it.toInt(16).toByte() }.toByteArray()
 
     private fun advertisement(
         services: List<UUID> = listOf(AILINK_SERVICE),

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.health.openscale.core.bluetooth.scales
+package com.health.openscale.core.bluetooth.libs
 
 import kotlin.math.max
 

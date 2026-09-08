@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
+import com.health.openscale.core.bluetooth.ScaleCatalog.hex
 
 /**
  * Unit tests for [VitafitVT701Handler] frame parsing and command building.
@@ -28,8 +29,6 @@ import org.junit.Test
  */
 class VitafitVT701HandlerTest {
 
-    private fun hex(s: String): ByteArray =
-        s.filterNot { it.isWhitespace() }.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 
     @Test
     fun `extracts 85_00 kg from the real stable frame`() {

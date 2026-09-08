@@ -30,6 +30,9 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.util.Calendar
 import java.util.UUID
+import com.health.openscale.core.bluetooth.ScaleCatalog.uuid16
+import com.health.openscale.core.bluetooth.ScaleCatalog.hex
+import com.health.openscale.core.bluetooth.ScaleCatalog.device
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -37,7 +40,7 @@ class AndUC352BLEHandlerTest {
 
     @Test
     fun `recognises the captured advertisement without depending on its serial suffix`() {
-        val support = AndUC352BLEHandler().supportFor(device("A&D_UC-352BLE_01166D", 0x181D))
+        val support = AndUC352BLEHandler().supportFor(device("A&D_UC-352BLE_01166D", uuid16(0x181D)))
 
         assertThat(support).isNotNull()
         assertThat(support!!.displayName).isEqualTo("A&D UC-352BLE")
@@ -54,9 +57,9 @@ class AndUC352BLEHandlerTest {
     fun `matching is case insensitive and rejects other devices`() {
         val handler = AndUC352BLEHandler()
 
-        assertThat(handler.supportFor(device("a&d_uc-352ble_abcdef", 0x181D))).isNotNull()
-        assertThat(handler.supportFor(device("A&D_UC-355BLE_01166D", 0x181D))).isNull()
-        assertThat(handler.supportFor(device("UC-352BLE", 0x181D))).isNull()
+        assertThat(handler.supportFor(device("a&d_uc-352ble_abcdef", uuid16(0x181D)))).isNotNull()
+        assertThat(handler.supportFor(device("A&D_UC-355BLE_01166D", uuid16(0x181D)))).isNull()
+        assertThat(handler.supportFor(device("UC-352BLE", uuid16(0x181D)))).isNull()
         assertThat(handler.supportFor(device("A&D_UC-352BLE_01166D"))).isNotNull()
     }
 
@@ -73,7 +76,7 @@ class AndUC352BLEHandlerTest {
             val callbacks = CapturingCallbacks()
             val handler = attachedHandler(callbacks)
 
-            handler.handleNotification(uuid16(0x2A9D), payload.hexToBytes())
+            handler.handleNotification(uuid16(0x2A9D), hex(payload))
             handler.handleDisconnected()
 
             assertThat(callbacks.published).hasSize(1)
@@ -129,16 +132,5 @@ class AndUC352BLEHandlerTest {
         override fun lastMeasurementFor(userId: Int): ScaleMeasurement? = null
     }
 
-    private fun device(name: String, vararg services: Int) = ScannedDeviceInfo(
-        name = name,
-        address = "00:11:22:33:44:55",
-        rssi = -50,
-        serviceUuids = services.map(::uuid16),
-        manufacturerData = null,
-    )
 
-    private fun uuid16(short: Int): UUID =
-        UUID.fromString(String.format("0000%04x-0000-1000-8000-00805f9b34fb", short))
-
-    private fun String.hexToBytes(): ByteArray = chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 }

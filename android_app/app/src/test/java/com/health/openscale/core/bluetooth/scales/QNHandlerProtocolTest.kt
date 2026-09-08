@@ -31,6 +31,7 @@ import org.robolectric.annotation.Config
 import java.util.Date
 import java.util.UUID
 import kotlin.coroutines.EmptyCoroutineContext
+import com.health.openscale.core.bluetooth.ScaleCatalog.uuid16
 
 /**
  * Ground-truth regression tests for [QNHandler]'s Type-2 (0xFFF0) protocol handling, verified
@@ -68,8 +69,6 @@ import kotlin.coroutines.EmptyCoroutineContext
 @Config(sdk = [34])
 class QNHandlerProtocolTest {
 
-    private fun uuid16(short: Int): UUID =
-        UUID.fromString(String.format("0000%04x-0000-1000-8000-00805f9b34fb", short))
 
     private val SVC_T2 = uuid16(0xFFF0)
     private val CHR_T2_NOTIFY = uuid16(0xFFF1)
@@ -253,21 +252,6 @@ class QNHandlerProtocolTest {
         handler.handleNotification(CHR_T2_NOTIFY, state1Frame)
 
         assertThat(callbacks.published).hasSize(1)
-    }
-
-    @Test
-    fun `real Fit Plus advertisement (FFE0 name-only, no AE00 or FFF0) is claimed`() {
-        // Captured pre-connect advertisement: 16-bit service UUIDs = [FFE0] only (address
-        // anonymized). AE00/FFF0 are real GATT services but only appear post-connection, so
-        // the AE00 relaxation in supportFor() never sees them here — the name match is load-bearing.
-        val device = ScannedDeviceInfo(
-            name = "Fit Plus",
-            address = "00:11:22:33:44:55",
-            rssi = -60,
-            serviceUuids = listOf(uuid16(0xFFE0)),
-            manufacturerData = null,
-        )
-        assertThat(QNHandler().supportFor(device)).isNotNull()
     }
 
     @Test

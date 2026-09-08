@@ -24,6 +24,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.util.UUID
+import com.health.openscale.core.bluetooth.ScaleCatalog.uuid16
+import com.health.openscale.core.bluetooth.ScaleCatalog.device
 
 /**
  * Tests for [QNHandler.supportFor] device matching.
@@ -43,47 +45,38 @@ import java.util.UUID
 @Config(sdk = [34])
 class QNHandlerMatchTest {
 
-    private fun uuid16(short: Int): UUID =
-        UUID.fromString(String.format("0000%04x-0000-1000-8000-00805f9b34fb", short))
-
-    private fun device(name: String, vararg services: Int) = ScannedDeviceInfo(
-        name = name,
-        address = "00:11:22:33:44:55",
-        rssi = -50,
-        serviceUuids = services.map { uuid16(it) },
-        manufacturerData = null,
-    )
 
     @Test
     fun `claims ae00 + fff0 device with a non-QN name`() {
         // GE CS 10 G "Fit Plus": ae00 + fff0, non-QN name.
-        assertThat(QNHandler().supportFor(device("Fit Plus", 0xAE00, 0xFFF0))).isNotNull()
+        assertThat(QNHandler().supportFor(device("Fit Plus", uuid16(0xAE00), uuid16(0xFFF0)))).isNotNull()
     }
 
     @Test
     fun `does not claim a bare fff0 device with a non-QN name`() {
         // No ae00 and no QN-family name -> not ours (leave to other fff0 handlers).
-        assertThat(QNHandler().supportFor(device("Unrelated Scale", 0xFFF0))).isNull()
+        assertThat(QNHandler().supportFor(device("Unrelated Scale", uuid16(0xFFF0)))).isNull()
     }
 
     @Test
     fun `claims Fit Plus advertising only FFE0 (name match, no AE00 needed)`() {
+        // This file is the single home for QN device matching; QNHandlerProtocolTest covers frames.
         // GE CS 10 G "Fit Plus": confirmed via BTSnoop capture to advertise pre-connect with
         // ONLY FFE0 in its 16-bit service UUID list — AE00 and FFF0 are real GATT services but
         // only visible after connecting, so the AE00 relaxation never fires here. "fit plus" is
         // therefore matched directly as a QN-family name (#Fit-Plus-not-supported).
-        assertThat(QNHandler().supportFor(device("Fit Plus", 0xFFE0))).isNotNull()
+        assertThat(QNHandler().supportFor(device("Fit Plus", uuid16(0xFFE0)))).isNotNull()
     }
 
     @Test
     fun `does not claim ae00 without the fff0 or ffe0 channel`() {
         // ae00 alone: we cannot drive the device, so don't claim it.
-        assertThat(QNHandler().supportFor(device("Fit Plus", 0xAE00))).isNull()
+        assertThat(QNHandler().supportFor(device("Fit Plus", uuid16(0xAE00)))).isNull()
     }
 
     @Test
     fun `still claims the classic QN name + fff0 device`() {
         // Regression guard: the original name+service path keeps working.
-        assertThat(QNHandler().supportFor(device("QN-Scale", 0xFFF0))).isNotNull()
+        assertThat(QNHandler().supportFor(device("QN-Scale", uuid16(0xFFF0)))).isNotNull()
     }
 }

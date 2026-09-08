@@ -34,6 +34,7 @@ import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.coroutines.EmptyCoroutineContext
+import com.health.openscale.core.bluetooth.ScaleCatalog.hex
 
 /**
  * The USER_INFO record as it actually leaves the handler.
@@ -273,8 +274,6 @@ class HuaweiUserRecordWireTest {
         return cipher.doFinal(data)
     }
 
-    private fun hex(s: String): ByteArray =
-        ByteArray(s.length / 2) { s.substring(it * 2, it * 2 + 2).toInt(16).toByte() }
 
     // -- Fixtures and fakes --------------------------------------------------
 

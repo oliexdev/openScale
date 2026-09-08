@@ -40,6 +40,9 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.roundToInt
 import com.health.openscale.core.data.Kg
 import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.bluetooth.ScaleCatalog.hex
+import com.health.openscale.core.bluetooth.ScaleCatalog.uuid16
+import com.health.openscale.core.bluetooth.ScaleCatalog.device
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -52,19 +55,19 @@ class KeepS3HandlerTest {
     @Test
     fun `builds empty negotiate request`() {
         assertThat(KeepS3Protocol.buildRequest(0x38))
-            .isEqualTo(bytes("01 53 38 00 00"))
+            .isEqualTo(hex("01 53 38 00 00"))
     }
 
     @Test
     fun `builds measurement event ack`() {
         assertThat(KeepS3Protocol.buildAck(0x57))
-            .isEqualTo(bytes("04 53 57 00 00 80"))
+            .isEqualTo(hex("04 53 57 00 00 80"))
     }
 
     @Test
     fun `parses first capture-verified final measurement`() {
         val event = KeepS3Protocol.parseMeasurementEvent(
-            bytes("03 53 57 00 08 29 42 7C 00 00 01 2D 6B"),
+            hex("03 53 57 00 08 29 42 7C 00 00 01 2D 6B"),
         )!!
 
         assertThat(event.stage).isEqualTo(0x29)
@@ -76,7 +79,7 @@ class KeepS3HandlerTest {
     @Test
     fun `parses second capture-verified final measurement`() {
         val event = KeepS3Protocol.parseMeasurementEvent(
-            bytes("03 53 57 00 08 29 42 68 00 00 01 2C 61"),
+            hex("03 53 57 00 08 29 42 68 00 00 01 2C 61"),
         )!!
 
         assertThat(event.stage).isEqualTo(0x29)
@@ -91,7 +94,7 @@ class KeepS3HandlerTest {
         setup.handler.handleConnected(setup.user)
         setup.transport.clearWrites()
 
-        val live = bytes("03 53 57 00 08 00 42 5E 00 00 00 00 00")
+        val live = hex("03 53 57 00 08 00 42 5E 00 00 00 00 00")
         val parsed = KeepS3Protocol.parseMeasurementEvent(live)!!
         setup.handler.handleNotification(notifyCharacteristic, live)
 
@@ -100,7 +103,7 @@ class KeepS3HandlerTest {
         assertThat(setup.callbacks.published).isEmpty()
         assertThat(setup.transport.writes).hasSize(1)
         assertThat(setup.transport.writes.single().payload)
-            .isEqualTo(bytes("04 53 57 00 00 80"))
+            .isEqualTo(hex("04 53 57 00 00 80"))
     }
 
     @Test
@@ -108,7 +111,7 @@ class KeepS3HandlerTest {
         val setup = attachedHandler()
         setup.handler.handleConnected(setup.user)
         setup.transport.clearWrites()
-        val truncated = bytes("03 53 57 00 08 29 42 7C 00 00 01 2D")
+        val truncated = hex("03 53 57 00 08 29 42 7C 00 00 01 2D")
 
         assertThat(KeepS3Protocol.parseMeasurementEvent(truncated)).isNull()
         setup.handler.handleNotification(notifyCharacteristic, truncated)
@@ -116,7 +119,7 @@ class KeepS3HandlerTest {
         assertThat(setup.callbacks.published).isEmpty()
         assertThat(setup.transport.writes).hasSize(1)
         assertThat(setup.transport.writes.single().payload)
-            .isEqualTo(bytes("04 53 57 00 00 80"))
+            .isEqualTo(hex("04 53 57 00 00 80"))
     }
 
     @Test
@@ -180,7 +183,7 @@ class KeepS3HandlerTest {
         // A non-final 0x57 can still provide the impedance used by the 0x58 fallback.
         setup.handler.handleNotification(
             notifyCharacteristic,
-            bytes("03 53 57 00 08 09 42 7C 00 00 01 2D 00"),
+            hex("03 53 57 00 08 09 42 7C 00 00 01 2D 00"),
         )
         val record = finalRecord(
             weightRaw = 17020,
@@ -240,7 +243,7 @@ class KeepS3HandlerTest {
         val setup = attachedHandler(scope = this)
         setup.handler.handleConnected(setup.user)
         setup.transport.clearWrites()
-        val final = bytes("03 53 57 00 08 29 42 68 00 00 01 2C 61")
+        val final = hex("03 53 57 00 08 29 42 68 00 00 01 2C 61")
         val record = finalRecord(
             weightRaw = 17000,
             encodedImpedance50 = 0x8227E5,
@@ -278,7 +281,7 @@ class KeepS3HandlerTest {
         val setup = attachedHandler(scope = this)
         setup.handler.handleConnected(setup.user)
         setup.transport.clearWrites()
-        val final = bytes("03 53 57 00 08 29 42 68 00 00 01 2C 61")
+        val final = hex("03 53 57 00 08 29 42 68 00 00 01 2C 61")
 
         setup.handler.handleNotification(notifyCharacteristic, final)
         setup.handler.handleNotification(notifyCharacteristic, final)
@@ -522,7 +525,7 @@ class KeepS3HandlerTest {
         setup.handler.handleNotification(notifyCharacteristic, response(0x22))
         setup.handler.handleNotification(notifyCharacteristic, response(0x38))
         setup.handler.handleNotification(notifyCharacteristic, response(0x38)) // duplicate old response
-        setup.handler.handleNotification(notifyCharacteristic, response(0x0A, bytes("12 34 56 78")))
+        setup.handler.handleNotification(notifyCharacteristic, response(0x0A, hex("12 34 56 78")))
         setup.handler.handleNotification(notifyCharacteristic, response(0x01))
         setup.handler.handleNotification(notifyCharacteristic, response(0x05))
         setup.handler.handleNotification(notifyCharacteristic, response(0xE7))
@@ -543,7 +546,7 @@ class KeepS3HandlerTest {
             it.service == service && it.characteristic == writeCharacteristic
         }).isTrue()
         val timeRequest = setup.transport.writes.first { requestOpcode(it.payload) == 0x01 }.payload
-        assertThat(timeRequest.copyOfRange(5, 9)).isEqualTo(bytes("12 34 56 78"))
+        assertThat(timeRequest.copyOfRange(5, 9)).isEqualTo(hex("12 34 56 78"))
     }
 
     @Test
@@ -553,7 +556,7 @@ class KeepS3HandlerTest {
         first.handler.handleConnected(first.user)
         first.handler.handleNotification(
             notifyCharacteristic,
-            bytes("03 53 57 00 08 29 42 68 00 00 01 2C 61"),
+            hex("03 53 57 00 08 29 42 68 00 00 01 2C 61"),
         )
         first.handler.handleNotification(
             notifyCharacteristic,
@@ -617,7 +620,7 @@ class KeepS3HandlerTest {
 
         setup.handler.handleNotification(
             notifyCharacteristic,
-            bytes("02 53 38 00 00 81"),
+            hex("02 53 38 00 00 81"),
         )
 
         assertThat(requestOpcodes(setup.transport)).containsExactly(0x38)
@@ -638,9 +641,9 @@ class KeepS3HandlerTest {
         )
         assertThat(support.capabilities).contains(DeviceCapability.BODY_COMPOSITION)
         assertThat(support.implemented).doesNotContain(DeviceCapability.BATTERY_LEVEL)
-        assertThat(handler.supportFor(device("Keep_S3", 0x00FF))).isNotNull()
-        assertThat(handler.supportFor(device("Keep_S3_extra", 0x00FF))).isNull()
-        assertThat(handler.supportFor(device("Other", 0x00FF, 0xFFF0))).isNull()
+        assertThat(handler.supportFor(device("Keep_S3", uuid16(0x00FF)))).isNotNull()
+        assertThat(handler.supportFor(device("Keep_S3_extra", uuid16(0x00FF)))).isNull()
+        assertThat(handler.supportFor(device("Other", uuid16(0x00FF), uuid16(0xFFF0)))).isNull()
     }
 
     private fun attachedHandler(
@@ -692,7 +695,7 @@ class KeepS3HandlerTest {
     private fun driveInitializationThroughProfile(setup: Setup) {
         setup.handler.handleConnected(setup.user)
         setup.handler.handleNotification(notifyCharacteristic, response(0x38))
-        setup.handler.handleNotification(notifyCharacteristic, response(0x0A, bytes("12 34 56 78")))
+        setup.handler.handleNotification(notifyCharacteristic, response(0x0A, hex("12 34 56 78")))
         setup.handler.handleNotification(notifyCharacteristic, response(0x01))
         setup.handler.handleNotification(notifyCharacteristic, response(0x05))
         setup.handler.handleNotification(notifyCharacteristic, response(0xE7))
@@ -748,24 +751,6 @@ class KeepS3HandlerTest {
             payload.size == 55 &&
             payload[53] == 0x00.toByte() &&
             payload[54] == (if (start) 0x01 else 0x00).toByte()
-
-    private fun device(name: String, vararg services: Int) = ScannedDeviceInfo(
-        name = name,
-        address = "00:11:22:33:44:55",
-        rssi = -50,
-        serviceUuids = services.map(::uuid16),
-        manufacturerData = null,
-    )
-
-    private fun uuid16(short: Int): UUID =
-        UUID.fromString(String.format("0000%04x-0000-1000-8000-00805f9b34fb", short))
-
-    private fun bytes(hex: String): ByteArray = hex
-        .trim()
-        .split(Regex("\\s+"))
-        .filter(String::isNotEmpty)
-        .map { it.toInt(16).toByte() }
-        .toByteArray()
 
     private data class Setup(
         val handler: KeepS3Handler,

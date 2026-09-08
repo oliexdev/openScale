@@ -17,7 +17,6 @@
  */
 package com.health.openscale.core.database
 
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
@@ -35,6 +34,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import com.health.openscale.testutil.RoomTestSupport
 
 /**
  * Room DAO behaviour, run on the JVM via Robolectric (no emulator needed).
@@ -50,10 +50,7 @@ class MeasurementDaoTest {
 
     @Before
     fun setUp() = runBlocking {
-        db = Room.inMemoryDatabaseBuilder(
-            ApplicationProvider.getApplicationContext(),
-            AppDatabase::class.java,
-        ).allowMainThreadQueries().build()
+        db = RoomTestSupport.inMemory(ApplicationProvider.getApplicationContext())
 
         userId = db.userDao().insert(
             User(

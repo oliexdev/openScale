@@ -110,6 +110,15 @@ import java.util.UUID
  *
  * Human-written notes for the table's "Remarks" column live in
  * `src/test/resources/scale_catalog_remarks.txt`, the photo gallery in `scale_catalog_gallery.md`.
+ *
+ * Besides the catalog itself this object owns the shared building blocks every scale test needs —
+ * [uuid16], [device], [advertisement], [manufacturerData] and [hex]. Import them instead of
+ * redeclaring a private copy, so a captured frame reads the same way in every test:
+ *
+ *     import com.health.openscale.core.bluetooth.ScaleCatalog.hex
+ *
+ * The one deliberate exception is `HuaweiAhCh100HandlerTest`, whose `hex` delegates to the
+ * handler's own `hexToBytes` because that conversion is production code under test.
  */
 object ScaleCatalog {
 
@@ -133,6 +142,22 @@ object ScaleCatalog {
         manufacturerData = null,
     )
 
+    /**
+     * A captured frame written as hex, e.g. `hex("5a 0a 26 10")` or `hex("5A0A2610")`.
+     * Whitespace and an optional `0x` prefix are ignored, so a payload can be pasted verbatim
+     * from nRF Connect or a BTSnoop dump.
+     */
+    fun hex(value: String): ByteArray = value
+        .removePrefix("0x")
+        .filterNot { it.isWhitespace() }
+        .chunked(2)
+        .map { it.toInt(16).toByte() }
+        .toByteArray()
+
+    /** Manufacturer records keyed by company id, shaped the way `ScanRecord` hands them over. */
+    fun manufacturerData(vararg entries: Pair<Int, ByteArray>): SparseArray<ByteArray> =
+        SparseArray<ByteArray>().apply { entries.forEach { (id, data) -> put(id, data) } }
+
     /** A broadcast advertisement: manufacturer records keyed by company id, as `ScanRecord` has them. */
     fun advertisement(
         name: String = "",
@@ -143,9 +168,7 @@ object ScaleCatalog {
         address = "C0:FF:EE:12:34:56",
         rssi = -50,
         serviceUuids = services,
-        manufacturerData = SparseArray<ByteArray>().apply {
-            manufacturerData.forEach { (id, data) -> put(id, data) }
-        },
+        manufacturerData = manufacturerData(*manufacturerData.toTypedArray()),
     )
 
     /** Service 0xFFB0 — the LeFu-style service shared by a whole family of unrelated scales. */

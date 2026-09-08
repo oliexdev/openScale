@@ -15,11 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.health.openscale.core.bluetooth.scales
+package com.health.openscale.core.bluetooth.libs
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 class HuaweiScale3BodyCompositionTest {
@@ -75,7 +73,7 @@ class HuaweiScale3BodyCompositionTest {
 
     @Test
     fun rejectsUnsupportedChildProfile() {
-        assertNull(
+        assertThat(
             HuaweiScale3BodyComposition.calculate(
                 heightCm = 150f,
                 weightKg = 45f,
@@ -83,12 +81,12 @@ class HuaweiScale3BodyCompositionTest {
                 sex = HuaweiScale3BodyComposition.Sex.MALE,
                 impedanceOhm = 450.0,
             )
-        )
+        ).isNull()
     }
 
     @Test
     fun rejectsMalformedInputs() {
-        assertNull(
+        assertThat(
             HuaweiScale3BodyComposition.calculate(
                 heightCm = 178f,
                 weightKg = 91f,
@@ -96,8 +94,8 @@ class HuaweiScale3BodyCompositionTest {
                 sex = HuaweiScale3BodyComposition.Sex.MALE,
                 impedanceOhm = 0.0,
             )
-        )
-        assertNull(
+        ).isNull()
+        assertThat(
             HuaweiScale3BodyComposition.calculate(
                 heightCm = 50f,
                 weightKg = 91f,
@@ -105,7 +103,7 @@ class HuaweiScale3BodyCompositionTest {
                 sex = HuaweiScale3BodyComposition.Sex.MALE,
                 impedanceOhm = 360.0,
             )
-        )
+        ).isNull()
     }
 
     private fun checkVector(
@@ -128,21 +126,18 @@ class HuaweiScale3BodyCompositionTest {
             sex = sex,
             impedanceOhm = impedanceOhm,
         )
-        assertNotNull(result)
+        assertThat(result).isNotNull()
         result!!
 
-        assertEquals(fatPercent, result.bodyFatPercent, 0.01f)
-        assertEquals(waterPercent, result.waterPercent, 0.01f)
-        assertEquals(skeletalMuscleKg, result.skeletalMuscleKg, 0.01f)
-        assertEquals(boneKg, result.boneMineralKg, 0.01f)
-        assertEquals(bmr, result.bmrKcal, 1f)
-        assertEquals(visceral, result.visceralFatLevel, 0f)
+        assertThat(result.bodyFatPercent).isWithin(0.01f).of(fatPercent)
+        assertThat(result.waterPercent).isWithin(0.01f).of(waterPercent)
+        assertThat(result.skeletalMuscleKg).isWithin(0.01f).of(skeletalMuscleKg)
+        assertThat(result.boneMineralKg).isWithin(0.01f).of(boneKg)
+        assertThat(result.bmrKcal).isWithin(1f).of(bmr)
+        assertThat(result.visceralFatLevel).isWithin(0f).of(visceral)
 
         // openScale stores skeletal muscle as percent, not kilograms.
-        assertEquals(
-            result.skeletalMuscleKg / weightKg * 100f,
-            result.skeletalMusclePercent,
-            0.001f,
-        )
+        assertThat(result.skeletalMusclePercent)
+            .isWithin(0.001f).of(result.skeletalMuscleKg / weightKg * 100f)
     }
 }

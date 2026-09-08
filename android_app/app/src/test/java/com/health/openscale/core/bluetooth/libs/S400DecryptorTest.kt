@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.libs
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
+import com.health.openscale.core.bluetooth.ScaleCatalog.hex
 
 /**
  * Unit tests for [S400Decryptor].
@@ -33,10 +34,6 @@ class S400DecryptorTest {
         private const val TEST_MAC = "84:46:93:64:A5:E6"
         private const val TEST_BIND_KEY = "58305740b64e4b425e518aa1f4e51339"
 
-        private fun hexToByteArray(hex: String): ByteArray {
-            val cleanHex = hex.replace(" ", "").lowercase()
-            return cleanHex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
-        }
     }
 
     // --- Validation tests ---
@@ -88,7 +85,7 @@ class S400DecryptorTest {
     @Test
     fun decrypt_24ByteData_returnsCorrectWeight() {
         // Test1 from S400Test.cs: expected weight = 74.2
-        val data = hexToByteArray("4859d53b2d3314943c58b133638c7457a4000000c3e670dc")
+        val data = hex("4859d53b2d3314943c58b133638c7457a4000000c3e670dc")
 
         val result = S400Decryptor.decrypt(data, TEST_MAC, TEST_BIND_KEY)
 
@@ -99,7 +96,7 @@ class S400DecryptorTest {
     @Test
     fun decrypt_26ByteDataFromHex_returnsCorrectWeight() {
         // Test26bytesHex from S400Test.cs: expected weight = 73.2
-        val data = hexToByteArray("95FE4859D53B3BDE6BC8D05B51C0CDFD9021C9000000925C5039")
+        val data = hex("95FE4859D53B3BDE6BC8D05B51C0CDFD9021C9000000925C5039")
 
         val result = S400Decryptor.decrypt(data, TEST_MAC, TEST_BIND_KEY)
 
@@ -144,7 +141,7 @@ class S400DecryptorTest {
 
     @Test
     fun decrypt_highFrequencyPacket_returnsHighImpedance() {
-        val data = hexToByteArray("4859d53b0abc078ff2348c844138e930220000009e538599")
+        val data = hex("4859d53b0abc078ff2348c844138e930220000009e538599")
         val mac = "8C:D0:B2:F6:BE:EF"
         val key = "0728974d657a4b60964c1b1677f35f7c"
 
@@ -160,7 +157,7 @@ class S400DecryptorTest {
 
     @Test
     fun decrypt_lowFrequencyPacket_returnsLowImpedance() {
-        val data = hexToByteArray("4859d53b0bd6ef0b25db72785e7e2f46d6000000d8642df6")
+        val data = hex("4859d53b0bd6ef0b25db72785e7e2f46d6000000d8642df6")
         val mac = "8C:D0:B2:F6:BE:EF"
         val key = "0728974d657a4b60964c1b1677f35f7c"
 
@@ -177,7 +174,7 @@ class S400DecryptorTest {
     @Test
     fun decrypt_invalidDataLength_returnsNull() {
         // TestJustMACAddress from S400Test.cs: too short data (11 bytes)
-        val data = hexToByteArray("1059d53b06e6a5649346 84")
+        val data = hex("1059d53b06e6a5649346 84")
 
         val result = S400Decryptor.decrypt(data, TEST_MAC, TEST_BIND_KEY)
 
@@ -186,7 +183,7 @@ class S400DecryptorTest {
 
     @Test
     fun decrypt_invalidBindKey_returnsNull() {
-        val data = hexToByteArray("4859d53b2d3314943c58b133638c7457a4000000c3e670dc")
+        val data = hex("4859d53b2d3314943c58b133638c7457a4000000c3e670dc")
         val invalidKey = "00000000000000000000000000000000"
 
         // Decryption with wrong key should fail (or return null/invalid data)
@@ -201,7 +198,7 @@ class S400DecryptorTest {
 
     @Test
     fun decrypt_shortBindKey_returnsNull() {
-        val data = hexToByteArray("4859d53b2d3314943c58b133638c7457a4000000c3e670dc")
+        val data = hex("4859d53b2d3314943c58b133638c7457a4000000c3e670dc")
         val shortKey = "58305740b64e4b42" // Only 16 chars instead of 32
 
         val result = S400Decryptor.decrypt(data, TEST_MAC, shortKey)
@@ -219,7 +216,7 @@ class S400DecryptorTest {
 
     @Test
     fun measurement_hasExpectedFields() {
-        val data = hexToByteArray("4859d53b2d3314943c58b133638c7457a4000000c3e670dc")
+        val data = hex("4859d53b2d3314943c58b133638c7457a4000000c3e670dc")
 
         val result = S400Decryptor.decrypt(data, TEST_MAC, TEST_BIND_KEY)
 

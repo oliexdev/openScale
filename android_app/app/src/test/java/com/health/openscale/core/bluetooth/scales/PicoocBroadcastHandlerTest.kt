@@ -27,6 +27,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import com.health.openscale.core.bluetooth.ScaleCatalog.hex
 
 /** Parser regression tests using advertisements captured from a physical PICOOC Mini Lite. */
 @RunWith(RobolectricTestRunner::class)
@@ -37,9 +38,6 @@ class PicoocBroadcastHandlerTest {
     private val packetB = hex("02010609095049434F4F432D4C11FFD049004B4F1E391F066013748706005C")
     private val packetC = hex("02010609095049434F4F432D4C11FFD049004B4F1E391F0676136087200040")
 
-    private fun hex(value: String): ByteArray = value.removePrefix("0x").chunked(2)
-        .map { it.toInt(16).toByte() }
-        .toByteArray()
 
     /** Extract the type-0xFF AD value and split it the same way Android's ScanRecord does. */
     private fun manufacturerEntry(advertisement: ByteArray): Pair<Int, ByteArray> {

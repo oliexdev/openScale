@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
+import com.health.openscale.core.bluetooth.ScaleCatalog.hex
 
 /**
  * Unit tests for [MGBHandler]'s 8-byte streaming frame parsers (e.g. Dr Trust Smart 505).
@@ -28,8 +29,6 @@ import org.junit.Test
  */
 class MGBHandlerStreamingTest {
 
-    private fun hex(s: String): ByteArray =
-        s.filterNot { it.isWhitespace() }.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 
     @Test
     fun `extracts 99_10 kg from the final weight frame`() {

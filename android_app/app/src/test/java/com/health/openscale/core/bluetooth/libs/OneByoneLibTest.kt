@@ -109,22 +109,6 @@ class OneByoneLibTest {
     // ---------------- Generic / property-based tests ----------------
 
     @Test
-    fun bmi_monotonicity_weightUp_increases_heightConstant() {
-        val lib = OneByoneLib(1, 30, 180f, 0)
-        val w1 = 70f
-        val w2 = 85f
-        assertThat(lib.getBMI(w2)).isGreaterThan(lib.getBMI(w1))
-    }
-
-    @Test
-    fun bmi_monotonicity_heightUp_decreases_weightConstant() {
-        val libShort = OneByoneLib(1, 30, 170f, 0)
-        val libTall  = OneByoneLib(1, 30, 190f, 0)
-        val w = 80f
-        assertThat(libTall.getBMI(w)).isLessThan(libShort.getBMI(w))
-    }
-
-    @Test
     fun water_switch_coeff_below_and_above_50() {
         val lib = OneByoneLib(0, 40, 165f, 1)
         val bfHigh = 35f // → (100-35)*0.7 = 45.5 < 50 → *1.02

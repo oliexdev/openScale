@@ -34,7 +34,6 @@ import com.health.openscale.core.data.User
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacadeImpl
-import com.health.openscale.core.service.DerivedValuesCalculator
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -82,22 +81,8 @@ class BackupRestoreUseCasesTest {
 
         database = buildDatabase(sandboxContext)
 
-        val derivedValuesCalculator = DerivedValuesCalculator(
-            userDao = database.userDao(),
-            measurementDao = database.measurementDao(),
-            measurementTypeDao = database.measurementTypeDao(),
-            measurementValueDao = database.measurementValueDao()
-        )
 
-        repository = DatabaseRepository(
-            database = database,
-            userDao = database.userDao(),
-            userGoalsDao = database.userGoalsDao(),
-            measurementDao = database.measurementDao(),
-            measurementTypeDao = database.measurementTypeDao(),
-            measurementValueDao = database.measurementValueDao(),
-            derivedValuesCalculator = derivedValuesCalculator
-        )
+        repository = RoomTestSupport.repositoryFor(database)
 
         val dataStore = PreferenceDataStoreFactory.create(
             scope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
@@ -150,20 +135,7 @@ class BackupRestoreUseCasesTest {
         val reopened = buildDatabase(sandboxContext)
 
         try {
-            val reopenedRepo = DatabaseRepository(
-                database = reopened,
-                userDao = reopened.userDao(),
-                userGoalsDao = reopened.userGoalsDao(),
-                measurementDao = reopened.measurementDao(),
-                measurementTypeDao = reopened.measurementTypeDao(),
-                measurementValueDao = reopened.measurementValueDao(),
-                derivedValuesCalculator = DerivedValuesCalculator(
-                    userDao = reopened.userDao(),
-                    measurementDao = reopened.measurementDao(),
-                    measurementTypeDao = reopened.measurementTypeDao(),
-                    measurementValueDao = reopened.measurementValueDao()
-                )
-            )
+            val reopenedRepo = RoomTestSupport.repositoryFor(reopened)
 
             assertWithMessage("the original record should still exist after a failed restore")
                 .that(reopenedRepo.getAllUsers().first()).hasSize(1)
@@ -194,20 +166,7 @@ class BackupRestoreUseCasesTest {
 
         val reopened = buildDatabase(sandboxContext)
         try {
-            val reopenedRepo = DatabaseRepository(
-                database = reopened,
-                userDao = reopened.userDao(),
-                userGoalsDao = reopened.userGoalsDao(),
-                measurementDao = reopened.measurementDao(),
-                measurementTypeDao = reopened.measurementTypeDao(),
-                measurementValueDao = reopened.measurementValueDao(),
-                derivedValuesCalculator = DerivedValuesCalculator(
-                    userDao = reopened.userDao(),
-                    measurementDao = reopened.measurementDao(),
-                    measurementTypeDao = reopened.measurementTypeDao(),
-                    measurementValueDao = reopened.measurementValueDao()
-                )
-            )
+            val reopenedRepo = RoomTestSupport.repositoryFor(reopened)
 
             assertWithMessage("the original record should still exist after rejecting an unrelated database")
                 .that(reopenedRepo.getAllUsers().first()).hasSize(1)
@@ -227,20 +186,7 @@ class BackupRestoreUseCasesTest {
 
         val reopened = buildDatabase(sandboxContext)
         try {
-            val reopenedRepo = DatabaseRepository(
-                database = reopened,
-                userDao = reopened.userDao(),
-                userGoalsDao = reopened.userGoalsDao(),
-                measurementDao = reopened.measurementDao(),
-                measurementTypeDao = reopened.measurementTypeDao(),
-                measurementValueDao = reopened.measurementValueDao(),
-                derivedValuesCalculator = DerivedValuesCalculator(
-                    userDao = reopened.userDao(),
-                    measurementDao = reopened.measurementDao(),
-                    measurementTypeDao = reopened.measurementTypeDao(),
-                    measurementValueDao = reopened.measurementValueDao()
-                )
-            )
+            val reopenedRepo = RoomTestSupport.repositoryFor(reopened)
 
             val users = reopenedRepo.getAllUsers().first()
             assertThat(users).hasSize(1)
@@ -273,20 +219,7 @@ class BackupRestoreUseCasesTest {
 
         val reopened = buildDatabase(sandboxContext)
         try {
-            val reopenedRepo = DatabaseRepository(
-                database = reopened,
-                userDao = reopened.userDao(),
-                userGoalsDao = reopened.userGoalsDao(),
-                measurementDao = reopened.measurementDao(),
-                measurementTypeDao = reopened.measurementTypeDao(),
-                measurementValueDao = reopened.measurementValueDao(),
-                derivedValuesCalculator = DerivedValuesCalculator(
-                    userDao = reopened.userDao(),
-                    measurementDao = reopened.measurementDao(),
-                    measurementTypeDao = reopened.measurementTypeDao(),
-                    measurementValueDao = reopened.measurementValueDao()
-                )
-            )
+            val reopenedRepo = RoomTestSupport.repositoryFor(reopened)
 
             val users = reopenedRepo.getAllUsers().first()
             assertThat(users).hasSize(1)

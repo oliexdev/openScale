@@ -34,6 +34,8 @@ import org.robolectric.annotation.Config
 import java.util.Calendar
 import java.util.UUID
 import kotlin.coroutines.EmptyCoroutineContext
+import com.health.openscale.core.bluetooth.ScaleCatalog.uuid16
+import com.health.openscale.core.bluetooth.ScaleCatalog.device
 
 /**
  * The BF1000 reports segmental fat and muscle on Beurer-private characteristics, separate
@@ -196,16 +198,6 @@ class StandardBeurerSanitasHandlerTest {
         return ScaleUser(id = 7, birthday = birthday, bodyHeight = 180f, gender = GenderType.MALE)
     }
 
-    private fun device(name: String) = ScannedDeviceInfo(
-        name = name,
-        address = "00:11:22:33:44:55",
-        rssi = -50,
-        serviceUuids = emptyList(),
-        manufacturerData = null,
-    )
-
-    private fun uuid16(short: Int): UUID =
-        UUID.fromString(String.format("0000%04x-0000-1000-8000-00805f9b34fb", short))
 
     private class Setup(
         val handler: StandardBeurerSanitasHandler,

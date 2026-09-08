@@ -24,6 +24,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.util.UUID
+import com.health.openscale.core.bluetooth.ScaleCatalog.uuid16
+import com.health.openscale.core.bluetooth.ScaleCatalog.device
 
 /**
  * Matching tests for [HoffenBbs8107Handler], which drives a Chipsea "WeChat scale" firmware sold
@@ -41,16 +43,6 @@ class HoffenBbs8107HandlerTest {
     /** The generic WeChat service these scales advertise alongside the 0xFFB0 they talk on. */
     private val SERVICE_FEE7 = uuid16(0xFEE7)
 
-    private fun uuid16(short: Int): UUID =
-        UUID.fromString(String.format("0000%04x-0000-1000-8000-00805f9b34fb", short))
-
-    private fun device(name: String, vararg services: UUID) = ScannedDeviceInfo(
-        name = name,
-        address = "C0:FF:EE:12:34:56",
-        rssi = -50,
-        serviceUuids = services.toList(),
-        manufacturerData = null,
-    )
 
     @Test
     fun `claims the Hoffen BBS-8107`() {

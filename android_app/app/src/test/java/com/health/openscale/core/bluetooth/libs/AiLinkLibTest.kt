@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.libs
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
+import com.health.openscale.core.bluetooth.ScaleCatalog.hex
 
 /**
  * Unit tests for [AiLinkLib].
@@ -38,23 +39,21 @@ class AiLinkLibTest {
     /** Company id as Android reports it; really AiLink's CID (0x01) and VID (0x03). */
     private val COMPANY_ID = 0x0301
 
-    private fun adv(hex: String) = hex.replace(" ", "").chunked(2)
-        .map { it.toInt(16).toByte() }.toByteArray()
 
     /** status 0xFF (complete), 70.0 kg, impedance 500 — the frame the scale latches and repeats. */
-    private val COMPLETED = adv("01 5f4e3d2c1b0a 8f 10e69cf7cb452cccffff")
+    private val COMPLETED = hex("01 5f4e3d2c1b0a 8f 10e69cf7cb452cccffff")
 
     /** status 0xFF (complete) from an earlier step-on, 68.4 kg. */
-    private val COMPLETED_684 = adv("01 5f4e3d2c1b0a 7e 945ab8103c0b750effff")
+    private val COMPLETED_684 = hex("01 5f4e3d2c1b0a 7e 945ab8103c0b750effff")
 
     /** status 0x00 (measuring) while a 70.0 kg reading is still live. */
-    private val MEASURING = adv("01 5f4e3d2c1b0a 33 31c5f84954a1b455ffff")
+    private val MEASURING = hex("01 5f4e3d2c1b0a 33 31c5f84954a1b455ffff")
 
     /** status 0x00 with no load: raw weight 0 and the flags' low bit clear. */
-    private val IDLE = adv("01 5f4e3d2c1b0a 81 cd9244ffe6049c5bffff")
+    private val IDLE = hex("01 5f4e3d2c1b0a 81 cd9244ffe6049c5bffff")
 
     /** Complete, but the scale's impedance pass failed and it reported 0 ohms. */
-    private val NO_IMPEDANCE = adv("01 5f4e3d2c1b0a f9 95fd662927ee4283ffff")
+    private val NO_IMPEDANCE = hex("01 5f4e3d2c1b0a f9 95fd662927ee4283ffff")
 
     // --- Key derivation --------------------------------------------------------
 
