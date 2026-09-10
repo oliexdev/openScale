@@ -363,9 +363,11 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
                 sexMale = user.gender == GenderType.MALE,
                 heightCm = user.bodyHeight,
                 weightKg = finalized.weightKg,
-                rHighRaw = finalized.impedanceHigh,
-                // Single-band fallback when Packet B never arrives (older firmware path).
-                rLowRaw = finalized.impedanceLow ?: finalized.impedanceHigh,
+                // Single-band fallback when Packet B never arrives leaves both
+                // bands equal, which the dispersion gate then rejects: weight,
+                // BMI and the anthropometric outputs still come through.
+                rHighRaw = finalized.impedanceHigh ?: finalized.impedanceLow,
+                rLowRaw = finalized.impedanceLow,
             ),
             boneFormula = boneFormula,
             bmrFormula = bmrFormula,
@@ -376,8 +378,8 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
             userId = user.id
             this[MeasurementType.WEIGHT] = Kg(finalized.weightKg)
             finalized.heartRate?.let { this[MeasurementType.HEART_RATE] = Bpm(it) }
-            this[MeasurementType.IMPEDANCE] = Ohm(finalized.impedanceHigh.toFloat())
-            finalized.impedanceLow?.let { this[MeasurementType.IMPEDANCE_LOW] = Ohm(it.toFloat()) }
+            this[MeasurementType.IMPEDANCE_LOW] = Ohm(finalized.impedanceLow)
+            finalized.impedanceHigh?.let { this[MeasurementType.IMPEDANCE] = Ohm(it) }
 
             this[MeasurementType.BODY_FAT] = Percent(composition.bfPct ?: 0f)
             this[MeasurementType.WATER] = Percent(composition.tbwPct ?: 0f)
