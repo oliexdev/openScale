@@ -21,8 +21,6 @@ import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-private fun cbrt(x: Double): Double = x.pow(1.0 / 3.0)
-
 /**
  * Body-composition pipeline for the Xiaomi Body Composition Scale S400.
  *
@@ -37,6 +35,10 @@ private fun cbrt(x: Double): Double = x.pow(1.0 / 3.0)
  * `age` (y), `sexMale`, `heightCm`, `weightKg`, `rHighRaw` (Ω, ~250 kHz),
  * `rLowRaw` (Ω, ~50 kHz). Heart rate, if present, is **not** an input to any
  * body-composition equation — pass through to the UI unmodified.
+ *
+ * Every prediction equation here was derived on 50 kHz BIA and takes the
+ * corrected low-frequency band. The high-frequency band informs the §2.1
+ * checks and the §3.7 empirical bone regression, nothing else.
  *
  * ## Validation (§1.1) — reject entire computation
  * `age 18-120` (Janssen/Cunningham not validated <18), `height 100-230`,
@@ -54,20 +56,19 @@ private fun cbrt(x: Double): Double = x.pow(1.0 / 3.0)
  *  - **§2.2 Foot-to-foot correction.** The S400 measures only the lower body
  *    (foot↔foot), but every published BIA equation was derived for
  *    wrist-to-ankle BIA. Foot-to-foot R is ~10 % lower because the path omits
- *    the arm segment (Organ 1994, Bracco 1996, Demura 2004). Both R values are
- *    multiplied by [FOOT_TO_FOOT_CORRECTION] before entering any prediction
- *    equation. Raw (un-corrected) values are kept for the §3.7 empirical bone
+ *    the arm segment (Organ 1994, Bracco 1996, Demura 2004). The low-frequency
+ *    band is multiplied by [FOOT_TO_FOOT_CORRECTION] before it enters a
+ *    prediction equation. Raw (un-corrected) values are kept for the §3.7 bone
  *    formula and §3.8 VFI, which were fit against raw foot-to-foot data and
  *    would double-correct.
  *
  * ## Computation order (§3) — sources
- *  - §3.1 TBW — Sun 2003 race-combined, sex-specific
- *  - §3.2 ECW — De Lorenzo 1997 / Matthie 2005 Hanai mixture theory
+ *  - §3.1 TBW: Sun 2003 race-combined, sex-specific, on corrected R_low
+ *  - §3.2 ECW: De Lorenzo 1997 Eq. B2, on corrected R_low
  *  - §3.3 ICW = TBW − ECW
  *  - §3.4 FFM = TBW / 0.732 — Pace & Rathbun 1945 hydration constant
  *  - §3.5 BF = W − FFM
- *  - §3.6 SMM — Janssen 2000 (MRI-validated, single-frequency 50 kHz; uses
- *    corrected R_H even though nominally a dual-freq model)
+ *  - §3.6 SMM: Janssen 2000 (MRI-validated, 50 kHz), on corrected R_low
  *  - §3.7 Bone — see [BoneFormula]
  *  - §3.8 VFI — empirical anthropometric regression (no impedance input)
  *  - §3.9 BMR — see [BmrFormula]; Mifflin-St Jeor fallback when FFM suppressed
@@ -75,11 +76,32 @@ private fun cbrt(x: Double): Double = x.pow(1.0 / 3.0)
  *  - §3.11 Phase angle — **not derivable** on S400 (no reactance from
  *    magnitude-only impedance); always null. Do not invent a default like 5°.
  *
+ * ## Why there is no ECW/ICW compartment model (§3.2)
+ * De Lorenzo 1997 Eq. B4, and the Matthie 2005 Eqs. 5 and 14 that supersede it,
+ * both consume `(R_E + R_I) / R_I`, which is `R_E / R_INF`. `R_E` and `R_I` are
+ * Cole model fit parameters recovered from a frequency sweep; De Lorenzo fits
+ * about 50 points between 5 kHz and 1 MHz against both `Z` and phase. The S400
+ * broadcasts two impedance magnitudes and no reactance, so `R_50 ≠ R_E` and
+ * `R_250 ≠ R_INF` and neither equation can be evaluated. Substituting the
+ * measured band ratio for `R_E / R_INF` yields `ECW/TBW` between 0.48 and 0.77
+ * depending on which published resistivity set is used, none of them
+ * physiological. ICW is therefore the remainder of TBW after §3.2 ECW.
+ *
+ * ## ECW calibration (§3.2)
+ * Eq. B2 takes `R_E`, which is `R_0`. It gets the 50 kHz band, which is lower,
+ * and ECW scales as `R^(-2/3)`, so the result runs high. `K_B = 4.3` compounds
+ * that: De Lorenzo Appendix C derives it from arm, leg and trunk proportions
+ * for a wrist-to-ankle path, and this device is foot-to-foot. Together they put
+ * `ECW/TBW` at 0.46-0.51 on the §7.1-7.3 subjects against a physiological
+ * 0.36-0.42. Both causes are input-side; the equation and its constants are the
+ * published ones.
+ *
  * ## Suppression policy
  *  - TBW out of `[0.30·W, 0.75·W]` → suppress TBW + everything downstream
  *  - `ECW/TBW` outside `[0.30, 0.55]` → suppress ECW, ICW, BCM; TBW/FFM/BF/SMM
  *    still display (they depend only on TBW). Healthy reference: 0.36-0.40
- *    young adult, 0.38-0.42 older.
+ *    young adult, 0.38-0.42 older; see the §3.2 calibration note for why this
+ *    pipeline reads above that band.
  *  - FFM/W outside `[0.30, 0.97]` → suppress FFM, BF, SMM
  *  - BF % outside [3, 60] (M) / [8, 70] (F) → suppress, flag (underlying TBW
  *    likely wrong)
@@ -109,8 +131,10 @@ private fun cbrt(x: Double): Double = x.pow(1.0 / 3.0)
  *
  * ## Primary references
  * Sun 2003 *Am J Clin Nutr* 77:331-340 (TBW); De Lorenzo 1997
- * *J Appl Physiol* 82:1542-1558 (ECW); Matthie 2005 *J Appl Physiol*
- * 99:780-781 (ECW resistivity); Pace & Rathbun 1945 *J Biol Chem* 158:685-691
+ * *J Appl Physiol* 82:1542-1558 (ECW Eq. B2, `k_ECW` p. 1544, `K_B` Appendix
+ * C); Matthie 2005 *J Appl Physiol* 99:780-781,
+ * doi:10.1152/japplphysiol.00145.2005 (second-generation ICW; restates Eq. B2
+ * unchanged); Pace & Rathbun 1945 *J Biol Chem* 158:685-691
  * (FFM hydration); Janssen 2000 *J Appl Physiol* 89:465-471 (SMM); Bracco 1996
  * *Int J Obes* 20:1067-1073 (foot-to-foot correction); Cunningham 1991
  * *Am J Clin Nutr* 54:963-969 (BMR); Mifflin-St Jeor 1990 *Am J Clin Nutr*
@@ -177,17 +201,21 @@ data class S400Result(
 object S400BodyComposition {
 
     /**
-     * §2.2 multiplicative correction applied to both R values before they enter
-     * any prediction equation. Bracco 1996 default for mid-range adults.
+     * §2.2 multiplicative correction applied to the low-frequency band before
+     * it enters a prediction equation. Bracco 1996 default for mid-range adults.
      * Defensible literature range 1.00-1.18: athletic/lean closer to 1.05,
      * overweight closer to 1.15. Exposed as a parameter to [compute] so a
      * caller can override per user profile without recompiling.
      */
     const val FOOT_TO_FOOT_CORRECTION = 1.10f
 
-    // Hanai constants (Matthie 2005), pre-computed for both sexes.
-    private val K_ECW_M = (cbrt(4.3 * 4.3 * 40.5 * 40.5 / 1.05) / 100.0).toFloat()
-    private val K_ECW_F = (cbrt(4.3 * 4.3 * 39.0 * 39.0 / 1.05) / 100.0).toFloat()
+    /**
+     * §3.2 `k_ECW`, De Lorenzo 1997 p. 1544. These are the values Xitron's
+     * software uses: scaled against D₂O and NaBr dilution data, not evaluated
+     * from Eq. B3.
+     */
+    private const val K_ECW_M = 0.306f
+    private const val K_ECW_F = 0.316f
 
     fun compute(
         inputs: S400Inputs,
@@ -214,21 +242,20 @@ object S400BodyComposition {
         val rHighRawAfterSwap = rHigh  // §3.7 Option A needs RAW (un-corrected) R_high.
         val unreliableContact = abs(rLow - rHigh) / rHigh < 0.01f
 
-        // §2.2 foot-to-foot correction (applied to both R values for the main pipeline).
-        val rH = rHigh * footToFootCorrection
+        // §2.2 foot-to-foot correction.
         val rL = rLow * footToFootCorrection
 
         // §3.1 TBW (Sun 2003, race-combined, sex-specific).
         val sexM = if (inputs.sexMale) 1f else 0f
         val tbwRaw = if (inputs.sexMale) {
-            1.20f + 0.45f * (h * h / rH) + 0.18f * w
+            1.20f + 0.45f * (h * h / rL) + 0.18f * w
         } else {
-            3.75f + 0.45f * (h * h / rH) + 0.11f * w
+            3.75f + 0.45f * (h * h / rL) + 0.11f * w
         }
         val tbwOk = tbwRaw in (0.30f * w)..(0.75f * w)
         val tbw = if (tbwOk) tbwRaw else null
 
-        // §3.2 ECW (Hanai mixture, sex-specific resistivity).
+        // §3.2 ECW (De Lorenzo 1997 Eq. B2).
         val kEcw = if (inputs.sexMale) K_ECW_M else K_ECW_F
         val ecwRaw = kEcw * ((h * h * sqrt(w)) / rL).toDouble().pow(2.0 / 3.0).toFloat()
 
@@ -251,8 +278,8 @@ object S400BodyComposition {
         val bfPct = if (bfPctOk) bfPctRaw else null
         val bfKg = if (bfPct != null) bf else null
 
-        // §3.6 SMM (Janssen 2000), uses corrected R_H.
-        val smmRaw = 0.401f * (h * h / rH) + 3.825f * sexM - 0.071f * inputs.age + 5.102f
+        // §3.6 SMM (Janssen 2000).
+        val smmRaw = 0.401f * (h * h / rL) + 3.825f * sexM - 0.071f * inputs.age + 5.102f
         val smm = smmRaw.coerceIn(8f, 75f)
 
         // §3.7 Bone mineral mass — two options.

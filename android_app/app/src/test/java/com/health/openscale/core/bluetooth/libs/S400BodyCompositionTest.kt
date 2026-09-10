@@ -22,7 +22,9 @@ import org.junit.Test
 
 /**
  * Tests for [S400BodyComposition]. Section markers (§7.x) match the KDoc on
- * [S400BodyComposition]; vectors below are the spec's reference subjects.
+ * [S400BodyComposition], which is the specification. Expected values are
+ * computed by hand from the equations documented there, not read back from
+ * this implementation.
  *
  * Edge cases come first (§7.4 label swap, §7.5 unreliable contact) — cheapest
  * defensive checks to ship; they cover the two failure modes most likely to
@@ -43,8 +45,8 @@ class S400BodyCompositionTest {
 
     @Test
     fun labelSwap_appliedWhenRLowBelowRHigh() {
-        // Subject A inputs but with bodyRes/bodyRes2 swapped (real-world
-        // failure mode observed in captured advertisements).
+        // Subject A with the two bands transposed. §2.1 must restore the
+        // physiological ordering before anything downstream reads them.
         val swapped = S400Inputs(
             age = 27, sexMale = true, heightCm = 172f, weightKg = 76.5f,
             rHighRaw = 402f, rLowRaw = 365f,
@@ -52,8 +54,8 @@ class S400BodyCompositionTest {
         val r = S400BodyComposition.compute(swapped)
         assertThat(r.labelSwapApplied).isTrue()
         // After swap, result must equal §7.1 Subject A.
-        assertThat(r.tbwKg!!).isWithin(tolKg).of(48.13f)
-        assertThat(r.ffmKg!!).isWithin(tolKg).of(65.75f)
+        assertThat(r.tbwKg!!).isWithin(tolKg).of(45.08f)
+        assertThat(r.ffmKg!!).isWithin(tolKg).of(61.58f)
     }
 
     @Test
@@ -94,21 +96,21 @@ class S400BodyCompositionTest {
     fun subjectA_defaultOptions_matchesSpec() {
         val r = subjectA()
         assertThat(r.reliability).isAnyOf(Reliability.OK, Reliability.APPROXIMATE)
-        assertThat(r.tbwKg!!).isWithin(tolKg).of(48.13f)
-        assertThat(r.tbwPct!!).isWithin(tolPct).of(62.9f)
-        assertThat(r.ecwKg!!).isWithin(tolKg).of(21.47f)
-        assertThat(r.ecwPct!!).isWithin(tolPct).of(28.1f)
-        assertThat(r.icwKg!!).isWithin(tolKg).of(26.66f)
-        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.446f)
-        assertThat(r.ffmKg!!).isWithin(tolKg).of(65.75f)
-        assertThat(r.bfKg!!).isWithin(tolKg).of(10.75f)
-        assertThat(r.bfPct!!).isWithin(tolPct).of(14.1f)
-        assertThat(r.smmKg!!).isWithin(tolKg).of(36.56f)
-        assertThat(r.smmPct!!).isWithin(tolPct).of(47.8f)
+        assertThat(r.tbwKg!!).isWithin(tolKg).of(45.08f)
+        assertThat(r.tbwPct!!).isWithin(tolPct).of(58.92f)
+        assertThat(r.ecwKg!!).isWithin(tolKg).of(21.41f)
+        assertThat(r.ecwPct!!).isWithin(tolPct).of(27.98f)
+        assertThat(r.icwKg!!).isWithin(tolKg).of(23.67f)
+        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.475f)
+        assertThat(r.ffmKg!!).isWithin(tolKg).of(61.58f)
+        assertThat(r.bfKg!!).isWithin(tolKg).of(14.92f)
+        assertThat(r.bfPct!!).isWithin(tolPct).of(19.50f)
+        assertThat(r.smmKg!!).isWithin(tolKg).of(33.84f)
+        assertThat(r.smmPct!!).isWithin(tolPct).of(44.23f)
         assertThat(r.boneKg!!).isWithin(tolKg).of(2.99f)  // Option A default
-        assertThat(r.vfi!!).isWithin(0.1f).of(13.2f)
-        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1790f)  // Cun91 default
-        assertThat(r.bcmKg!!).isWithin(tolKg).of(38.09f)
+        assertThat(r.vfi!!).isWithin(0.1f).of(13.24f)
+        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1700f)  // Cun91 default
+        assertThat(r.bcmKg!!).isWithin(tolKg).of(33.81f)
         assertThat(r.phaseAngleDeg).isNull()
     }
 
@@ -121,7 +123,7 @@ class S400BodyCompositionTest {
     @Test
     fun subjectA_bmrCunningham1980_matchesSpec() {
         val r = subjectA(bmrFormula = BmrFormula.CUNNINGHAM_1980)
-        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1946f)
+        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1855f)
     }
 
     // ---------- §7.2 — Subject B (middle-aged female) ----------
@@ -132,18 +134,18 @@ class S400BodyCompositionTest {
             age = 55, sexMale = false, heightCm = 162f, weightKg = 68f,
             rHighRaw = 600f, rLowRaw = 690f,
         ))
-        assertThat(r.tbwKg!!).isWithin(tolKg).of(29.12f)
-        assertThat(r.tbwPct!!).isWithin(tolPct).of(42.8f)
-        assertThat(r.ecwKg!!).isWithin(tolKg).of(12.96f)
-        assertThat(r.icwKg!!).isWithin(tolKg).of(16.16f)
-        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.445f)
-        assertThat(r.ffmKg!!).isWithin(tolKg).of(39.79f)
-        assertThat(r.bfKg!!).isWithin(tolKg).of(28.21f)
-        assertThat(r.bfPct!!).isWithin(tolPct).of(41.5f)
-        assertThat(r.smmKg!!).isWithin(tolKg).of(17.14f)
+        assertThat(r.tbwKg!!).isWithin(tolKg).of(26.79f)
+        assertThat(r.tbwPct!!).isWithin(tolPct).of(39.40f)
+        assertThat(r.ecwKg!!).isWithin(tolKg).of(13.69f)
+        assertThat(r.icwKg!!).isWithin(tolKg).of(13.10f)
+        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.511f)
+        assertThat(r.ffmKg!!).isWithin(tolKg).of(36.60f)
+        assertThat(r.bfKg!!).isWithin(tolKg).of(31.40f)
+        assertThat(r.bfPct!!).isWithin(tolPct).of(46.18f)
+        assertThat(r.smmKg!!).isWithin(tolKg).of(15.06f)
         assertThat(r.boneKg!!).isWithin(tolKg).of(2.47f)
-        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1229f)
-        assertThat(r.bcmKg!!).isWithin(tolKg).of(23.09f)
+        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1161f)
+        assertThat(r.bcmKg!!).isWithin(tolKg).of(18.71f)
     }
 
     @Test
@@ -163,18 +165,18 @@ class S400BodyCompositionTest {
             age = 70, sexMale = true, heightCm = 170f, weightKg = 80f,
             rHighRaw = 520f, rLowRaw = 610f,
         ))
-        assertThat(r.tbwKg!!).isWithin(tolKg).of(38.34f)
-        assertThat(r.tbwPct!!).isWithin(tolPct).of(47.9f)
-        assertThat(r.ecwKg!!).isWithin(tolKg).of(16.24f)
-        assertThat(r.icwKg!!).isWithin(tolKg).of(22.09f)
-        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.424f)
-        assertThat(r.ffmKg!!).isWithin(tolKg).of(52.37f)
-        assertThat(r.bfKg!!).isWithin(tolKg).of(27.63f)
-        assertThat(r.bfPct!!).isWithin(tolPct).of(34.5f)
-        assertThat(r.smmKg!!).isWithin(tolKg).of(24.22f)
+        assertThat(r.tbwKg!!).isWithin(tolKg).of(34.98f)
+        assertThat(r.tbwPct!!).isWithin(tolPct).of(43.73f)
+        assertThat(r.ecwKg!!).isWithin(tolKg).of(16.20f)
+        assertThat(r.icwKg!!).isWithin(tolKg).of(18.78f)
+        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.463f)
+        assertThat(r.ffmKg!!).isWithin(tolKg).of(47.79f)
+        assertThat(r.bfKg!!).isWithin(tolKg).of(32.21f)
+        assertThat(r.bfPct!!).isWithin(tolPct).of(40.26f)
+        assertThat(r.smmKg!!).isWithin(tolKg).of(21.23f)
         assertThat(r.boneKg!!).isWithin(tolKg).of(2.84f)
-        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1501f)
-        assertThat(r.bcmKg!!).isWithin(tolKg).of(31.56f)
+        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1402f)
+        assertThat(r.bcmKg!!).isWithin(tolKg).of(26.83f)
     }
 
     @Test
@@ -184,6 +186,25 @@ class S400BodyCompositionTest {
             boneFormula = BoneFormula.HEYMSFIELD,
         )
         assertThat(r.boneKg!!).isWithin(tolKg).of(3.28f)
+    }
+
+    // ---------- §1.1 envelope edge ----------
+
+    @Test
+    fun tallSubjectWithLowImpedance_producesCompartmentOutputs() {
+        // 196 cm at 226/305 Ω sits at the edge of the §1.1 envelope: h²/R on the
+        // 50 kHz band has to land inside Sun 2003's [0.30·W, 0.75·W] window for
+        // anything downstream to survive the §3 suppression rules. BF% here is
+        // 11.4 at BMI 29.3, which is the §3.2 calibration note in practice.
+        val r = S400BodyComposition.compute(S400Inputs(
+            age = 45, sexMale = true, heightCm = 196f, weightKg = 112.5f,
+            rHighRaw = 226f, rLowRaw = 305f,
+        ))
+        assertThat(r.tbwKg!!).isWithin(tolKg).of(72.98f)
+        assertThat(r.ffmKg!!).isWithin(tolKg).of(99.69f)
+        assertThat(r.ecwKg!!).isWithin(tolKg).of(34.83f)
+        assertThat(r.icwKg!!).isWithin(tolKg).of(38.14f)
+        assertThat(r.bfPct).isNotNull()
     }
 
     // ---------- §1.1 input validation ----------
