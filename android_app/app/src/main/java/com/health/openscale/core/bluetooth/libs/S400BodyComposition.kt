@@ -92,9 +92,10 @@ import kotlin.math.sqrt
  * `k_ECW` as the mean of `V_ECW / ((L²√Wt)/R_E)^(2/3)` over the calibration
  * cohort. Substituting the smaller 50 kHz magnitude therefore inflates ECW as
  * `R^(-2/3)`, by 12 % on that cohort's own numbers. Note what this argument does
- * **not** license: evaluating Eq. B2 at the calibration cohort's mean returns
- * that cohort's mean measured ECW by construction, so agreement there is the
- * calibration and not a test.
+ * **not** license: `k_ECW` is the mean of the per-subject ratios, so evaluating
+ * Eq. B2 at the cohort's mean anthropometry returns that cohort's mean measured
+ * ECW to 0.6 % (18.23 L against 18.34). Agreement there is nearly the
+ * calibration restated, not a test of it.
  *
  * The test that does mean something is a round trip. Generate `|Z_50|` and
  * `|Z_250|` from the Table 2 dilution-cohort Cole terms (`R_E` 577.71,
@@ -117,43 +118,50 @@ import kotlin.math.sqrt
  * nearer ±0.01.
  *
  * A second, larger uncertainty sits underneath all of it. The source's own
- * `k_ECW` is ambiguous by 15.4 %: p. 1544 prints 0.306 while Table 3's BIS-ECW
- * of 21.03 L for the same 14 men implies 0.353. The two reconcile exactly as
+ * `k_ECW` is ambiguous by about 15 %: p. 1544 prints 0.306 while Table 3's
+ * BIS-ECW of 21.03 L for the same 14 men implies 0.35. The two reconcile as
  * `(214 / 174.32)^(2/3) = 1.1465` against `21.03 / 18.34 = 1.1467`, so 0.306
  * belongs to the `ρ_ECW` 174.32 set that De Lorenzo recomputed from those men
  * and 0.353 to the earlier `ρ_ECW` 214 set. The code uses 0.306. That choice is
  * a larger lever on the displayed ECW than the 12 % this pipeline corrects.
  *
  * ## Compartment cross-check (§3.2b)
- * §2.3 supplies `R_E / R_INF`, which is what Matthie 2005 Eqs. 5 and 14 consume,
- * so an ICW and hence a second TBW can be computed from the same `R_0` using the
- * `ρ_ECW` / `ρ_ICW` pair that belongs to the same recalibration as `k_ECW`. Sun
- * 2003 is a D₂O-calibrated NHANES regression and Eq. B2 is NaBr-calibrated Hanai
- * mixture theory, so the two carry different constants and different reference
- * tracers. On De Lorenzo's dilution cohort they agree to 0.14 %. That agreement,
- * not a window on `R_0/R_INF`, gates §3.2, with bounds from the two routes'
- * published SEEs (p. 1545: TBW 1.33 L on 45.48, ECW 0.90 L on 18.34) added in
- * quadrature to [CROSS_CHECK_SIGMA]: beyond 2σ APPROXIMATE, beyond 3σ ECW, ICW
- * and BCM are suppressed.
+ * §3.2 is gated on `R_0/R_INF` against the healthy distribution De Lorenzo
+ * Table 2 reports, 1.525 ± 0.079 for men and 1.494 ± 0.075 for women. Beyond
+ * 2 SD the result is APPROXIMATE; beyond 3 SD, ECW, ICW and BCM are suppressed.
+ * This is a band-ratio window, and it is written as one: with `α` and `f_c`
+ * pinned, `R_0/R_INF` is a strictly monotone relabelling of `|Z_50|/|Z_250|` and
+ * carries nothing the raw ratio does not.
  *
- * **What this test can and cannot see.** Both routes read the same 50 kHz
- * magnitude, so it is not two independent measurements. Scaling both bands by a
- * common factor leaves the band ratio, and therefore `R_0/R_INF`, untouched;
- * `TBW` from Sun then moves as `λ^-0.668` (its impedance term is 66.8 % of the
- * total) while the Matthie route moves as `λ^-2/3` exactly, so the two track each
- * other to within 0.0012 in log-slope. Sweeping `λ` from 0.85 to 1.30 on the
- * §7.1 subject, a 53 % swing in absolute impedance, moves the gap by 0.6
- * percentage points. **The cross-check is therefore blind to common-mode
- * impedance error**: contact resistance, the scale's absolute calibration, and
- * [FOOT_TO_FOOT_CORRECTION] itself all pass it unexamined, and none of them is
- * guarded anywhere else either.
+ * §2.3 also supplies what Matthie 2005 Eqs. 5 and 14 consume, so a second TBW
+ * can be computed from the same `R_0` with the `ρ_ECW` / `ρ_ICW` pair below. Its
+ * gap against Sun 2003 is reported as [S400Result.tbwCrossCheckDelta] and is a
+ * useful diagnostic, but it does **not** gate, for two reasons found by
+ * measurement rather than argument.
  *
- * What it does see is the band ratio, sharply, and conditioned on body size.
- * Mis-stating the high band alone by ±10 % swings the gap from +20 % to -52 %.
- * Because the gap depends on the resistance index and weight as well as on `r`,
- * it asks whether a subject's band ratio is consistent with that subject's
- * anthropometry, which a bare window on `R_0/R_INF` cannot. That is the whole of
- * its power, and the §2.3 `α` and `f_c` assumptions sit inside it.
+ * First, it is not an independent second opinion. Both routes read the same
+ * 50 kHz magnitude. Scaling both bands by a common factor leaves the band ratio
+ * untouched; Sun's TBW then moves as `λ^-0.668`, its impedance term being 66.8 %
+ * of the total, while the Matthie route moves as `λ^-2/3`. Sweeping `λ` from
+ * 0.85 to 1.30 on the §7.1 subject, a 53 % swing in absolute impedance, moves the
+ * gap by 0.6 percentage points. Sweeping [FOOT_TO_FOOT_CORRECTION] over its
+ * stated 1.00-1.18 range moves the gap by 0.09 points while moving the displayed
+ * ECW by 10.4 %. **Nothing here guards common-mode impedance error**: contact
+ * resistance, the scale's absolute calibration and the foot-to-foot factor all
+ * pass unexamined, and §3.1b is the only check anywhere that can see them.
+ *
+ * Second, inverting the gap back into `r` gives an accept region that barely
+ * moves with the subject: across the whole validated anthropometric range and a
+ * 2.3× swing in absolute impedance, the male boundary shifts by ±0.02 in `r`,
+ * about 1.5 %. Gating on the gap would therefore have been the same band-ratio
+ * window in disguise, with its bounds resting on a `σ` built from two nested SEEs
+ * that both describe De Lorenzo's own BIS route rather than Sun's.
+ *
+ * On De Lorenzo's dilution cohort the full pipeline puts the gap at +2.84 %, of
+ * which Sun alone contributes -5.41 % against the measured D₂O TBW. The two
+ * equations do agree to 0.14 % when each is fed measured ECW and the true Cole
+ * `r`, but that comparison runs neither Sun nor §2.3 and is close to its own
+ * calibration.
  *
  * The Matthie ICW itself is **not** displayed. It rests on the same assumed `α`
  * and `f_c` as `R_0`, through a second nonlinear step, so using it as a check is
@@ -176,15 +184,17 @@ import kotlin.math.sqrt
  * validation as a pair.
  *
  * ## Suppression policy
- *  - TBW out of `[0.30·W, 0.75·W]` → suppress TBW + everything downstream
+ *  - TBW out of `[0.38, 0.68]·W` (M) / `[0.35, 0.63]·W` (F) → suppress TBW +
+ *    everything downstream
  *  - `ECW/TBW` outside `[0.30, 0.55]` → suppress ECW, ICW, BCM; TBW/FFM/BF/SMM
  *    still display (they depend only on TBW). Healthy reference: 0.36-0.40
  *    young adult, 0.38-0.42 older; De Lorenzo p. 1547 puts his own dilution
  *    cohort at 0.40-0.42. This pipeline still reads above that band.
- *  - §3.2b cross-check beyond 3·[CROSS_CHECK_SIGMA] → suppress ECW, ICW, BCM.
+ *  - `R_0/R_INF` beyond 3 SD of the Table 2 healthy mean → suppress ECW, ICW, BCM
  *  - FFM/W outside `[0.30, 0.97]` → suppress FFM, BF, SMM
- *  - §3.4b FFMI past [FFMI_CEILING_M] **and** BF % more than
- *    [DEURENBERG_MARGIN] below Deurenberg 1991 → suppress FFM, BF, SMM
+ *  - §3.1b BF % more than [DEURENBERG_MARGIN] from Deurenberg 1991 in either
+ *    direction → suppress TBW and everything downstream. TBW, FFM and BF are one
+ *    number in three forms, so all three go together.
  *  - VFI outside [1, 30] → suppress rather than clamp
  *  - BF % outside [3, 60] (M) / [8, 70] (F) → suppress, flag (underlying TBW
  *    likely wrong)
@@ -323,9 +333,11 @@ object S400BodyComposition {
 
     /**
      * §3.2b resistivities, De Lorenzo p. 1545, recomputed from the n=14 dilution
-     * men. This is the set [K_ECW_M] belongs to. The women's pair is scaled from
-     * the men's rather than fitted (p. 1544), which is also why `k_ECW` for women
-     * disagrees with it: 167.80 implies 0.298, and p. 1544 prints 0.316.
+     * men; the women's pair is scaled from the men's rather than fitted (p. 1544).
+     * p. 1544 instead pairs `k_ECW` 0.306 with an apparent ρ_ECW of 214, but only
+     * this set reproduces that cohort: Matthie Eq. 5 depends on the two
+     * resistivities solely through their ratio, and 1177.94/174.32 returns
+     * ICW/ECW 1.476 against a measured 1.479, where 824/214 returns 0.949.
      */
     private const val RHO_ECW_M = 174.32f
     private const val RHO_ICW_M = 1177.94f
@@ -333,27 +345,23 @@ object S400BodyComposition {
     private const val RHO_ICW_F = 1139.34f
 
     /**
-     * §3.2b combined standard error of the two TBW routes, from the SEEs De
-     * Lorenzo reports on p. 1545 for the same cohort: 1.33 L on a TBW of 45.48
-     * and 0.90 L on an ECW of 18.34, added in quadrature. 2σ flags, 3σ suppresses.
+     * §3.2b `R_0 / R_INF` in healthy adults, De Lorenzo Table 2 p. 1545, as
+     * `1 + R_E/R_I` with the SDs propagated assuming `R_E` and `R_I` independent
+     * (which overstates the spread, since both scale with body size, so these are
+     * upper bounds). 2 SD flags the result APPROXIMATE, 3 SD suppresses §3.2.
      */
-    private const val CROSS_CHECK_SIGMA = 0.0571f
+    private const val R0_RINF_MEAN_M = 1.525f
+    private const val R0_RINF_SD_M = 0.079f
+    private const val R0_RINF_MEAN_F = 1.494f
+    private const val R0_RINF_SD_F = 0.075f
 
     /**
-     * §3.4b fat-free mass index ceilings. Kouri 1995 puts the drug-free male
-     * limit near 25 kg/m² and Schutz 2002 the female 97.5th percentile near 22.
-     * A ceiling alone rejects healthy heavy young men, so §3.4b pairs it with
-     * [DEURENBERG_MARGIN].
+     * §3.1b percentage points away from the Deurenberg 1991 anthropometric body
+     * fat at which a BIA body fat stops being a difference of opinion and starts
+     * being a report on the electrode contact. Symmetric: a foot-to-foot scale
+     * fails high (dry or cold feet) at least as often as it fails low.
      */
-    private const val FFMI_CEILING_M = 25.0f
-    private const val FFMI_CEILING_F = 22.0f
-
-    /**
-     * §3.4b percentage points below the Deurenberg 1991 anthropometric body fat
-     * at which a BIA body fat stops being a difference of opinion and starts
-     * being a bad impedance read.
-     */
-    private const val DEURENBERG_MARGIN = 5.0f
+    private const val DEURENBERG_MARGIN = 12.0f
 
     fun compute(
         inputs: S400Inputs,
@@ -400,7 +408,19 @@ object S400BodyComposition {
         } else {
             3.75f + 0.45f * (h * h / zLow) + 0.11f * w
         }
-        val tbwOk = tbwRaw in (0.30f * w)..(0.75f * w)
+        val tbwRange = if (inputs.sexMale) (0.38f * w)..(0.68f * w) else (0.35f * w)..(0.63f * w)
+
+        // §3.1b Anthropometric cross-check. TBW, FFM and BF are one number in
+        // three forms: `FFM = TBW / 0.732` and `BF% = 100 - TBW%/0.732`. Whatever
+        // rejects one has to reject all three, or the display contradicts itself.
+        // Deurenberg 1991, already the §6 fallback, gives a body fat from height,
+        // weight, age and sex alone, with no impedance in it.
+        val ffmRaw = tbwRaw / 0.732f
+        val bfPctRaw = ((w - ffmRaw) / w) * 100f
+        val deurenbergBf = 1.20f * bmi + 0.23f * inputs.age - 10.8f * sexM - 5.4f
+        val bfPlausible = abs(bfPctRaw - deurenbergBf) <= DEURENBERG_MARGIN
+
+        val tbwOk = tbwRaw in tbwRange && bfPlausible
         val tbw = if (tbwOk) tbwRaw else null
 
         // §3.2 ECW (De Lorenzo 1997 Eq. B2), on the §2.3 R_0.
@@ -409,45 +429,36 @@ object S400BodyComposition {
             kEcw * ((h * h * sqrt(w)) / it.r0).toDouble().pow(2.0 / 3.0).toFloat()
         }
 
-        // §3.2b independent TBW from the same R_0 (Matthie 2005 Eqs. 5 and 14).
-        val crossCheckDelta = if (ecwRaw != null && coleFit != null && tbw != null && tbw > 0f) {
+        // §3.2b Matthie 2005 Eqs. 5 and 14 give a second TBW from the same R_0.
+        // Reported as a diagnostic; see the §3.2b note for why it does not gate.
+        val crossCheckDelta = if (ecwRaw != null && coleFit != null) {
             val matthieTbw = ecwRaw + matthieIcw(ecwRaw, coleFit.r0RinfRatio, inputs.sexMale)
-            (matthieTbw - tbw) / tbw
+            (matthieTbw - tbwRaw) / tbwRaw
         } else {
             null
         }
-        val crossCheckTight = crossCheckDelta != null && abs(crossCheckDelta) <= 2f * CROSS_CHECK_SIGMA
-        val crossCheckOk = crossCheckDelta != null && abs(crossCheckDelta) <= 3f * CROSS_CHECK_SIGMA
+
+        // §3.2b gate: R_0/R_INF against the Table 2 healthy distribution.
+        val rMean = if (inputs.sexMale) R0_RINF_MEAN_M else R0_RINF_MEAN_F
+        val rSd = if (inputs.sexMale) R0_RINF_SD_M else R0_RINF_SD_F
+        val rDeviation = coleFit?.let { abs(it.r0RinfRatio - rMean) / rSd }
+        val rTight = rDeviation != null && rDeviation <= 2f
+        val rOk = rDeviation != null && rDeviation <= 3f
 
         // §3.3 ICW = TBW − ECW; suppress per-compartment outputs on bad ratio.
         val ecwTbwRatio = if (tbw != null && tbw > 0f && ecwRaw != null) ecwRaw / tbw else null
         val ratioOk = ecwTbwRatio != null && ecwTbwRatio in 0.30f..0.55f
-        val ecw = if (tbw != null && ratioOk && crossCheckOk) ecwRaw else null
+        val ecw = if (tbw != null && ratioOk && rOk) ecwRaw else null
         val icw = if (tbw != null && ecw != null) tbw - ecw else null
 
-        // §3.4 FFM = TBW / 0.732 (Pace & Rathbun 1945).
-        val ffmRaw = if (tbw != null) tbw / 0.732f else null
-        val bfPctRaw = if (ffmRaw != null) ((w - ffmRaw) / w) * 100f else null
-
-        // §3.4b An FFM index past the drug-free ceiling is credible only when the
-        // body fat that comes with it is one the anthropometric equation also
-        // recognises. The pair separates a genuinely muscular subject, whose body
-        // fat lands near Deurenberg, from an impedance read that is simply too
-        // low, which drives FFM up and body fat far below it.
-        val heightM = h / 100f
-        val ffmi = if (ffmRaw != null && heightM > 0f) ffmRaw / (heightM * heightM) else null
-        val deurenbergBf = 1.20f * bmi + 0.23f * inputs.age - 10.8f * sexM - 5.4f
-        val impedanceTooLow = ffmi != null && bfPctRaw != null &&
-            ffmi > (if (inputs.sexMale) FFMI_CEILING_M else FFMI_CEILING_F) &&
-            bfPctRaw < deurenbergBf - DEURENBERG_MARGIN
-
-        val ffmOk = ffmRaw != null && ffmRaw / w in 0.30f..0.97f && !impedanceTooLow
+        // §3.4 FFM = TBW / 0.732 (Pace & Rathbun 1945); §3.1b already gated it.
+        val ffmOk = tbw != null && ffmRaw / w in 0.30f..0.97f
         val ffm = if (ffmOk) ffmRaw else null
 
         // §3.5 Body fat.
         val bf = if (ffm != null) w - ffm else null
         val bfRange = if (inputs.sexMale) 3f..60f else 8f..70f
-        val bfPctOk = bf != null && bfPctRaw != null && bfPctRaw in bfRange
+        val bfPctOk = bf != null && bfPctRaw in bfRange
         val bfPct = if (bfPctOk) bfPctRaw else null
         val bfKg = if (bfPct != null) bf else null
 
@@ -456,16 +467,20 @@ object S400BodyComposition {
         val smmRaw = 0.401f * (h * h / zLow) + 3.825f * sexM - 0.071f * inputs.age + 5.102f
         val smm = if (ffm != null) smmRaw.coerceIn(8f, 75f) else null
 
-        // §3.7 Bone mineral mass — two options.
-        val bone = when (boneFormula) {
-            BoneFormula.MI_LEGACY -> empiricalBone(h, w, inputs.age, rHighRawAfterSwap, inputs.sexMale)
-            BoneFormula.HEYMSFIELD -> heymsfieldBone(w, inputs.sexMale)
+        // §3.7 Bone mineral mass — two options. MI_LEGACY reads impedance, so a
+        // failed §2.1 contact check drops it to the anthropometric formula rather
+        // than reporting a bone mass derived from a reading just called unusable.
+        val bone = when {
+            unreliableContact || boneFormula == BoneFormula.HEYMSFIELD ->
+                heymsfieldBone(w, inputs.sexMale)
+            else -> empiricalBone(h, w, inputs.age, rHighRawAfterSwap, inputs.sexMale)
         }.coerceIn(1.0f, 6.0f)
 
         // §3.8 VFI (empirical anthropometric regression, uses RAW height + weight only).
-        // Out-of-range values are suppressed rather than clamped: the female branch
-        // steps discontinuously across `w = 0.5·h - 13` and returns large negative
-        // numbers below it, which a clamp would present as a confident VFI of 1.
+        // Out-of-range values are suppressed rather than clamped. The male branch
+        // still steps down by 14-16 points where `h < 1.6·w` flips, a test that
+        // compares centimetres against kilograms and so switches at BMI 42 for a
+        // 150 cm man and BMI 31 for a 200 cm one; above the step it can exceed 30.
         val vfiRaw = empiricalVfi(h, w, inputs.age, inputs.sexMale)
         val vfi = vfiRaw.takeIf { it in 1f..30f }
 
@@ -492,7 +507,7 @@ object S400BodyComposition {
         // Overall reliability.
         val reliability = when {
             unreliableContact -> Reliability.UNRELIABLE
-            !tbwOk || !ffmOk || !bfPctOk || !crossCheckTight -> Reliability.APPROXIMATE
+            !tbwOk || !ffmOk || !bfPctOk || !rTight -> Reliability.APPROXIMATE
             else -> Reliability.OK
         }
 
@@ -639,12 +654,7 @@ object S400BodyComposition {
                 -(0.143f * h - (0.765f - 0.0015f * h) * w) + 0.15f * age - 5f
             }
         } else {
-            val threshold = -(13f - 0.5f * h)
-            if (w > threshold) {
-                500f * w / (1.45f * h + 0.1158f * h * h - 120f) - 6f + 0.07f * age
-            } else {
-                -(0.027f * h - (0.691f - 0.0048f * h) * w) + 0.07f * age - age
-            }
+            500f * w / (1.45f * h + 0.1158f * h * h - 120f) - 6f + 0.07f * age
         }
     }
 }
