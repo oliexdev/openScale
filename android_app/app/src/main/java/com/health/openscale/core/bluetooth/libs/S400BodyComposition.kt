@@ -107,11 +107,15 @@ import kotlin.math.sqrt
  * +0.3 %, worth -0.2 % on ECW.
  *
  * That round trip cannot see one error, because it generates and inverts under
- * the same convention. Eq. A2 p. 1555 defines `f_c` as the reactance peak of the
- * **`T_d`-rotated** spectrum, and [coleMagnitude] implements a plain Cole model
- * with no `T_d` term, which is the likely source of the 1.4× discrepancy below.
- * Generating from the `C_m`-implied 44.46 kHz and inverting at the printed 57.02
- * recovers `R_0` 556.4, -3.7 %, worth -2.5 % on ECW, biased toward lower `r`.
+ * the same convention. Table 2's printed `f_c` is ~1.4× what its own `C_m`, `R_E`
+ * and `R_I` imply under Eq. A1, consistently across all three cohorts, and the
+ * cause is unexplained. Eq. A2 p. 1555 defines `f_c` on the **`T_d`-rotated**
+ * spectrum while [coleMagnitude] has no `T_d` term, but that is a second-order
+ * effect and cannot be the source: the dilution cohort's `T_d` is -3.27 ± 4.37 ns,
+ * statistically zero, and its discrepancy is the same 1.394. Generating from that
+ * cohort's `C_m`-implied 44.46 kHz and inverting at the population 57.02 the code
+ * uses recovers `R_0` 556.4, -3.7 %, worth **+2.5 %** on ECW since ECW scales as
+ * `R_0^(-2/3)`, and biases `r` low, which is the direction real captures sit.
  *
  * `α` and `f_c` are **assumed**, not fitted, so §2.3 is not a Cole fit and does
  * not make this a spectroscopy device. Pinning `α` is well supported: Table 2
@@ -145,7 +149,9 @@ import kotlin.math.sqrt
  * compartment split from a man and granted it to a woman on the same reading;
  * assume 150 kHz instead of 250 and the same capture sits at 1.44 SD (male) or
  * 0.80 SD (female). A ±20 %
- * error in the assumed band moves the figure by 0.3 to 0.6 SD. What suppresses
+ * error in the assumed band moves the figure by 0.3 to 1.2 SD, and asymmetrically:
+ * -20 % moves it about twice as far as +20 %, because the deviation is concave in
+ * the assumed frequency and crosses the mean near 121 kHz (men) / 135 kHz (women). What suppresses
  * §3.2 is the §3.3 `ECW/TBW` window and §3.1b, both of which read quantities the
  * band frequencies do not enter.
  *
@@ -202,7 +208,13 @@ import kotlin.math.sqrt
  *  - TBW out of `[0.38, 0.68]·W` (M) / `[0.35, 0.63]·W` (F) → suppress TBW +
  *    everything downstream
  *  - `ECW/TBW` outside `[0.30, 0.55]` → suppress ECW, ICW, BCM; TBW/FFM/BF/SMM
- *    still display (they depend only on TBW). Healthy reference: 0.36-0.40
+ *    still display (they depend only on TBW). Note what this cannot do: ECW's
+ *    whole dependence on the band ratio is one subject-independent factor
+ *    `g(r) = (|Z_50|/(R_INF·r))^(2/3)`, which spans only [0.77, 1.00] over the
+ *    admissible `r`, against a window 1.83× wide. So no band ratio can trip it for
+ *    any subject whose `ECW/TBW` at `r → 1` lies in [0.39, 0.55], and §3.2 is
+ *    effectively ungated with respect to §2.3: the band ratio alone can move ECW
+ *    by up to 30 % without any check seeing it. Healthy reference: 0.36-0.40
  *    young adult, 0.38-0.42 older; De Lorenzo p. 1547 puts his own dilution
  *    cohort at 0.40-0.42. This pipeline reads at or above that band (0.412,
  *    0.439, 0.468 on the §7.1-7.3 subjects).
