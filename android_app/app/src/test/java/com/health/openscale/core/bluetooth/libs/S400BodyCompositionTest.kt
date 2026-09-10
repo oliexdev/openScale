@@ -98,10 +98,11 @@ class S400BodyCompositionTest {
         assertThat(r.reliability).isAnyOf(Reliability.OK, Reliability.APPROXIMATE)
         assertThat(r.tbwKg!!).isWithin(tolKg).of(45.08f)
         assertThat(r.tbwPct!!).isWithin(tolPct).of(58.92f)
-        assertThat(r.ecwKg!!).isWithin(tolKg).of(21.41f)
-        assertThat(r.ecwPct!!).isWithin(tolPct).of(27.98f)
-        assertThat(r.icwKg!!).isWithin(tolKg).of(23.67f)
-        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.475f)
+        assertThat(r.ecwKg!!).isWithin(tolKg).of(19.80f)
+        assertThat(r.ecwPct!!).isWithin(tolPct).of(25.89f)
+        assertThat(r.icwKg!!).isWithin(tolKg).of(25.27f)
+        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.439f)
+        assertThat(r.r0RinfRatio!!).isWithin(0.005f).of(1.319f)
         assertThat(r.ffmKg!!).isWithin(tolKg).of(61.58f)
         assertThat(r.bfKg!!).isWithin(tolKg).of(14.92f)
         assertThat(r.bfPct!!).isWithin(tolPct).of(19.50f)
@@ -110,7 +111,7 @@ class S400BodyCompositionTest {
         assertThat(r.boneKg!!).isWithin(tolKg).of(2.99f)  // Option A default
         assertThat(r.vfi!!).isWithin(0.1f).of(13.24f)
         assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1700f)  // Cun91 default
-        assertThat(r.bcmKg!!).isWithin(tolKg).of(33.81f)
+        assertThat(r.bcmKg!!).isWithin(tolKg).of(36.10f)
         assertThat(r.phaseAngleDeg).isNull()
     }
 
@@ -136,16 +137,17 @@ class S400BodyCompositionTest {
         ))
         assertThat(r.tbwKg!!).isWithin(tolKg).of(26.79f)
         assertThat(r.tbwPct!!).isWithin(tolPct).of(39.40f)
-        assertThat(r.ecwKg!!).isWithin(tolKg).of(13.69f)
-        assertThat(r.icwKg!!).isWithin(tolKg).of(13.10f)
-        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.511f)
+        assertThat(r.ecwKg!!).isWithin(tolKg).of(12.53f)
+        assertThat(r.icwKg!!).isWithin(tolKg).of(14.26f)
+        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.468f)
+        assertThat(r.r0RinfRatio!!).isWithin(0.005f).of(1.492f)
         assertThat(r.ffmKg!!).isWithin(tolKg).of(36.60f)
         assertThat(r.bfKg!!).isWithin(tolKg).of(31.40f)
         assertThat(r.bfPct!!).isWithin(tolPct).of(46.18f)
         assertThat(r.smmKg!!).isWithin(tolKg).of(15.06f)
         assertThat(r.boneKg!!).isWithin(tolKg).of(2.47f)
         assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1161f)
-        assertThat(r.bcmKg!!).isWithin(tolKg).of(18.71f)
+        assertThat(r.bcmKg!!).isWithin(tolKg).of(20.38f)
     }
 
     @Test
@@ -167,16 +169,17 @@ class S400BodyCompositionTest {
         ))
         assertThat(r.tbwKg!!).isWithin(tolKg).of(34.98f)
         assertThat(r.tbwPct!!).isWithin(tolPct).of(43.73f)
-        assertThat(r.ecwKg!!).isWithin(tolKg).of(16.20f)
-        assertThat(r.icwKg!!).isWithin(tolKg).of(18.78f)
-        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.463f)
+        assertThat(r.ecwKg!!).isWithin(tolKg).of(14.40f)
+        assertThat(r.icwKg!!).isWithin(tolKg).of(20.59f)
+        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.412f)
+        assertThat(r.r0RinfRatio!!).isWithin(0.005f).of(1.568f)
         assertThat(r.ffmKg!!).isWithin(tolKg).of(47.79f)
         assertThat(r.bfKg!!).isWithin(tolKg).of(32.21f)
         assertThat(r.bfPct!!).isWithin(tolPct).of(40.26f)
         assertThat(r.smmKg!!).isWithin(tolKg).of(21.23f)
         assertThat(r.boneKg!!).isWithin(tolKg).of(2.84f)
         assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1402f)
-        assertThat(r.bcmKg!!).isWithin(tolKg).of(26.83f)
+        assertThat(r.bcmKg!!).isWithin(tolKg).of(29.41f)
     }
 
     @Test
@@ -188,23 +191,37 @@ class S400BodyCompositionTest {
         assertThat(r.boneKg!!).isWithin(tolKg).of(3.28f)
     }
 
-    // ---------- §1.1 envelope edge ----------
+    // ---------- §2.3 Cole inversion ----------
 
     @Test
-    fun tallSubjectWithLowImpedance_producesCompartmentOutputs() {
-        // 196 cm at 226/305 Ω sits at the edge of the §1.1 envelope: h²/R on the
-        // 50 kHz band has to land inside Sun 2003's [0.30·W, 0.75·W] window for
-        // anything downstream to survive the §3 suppression rules. BF% here is
-        // 11.4 at BMI 29.3, which is the §3.2 calibration note in practice.
+    fun coleInversion_ratioIsIndependentOfFootToFootCorrection() {
+        // §2.2 scales both bands, and §2.3 reads only their ratio.
+        assertThat(subjectA(footToFoot = 1.00f).r0RinfRatio!!)
+            .isWithin(1e-5f).of(subjectA(footToFoot = 1.15f).r0RinfRatio!!)
+    }
+
+    @Test
+    fun coleInversion_widerBandGapImpliesHigherR0RinfRatio() {
+        val narrow = S400BodyComposition.compute(S400Inputs(27, true, 172f, 76.5f, 365f, 402f))
+        val wide = S400BodyComposition.compute(S400Inputs(27, true, 172f, 76.5f, 365f, 420f))
+        assertThat(wide.r0RinfRatio!!).isGreaterThan(narrow.r0RinfRatio!!)
+    }
+
+    @Test
+    fun coleInversion_suppressesCompartmentsWhenR0RinfImplausible() {
+        // 196 cm at 226/305 Ω inverts to R_0/R_INF = 2.31 against the 1.49-1.57
+        // De Lorenzo reports for healthy adults, so §2.3 declines the fit.
+        // TBW and the equations that depend only on it still report.
         val r = S400BodyComposition.compute(S400Inputs(
             age = 45, sexMale = true, heightCm = 196f, weightKg = 112.5f,
             rHighRaw = 226f, rLowRaw = 305f,
         ))
+        assertThat(r.r0RinfRatio).isNull()
+        assertThat(r.ecwKg).isNull()
+        assertThat(r.icwKg).isNull()
+        assertThat(r.bcmKg).isNull()
         assertThat(r.tbwKg!!).isWithin(tolKg).of(72.98f)
         assertThat(r.ffmKg!!).isWithin(tolKg).of(99.69f)
-        assertThat(r.ecwKg!!).isWithin(tolKg).of(34.83f)
-        assertThat(r.icwKg!!).isWithin(tolKg).of(38.14f)
-        assertThat(r.bfPct).isNotNull()
     }
 
     // ---------- §1.1 input validation ----------

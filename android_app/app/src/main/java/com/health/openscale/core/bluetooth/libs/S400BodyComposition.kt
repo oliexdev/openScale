@@ -17,8 +17,12 @@
  */
 package com.health.openscale.core.bluetooth.libs
 
+import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.hypot
 import kotlin.math.pow
+import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
@@ -36,9 +40,11 @@ import kotlin.math.sqrt
  * `rLowRaw` (Ω, ~50 kHz). Heart rate, if present, is **not** an input to any
  * body-composition equation — pass through to the UI unmodified.
  *
- * Every prediction equation here was derived on 50 kHz BIA and takes the
- * corrected low-frequency band. The high-frequency band informs the §2.1
- * checks and the §3.7 empirical bone regression, nothing else.
+ * The two impedance-driven regressions, Sun 2003 and Janssen 2000, were derived
+ * on 50 kHz single-frequency BIA and take the corrected low band. De Lorenzo
+ * Eq. B2 wants `R_0`, which §2.3 recovers from both bands. Everything else here
+ * (Cunningham, Mifflin-St Jeor, Deurenberg, Heymsfield, Pace & Rathbun, Kotler)
+ * takes no impedance input at all.
  *
  * ## Validation (§1.1) — reject entire computation
  * `age 18-120` (Janssen/Cunningham not validated <18), `height 100-230`,
@@ -56,15 +62,20 @@ import kotlin.math.sqrt
  *  - **§2.2 Foot-to-foot correction.** The S400 measures only the lower body
  *    (foot↔foot), but every published BIA equation was derived for
  *    wrist-to-ankle BIA. Foot-to-foot R is ~10 % lower because the path omits
- *    the arm segment (Organ 1994, Bracco 1996, Demura 2004). The low-frequency
- *    band is multiplied by [FOOT_TO_FOOT_CORRECTION] before it enters a
- *    prediction equation. Raw (un-corrected) values are kept for the §3.7 bone
- *    formula and §3.8 VFI, which were fit against raw foot-to-foot data and
- *    would double-correct.
+ *    the arm segment (Organ 1994, Bracco 1996, Demura 2004). Both bands are
+ *    multiplied by [FOOT_TO_FOOT_CORRECTION], which scales `R_0` and `R_INF`
+ *    together and so leaves the §2.3 band ratio untouched. The raw
+ *    (un-corrected) high band is kept for the §3.7 empirical bone formula, which
+ *    was fit against raw foot-to-foot data and would double-correct.
+ *  - **§2.3 Cole inversion.** `|Z_50| / |Z_250|` is strictly increasing in
+ *    `R_0 / R_INF` once `α` and `f_c` are pinned, so two magnitudes at two known
+ *    frequencies determine both. Bisection recovers `R_0` for §3.2 and
+ *    `R_0 / R_INF` as a plausibility check. See the §2.3 note below for what
+ *    this does and does not buy.
  *
  * ## Computation order (§3) — sources
  *  - §3.1 TBW: Sun 2003 race-combined, sex-specific, on corrected R_low
- *  - §3.2 ECW: De Lorenzo 1997 Eq. B2, on corrected R_low
+ *  - §3.2 ECW: De Lorenzo 1997 Eq. B2, on the §2.3 `R_0`
  *  - §3.3 ICW = TBW − ECW
  *  - §3.4 FFM = TBW / 0.732 — Pace & Rathbun 1945 hydration constant
  *  - §3.5 BF = W − FFM
@@ -76,32 +87,44 @@ import kotlin.math.sqrt
  *  - §3.11 Phase angle — **not derivable** on S400 (no reactance from
  *    magnitude-only impedance); always null. Do not invent a default like 5°.
  *
- * ## Why there is no ECW/ICW compartment model (§3.2)
- * De Lorenzo 1997 Eq. B4, and the Matthie 2005 Eqs. 5 and 14 that supersede it,
- * both consume `(R_E + R_I) / R_I`, which is `R_E / R_INF`. `R_E` and `R_I` are
- * Cole model fit parameters recovered from a frequency sweep; De Lorenzo fits
- * about 50 points between 5 kHz and 1 MHz against both `Z` and phase. The S400
- * broadcasts two impedance magnitudes and no reactance, so `R_50 ≠ R_E` and
- * `R_250 ≠ R_INF` and neither equation can be evaluated. Substituting the
- * measured band ratio for `R_E / R_INF` yields `ECW/TBW` between 0.48 and 0.77
- * depending on which published resistivity set is used, none of them
- * physiological. ICW is therefore the remainder of TBW after §3.2 ECW.
+ * ## What §2.3 buys, and what it does not
+ * Eq. B2 takes `R_E`, which is `R_0`. Fed the 50 kHz magnitude instead it runs
+ * high, because ECW scales as `R^(-2/3)`. The size of that error is measurable
+ * against De Lorenzo's own dilution cohort (Table 1-2, n=14 men): reconstructing
+ * their spectrum from the published Cole terms gives `R_0` 577.7 Ω and
+ * `|Z_50|` 487.4 Ω, and Eq. B2 returns 18.23 L on the former against a measured
+ * NaBr ECW of 18.34 L, but 20.42 L on the latter. Their `ECW/TBW` moves from
+ * 0.424 to 0.475 against a NaBr/D₂O reference of 0.403. §2.3 removes that
+ * substitution, and the §7 subjects move the same way.
  *
- * ## ECW calibration (§3.2)
- * Eq. B2 takes `R_E`, which is `R_0`. It gets the 50 kHz band, which is lower,
- * and ECW scales as `R^(-2/3)`, so the result runs high. `K_B = 4.3` compounds
- * that: De Lorenzo Appendix C derives it from arm, leg and trunk proportions
- * for a wrist-to-ankle path, and this device is foot-to-foot. Together they put
- * `ECW/TBW` at 0.46-0.51 on the §7.1-7.3 subjects against a physiological
- * 0.36-0.42. Both causes are input-side; the equation and its constants are the
- * published ones.
+ * `α` and `f_c` are **assumed**, not fitted, so §2.3 is not a Cole fit and does
+ * not make this a spectroscopy device. It converts one unquantified error into a
+ * bounded one: sweeping `α` over 0.60-0.80 and `f_c` over 30-80 kHz moves
+ * `ECW/TBW` by less than 0.06 on every §7 subject.
+ *
+ * The compartment equations stay out of reach for the same reason. De Lorenzo
+ * Eq. B4 and the Matthie 2005 Eqs. 5 and 14 that supersede it both consume
+ * `(R_E + R_I) / R_I`, which is `R_E / R_INF`, and §2.3 does now supply that.
+ * But each is a second nonlinear step resting on the same assumed `α` and `f_c`,
+ * and each is valid only with its own resistivity constants, which the source
+ * reports in at least three mutually inconsistent sets. Evaluating one here
+ * would compound an assumption rather than measure anything. ICW is therefore
+ * the remainder of TBW after §3.2 ECW.
+ *
+ * Note what that remainder is: `TBW` from Sun 2003, a D₂O-calibrated NHANES
+ * regression, minus `ECW` from Eq. B2, calibrated against NaBr. De Lorenzo
+ * p. 1547 puts NaBr and ³⁵SO₄ spaces 20 % apart, so the displayed `ECW/TBW`
+ * is tracer-dependent before any impedance error and has no published
+ * validation as a pair.
  *
  * ## Suppression policy
  *  - TBW out of `[0.30·W, 0.75·W]` → suppress TBW + everything downstream
  *  - `ECW/TBW` outside `[0.30, 0.55]` → suppress ECW, ICW, BCM; TBW/FFM/BF/SMM
  *    still display (they depend only on TBW). Healthy reference: 0.36-0.40
- *    young adult, 0.38-0.42 older; see the §3.2 calibration note for why this
- *    pipeline reads above that band.
+ *    young adult, 0.38-0.42 older; De Lorenzo p. 1547 puts his own dilution
+ *    cohort at 0.40-0.42. This pipeline still reads above that band.
+ *  - `R_0/R_INF` outside [R0_RINF_RANGE] → suppress ECW, ICW, BCM. Outside it
+ *    the assumed §2.3 Cole parameters no longer describe the subject.
  *  - FFM/W outside `[0.30, 0.97]` → suppress FFM, BF, SMM
  *  - BF % outside [3, 60] (M) / [8, 70] (F) → suppress, flag (underlying TBW
  *    likely wrong)
@@ -194,6 +217,8 @@ data class S400Result(
     val proteinKg: Float?, val proteinPct: Float?,
     val slmKg: Float?,
     val phaseAngleDeg: Float?,  // always null on S400 (no reactance)
+    /** §2.3 `R_0 / R_INF`; null when the two bands admit no Cole solution. */
+    val r0RinfRatio: Float?,
     val reliability: Reliability,
     val labelSwapApplied: Boolean,
 )
@@ -216,6 +241,30 @@ object S400BodyComposition {
      */
     private const val K_ECW_M = 0.306f
     private const val K_ECW_F = 0.316f
+
+    /**
+     * §2.3 Cole parameters, De Lorenzo Table 2 p. 1545 (men n=63, women n=10).
+     * These are population means standing in for a per-subject fit; the file
+     * KDoc quantifies how far the §3.2 output moves when they are wrong.
+     */
+    private const val COLE_ALPHA_M = 0.70f
+    private const val COLE_ALPHA_F = 0.68f
+    private const val COLE_FC_KHZ_M = 57.02f
+    private const val COLE_FC_KHZ_F = 80.14f
+
+    /** Nominal frequencies of the two bands the S400 broadcasts. */
+    private const val BAND_LOW_KHZ = 50.0
+    private const val BAND_HIGH_KHZ = 250.0
+
+    /**
+     * §2.3 plausibility window for `R_0 / R_INF`. De Lorenzo Table 2 puts healthy
+     * adults at 1.49-1.57; above this ceiling the subject is in oedema territory
+     * where [COLE_ALPHA_M] and [COLE_FC_KHZ_M] stop describing them.
+     */
+    private val R0_RINF_RANGE = 1.05f..2.00f
+
+    /** Upper bracket for the §2.3 bisection. */
+    private const val R0_RINF_MAX_BRACKET = 5.0
 
     fun compute(
         inputs: S400Inputs,
@@ -242,25 +291,37 @@ object S400BodyComposition {
         val rHighRawAfterSwap = rHigh  // §3.7 Option A needs RAW (un-corrected) R_high.
         val unreliableContact = abs(rLow - rHigh) / rHigh < 0.01f
 
-        // §2.2 foot-to-foot correction.
-        val rL = rLow * footToFootCorrection
+        // §2.2 foot-to-foot correction, applied to both bands so §2.3 sees the
+        // same ratio either way.
+        val zLow = rLow * footToFootCorrection
+        val zHigh = rHigh * footToFootCorrection
+
+        // §2.3 R_0 from the two bands; gated on a plausible R_0/R_INF.
+        val coleFit = invertCole(
+            zLow = zLow,
+            zHigh = zHigh,
+            fcKHz = if (inputs.sexMale) COLE_FC_KHZ_M else COLE_FC_KHZ_F,
+            alpha = if (inputs.sexMale) COLE_ALPHA_M else COLE_ALPHA_F,
+        )?.takeIf { it.r0RinfRatio in R0_RINF_RANGE }
 
         // §3.1 TBW (Sun 2003, race-combined, sex-specific).
         val sexM = if (inputs.sexMale) 1f else 0f
         val tbwRaw = if (inputs.sexMale) {
-            1.20f + 0.45f * (h * h / rL) + 0.18f * w
+            1.20f + 0.45f * (h * h / zLow) + 0.18f * w
         } else {
-            3.75f + 0.45f * (h * h / rL) + 0.11f * w
+            3.75f + 0.45f * (h * h / zLow) + 0.11f * w
         }
         val tbwOk = tbwRaw in (0.30f * w)..(0.75f * w)
         val tbw = if (tbwOk) tbwRaw else null
 
-        // §3.2 ECW (De Lorenzo 1997 Eq. B2).
+        // §3.2 ECW (De Lorenzo 1997 Eq. B2), on the §2.3 R_0.
         val kEcw = if (inputs.sexMale) K_ECW_M else K_ECW_F
-        val ecwRaw = kEcw * ((h * h * sqrt(w)) / rL).toDouble().pow(2.0 / 3.0).toFloat()
+        val ecwRaw = coleFit?.let {
+            kEcw * ((h * h * sqrt(w)) / it.r0).toDouble().pow(2.0 / 3.0).toFloat()
+        }
 
         // §3.3 ICW = TBW − ECW; suppress per-compartment outputs on bad ratio.
-        val ecwTbwRatio = if (tbw != null && tbw > 0f) ecwRaw / tbw else null
+        val ecwTbwRatio = if (tbw != null && tbw > 0f && ecwRaw != null) ecwRaw / tbw else null
         val ratioOk = ecwTbwRatio != null && ecwTbwRatio in 0.30f..0.55f
         val ecw = if (tbw != null && ratioOk) ecwRaw else null
         val icw = if (tbw != null && ecw != null) tbw - ecw else null
@@ -279,7 +340,7 @@ object S400BodyComposition {
         val bfKg = if (bfPct != null) bf else null
 
         // §3.6 SMM (Janssen 2000).
-        val smmRaw = 0.401f * (h * h / rL) + 3.825f * sexM - 0.071f * inputs.age + 5.102f
+        val smmRaw = 0.401f * (h * h / zLow) + 3.825f * sexM - 0.071f * inputs.age + 5.102f
         val smm = smmRaw.coerceIn(8f, 75f)
 
         // §3.7 Bone mineral mass — two options.
@@ -345,9 +406,56 @@ object S400BodyComposition {
             proteinPct = if (suppress) null else proteinPct,
             slmKg = if (suppress) null else slmKg,
             phaseAngleDeg = null,
+            r0RinfRatio = coleFit?.r0RinfRatio,
             reliability = reliability,
             labelSwapApplied = labelSwap,
         )
+    }
+
+    private data class ColeFit(val r0: Float, val r0RinfRatio: Float)
+
+    /**
+     * `|Z(f)| / R_INF` for the Cole model at `R_0 / R_INF = r`, in real
+     * arithmetic: `Z = R_INF + (R_0 − R_INF) / (1 + (j·f/f_c)^α)`, expanding
+     * `(j·x)^α` as `x^α·(cos(απ/2) + j·sin(απ/2))`.
+     */
+    private fun coleMagnitude(r: Double, fKHz: Double, fcKHz: Double, alpha: Double): Double {
+        val u = (fKHz / fcKHz).pow(alpha)
+        val quarterTurn = alpha * PI / 2.0
+        val denomRe = 1.0 + u * cos(quarterTurn)
+        val denomIm = u * sin(quarterTurn)
+        val denomSq = denomRe * denomRe + denomIm * denomIm
+        val spread = r - 1.0
+        return hypot(1.0 + spread * denomRe / denomSq, -spread * denomIm / denomSq)
+    }
+
+    /**
+     * §2.3 recovers `R_0` from the two broadcast magnitudes.
+     *
+     * `|Z_50| / |Z_250|` is strictly increasing in `R_0 / R_INF` for fixed `α`
+     * and `f_c`, and equals 1 at `R_0 = R_INF`, so bisection inverts it. Returns
+     * null when the measured ratio is at or below 1, or above what any
+     * `R_0 / R_INF` up to [R0_RINF_MAX_BRACKET] can produce, which leaves §3.2
+     * suppressed rather than guessed.
+     */
+    private fun invertCole(zLow: Float, zHigh: Float, fcKHz: Float, alpha: Float): ColeFit? {
+        val measured = (zLow / zHigh).toDouble()
+        if (measured <= 1.0) return null
+        val fc = fcKHz.toDouble()
+        val a = alpha.toDouble()
+        fun bandRatio(r: Double) =
+            coleMagnitude(r, BAND_LOW_KHZ, fc, a) / coleMagnitude(r, BAND_HIGH_KHZ, fc, a)
+
+        var lo = 1.0 + 1e-9
+        var hi = R0_RINF_MAX_BRACKET
+        if (bandRatio(hi) < measured) return null
+        repeat(60) {
+            val mid = (lo + hi) / 2.0
+            if (bandRatio(mid) < measured) lo = mid else hi = mid
+        }
+        val ratio = (lo + hi) / 2.0
+        val rInf = zLow / coleMagnitude(ratio, BAND_LOW_KHZ, fc, a)
+        return ColeFit(r0 = (ratio * rInf).toFloat(), r0RinfRatio = ratio.toFloat())
     }
 
     private fun isWithinValidationRange(i: S400Inputs, bmi: Float): Boolean {
@@ -376,6 +484,7 @@ object S400BodyComposition {
         proteinKg = null, proteinPct = null,
         slmKg = null,
         phaseAngleDeg = null,
+        r0RinfRatio = null,
         reliability = Reliability.NOT_AVAILABLE,
         labelSwapApplied = false,
     )
