@@ -103,6 +103,9 @@ class S400BodyCompositionTest {
         assertThat(r.icwKg!!).isWithin(tolKg).of(25.27f)
         assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.439f)
         assertThat(r.r0RinfRatio!!).isWithin(0.005f).of(1.319f)
+        // §3.2b: -17.0 % sits between 2σ and 3σ, so ECW reports but flagged.
+        assertThat(r.tbwCrossCheckDelta!!).isWithin(0.002f).of(-0.1695f)
+        assertThat(r.reliability).isEqualTo(Reliability.APPROXIMATE)
         assertThat(r.ffmKg!!).isWithin(tolKg).of(61.58f)
         assertThat(r.bfKg!!).isWithin(tolKg).of(14.92f)
         assertThat(r.bfPct!!).isWithin(tolPct).of(19.50f)
@@ -141,6 +144,7 @@ class S400BodyCompositionTest {
         assertThat(r.icwKg!!).isWithin(tolKg).of(14.26f)
         assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.468f)
         assertThat(r.r0RinfRatio!!).isWithin(0.005f).of(1.492f)
+        assertThat(r.tbwCrossCheckDelta!!).isWithin(0.002f).of(0.0806f)
         assertThat(r.ffmKg!!).isWithin(tolKg).of(36.60f)
         assertThat(r.bfKg!!).isWithin(tolKg).of(31.40f)
         assertThat(r.bfPct!!).isWithin(tolPct).of(46.18f)
@@ -173,6 +177,7 @@ class S400BodyCompositionTest {
         assertThat(r.icwKg!!).isWithin(tolKg).of(20.59f)
         assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.412f)
         assertThat(r.r0RinfRatio!!).isWithin(0.005f).of(1.568f)
+        assertThat(r.tbwCrossCheckDelta!!).isWithin(0.002f).of(0.0208f)
         assertThat(r.ffmKg!!).isWithin(tolKg).of(47.79f)
         assertThat(r.bfKg!!).isWithin(tolKg).of(32.21f)
         assertThat(r.bfPct!!).isWithin(tolPct).of(40.26f)
@@ -208,15 +213,16 @@ class S400BodyCompositionTest {
     }
 
     @Test
-    fun coleInversion_suppressesCompartmentsWhenR0RinfImplausible() {
-        // 196 cm at 226/305 Ω inverts to R_0/R_INF = 2.31 against the 1.49-1.57
-        // De Lorenzo reports for healthy adults, so §2.3 declines the fit.
-        // TBW and the equations that depend only on it still report.
+    fun crossCheck_suppressesCompartmentsBeyondThreeSigma() {
+        // 196 cm at 226/305 Ω inverts cleanly and clears the §3.3 ECW/TBW window
+        // at 0.396, so only §3.2b catches it: the Matthie TBW comes back 58 %
+        // above Sun's. TBW and everything depending only on it still report.
         val r = S400BodyComposition.compute(S400Inputs(
             age = 45, sexMale = true, heightCm = 196f, weightKg = 112.5f,
             rHighRaw = 226f, rLowRaw = 305f,
         ))
-        assertThat(r.r0RinfRatio).isNull()
+        assertThat(r.r0RinfRatio!!).isWithin(0.005f).of(2.313f)
+        assertThat(r.tbwCrossCheckDelta!!).isWithin(0.005f).of(0.5842f)
         assertThat(r.ecwKg).isNull()
         assertThat(r.icwKg).isNull()
         assertThat(r.bcmKg).isNull()

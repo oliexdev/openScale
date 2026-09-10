@@ -88,28 +88,73 @@ import kotlin.math.sqrt
  *    magnitude-only impedance); always null. Do not invent a default like 5°.
  *
  * ## What §2.3 buys, and what it does not
- * Eq. B2 takes `R_E`, which is `R_0`. Fed the 50 kHz magnitude instead it runs
- * high, because ECW scales as `R^(-2/3)`. The size of that error is measurable
- * against De Lorenzo's own dilution cohort (Table 1-2, n=14 men): reconstructing
- * their spectrum from the published Cole terms gives `R_0` 577.7 Ω and
- * `|Z_50|` 487.4 Ω, and Eq. B2 returns 18.23 L on the former against a measured
- * NaBr ECW of 18.34 L, but 20.42 L on the latter. Their `ECW/TBW` moves from
- * 0.424 to 0.475 against a NaBr/D₂O reference of 0.403. §2.3 removes that
- * substitution, and the §7 subjects move the same way.
+ * Eq. B2 is calibrated against `R_E`, which is `R_0`: Appendix B p. 1556 defines
+ * `k_ECW` as the mean of `V_ECW / ((L²√Wt)/R_E)^(2/3)` over the calibration
+ * cohort. Substituting the smaller 50 kHz magnitude therefore inflates ECW as
+ * `R^(-2/3)`, by 12 % on that cohort's own numbers. Note what this argument does
+ * **not** license: evaluating Eq. B2 at the calibration cohort's mean returns
+ * that cohort's mean measured ECW by construction, so agreement there is the
+ * calibration and not a test.
+ *
+ * The test that does mean something is a round trip. Generate `|Z_50|` and
+ * `|Z_250|` from the Table 2 dilution-cohort Cole terms (`R_E` 577.71,
+ * `R_I` 1020.42, `α` 0.68, `f_c` 61.96 kHz, giving 487.40 Ω and 417.62 Ω), then
+ * invert them with the **population** constants below rather than that
+ * subgroup's own. `R_0` comes back 579.2 Ω against a true 577.7, an error of
+ * +0.3 %, worth -0.2 % on ECW.
  *
  * `α` and `f_c` are **assumed**, not fitted, so §2.3 is not a Cole fit and does
- * not make this a spectroscopy device. It converts one unquantified error into a
- * bounded one: sweeping `α` over 0.60-0.80 and `f_c` over 30-80 kHz moves
- * `ECW/TBW` by less than 0.06 on every §7 subject.
+ * not make this a spectroscopy device. Pinning `α` is well supported: Table 2
+ * puts it at 0.70 ± 0.02 (men) and 0.68 ± 0.03 (women). Pinning `f_c` is not.
+ * De Lorenzo p. 1554 reports 43-110 kHz across his 73 healthy subjects and says
+ * flatly that "use of `f_c` cannot be supported, because it is affected by all
+ * the variables in the model", and Table 2's printed `f_c` column is itself
+ * ~1.4× the value its own `C_m`, `R_E` and `R_I` imply under Eq. A1. Sweeping
+ * `α` over 0.60-0.80 and `f_c` over 30-80 kHz moves `ECW/TBW` by under 0.06 on
+ * the §7.1-7.3 subjects, but that is the flattering statistic: over the same box
+ * `R_0` moves ±7-15 % and **ECW itself moves 1.4-1.9 kg**, which is what the UI
+ * displays. Within the healthy 43-110 kHz `f_c` range the `ECW/TBW` spread is
+ * nearer ±0.01.
  *
- * The compartment equations stay out of reach for the same reason. De Lorenzo
- * Eq. B4 and the Matthie 2005 Eqs. 5 and 14 that supersede it both consume
- * `(R_E + R_I) / R_I`, which is `R_E / R_INF`, and §2.3 does now supply that.
- * But each is a second nonlinear step resting on the same assumed `α` and `f_c`,
- * and each is valid only with its own resistivity constants, which the source
- * reports in at least three mutually inconsistent sets. Evaluating one here
- * would compound an assumption rather than measure anything. ICW is therefore
+ * A second, larger uncertainty sits underneath all of it. The source's own
+ * `k_ECW` is ambiguous by 15.4 %: p. 1544 prints 0.306 while Table 3's BIS-ECW
+ * of 21.03 L for the same 14 men implies 0.353. The two reconcile exactly as
+ * `(214 / 174.32)^(2/3) = 1.1465` against `21.03 / 18.34 = 1.1467`, so 0.306
+ * belongs to the `ρ_ECW` 174.32 set that De Lorenzo recomputed from those men
+ * and 0.353 to the earlier `ρ_ECW` 214 set. The code uses 0.306. That choice is
+ * a larger lever on the displayed ECW than the 12 % this pipeline corrects.
+ *
+ * ## Compartment cross-check (§3.2b)
+ * §2.3 supplies `R_E / R_INF`, which is what Matthie 2005 Eqs. 5 and 14 consume,
+ * so an ICW and hence a second, independent TBW can be computed from the same
+ * `R_0` using the `ρ_ECW` / `ρ_ICW` pair that belongs to the same recalibration
+ * as `k_ECW`. Sun 2003 is a D₂O-calibrated NHANES regression and Eq. B2 is
+ * NaBr-calibrated Hanai mixture theory, so the two routes share no calibration
+ * and their agreement is real evidence that the inversion landed. On De
+ * Lorenzo's dilution cohort they agree to 0.14 %.
+ *
+ * That agreement, not a window on `R_0/R_INF`, gates §3.2. Given pinned `α` and
+ * `f_c`, `R_0/R_INF` is a strictly monotone relabelling of the raw band ratio and
+ * carries nothing the ratio does not; a plausibility window on it would be a
+ * band-ratio window wearing a physiological name. The bounds come from the two
+ * routes' published standard errors of the estimate (De Lorenzo p. 1545: TBW
+ * 1.33 L on 45.48, ECW 0.90 L on 18.34), added in quadrature to
+ * [CROSS_CHECK_SIGMA]. Beyond 2σ the result is APPROXIMATE; beyond 3σ, ECW, ICW
+ * and BCM are suppressed.
+ *
+ * The Matthie ICW itself is **not** displayed. It rests on the same assumed `α`
+ * and `f_c` as `R_0`, through a second nonlinear step, so using it as a check is
+ * sound while using it as a measurement would compound the assumption. ICW stays
  * the remainder of TBW after §3.2 ECW.
+ *
+ * Note what that remainder is, and what it does to BCM. `TBW` comes from Sun
+ * 2003 and `ECW` from Eq. B2, calibrated on different tracers; De Lorenzo
+ * p. 1547 puts NaBr and ³⁵SO₄ spaces 20 % apart, so the displayed `ECW/TBW` is
+ * tracer-dependent before any impedance error and has no published validation as
+ * a pair. And because §2.3 lowers ECW it raises ICW, so `BCM/FFM` moves from
+ * 0.55/0.51/0.56 to 0.59/0.56/0.62 on the §7.1-7.3 subjects, away from Kotler's
+ * 0.50-0.55 rather than toward it. §2.3 improves one displayed ratio and
+ * degrades another; only the first is gated.
  *
  * Note what that remainder is: `TBW` from Sun 2003, a D₂O-calibrated NHANES
  * regression, minus `ECW` from Eq. B2, calibrated against NaBr. De Lorenzo
@@ -123,8 +168,7 @@ import kotlin.math.sqrt
  *    still display (they depend only on TBW). Healthy reference: 0.36-0.40
  *    young adult, 0.38-0.42 older; De Lorenzo p. 1547 puts his own dilution
  *    cohort at 0.40-0.42. This pipeline still reads above that band.
- *  - `R_0/R_INF` outside [R0_RINF_RANGE] → suppress ECW, ICW, BCM. Outside it
- *    the assumed §2.3 Cole parameters no longer describe the subject.
+ *  - §3.2b cross-check beyond 3·[CROSS_CHECK_SIGMA] → suppress ECW, ICW, BCM.
  *  - FFM/W outside `[0.30, 0.97]` → suppress FFM, BF, SMM
  *  - BF % outside [3, 60] (M) / [8, 70] (F) → suppress, flag (underlying TBW
  *    likely wrong)
@@ -219,6 +263,8 @@ data class S400Result(
     val phaseAngleDeg: Float?,  // always null on S400 (no reactance)
     /** §2.3 `R_0 / R_INF`; null when the two bands admit no Cole solution. */
     val r0RinfRatio: Float?,
+    /** §3.2b fractional gap between the Matthie TBW and the Sun 2003 TBW. */
+    val tbwCrossCheckDelta: Float?,
     val reliability: Reliability,
     val labelSwapApplied: Boolean,
 )
@@ -256,15 +302,26 @@ object S400BodyComposition {
     private const val BAND_LOW_KHZ = 50.0
     private const val BAND_HIGH_KHZ = 250.0
 
-    /**
-     * §2.3 plausibility window for `R_0 / R_INF`. De Lorenzo Table 2 puts healthy
-     * adults at 1.49-1.57; above this ceiling the subject is in oedema territory
-     * where [COLE_ALPHA_M] and [COLE_FC_KHZ_M] stop describing them.
-     */
-    private val R0_RINF_RANGE = 1.05f..2.00f
-
     /** Upper bracket for the §2.3 bisection. */
     private const val R0_RINF_MAX_BRACKET = 5.0
+
+    /**
+     * §3.2b resistivities, De Lorenzo p. 1545, recomputed from the n=14 dilution
+     * men. This is the set [K_ECW_M] belongs to. The women's pair is scaled from
+     * the men's rather than fitted (p. 1544), which is also why `k_ECW` for women
+     * disagrees with it: 167.80 implies 0.298, and p. 1544 prints 0.316.
+     */
+    private const val RHO_ECW_M = 174.32f
+    private const val RHO_ICW_M = 1177.94f
+    private const val RHO_ECW_F = 167.80f
+    private const val RHO_ICW_F = 1139.34f
+
+    /**
+     * §3.2b combined standard error of the two TBW routes, from the SEEs De
+     * Lorenzo reports on p. 1545 for the same cohort: 1.33 L on a TBW of 45.48
+     * and 0.90 L on an ECW of 18.34, added in quadrature. 2σ flags, 3σ suppresses.
+     */
+    private const val CROSS_CHECK_SIGMA = 0.0571f
 
     fun compute(
         inputs: S400Inputs,
@@ -302,7 +359,7 @@ object S400BodyComposition {
             zHigh = zHigh,
             fcKHz = if (inputs.sexMale) COLE_FC_KHZ_M else COLE_FC_KHZ_F,
             alpha = if (inputs.sexMale) COLE_ALPHA_M else COLE_ALPHA_F,
-        )?.takeIf { it.r0RinfRatio in R0_RINF_RANGE }
+        )
 
         // §3.1 TBW (Sun 2003, race-combined, sex-specific).
         val sexM = if (inputs.sexMale) 1f else 0f
@@ -320,10 +377,20 @@ object S400BodyComposition {
             kEcw * ((h * h * sqrt(w)) / it.r0).toDouble().pow(2.0 / 3.0).toFloat()
         }
 
+        // §3.2b independent TBW from the same R_0 (Matthie 2005 Eqs. 5 and 14).
+        val crossCheckDelta = if (ecwRaw != null && coleFit != null && tbw != null && tbw > 0f) {
+            val matthieTbw = ecwRaw + matthieIcw(ecwRaw, coleFit.r0RinfRatio, inputs.sexMale)
+            (matthieTbw - tbw) / tbw
+        } else {
+            null
+        }
+        val crossCheckTight = crossCheckDelta != null && abs(crossCheckDelta) <= 2f * CROSS_CHECK_SIGMA
+        val crossCheckOk = crossCheckDelta != null && abs(crossCheckDelta) <= 3f * CROSS_CHECK_SIGMA
+
         // §3.3 ICW = TBW − ECW; suppress per-compartment outputs on bad ratio.
         val ecwTbwRatio = if (tbw != null && tbw > 0f && ecwRaw != null) ecwRaw / tbw else null
         val ratioOk = ecwTbwRatio != null && ecwTbwRatio in 0.30f..0.55f
-        val ecw = if (tbw != null && ratioOk) ecwRaw else null
+        val ecw = if (tbw != null && ratioOk && crossCheckOk) ecwRaw else null
         val icw = if (tbw != null && ecw != null) tbw - ecw else null
 
         // §3.4 FFM = TBW / 0.732 (Pace & Rathbun 1945).
@@ -376,7 +443,7 @@ object S400BodyComposition {
         // Overall reliability.
         val reliability = when {
             unreliableContact -> Reliability.UNRELIABLE
-            !tbwOk || !ffmOk || !bfPctOk -> Reliability.APPROXIMATE
+            !tbwOk || !ffmOk || !bfPctOk || !crossCheckTight -> Reliability.APPROXIMATE
             else -> Reliability.OK
         }
 
@@ -407,12 +474,26 @@ object S400BodyComposition {
             slmKg = if (suppress) null else slmKg,
             phaseAngleDeg = null,
             r0RinfRatio = coleFit?.r0RinfRatio,
+            tbwCrossCheckDelta = crossCheckDelta,
             reliability = reliability,
             labelSwapApplied = labelSwap,
         )
     }
 
     private data class ColeFit(val r0: Float, val r0RinfRatio: Float)
+
+    /**
+     * §3.2b ICW by Matthie 2005 Eq. 5, with `ρ_TBW` from its Eq. 14. Both take
+     * `(R_E + R_I) / R_I`, which is `R_E / R_INF`, so [ColeFit.r0RinfRatio] is
+     * the only impedance input. Used to cross-check §3.1, never displayed.
+     */
+    private fun matthieIcw(ecwKg: Float, r0RinfRatio: Float, sexMale: Boolean): Float {
+        val rhoEcw = if (sexMale) RHO_ECW_M else RHO_ECW_F
+        val rhoIcw = if (sexMale) RHO_ICW_M else RHO_ICW_F
+        val r = r0RinfRatio.toDouble()
+        val rhoTbw = rhoIcw - (rhoIcw - rhoEcw) * (1.0 / r).pow(2.0 / 3.0)
+        return (ecwKg * (((rhoTbw * r) / rhoEcw).pow(2.0 / 3.0) - 1.0)).toFloat()
+    }
 
     /**
      * `|Z(f)| / R_INF` for the Cole model at `R_0 / R_INF = r`, in real
@@ -485,6 +566,7 @@ object S400BodyComposition {
         slmKg = null,
         phaseAngleDeg = null,
         r0RinfRatio = null,
+        tbwCrossCheckDelta = null,
         reliability = Reliability.NOT_AVAILABLE,
         labelSwapApplied = false,
     )
