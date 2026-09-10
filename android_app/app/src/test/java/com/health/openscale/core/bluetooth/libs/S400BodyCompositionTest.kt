@@ -227,7 +227,41 @@ class S400BodyCompositionTest {
         assertThat(r.icwKg).isNull()
         assertThat(r.bcmKg).isNull()
         assertThat(r.tbwKg!!).isWithin(tolKg).of(72.98f)
-        assertThat(r.ffmKg!!).isWithin(tolKg).of(99.69f)
+    }
+
+    // ---------- §3.4b anthropometric cross-check ----------
+
+    @Test
+    fun ffmiGuard_suppressesLeanMassWhenBodyFatContradictsIt() {
+        // Same capture: FFM 99.69 kg on 1.96 m is FFMI 25.95, past the ceiling,
+        // and its 11.4 % body fat sits 17.9 points under Deurenberg's 29.3.
+        val r = S400BodyComposition.compute(S400Inputs(
+            age = 45, sexMale = true, heightCm = 196f, weightKg = 112.5f,
+            rHighRaw = 226f, rLowRaw = 305f,
+        ))
+        assertThat(r.ffmKg).isNull()
+        assertThat(r.bfPct).isNull()
+        assertThat(r.smmKg).isNull()
+        assertThat(r.smmPct).isNull()
+        // BMR falls back to Mifflin-St Jeor once FFM is gone.
+        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(2130f)
+        assertThat(r.tbwKg!!).isWithin(tolKg).of(72.98f)
+    }
+
+    @Test
+    fun ffmiGuard_leavesMuscularSubjectAlone() {
+        // §7.1 has FFMI 20.8 and a body fat within 1.6 points of Deurenberg.
+        val r = subjectA()
+        assertThat(r.ffmKg).isNotNull()
+        assertThat(r.smmKg).isNotNull()
+    }
+
+    @Test
+    fun vfi_suppressedRatherThanClampedWhenOutOfRange() {
+        // §7.2 lands exactly on the female branch's `w = 0.5·h - 13` step, where
+        // the regression returns a large negative number.
+        val r = S400BodyComposition.compute(S400Inputs(55, false, 162f, 68f, 600f, 690f))
+        assertThat(r.vfi).isNull()
     }
 
     // ---------- §1.1 input validation ----------

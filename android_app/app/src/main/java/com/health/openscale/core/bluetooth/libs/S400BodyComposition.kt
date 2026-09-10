@@ -170,6 +170,9 @@ import kotlin.math.sqrt
  *    cohort at 0.40-0.42. This pipeline still reads above that band.
  *  - §3.2b cross-check beyond 3·[CROSS_CHECK_SIGMA] → suppress ECW, ICW, BCM.
  *  - FFM/W outside `[0.30, 0.97]` → suppress FFM, BF, SMM
+ *  - §3.4b FFMI past [FFMI_CEILING_M] **and** BF % more than
+ *    [DEURENBERG_MARGIN] below Deurenberg 1991 → suppress FFM, BF, SMM
+ *  - VFI outside [1, 30] → suppress rather than clamp
  *  - BF % outside [3, 60] (M) / [8, 70] (F) → suppress, flag (underlying TBW
  *    likely wrong)
  *  - UNRELIABLE contact → suppress all per-compartment fields; weight + BMI
@@ -323,6 +326,22 @@ object S400BodyComposition {
      */
     private const val CROSS_CHECK_SIGMA = 0.0571f
 
+    /**
+     * §3.4b fat-free mass index ceilings. Kouri 1995 puts the drug-free male
+     * limit near 25 kg/m² and Schutz 2002 the female 97.5th percentile near 22.
+     * A ceiling alone rejects healthy heavy young men, so §3.4b pairs it with
+     * [DEURENBERG_MARGIN].
+     */
+    private const val FFMI_CEILING_M = 25.0f
+    private const val FFMI_CEILING_F = 22.0f
+
+    /**
+     * §3.4b percentage points below the Deurenberg 1991 anthropometric body fat
+     * at which a BIA body fat stops being a difference of opinion and starts
+     * being a bad impedance read.
+     */
+    private const val DEURENBERG_MARGIN = 5.0f
+
     fun compute(
         inputs: S400Inputs,
         boneFormula: BoneFormula = BoneFormula.MI_LEGACY,
@@ -395,20 +414,34 @@ object S400BodyComposition {
 
         // §3.4 FFM = TBW / 0.732 (Pace & Rathbun 1945).
         val ffmRaw = if (tbw != null) tbw / 0.732f else null
-        val ffmOk = ffmRaw != null && ffmRaw / w in 0.30f..0.97f
+        val bfPctRaw = if (ffmRaw != null) ((w - ffmRaw) / w) * 100f else null
+
+        // §3.4b An FFM index past the drug-free ceiling is credible only when the
+        // body fat that comes with it is one the anthropometric equation also
+        // recognises. The pair separates a genuinely muscular subject, whose body
+        // fat lands near Deurenberg, from an impedance read that is simply too
+        // low, which drives FFM up and body fat far below it.
+        val heightM = h / 100f
+        val ffmi = if (ffmRaw != null && heightM > 0f) ffmRaw / (heightM * heightM) else null
+        val deurenbergBf = 1.20f * bmi + 0.23f * inputs.age - 10.8f * sexM - 5.4f
+        val impedanceTooLow = ffmi != null && bfPctRaw != null &&
+            ffmi > (if (inputs.sexMale) FFMI_CEILING_M else FFMI_CEILING_F) &&
+            bfPctRaw < deurenbergBf - DEURENBERG_MARGIN
+
+        val ffmOk = ffmRaw != null && ffmRaw / w in 0.30f..0.97f && !impedanceTooLow
         val ffm = if (ffmOk) ffmRaw else null
 
         // §3.5 Body fat.
         val bf = if (ffm != null) w - ffm else null
-        val bfPctRaw = if (bf != null) (bf / w) * 100f else null
         val bfRange = if (inputs.sexMale) 3f..60f else 8f..70f
-        val bfPctOk = bfPctRaw != null && bfPctRaw in bfRange
+        val bfPctOk = bf != null && bfPctRaw != null && bfPctRaw in bfRange
         val bfPct = if (bfPctOk) bfPctRaw else null
         val bfKg = if (bfPct != null) bf else null
 
-        // §3.6 SMM (Janssen 2000).
+        // §3.6 SMM (Janssen 2000). Rides on the §3.4 suppression: Janssen's
+        // regression shares the resistance index that drove FFM out of range.
         val smmRaw = 0.401f * (h * h / zLow) + 3.825f * sexM - 0.071f * inputs.age + 5.102f
-        val smm = smmRaw.coerceIn(8f, 75f)
+        val smm = if (ffm != null) smmRaw.coerceIn(8f, 75f) else null
 
         // §3.7 Bone mineral mass — two options.
         val bone = when (boneFormula) {
@@ -417,8 +450,11 @@ object S400BodyComposition {
         }.coerceIn(1.0f, 6.0f)
 
         // §3.8 VFI (empirical anthropometric regression, uses RAW height + weight only).
+        // Out-of-range values are suppressed rather than clamped: the female branch
+        // steps discontinuously across `w = 0.5·h - 13` and returns large negative
+        // numbers below it, which a clamp would present as a confident VFI of 1.
         val vfiRaw = empiricalVfi(h, w, inputs.age, inputs.sexMale)
-        val vfi = vfiRaw.coerceIn(1f, 30f)
+        val vfi = vfiRaw.takeIf { it in 1f..30f }
 
         // §3.9 BMR.
         val bmrFromFfm = if (ffm != null) {
@@ -464,7 +500,7 @@ object S400BodyComposition {
             bfKg = if (suppress) null else bfKg,
             bfPct = if (suppress) null else bfPct,
             smmKg = if (suppress) null else smm,
-            smmPct = if (suppress) null else (smm / w) * 100f,
+            smmPct = if (suppress || smm == null) null else (smm / w) * 100f,
             boneKg = bone,
             vfi = vfi,
             bmrKcal = if (suppress) null else bmr,
