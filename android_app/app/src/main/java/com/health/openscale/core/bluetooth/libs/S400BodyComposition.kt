@@ -75,7 +75,9 @@ import kotlin.math.sqrt
  *
  * ## Computation order (§3) — sources
  *  - §3.1 TBW: Sun 2003 race-combined, sex-specific, on corrected R_low
+ *  - §3.1b TBW/FFM/BF gate: Deurenberg 1991 anthropometric agreement
  *  - §3.2 ECW: De Lorenzo 1997 Eq. B2, on the §2.3 `R_0`
+ *  - §3.2b Matthie 2005 Eqs. 5 and 14 diagnostic; Table 2 band-ratio comparison
  *  - §3.3 ICW = TBW − ECW
  *  - §3.4 FFM = TBW / 0.732 — Pace & Rathbun 1945 hydration constant
  *  - §3.5 BF = W − FFM
@@ -141,8 +143,9 @@ import kotlin.math.sqrt
  * device capture in the tests (543.2 / 497.6 Ω) lands at 3.01 SD read as a male
  * and 2.78 SD read as a female, so a 3 SD cut would have withheld the
  * compartment split from a man and granted it to a woman on the same reading;
- * assume 150 kHz instead of 250 and the same capture sits at 1.44 SD. A ±20 %
- * error in the assumed band moves the figure by 0.6 to 1.1 SD. What suppresses
+ * assume 150 kHz instead of 250 and the same capture sits at 1.44 SD (male) or
+ * 0.80 SD (female). A ±20 %
+ * error in the assumed band moves the figure by 0.3 to 0.6 SD. What suppresses
  * §3.2 is the §3.3 `ECW/TBW` window and §3.1b, both of which read quantities the
  * band frequencies do not enter.
  *
@@ -201,7 +204,8 @@ import kotlin.math.sqrt
  *  - `ECW/TBW` outside `[0.30, 0.55]` → suppress ECW, ICW, BCM; TBW/FFM/BF/SMM
  *    still display (they depend only on TBW). Healthy reference: 0.36-0.40
  *    young adult, 0.38-0.42 older; De Lorenzo p. 1547 puts his own dilution
- *    cohort at 0.40-0.42. This pipeline still reads above that band.
+ *    cohort at 0.40-0.42. This pipeline reads at or above that band (0.412,
+ *    0.439, 0.468 on the §7.1-7.3 subjects).
  *  - §3.1b BF % more than [DEURENBERG_MARGIN] from Deurenberg 1991 in either
  *    direction → suppress TBW and everything downstream. TBW, FFM and BF are one
  *    number in three forms, so all three go together.
@@ -309,8 +313,9 @@ data class S400Result(
 object S400BodyComposition {
 
     /**
-     * §2.2 multiplicative correction applied to the low-frequency band before
-     * it enters a prediction equation. Bracco 1996 default for mid-range adults.
+     * §2.2 multiplicative correction applied to both bands, so it scales `R_0`
+     * and `R_INF` together and cancels out of the §2.3 ratio. Bracco 1996 default
+     * for mid-range adults.
      * Defensible literature range 1.00-1.18: athletic/lean closer to 1.05,
      * overweight closer to 1.15. Exposed as a parameter to [compute] so a
      * caller can override per user profile without recompiling.
@@ -359,7 +364,7 @@ object S400BodyComposition {
      * §3.2b `R_0 / R_INF` in healthy adults, De Lorenzo Table 2 p. 1545, as
      * `1 + R_E/R_I` with the SDs propagated assuming `R_E` and `R_I` independent
      * (which overstates the spread, since both scale with body size, so these are
-     * upper bounds). 2 SD flags the result APPROXIMATE, 3 SD suppresses §3.2.
+     * upper bounds). Beyond 2 SD the result is APPROXIMATE; nothing is suppressed.
      */
     private const val R0_RINF_MEAN_M = 1.525f
     private const val R0_RINF_SD_M = 0.079f
@@ -476,11 +481,12 @@ object S400BodyComposition {
         val smmRaw = 0.401f * (h * h / zLow) + 3.825f * sexM - 0.071f * inputs.age + 5.102f
         val smm = if (ffm != null) smmRaw.coerceIn(8f, 75f) else null
 
-        // §3.7 Bone mineral mass — two options. MI_LEGACY reads impedance, so a
-        // failed §2.1 contact check drops it to the anthropometric formula rather
-        // than reporting a bone mass derived from a reading just called unusable.
+        // §3.7 Bone mineral mass — two options. MI_LEGACY reads impedance, so any
+        // verdict that the reading is unusable, §2.1 contact or §3.1b disagreement,
+        // drops it to the anthropometric formula rather than reporting a bone mass
+        // derived from a reading the same call just rejected.
         val bone = when {
-            unreliableContact || boneFormula == BoneFormula.HEYMSFIELD ->
+            unreliableContact || !bfPlausible || boneFormula == BoneFormula.HEYMSFIELD ->
                 heymsfieldBone(w, inputs.sexMale)
             else -> empiricalBone(h, w, inputs.age, rHighRawAfterSwap, inputs.sexMale)
         }.coerceIn(1.0f, 6.0f)

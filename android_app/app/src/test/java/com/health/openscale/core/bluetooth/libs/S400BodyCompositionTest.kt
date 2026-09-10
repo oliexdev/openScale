@@ -261,6 +261,8 @@ class S400BodyCompositionTest {
         // Weight, BMI and the anthropometric outputs survive.
         assertThat(r.bmi).isWithin(0.01f).of(29.28f)
         assertThat(r.vfi!!).isWithin(0.1f).of(26.71f)
+        // §3.7 drops to Heymsfield for the same reason §2.1 does.
+        assertThat(r.boneKg!!).isWithin(tolKg).of(4.61f)
     }
 
     @Test
