@@ -85,9 +85,10 @@ class S400BodyCompositionTest {
         assertThat(r.bcmKg).isNull()
         assertThat(r.ffmKg).isNull()
         assertThat(r.bfPct).isNull()
-        // Weight and BMI must still be reported.
+        // Weight, BMI and the §6 Mifflin BMR carry no impedance and still report.
         assertThat(r.weightKg).isEqualTo(85f)
         assertThat(r.bmi).isWithin(0.1f).of(26.23f)
+        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1830f)
     }
 
     // ---------- §7.1 — Subject A (young athletic male) ----------
@@ -95,7 +96,6 @@ class S400BodyCompositionTest {
     @Test
     fun subjectA_defaultOptions_matchesSpec() {
         val r = subjectA()
-        assertThat(r.reliability).isAnyOf(Reliability.OK, Reliability.APPROXIMATE)
         assertThat(r.tbwKg!!).isWithin(tolKg).of(45.08f)
         assertThat(r.tbwPct!!).isWithin(tolPct).of(58.92f)
         assertThat(r.ecwKg!!).isWithin(tolKg).of(19.80f)
@@ -103,7 +103,7 @@ class S400BodyCompositionTest {
         assertThat(r.icwKg!!).isWithin(tolKg).of(25.27f)
         assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.439f)
         assertThat(r.r0RinfRatio!!).isWithin(0.005f).of(1.319f)
-        // §3.2b: -17.0 % sits between 2σ and 3σ, so ECW reports but flagged.
+        // 1.319 is 2.61 SD from the Table 2 male mean, hence APPROXIMATE.
         assertThat(r.tbwCrossCheckDelta!!).isWithin(0.002f).of(-0.1695f)
         assertThat(r.reliability).isEqualTo(Reliability.APPROXIMATE)
         assertThat(r.ffmKg!!).isWithin(tolKg).of(61.58f)
@@ -213,18 +213,27 @@ class S400BodyCompositionTest {
     }
 
     @Test
-    fun rWindow_suppressesCompartmentsBeyondThreeSd() {
-        // 196 cm at 226/305 Ω inverts to R_0/R_INF 2.313, ten SD above the
-        // Table 2 male mean. The Matthie gap is reported alongside it.
-        val r = S400BodyComposition.compute(S400Inputs(
-            age = 45, sexMale = true, heightCm = 196f, weightKg = 112.5f,
-            rHighRaw = 226f, rLowRaw = 305f,
-        ))
-        assertThat(r.r0RinfRatio!!).isWithin(0.005f).of(2.313f)
-        assertThat(r.tbwCrossCheckDelta!!).isWithin(0.005f).of(0.5844f)
-        assertThat(r.ecwKg).isNull()
-        assertThat(r.icwKg).isNull()
-        assertThat(r.bcmKg).isNull()
+    fun rWindow_flagsBeyondTwoSdWithoutSuppressing() {
+        // 369/402 puts R_0/R_INF at 1.280, 3.11 SD from the Table 2 male mean,
+        // while §3.1 and §3.1b both pass. The compartments still report: the
+        // band frequencies the deviation depends on are themselves nominal.
+        val r = S400BodyComposition.compute(S400Inputs(27, true, 172f, 76.5f, 369f, 402f))
+        assertThat(r.r0RinfRatio!!).isWithin(0.005f).of(1.280f)
+        assertThat(r.reliability).isEqualTo(Reliability.APPROXIMATE)
+        assertThat(r.ecwKg!!).isWithin(tolKg).of(19.96f)
+        assertThat(r.icwKg!!).isWithin(tolKg).of(25.12f)
+        assertThat(r.bcmKg!!).isWithin(tolKg).of(35.88f)
+    }
+
+    @Test
+    fun rWindow_doesNotWithholdTheCapturedReference() {
+        // The 543.2/497.6 Ω pair from S400DecryptorTest, the only real device
+        // reading in the repository, sits at 3.01 SD read as male and 2.78 SD
+        // read as female. Both must produce the same fields.
+        val male = S400BodyComposition.compute(S400Inputs(40, true, 178f, 80f, 497.6f, 543.2f))
+        assertThat(male.ecwKg).isNotNull()
+        assertThat(male.icwKg).isNotNull()
+        assertThat(male.bcmKg).isNotNull()
     }
 
     // ---------- §3.1b anthropometric cross-check ----------
@@ -244,6 +253,10 @@ class S400BodyCompositionTest {
         assertThat(r.bfPct).isNull()
         assertThat(r.smmKg).isNull()
         assertThat(r.smmPct).isNull()
+        assertThat(r.ecwKg).isNull()
+        assertThat(r.icwKg).isNull()
+        assertThat(r.bcmKg).isNull()
+        assertThat(r.r0RinfRatio!!).isWithin(0.005f).of(2.313f)
         assertThat(r.bmrKcal!!).isWithin(tolKcal).of(2130f)
         // Weight, BMI and the anthropometric outputs survive.
         assertThat(r.bmi).isWithin(0.01f).of(29.28f)

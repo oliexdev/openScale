@@ -104,6 +104,13 @@ import kotlin.math.sqrt
  * subgroup's own. `R_0` comes back 579.2 Ω against a true 577.7, an error of
  * +0.3 %, worth -0.2 % on ECW.
  *
+ * That round trip cannot see one error, because it generates and inverts under
+ * the same convention. Eq. A2 p. 1555 defines `f_c` as the reactance peak of the
+ * **`T_d`-rotated** spectrum, and [coleMagnitude] implements a plain Cole model
+ * with no `T_d` term, which is the likely source of the 1.4× discrepancy below.
+ * Generating from the `C_m`-implied 44.46 kHz and inverting at the printed 57.02
+ * recovers `R_0` 556.4, -3.7 %, worth -2.5 % on ECW, biased toward lower `r`.
+ *
  * `α` and `f_c` are **assumed**, not fitted, so §2.3 is not a Cole fit and does
  * not make this a spectroscopy device. Pinning `α` is well supported: Table 2
  * puts it at 0.70 ± 0.02 (men) and 0.68 ± 0.03 (women). Pinning `f_c` is not.
@@ -126,12 +133,22 @@ import kotlin.math.sqrt
  * a larger lever on the displayed ECW than the 12 % this pipeline corrects.
  *
  * ## Compartment cross-check (§3.2b)
- * §3.2 is gated on `R_0/R_INF` against the healthy distribution De Lorenzo
- * Table 2 reports, 1.525 ± 0.079 for men and 1.494 ± 0.075 for women. Beyond
- * 2 SD the result is APPROXIMATE; beyond 3 SD, ECW, ICW and BCM are suppressed.
- * This is a band-ratio window, and it is written as one: with `α` and `f_c`
- * pinned, `R_0/R_INF` is a strictly monotone relabelling of `|Z_50|/|Z_250|` and
- * carries nothing the raw ratio does not.
+ * `R_0/R_INF` is compared against the healthy distribution De Lorenzo Table 2
+ * reports, 1.525 ± 0.079 for men and 1.494 ± 0.075 for women. Beyond 2 SD the
+ * result is APPROXIMATE. It does **not** suppress, and the reason is worth
+ * recording: [BAND_HIGH_KHZ] is a nominal figure with no source, and the
+ * comparison is more sensitive to it than to anything else in §2.3. The one real
+ * device capture in the tests (543.2 / 497.6 Ω) lands at 3.01 SD read as a male
+ * and 2.78 SD read as a female, so a 3 SD cut would have withheld the
+ * compartment split from a man and granted it to a woman on the same reading;
+ * assume 150 kHz instead of 250 and the same capture sits at 1.44 SD. A ±20 %
+ * error in the assumed band moves the figure by 0.6 to 1.1 SD. What suppresses
+ * §3.2 is the §3.3 `ECW/TBW` window and §3.1b, both of which read quantities the
+ * band frequencies do not enter.
+ *
+ * The comparison is a band-ratio test either way: with `α` and `f_c` pinned,
+ * `R_0/R_INF` is a strictly monotone relabelling of `|Z_50|/|Z_250|` and carries
+ * nothing the raw ratio does not.
  *
  * §2.3 also supplies what Matthie 2005 Eqs. 5 and 14 consume, so a second TBW
  * can be computed from the same `R_0` with the `ρ_ECW` / `ρ_ICW` pair below. Its
@@ -150,12 +167,13 @@ import kotlin.math.sqrt
  * resistance, the scale's absolute calibration and the foot-to-foot factor all
  * pass unexamined, and §3.1b is the only check anywhere that can see them.
  *
- * Second, inverting the gap back into `r` gives an accept region that barely
- * moves with the subject: across the whole validated anthropometric range and a
- * 2.3× swing in absolute impedance, the male boundary shifts by ±0.02 in `r`,
- * about 1.5 %. Gating on the gap would therefore have been the same band-ratio
- * window in disguise, with its bounds resting on a `σ` built from two nested SEEs
- * that both describe De Lorenzo's own BIS route rather than Sun's.
+ * Second, inverting the gap back into `r` gives an accept region that tracks the
+ * Table 2 window closely: averaged over the validated anthropometric range and a
+ * 2.3× swing in absolute impedance it spans `r` 1.343-1.773 against the Table 2
+ * 3 SD span of 1.288-1.762, with the boundaries themselves moving ±0.06 to ±0.11
+ * across that sweep. Gating on the gap would therefore have been a band-ratio
+ * comparison in disguise, with its bounds resting on a `σ` built from two nested
+ * SEEs that both describe De Lorenzo's own BIS route rather than Sun's.
  *
  * On De Lorenzo's dilution cohort the full pipeline puts the gap at +2.84 %, of
  * which Sun alone contributes -5.41 % against the measured D₂O TBW. The two
@@ -175,13 +193,7 @@ import kotlin.math.sqrt
  * a pair. And because §2.3 lowers ECW it raises ICW, so `BCM/FFM` moves from
  * 0.55/0.51/0.56 to 0.59/0.56/0.62 on the §7.1-7.3 subjects, away from Kotler's
  * 0.50-0.55 rather than toward it. §2.3 improves one displayed ratio and
- * degrades another; only the first is gated.
- *
- * Note what that remainder is: `TBW` from Sun 2003, a D₂O-calibrated NHANES
- * regression, minus `ECW` from Eq. B2, calibrated against NaBr. De Lorenzo
- * p. 1547 puts NaBr and ³⁵SO₄ spaces 20 % apart, so the displayed `ECW/TBW`
- * is tracer-dependent before any impedance error and has no published
- * validation as a pair.
+ * degrades another, and neither is gated.
  *
  * ## Suppression policy
  *  - TBW out of `[0.38, 0.68]·W` (M) / `[0.35, 0.63]·W` (F) → suppress TBW +
@@ -190,15 +202,14 @@ import kotlin.math.sqrt
  *    still display (they depend only on TBW). Healthy reference: 0.36-0.40
  *    young adult, 0.38-0.42 older; De Lorenzo p. 1547 puts his own dilution
  *    cohort at 0.40-0.42. This pipeline still reads above that band.
- *  - `R_0/R_INF` beyond 3 SD of the Table 2 healthy mean → suppress ECW, ICW, BCM
- *  - FFM/W outside `[0.30, 0.97]` → suppress FFM, BF, SMM
  *  - §3.1b BF % more than [DEURENBERG_MARGIN] from Deurenberg 1991 in either
  *    direction → suppress TBW and everything downstream. TBW, FFM and BF are one
  *    number in three forms, so all three go together.
  *  - VFI outside [1, 30] → suppress rather than clamp
- *  - BF % outside [3, 60] (M) / [8, 70] (F) → suppress, flag (underlying TBW
- *    likely wrong)
- *  - UNRELIABLE contact → suppress all per-compartment fields; weight + BMI
+ *  - `R_0/R_INF` beyond 2 SD of the Table 2 healthy mean → APPROXIMATE, no
+ *    suppression
+ *  - UNRELIABLE contact → suppress every impedance-derived field. Weight, BMI,
+ *    VFI, anthropometric bone and the §6 Mifflin BMR carry no impedance and
  *    still display
  *
  * ## Bone + VFI caveats
@@ -443,24 +454,22 @@ object S400BodyComposition {
         val rSd = if (inputs.sexMale) R0_RINF_SD_M else R0_RINF_SD_F
         val rDeviation = coleFit?.let { abs(it.r0RinfRatio - rMean) / rSd }
         val rTight = rDeviation != null && rDeviation <= 2f
-        val rOk = rDeviation != null && rDeviation <= 3f
 
         // §3.3 ICW = TBW − ECW; suppress per-compartment outputs on bad ratio.
         val ecwTbwRatio = if (tbw != null && tbw > 0f && ecwRaw != null) ecwRaw / tbw else null
         val ratioOk = ecwTbwRatio != null && ecwTbwRatio in 0.30f..0.55f
-        val ecw = if (tbw != null && ratioOk && rOk) ecwRaw else null
+        val ecw = if (tbw != null && ratioOk) ecwRaw else null
         val icw = if (tbw != null && ecw != null) tbw - ecw else null
 
-        // §3.4 FFM = TBW / 0.732 (Pace & Rathbun 1945); §3.1b already gated it.
-        val ffmOk = tbw != null && ffmRaw / w in 0.30f..0.97f
-        val ffm = if (ffmOk) ffmRaw else null
+        // §3.4 FFM = TBW / 0.732 (Pace & Rathbun 1945). §3.1b decides for all
+        // three: the §3.1 window on TBW/W maps to FFM/W [0.52, 0.93] (M) and
+        // [0.48, 0.86] (F), inside every range a separate check could impose.
+        val ffm = if (tbw != null) ffmRaw else null
 
         // §3.5 Body fat.
         val bf = if (ffm != null) w - ffm else null
-        val bfRange = if (inputs.sexMale) 3f..60f else 8f..70f
-        val bfPctOk = bf != null && bfPctRaw in bfRange
-        val bfPct = if (bfPctOk) bfPctRaw else null
-        val bfKg = if (bfPct != null) bf else null
+        val bfPct = if (bf != null) bfPctRaw else null
+        val bfKg = bf
 
         // §3.6 SMM (Janssen 2000). Rides on the §3.4 suppression: Janssen's
         // regression shares the resistance index that drove FFM out of range.
@@ -485,13 +494,14 @@ object S400BodyComposition {
         val vfi = vfiRaw.takeIf { it in 1f..30f }
 
         // §3.9 BMR.
-        val bmrFromFfm = if (ffm != null) {
+        val bmrFromFfm = if (ffm != null && !unreliableContact) {
             when (bmrFormula) {
                 BmrFormula.CUNNINGHAM_1991 -> 370f + 21.6f * ffm
                 BmrFormula.CUNNINGHAM_1980 -> 500f + 22.0f * ffm
             }
         } else {
-            // Mifflin-St Jeor fallback.
+            // §6 Mifflin-St Jeor fallback. No impedance in it, so it survives a
+            // failed §2.1 contact check where the FFM-based route cannot.
             10f * w + 6.25f * h - 5f * inputs.age + if (inputs.sexMale) 5f else -161f
         }
         val bmr = bmrFromFfm.coerceIn(800f, 4000f)
@@ -507,7 +517,7 @@ object S400BodyComposition {
         // Overall reliability.
         val reliability = when {
             unreliableContact -> Reliability.UNRELIABLE
-            !tbwOk || !ffmOk || !bfPctOk || !rTight -> Reliability.APPROXIMATE
+            !tbwOk || !rTight -> Reliability.APPROXIMATE
             else -> Reliability.OK
         }
 
@@ -531,7 +541,7 @@ object S400BodyComposition {
             smmPct = if (suppress || smm == null) null else (smm / w) * 100f,
             boneKg = bone,
             vfi = vfi,
-            bmrKcal = if (suppress) null else bmr,
+            bmrKcal = bmr,
             bcmKg = if (suppress) null else bcm,
             proteinKg = if (suppress) null else proteinKg,
             proteinPct = if (suppress) null else proteinPct,
