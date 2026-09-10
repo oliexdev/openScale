@@ -126,21 +126,34 @@ import kotlin.math.sqrt
  *
  * ## Compartment cross-check (§3.2b)
  * §2.3 supplies `R_E / R_INF`, which is what Matthie 2005 Eqs. 5 and 14 consume,
- * so an ICW and hence a second, independent TBW can be computed from the same
- * `R_0` using the `ρ_ECW` / `ρ_ICW` pair that belongs to the same recalibration
- * as `k_ECW`. Sun 2003 is a D₂O-calibrated NHANES regression and Eq. B2 is
- * NaBr-calibrated Hanai mixture theory, so the two routes share no calibration
- * and their agreement is real evidence that the inversion landed. On De
- * Lorenzo's dilution cohort they agree to 0.14 %.
- *
- * That agreement, not a window on `R_0/R_INF`, gates §3.2. Given pinned `α` and
- * `f_c`, `R_0/R_INF` is a strictly monotone relabelling of the raw band ratio and
- * carries nothing the ratio does not; a plausibility window on it would be a
- * band-ratio window wearing a physiological name. The bounds come from the two
- * routes' published standard errors of the estimate (De Lorenzo p. 1545: TBW
- * 1.33 L on 45.48, ECW 0.90 L on 18.34), added in quadrature to
- * [CROSS_CHECK_SIGMA]. Beyond 2σ the result is APPROXIMATE; beyond 3σ, ECW, ICW
+ * so an ICW and hence a second TBW can be computed from the same `R_0` using the
+ * `ρ_ECW` / `ρ_ICW` pair that belongs to the same recalibration as `k_ECW`. Sun
+ * 2003 is a D₂O-calibrated NHANES regression and Eq. B2 is NaBr-calibrated Hanai
+ * mixture theory, so the two carry different constants and different reference
+ * tracers. On De Lorenzo's dilution cohort they agree to 0.14 %. That agreement,
+ * not a window on `R_0/R_INF`, gates §3.2, with bounds from the two routes'
+ * published SEEs (p. 1545: TBW 1.33 L on 45.48, ECW 0.90 L on 18.34) added in
+ * quadrature to [CROSS_CHECK_SIGMA]: beyond 2σ APPROXIMATE, beyond 3σ ECW, ICW
  * and BCM are suppressed.
+ *
+ * **What this test can and cannot see.** Both routes read the same 50 kHz
+ * magnitude, so it is not two independent measurements. Scaling both bands by a
+ * common factor leaves the band ratio, and therefore `R_0/R_INF`, untouched;
+ * `TBW` from Sun then moves as `λ^-0.668` (its impedance term is 66.8 % of the
+ * total) while the Matthie route moves as `λ^-2/3` exactly, so the two track each
+ * other to within 0.0012 in log-slope. Sweeping `λ` from 0.85 to 1.30 on the
+ * §7.1 subject, a 53 % swing in absolute impedance, moves the gap by 0.6
+ * percentage points. **The cross-check is therefore blind to common-mode
+ * impedance error**: contact resistance, the scale's absolute calibration, and
+ * [FOOT_TO_FOOT_CORRECTION] itself all pass it unexamined, and none of them is
+ * guarded anywhere else either.
+ *
+ * What it does see is the band ratio, sharply, and conditioned on body size.
+ * Mis-stating the high band alone by ±10 % swings the gap from +20 % to -52 %.
+ * Because the gap depends on the resistance index and weight as well as on `r`,
+ * it asks whether a subject's band ratio is consistent with that subject's
+ * anthropometry, which a bare window on `R_0/R_INF` cannot. That is the whole of
+ * its power, and the §2.3 `α` and `f_c` assumptions sit inside it.
  *
  * The Matthie ICW itself is **not** displayed. It rests on the same assumed `α`
  * and `f_c` as `R_0`, through a second nonlinear step, so using it as a check is
