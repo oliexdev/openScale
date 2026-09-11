@@ -30,7 +30,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.UUID
-import kotlin.math.max
 import com.health.openscale.core.data.Kg
 import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.Percent
@@ -71,6 +70,20 @@ class OneByoneHandler : ScaleDeviceHandler() {
     // duplicate and again a few seconds later once its bioimpedance retry has run.
     private var publishedLive = false
 
+    /**
+     * True while connected to the 1byone "Health Scale".
+     *
+     * The frame layout is shared across this family, but two acceptance rules are not: which byte-9
+     * values mean "settled", and whether a weigh-in without impedance is worth keeping. Both were
+     * established from the 1byone vendor app ("New iWellness 4.0") and confirmed on physical 1byone
+     * units, so they are applied to that model alone. The Eufy C1/P1/A1 keep the long-standing rule
+     * -- `b9 != 1` plus impedance required -- because nobody here has one of those to test against,
+     * and a narrowed whitelist would make every live weigh-in vanish silently if their firmware
+     * used a third status value. Resolved in [onConnected] from the peripheral name rather than in
+     * [supportFor], which the scanner also calls for devices we do not end up connecting to.
+     */
+    private var isOneByoneClassic = false
+
     // --- Capability declaration -----------------------------------------------
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
@@ -80,7 +93,7 @@ class OneByoneHandler : ScaleDeviceHandler() {
             "t9146" in name -> "Eufy C1"
             "t9147" in name -> "Eufy P1"
             "t9120" in name -> "Eufy A1"
-            "Health Scale".lowercase() in name -> "1byone (classic)"
+            isOneByoneClassicName(name) -> MODEL_1BYONE_DISPLAY
             else -> return null
         }
 
@@ -103,6 +116,19 @@ class OneByoneHandler : ScaleDeviceHandler() {
     // --- Link lifecycle --------------------------------------------------------
 
     override fun onConnected(user: ScaleUser) {
+        // Handler instances are reused for the lifetime of the app (ScaleFactory keeps a single
+        // list of them), so start every connection from a known state rather than relying on
+        // onDisconnected() having run.
+        clockAckFallbackJob?.cancel()
+        clockAckFallbackJob = null
+        historicMode = false
+        historyCount = 0
+        promptedForMeasurement = false
+        publishedLive = false
+
+        isOneByoneClassic = isOneByoneClassicName(getPeripheral()?.name.orEmpty())
+        logD("Connected to ${if (isOneByoneClassic) MODEL_1BYONE_DISPLAY else "an Eufy model"}")
+
         // 1) Subscribe to notifications on 0xFFF4
         setNotifyOn(SVC_FFF0, CHR_FFF4)
 
@@ -238,8 +264,8 @@ class OneByoneHandler : ScaleDeviceHandler() {
         // Impedance is ((b2 << 8) + b1) * 0.1 Ω (note the byte order used by original driver)
         val impedanceOhm = (((bytes[2].toInt() and 0xFF) shl 8) + (bytes[1].toInt() and 0xFF)) * 0.1f
 
-        // A flag in b9 == 1 means "impedance not present" (legacy observation)
-        val impedancePresent = (bytes[9].toInt() != 1) && (impedanceOhm != 0f)
+        val impedancePresent = impedanceOhm != 0f
+        val status = bytes[9].toInt() and 0xFF
 
         // Historic entries include a timestamp at bytes 11..17 (length >= 18)
         val hasTimestamp = hasHistoryTimestamp(bytes)
@@ -247,13 +273,28 @@ class OneByoneHandler : ScaleDeviceHandler() {
         // A history entry without its timestamp cannot be placed on the graph, so drop it.
         if (isHistoric && !hasTimestamp) return
 
-        // Only record settled readings. Byte 9 is the lock status: 0x00 and 0x36 mean the scale has
-        // finished weighing, anything else is still in progress. Historic entries are settled by
-        // definition, so the gate applies to live frames only.
-        if (!isHistoric && !isFinalReading(bytes)) {
-            logD("Ignoring in-progress frame (status=0x%02X, %.2f kg)"
-                .format(bytes[9].toInt() and 0xFF, weightKg))
-            return
+        // Which frames are worth saving is the one model-dependent part of this protocol -- see
+        // [isOneByoneClassic] for why the 1byone rules are not applied to the Eufy models.
+        if (isOneByoneClassic) {
+            // Byte 9 is the lock status: 0x00 and 0x36 mean the scale has finished weighing,
+            // anything else is still in progress. Historic entries are settled by definition.
+            if (!isHistoric && !isFinalReading(bytes)) {
+                logD("Ignoring in-progress frame (status=0x%02X, %.2f kg)".format(status, weightKg))
+                return
+            }
+            // Impedance 0 means the bioimpedance run failed (socks, shoes, poor foot contact).
+            // The weight is still good, so publish it and skip only the body composition.
+        } else {
+            // Pre-existing Eufy behaviour, unchanged: b9 == 1 is the sole "not settled" marker,
+            // and a frame without impedance is discarded rather than saved as a bare weight.
+            if (status == 1) {
+                logD("Ignoring frame with the legacy status=0x01 flag (%.2f kg)".format(weightKg))
+                return
+            }
+            if (!impedancePresent) {
+                logD("Ignoring frame without impedance (%.2f kg)".format(weightKg))
+                return
+            }
         }
 
         // Frames with no usable weight carry nothing worth saving.
@@ -295,7 +336,7 @@ class OneByoneHandler : ScaleDeviceHandler() {
             dateTime = if (hasTimestamp) whenCal.time else Calendar.getInstance().time
             this[MeasurementType.WEIGHT] = Kg(weightKg)
             // Store the raw impedance so body composition can be recomputed later.
-            if (impedancePresent) impedance = impedanceOhm.toDouble()
+            if (impedancePresent) this[MeasurementType.IMPEDANCE] = Ohm(impedanceOhm)
         }
 
         // Body composition needs impedance. The scale reports zero when it could not run the
@@ -318,7 +359,6 @@ class OneByoneHandler : ScaleDeviceHandler() {
             // No user-facing notice here on purpose: a snackbar emitted at this point is dismissed
             // by BleConnector's saved-measurement snackbar ~700 ms later, so it never really shows.
             logI("No impedance in frame - publishing weight only (%.2f kg)".format(weightKg))
-            this[MeasurementType.IMPEDANCE] = Ohm(impedanceOhm.toFloat())
         }
 
         if (!isHistoric) publishedLive = true
@@ -379,6 +419,21 @@ class OneByoneHandler : ScaleDeviceHandler() {
         /** Frame type marker for a body-fat measurement. */
         private const val TYPE_BODY_FAT = 0xCF.toByte()
 
+        /** Advertised name of the 1byone "Health Scale", lowercased. */
+        private const val MODEL_1BYONE_NAME = "health scale"
+
+        /** Display name for that model. */
+        const val MODEL_1BYONE_DISPLAY = "1byone (classic)"
+
+        /**
+         * True when [name] is the 1byone "Health Scale" rather than one of the Eufy models.
+         *
+         * Shared by [supportFor] and [onConnected] so the acceptance rules can never end up keyed
+         * off a different match than the display name.
+         */
+        fun isOneByoneClassicName(name: String): Boolean =
+            MODEL_1BYONE_NAME in name.lowercase()
+
         fun xorChecksum(b: ByteArray, len: Int): Byte {
             var x = 0
             for (i in 0 until len) x = x xor (b[i].toInt() and 0xFF)
@@ -393,8 +448,11 @@ class OneByoneHandler : ScaleDeviceHandler() {
             bytes.size >= LIVE_FRAME_LEN && bytes[10] == xorChecksum(bytes, 10)
 
         /**
-         * True when byte 9 marks the reading as settled ("locked" in the vendor app, which treats
-         * 0x00 and 0x36 as final and everything else as still in progress).
+         * True when byte 9 marks the reading as settled.
+         *
+         * The values come from the 1byone vendor app, which treats 0x00 and 0x36 as "locked" and
+         * everything else as still in progress. **1byone only** -- see [isOneByoneClassic] for why
+         * this whitelist is not applied to the Eufy models.
          */
         fun isFinalReading(bytes: ByteArray): Boolean {
             if (bytes.size < LIVE_FRAME_LEN) return false

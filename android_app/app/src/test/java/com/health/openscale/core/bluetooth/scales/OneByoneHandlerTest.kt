@@ -130,7 +130,8 @@ class OneByoneHandlerTest {
 
     @Test
     fun `settled readings are distinguished from in-progress ones`() {
-        // 0x00 and 0x36 are the vendor app's "locked" values.
+        // 0x00 and 0x36 are the 1byone vendor app's "locked" values, and this whitelist is applied
+        // to that model only -- see OneByoneHandler.isOneByoneClassic.
         for (frame in listOf(single1016, single1014) + allCoalesced) {
             assertThat(OneByoneHandler.isFinalReading(frame)).isTrue()
         }
@@ -168,5 +169,24 @@ class OneByoneHandlerTest {
         assertThat(OneByoneHandler.isLiveFrame(ByteArray(0))).isFalse()
         // Same frame with a corrupted checksum byte.
         assertThat(OneByoneHandler.isLiveFrame(hex("CF 50 0F B0 27 10 13 51 00 00 FF"))).isFalse()
+    }
+
+    /**
+     * The lock-status whitelist and weight-only publishing are both derived from the 1byone vendor
+     * app and confirmed on 1byone hardware, so they must key off the model rather than being
+     * applied to the whole family. A mismatch here would send the Eufy C1/P1/A1 down the 1byone
+     * path, where an unexpected byte-9 value discards every live weigh-in without a trace.
+     */
+    @Test
+    fun `only the 1byone Health Scale takes the 1byone acceptance rules`() {
+        for (name in listOf("Health Scale", "health scale", "1byone Health Scale")) {
+            assertThat(OneByoneHandler.isOneByoneClassicName(name)).isTrue()
+        }
+
+        // The three Eufy models this handler also claims, plus the empty name of a scan result
+        // that never resolved one.
+        for (name in listOf("eufy T9146", "eufy T9147", "eufy T9120", "")) {
+            assertThat(OneByoneHandler.isOneByoneClassicName(name)).isFalse()
+        }
     }
 }
