@@ -38,6 +38,10 @@ private fun cbrt(x: Double): Double = x.pow(1.0 / 3.0)
  * `rLowRaw` (Ω, ~50 kHz). Heart rate, if present, is **not** an input to any
  * body-composition equation — pass through to the UI unmodified.
  *
+ * The single-frequency prediction equations (Sun 2003, Janssen 2000) were
+ * derived on 50 kHz BIA, so they are fed the corrected **low-frequency** band.
+ * The high-frequency band only informs the §2.1 Cole-Cole checks.
+ *
  * ## Validation (§1.1) — reject entire computation
  * `age 18-120` (Janssen/Cunningham not validated <18), `height 100-230`,
  * `weight 20-250`, `R_high/R_low 200-1500`, `BMI 12-60`. These are not hard
@@ -54,20 +58,20 @@ private fun cbrt(x: Double): Double = x.pow(1.0 / 3.0)
  *  - **§2.2 Foot-to-foot correction.** The S400 measures only the lower body
  *    (foot↔foot), but every published BIA equation was derived for
  *    wrist-to-ankle BIA. Foot-to-foot R is ~10 % lower because the path omits
- *    the arm segment (Organ 1994, Bracco 1996, Demura 2004). Both R values are
- *    multiplied by [FOOT_TO_FOOT_CORRECTION] before entering any prediction
+ *    the arm segment (Organ 1994, Bracco 1996, Demura 2004). The low-frequency band
+ *    is multiplied by [FOOT_TO_FOOT_CORRECTION] before entering a prediction
  *    equation. Raw (un-corrected) values are kept for the §3.7 empirical bone
  *    formula and §3.8 VFI, which were fit against raw foot-to-foot data and
  *    would double-correct.
  *
  * ## Computation order (§3) — sources
- *  - §3.1 TBW — Sun 2003 race-combined, sex-specific
+ *  - §3.1 TBW — Sun 2003 race-combined, sex-specific (50 kHz → corrected R_low)
  *  - §3.2 ECW — De Lorenzo 1997 / Matthie 2005 Hanai mixture theory
  *  - §3.3 ICW = TBW − ECW
  *  - §3.4 FFM = TBW / 0.732 — Pace & Rathbun 1945 hydration constant
  *  - §3.5 BF = W − FFM
  *  - §3.6 SMM — Janssen 2000 (MRI-validated, single-frequency 50 kHz; uses
- *    corrected R_H even though nominally a dual-freq model)
+ *    corrected R_low)
  *  - §3.7 Bone — see [BoneFormula]
  *  - §3.8 VFI — empirical anthropometric regression (no impedance input)
  *  - §3.9 BMR — see [BmrFormula]; Mifflin-St Jeor fallback when FFM suppressed
@@ -214,16 +218,16 @@ object S400BodyComposition {
         val rHighRawAfterSwap = rHigh  // §3.7 Option A needs RAW (un-corrected) R_high.
         val unreliableContact = abs(rLow - rHigh) / rHigh < 0.01f
 
-        // §2.2 foot-to-foot correction (applied to both R values for the main pipeline).
-        val rH = rHigh * footToFootCorrection
+        // §2.2 foot-to-foot correction. The single-frequency equations take
+        // the corrected low-frequency band.
         val rL = rLow * footToFootCorrection
 
-        // §3.1 TBW (Sun 2003, race-combined, sex-specific).
+        // §3.1 TBW (Sun 2003, race-combined, sex-specific; 50 kHz).
         val sexM = if (inputs.sexMale) 1f else 0f
         val tbwRaw = if (inputs.sexMale) {
-            1.20f + 0.45f * (h * h / rH) + 0.18f * w
+            1.20f + 0.45f * (h * h / rL) + 0.18f * w
         } else {
-            3.75f + 0.45f * (h * h / rH) + 0.11f * w
+            3.75f + 0.45f * (h * h / rL) + 0.11f * w
         }
         val tbwOk = tbwRaw in (0.30f * w)..(0.75f * w)
         val tbw = if (tbwOk) tbwRaw else null
@@ -251,8 +255,8 @@ object S400BodyComposition {
         val bfPct = if (bfPctOk) bfPctRaw else null
         val bfKg = if (bfPct != null) bf else null
 
-        // §3.6 SMM (Janssen 2000), uses corrected R_H.
-        val smmRaw = 0.401f * (h * h / rH) + 3.825f * sexM - 0.071f * inputs.age + 5.102f
+        // §3.6 SMM (Janssen 2000; 50 kHz → rL).
+        val smmRaw = 0.401f * (h * h / rL) + 3.825f * sexM - 0.071f * inputs.age + 5.102f
         val smm = smmRaw.coerceIn(8f, 75f)
 
         // §3.7 Bone mineral mass — two options.
