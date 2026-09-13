@@ -102,14 +102,14 @@ class RenphoES26BBHandlerTest {
     @Test
     fun `body fat formula matches renpho-escs20m algorithm 0x04`() {
         // Female, 54.7 kg, 167 cm, age 30, resistance 385 Ω → expected ~19.2%
-        val bf = RenphoES26BBHandler.bodyFatPercent(54.7f, 1.67f, 30, false, 385)
+        val bf = RenphoES26BBHandler.bodyFatPercent(54.7f, 1.67f, 30, 0f, 385)
         assertThat(bf).isWithin(0.2f).of(19.2f)
     }
 
     @Test
     fun `body fat formula for male`() {
         // Male, 75 kg, 180 cm, age 35, resistance 500 Ω → expected ~15.9%
-        val bf = RenphoES26BBHandler.bodyFatPercent(75f, 1.80f, 35, true, 500)
+        val bf = RenphoES26BBHandler.bodyFatPercent(75f, 1.80f, 35, 1f, 500)
         assertThat(bf).isWithin(0.2f).of(15.9f)
     }
 

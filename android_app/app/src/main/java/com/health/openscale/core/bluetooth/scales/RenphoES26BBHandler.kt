@@ -47,7 +47,7 @@ import com.health.openscale.core.data.Percent
  *   cmd 0x15 -> offline record,   payload = [weight u32be, resistance u16be, seconds u32be, …]
  *   cmd 0x11 -> device status,    payload = [power, display unit, byte2, stored count, flag]
  *   cmd 0x90 -> display unit,     payload = [unit, 0, mode, 0]
- * Status low nibble: 0 settling, 1 final (0x10/0x11 = same in BIA zero-current mode).
+ *   Status byte: 0x00/0x10 = settling, 0x01/0x11 = final (low nibble 1 = final).
  */
 class RenphoES26BBHandler : ScaleDeviceHandler() {
 
@@ -63,8 +63,8 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
         }
 
         /**
-         * Decode a 0x14 live/final packet. Only final frames are returned (status low nibble
-         * 0x01, e.g. 0x01 or 0x11 = final while the BIA zero-current pass is skipped); null.
+         * Decode a 0x14 live/final packet. Only final frames are returned (status byte 0x01
+         * or 0x11 = final; 0x00/0x10 = settling / BIA zero-current pass); null otherwise.
          */
         fun parseLiveFrame(data: ByteArray): LiveFrame? {
             if (data.size < 12) return null
@@ -98,9 +98,9 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
         private fun clamp(v: Float, lo: Float, hi: Float) = maxOf(lo, minOf(hi, v))
 
         /** Body fat % — linear regression on BMI, age and impedance. */
-        fun bodyFatPercent(weightKg: Float, heightM: Float, age: Int, sexIsMale: Boolean, resistance: Int): Float {
+        fun bodyFatPercent(weightKg: Float, heightM: Float, age: Int, sexIsMale: Float, resistance: Int): Float {
             val bmi = weightKg / (heightM * heightM)
-            return if (sexIsMale)
+            return if (sexIsMale != 0f)
                 clamp(1.524f * bmi + 0.103f * age - 21.992f - 500f / resistance, 1f, 60f)
             else
                 clamp(1.545f * bmi + 0.097f * age - 12.689f - 500f / resistance, 1f, 60f)
@@ -262,7 +262,7 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
                 val isMale = user.gender.isMale()
                 val sexF = if (isMale) 1f else 0f
                 val heightM = user.bodyHeight / 100f
-                val fat = bodyFatPercent(weightKg, heightM, user.age, isMale, resistance)
+                val fat = bodyFatPercent(weightKg, heightM, user.age, sexF, resistance)
                 this[MeasurementType.BODY_FAT] = Percent(fat)
                 this[MeasurementType.WATER] = Percent(waterPercent(fat, sexF))
                 this[MeasurementType.MUSCLE] = Percent(skeletalMusclePercent(fat, sexF))
