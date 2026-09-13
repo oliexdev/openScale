@@ -40,6 +40,9 @@ import com.health.openscale.core.data.Percent
  * ```
  *   [0-1]   AA BB      magic header
  *   [2-7]   device address
+ *   [8]     rolling sequence counter
+ *   [9-11]  model/vendor identifier
+ *   [12-14] vendor flags / padding
  *   [15]    status flags
  *   [17-18] weight, little-endian uint16, 0.01 kg per count
  *   [19-20] impedance/resistance, little-endian uint16, ohms (on models with BIA)
@@ -53,15 +56,12 @@ import com.health.openscale.core.data.Percent
  * - **Bit 0 (0x01)** — used by the FITINDEX FT-26R family, which runs status 0x14
  *   while the weight is moving and latches to 0x15 when the display settles. These
  *   units never set 0x20 at all.
+ * - **Status 0x23 / 0x15** — used by the Renpho ES-26M-W / Yolanda BIA family, which runs
+ *   status 0x02 / 0x14 while moving and latches to 0x23 or 0x15 when settled.
  *
  * Because a false "stable" writes a wrong weight into the user's history silently,
- * bit 0 was originally only honoured for payloads that also carry the FT-26R's fixed signature
- * (see [FT26R_SIGNATURE]); every other device kept the original bit-5-only rule.
- *
- * Subsequent testing across the broader Yolanda / Qing Niu / Renpho ecosystem
- * (e.g. Renpho ES-26M-W) confirmed that status 0x14 -> 0x15 (bit 0) is the universal
- * settled state machine across modern AABB broadcast scales. Both bit 5 and bit 0
- * are therefore accepted as stable flags across all AABB devices.
+ * bit 0 / 0x23 is gated on device model signatures (see [FT26R_SIGNATURE] and
+ * [isBiaCapable]); every other unrecognised AABB device keeps the original bit-5-only rule.
  */
 internal object QnBroadcastAdv {
 
@@ -79,8 +79,11 @@ internal object QnBroadcastAdv {
     /** Bit 5: the original encoding, honoured for every AABB device. */
     const val FLAG_STABLE_BIT = 0x20
 
-    /** Bit 0: FT-26R / Renpho stable flag (status 0x15). */
+    /** Bit 0: FT-26R family stable flag (status 0x15). */
     const val FLAG_STABLE_BIT_FT26R = 0x01
+
+    /** Status 0x23: Renpho ES-26M-W / Yolanda BIA stable flag. */
+    const val STATUS_STABLE_YOLANDA = 0x23
 
     private const val WEIGHT_MIN_KG = 0.5f
     private const val WEIGHT_MAX_KG = 300f
@@ -96,10 +99,6 @@ internal object QnBroadcastAdv {
      * from one unit, so it is used only to *widen* acceptance for devices that match it.
      * A device that does not match keeps the pre-existing bit-5 behaviour, so an
      * unrecognised AABB model can never be made worse by this.
-     *
-     * With bit 0 universally accepted across AABB broadcast devices, this signature is
-     * preserved to distinguish weight-only FT-26R units so their signature bytes are not
-     * misparsed as bio-impedance.
      */
     private val FT26R_SIGNATURE = byteArrayOf(0x51, 0x0E, 0x03)
     private const val SIGNATURE_OFFSET = 19
@@ -110,6 +109,7 @@ internal object QnBroadcastAdv {
         val statusByte: Int,
         val stable: Boolean,
         val isFt26rFamily: Boolean,
+        val isBiaCapable: Boolean,
         val impedanceOhm: Float? = null
     )
 
@@ -124,14 +124,33 @@ internal object QnBroadcastAdv {
     }
 
     /**
-     * Extracts bio-impedance resistance from bytes [19-20] (little-endian uint16) if present.
-     * FT-26R carries a fixed signature across bytes [19-21] and is skipped.
+     * True when [data] matches the Yolanda / Renpho BIA broadcast payload fingerprint:
+     * - Minimum 21 bytes
+     * - Not a weight-only FT-26R unit
+     * - Fixed vendor padding [12-14] = [FF FF FF]
      */
-    private fun extractImpedance(data: ByteArray, isFt26r: Boolean): Float? {
-        if (isFt26r || data.size < IMPEDANCE_HI + 1) return null
-        val rawOhm = (data[IMPEDANCE_LO].toInt() and 0xFF) or
+    fun isBiaCapable(data: ByteArray): Boolean {
+        if (data.size < 21 || hasFt26rSignature(data)) return false
+        return data.size >= 15 &&
+                data[12] == 0xFF.toByte() &&
+                data[13] == 0xFF.toByte() &&
+                data[14] == 0xFF.toByte()
+    }
+
+    /**
+     * Extracts bio-impedance resistance from bytes [19-20] (little-endian uint16) if present.
+     * Raw ADC counts on Yolanda/Renpho broadcast scales are reported in tenths of an ohm
+     * (e.g. 5452 -> 545.2 Ohm).
+     */
+    private fun extractImpedance(data: ByteArray, biaCapable: Boolean): Float? {
+        if (!biaCapable || data.size < IMPEDANCE_HI + 1) return null
+        val raw = (data[IMPEDANCE_LO].toInt() and 0xFF) or
                 ((data[IMPEDANCE_HI].toInt() and 0xFF) shl 8)
-        return if (rawOhm in IMPEDANCE_MIN_OHM..IMPEDANCE_MAX_OHM) rawOhm.toFloat() else null
+        return when {
+            raw in 2000..15000 -> raw / 10.0f
+            raw in 200..1500   -> raw.toFloat()
+            else               -> null
+        }
     }
 
     /**
@@ -151,16 +170,21 @@ internal object QnBroadcastAdv {
 
         val statusByte = data[STATUS_IDX].toInt() and 0xFF
         val isFt26r = hasFt26rSignature(data)
+        val isBia = isBiaCapable(data)
 
-        // Any QN/Renpho AABB frame is stable when bit 5 or bit 0 is set (status 0x15, 0x20, 0x35, etc.)
-        val stable = (statusByte and (FLAG_STABLE_BIT or FLAG_STABLE_BIT_FT26R)) != 0
+        val stable = when {
+            isFt26r -> (statusByte and (FLAG_STABLE_BIT or FLAG_STABLE_BIT_FT26R)) != 0
+            isBia   -> statusByte == STATUS_STABLE_YOLANDA || (statusByte and (FLAG_STABLE_BIT or FLAG_STABLE_BIT_FT26R)) != 0
+            else    -> (statusByte and FLAG_STABLE_BIT) != 0
+        }
 
         return Frame(
             weightKg = weightKg,
             statusByte = statusByte,
             stable = stable,
             isFt26rFamily = isFt26r,
-            impedanceOhm = extractImpedance(data, isFt26r)
+            isBiaCapable = isBia,
+            impedanceOhm = extractImpedance(data, isBia)
         )
     }
 }
@@ -183,6 +207,12 @@ internal object QnBroadcastAdv {
 class QNHandlerBroadcast : ScaleDeviceHandler() {
 
     private var hasPublished = false
+    private var firstStableTimeMs: Long? = null
+    private var pendingMeasurement: ScaleMeasurement? = null
+
+    companion object {
+        private const val BIA_WAIT_TIMEOUT_MS = 2500L
+    }
 
     // ── Device identification ─────────────────────────────────────────────────
 
@@ -192,13 +222,16 @@ class QNHandlerBroadcast : ScaleDeviceHandler() {
         // intentionally omitted: "renpho" and "qn-scale" names are also used by
         // connectable Variants 1 and 2, so a name match without the AABB payload
         // would cause this handler to shadow the GATT handlers for those devices.
-        val isAabb = device.manufacturerData
-            ?.get(QnBroadcastAdv.COMPANY_ID)
-            ?.let { QnBroadcastAdv.hasAabbMagic(it) } ?: false
+        val mData = device.manufacturerData?.get(QnBroadcastAdv.COMPANY_ID) ?: return null
+        if (!QnBroadcastAdv.hasAabbMagic(mData)) return null
 
-        if (!isAabb) return null
+        val isBia = QnBroadcastAdv.isBiaCapable(mData)
+        val caps = if (isBia) {
+            setOf(DeviceCapability.LIVE_WEIGHT_STREAM, DeviceCapability.BODY_COMPOSITION)
+        } else {
+            setOf(DeviceCapability.LIVE_WEIGHT_STREAM)
+        }
 
-        val caps = setOf(DeviceCapability.LIVE_WEIGHT_STREAM, DeviceCapability.BODY_COMPOSITION)
         return DeviceSupport(
             displayName  = "QN Scale (Broadcast)",
             capabilities = caps,
@@ -215,6 +248,8 @@ class QNHandlerBroadcast : ScaleDeviceHandler() {
 
     override fun onDisconnected() {
         hasPublished = false
+        firstStableTimeMs = null
+        pendingMeasurement = null
     }
 
     // ── Broadcast reception ───────────────────────────────────────────────────
@@ -248,7 +283,7 @@ class QNHandlerBroadcast : ScaleDeviceHandler() {
             TAG,
             "AABB weight=${"%.2f".format(frame.weightKg)} kg stable=${frame.stable} " +
                     "status=0x${frame.statusByte.toString(16).padStart(2, '0')} " +
-                    "imp=${frame.impedanceOhm} ft26r=${frame.isFt26rFamily}"
+                    "imp=${frame.impedanceOhm} ft26r=${frame.isFt26rFamily} bia=${frame.isBiaCapable}"
         )
 
         if (!frame.stable) return BroadcastAction.CONSUMED_KEEP_SCANNING
@@ -275,9 +310,32 @@ class QNHandlerBroadcast : ScaleDeviceHandler() {
             }
         }
 
-        LogManager.i(TAG, "AABB stable weight ${"%.2f".format(frame.weightKg)} kg (impedance=${frame.impedanceOhm}) → publish")
-        publish(measurement)
+        // On weight-only scales or when impedance is already present, publish immediately.
+        if (frame.impedanceOhm != null || !frame.isBiaCapable) {
+            LogManager.i(TAG, "AABB stable weight ${"%.2f".format(frame.weightKg)} kg (impedance=${frame.impedanceOhm}) → publish")
+            publish(measurement)
+            hasPublished = true
+            return BroadcastAction.CONSUMED_STOP
+        }
 
+        // On BIA scales, weight locks before impedance finishes computing.
+        // Wait up to BIA_WAIT_TIMEOUT_MS for the impedance frame before falling back.
+        val now = System.currentTimeMillis()
+        val firstStable = firstStableTimeMs
+        if (firstStable == null) {
+            firstStableTimeMs = now
+            pendingMeasurement = measurement
+            LogManager.d(TAG, "AABB weight settled without impedance; waiting for BIA frame...")
+            return BroadcastAction.CONSUMED_KEEP_SCANNING
+        }
+
+        if (now - firstStable < BIA_WAIT_TIMEOUT_MS) {
+            pendingMeasurement = measurement
+            return BroadcastAction.CONSUMED_KEEP_SCANNING
+        }
+
+        LogManager.i(TAG, "AABB BIA window timed out; publishing stable weight ${"%.2f".format(frame.weightKg)} kg without impedance")
+        publish(pendingMeasurement ?: measurement)
         hasPublished = true
         return BroadcastAction.CONSUMED_STOP
     }

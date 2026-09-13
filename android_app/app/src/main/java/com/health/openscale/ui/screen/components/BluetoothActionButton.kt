@@ -95,9 +95,7 @@ fun rememberBluetoothActionButton(
 
     return remember(connStatus, savedDevice, connectedDevice, currentUser, developerMode) {
         val savedAddr = savedDevice?.address
-        val deviceName = savedDevice?.name?.ifBlank { null }
-            ?: savedDevice?.determinedHandlerDisplayName
-            ?: context.getString(R.string.fallback_device_name_saved_scale)
+        val deviceName = savedDevice?.name ?: context.getString(R.string.fallback_device_name_saved_scale)
 
         val isBusy = savedAddr != null &&
                 (connStatus == ConnectionStatus.CONNECTING || connStatus == ConnectionStatus.DISCONNECTING)
