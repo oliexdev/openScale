@@ -27,22 +27,106 @@ import java.util.UUID
 import kotlin.math.min
 import com.health.openscale.core.data.Kg
 import com.health.openscale.core.data.Ohm
+import com.health.openscale.core.data.Percent
 
 /**
  * RENPHO ES-26BB-B GATT handler (legacy: BluetoothES26BBB).
+ *
+ * Also drives the solar-powered Elis Solar scales, which advertise the model id
+ * R-A012 or R-A020 (see the RENPHO manual "solar-powered smart scale") and stream
+ * the same 0x55aa "basic flavor" frames over the same 0x1A10 service.
  *
  * Service: 0x1A10
  *  - Notify: 0x2A10  (measurements, state)
  *  - Write : 0x2A11  (commands)
  *
- * Frames use a simple checksum = sum(all bytes except last) & 0xFF.
- * Action byte: data[2]
- *   0x14 -> live/final measurement
- *   0x15 -> offline (historical) measurement
- *   0x11 -> scale info (power, unit, battery, ...)
- *   0x10 -> generic op callback (success/fail)
+ * Frame format: `55 AA [cmd] [len u16be] [payload] [checksum]`, total size = 6 + len;
+ * checksum = sum of all preceding bytes & 0xFF (verified against ES-CS20MB1, R-A012,
+ * ES-26BB-B and ESCS20MB2 captures, see renpho-escs20m/x55aa/protocol.py).
+ *   cmd 0x14 -> live measurement, payload = [status, weight u32be (0.01 kg), resistance u16be]
+ *   cmd 0x15 -> offline record,   payload = [weight u32be, resistance u16be, seconds u32be, …]
+ *   cmd 0x11 -> device status,    payload = [power, display unit, byte2, stored count, flag]
+ *   cmd 0x90 -> display unit,     payload = [unit, 0, mode, 0]
+ * Status low nibble: 0 settling, 1 final (0x10/0x11 = same in BIA zero-current mode).
  */
 class RenphoES26BBHandler : ScaleDeviceHandler() {
+
+    companion object {
+        /** One decoded 0x14 live measurement frame. */
+        data class LiveFrame(val weightX100: Long, val resistance: Int) {
+            val weightKg: Float get() = weightX100 / 100f
+        }
+
+        /** One decoded 0x15 offline record. */
+        data class OfflineRecord(val weightX100: Long, val resistance: Int, val secondsAgo: Long) {
+            val weightKg: Float get() = weightX100 / 100f
+        }
+
+        /**
+         * Decode a 0x14 live/final packet. Only final frames are returned (status low nibble
+         * 0x01, e.g. 0x01 or 0x11 = final while the BIA zero-current pass is skipped); null.
+         */
+        fun parseLiveFrame(data: ByteArray): LiveFrame? {
+            if (data.size < 12) return null
+            val type = data[5]
+            val isFinal = (type == 0x01.toByte() || type == 0x11.toByte())
+            if (!isFinal) return null
+            val weightX100 = ConverterUtils.fromUnsignedInt32Be(data, 6) // kg * 100
+            val resistance = ConverterUtils.fromUnsignedInt16Be(data, 10)
+            return LiveFrame(weightX100, resistance)
+        }
+
+        /** Decode a 0x15 offline packet: weight, resistance and seconds since the measurement. */
+        fun parseOfflineRecord(data: ByteArray): OfflineRecord? {
+            if (data.size < 15) return null
+            val weightX100 = ConverterUtils.fromUnsignedInt32Be(data, 5)   // kg * 100
+            val resistance = ConverterUtils.fromUnsignedInt16Be(data, 9)
+            val secondsAgo = ConverterUtils.fromUnsignedInt32Be(data, 11)
+            return OfflineRecord(weightX100, resistance, secondsAgo)
+        }
+
+        // --- Body composition (renpho-escs20m algorithm 0x04, non-athlete) ---------------
+        //
+        // All formulas ported from renpho-escs20m/body_metrics.py (commit 5b74ab4).
+        // They approximate the proprietary Renpho native library (libICBodyFatAlgorithms.so)
+        // used by the official app for 4-electrode scales that stream a single impedance
+        // value over the 0x55aa basic-flavor protocol (ES-26BB-B, R-A012, R-A016, R-A020).
+        //
+        // Parameters: weight (kg), height (m), age (years), sex, resistance (Ω).
+        // All outputs are clamped to physiologically plausible ranges.
+
+        private fun clamp(v: Float, lo: Float, hi: Float) = maxOf(lo, minOf(hi, v))
+
+        /** Body fat % — linear regression on BMI, age and impedance. */
+        fun bodyFatPercent(weightKg: Float, heightM: Float, age: Int, sexIsMale: Boolean, resistance: Int): Float {
+            val bmi = weightKg / (heightM * heightM)
+            return if (sexIsMale)
+                clamp(1.524f * bmi + 0.103f * age - 21.992f - 500f / resistance, 1f, 60f)
+            else
+                clamp(1.545f * bmi + 0.097f * age - 12.689f - 500f / resistance, 1f, 60f)
+        }
+
+        /** Water % — derived from body fat via sex-specific linear coefficients. */
+        fun waterPercent(bf: Float, sexIsMale: Float) = clamp(
+            if (sexIsMale != 0f) 72.202f - 0.72223f * bf else 68.651f - 0.68725f * bf, 20f, 80f)
+
+        /** Skeletal muscle % — derived from body fat. */
+        fun skeletalMusclePercent(bf: Float, sexIsMale: Float) = clamp(
+            if (sexIsMale != 0f) 64.713f - 0.65508f * bf else 58.390f - 0.58654f * bf, 17.5f, 70f)
+
+        /** Bone mass (kg) — weight minus soft-lean mass minus fat mass. */
+        fun boneMass(weightKg: Float, bf: Float, sexIsMale: Float): Float {
+            val softLeanPct = clamp(
+                if (sexIsMale != 0f) 94.992f - 0.94969f * bf else 93.988f - 0.93960f * bf, 0f, 100f)
+            val softLeanKg = clamp(weightKg * softLeanPct / 100f, 3.75f, 110f)
+            val bfKg = bf * weightKg / 100f
+            return clamp(weightKg - softLeanKg - bfKg, 1f, 7f)
+        }
+
+        /** Protein % — derived from body fat. */
+        fun proteinPercent(bf: Float, sexIsMale: Float) = clamp(
+            if (sexIsMale != 0f) 22.787f - 0.22735f * bf else 25.340f - 0.30245f * bf, 5f, 24f)
+    }
 
     private val SVC get() = uuid16(0x1A10)
     private val CHR_NOTIFY get() = uuid16(0x2A10)
@@ -54,23 +138,28 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
     )
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = device.name
-        if (!name.equals("ES-26BB-B", ignoreCase = true)) return null
+        val name = device.name.trim()
+        val displayName = when {
+            name.equals("ES-26BB-B", ignoreCase = true) -> "RENPHO ES-26BB-B"
+            name.equals("R-A012", ignoreCase = true) -> "RENPHO Elis Solar (R-A012)"
+            name.equals("R-A020", ignoreCase = true) -> "RENPHO Elis Solar (R-A020)"
+            else -> return null
+        }
 
         val capabilities = setOf(
             DeviceCapability.BODY_COMPOSITION,
             DeviceCapability.LIVE_WEIGHT_STREAM,
-            DeviceCapability.HISTORY_READ,
-            DeviceCapability.BATTERY_LEVEL // device reports a battery/status frame
+            DeviceCapability.HISTORY_READ
         )
-        // Implemented today: live + offline read (when pushed by device)
+        // Implemented today: live + offline read + body composition from impedance
         val implemented = setOf(
+            DeviceCapability.BODY_COMPOSITION,
             DeviceCapability.LIVE_WEIGHT_STREAM,
             DeviceCapability.HISTORY_READ
         )
 
         return DeviceSupport(
-            displayName = "RENPHO ES-26BB-B",
+            displayName = displayName,
             capabilities = capabilities,
             implemented = implemented,
             linkMode = LinkMode.CONNECT_GATT
@@ -98,7 +187,7 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
         when (data[2].toInt() and 0xFF) {
             0x14 -> handleLiveMeasurement(data)                // final/realtime, we only save finals
             0x15 -> handleOfflineMeasurement(data)             // includes timestamp delta
-            0x11 -> parseScaleInfo(data)                       // power/unit/precision/offlineCount/battery
+            0x11 -> parseScaleInfo(data)                       // power/unit/storedCount/flag
             0x10 -> parseOpCallback(data)                      // success/failure of a prior op
             else -> logD("unknown action=${String.format("%02X", data[2])}")
         }
@@ -108,47 +197,41 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
 
     /** 0x14 live/final packet. Save only finals (type 0x01 or 0x11). */
     private fun handleLiveMeasurement(data: ByteArray) {
-        if (data.size < 12) return
-        val type = data[5]
-        val isFinal = (type == 0x01.toByte() || type == 0x11.toByte())
-        if (!isFinal) {
-            logD("live measurement (non-final) ignored, type=${String.format("%02X", type)}")
+        val frame = parseLiveFrame(data)
+        if (frame == null) {
+            logD("live measurement (non-final or too short) ignored")
             return
         }
 
-        val weightX100 = ConverterUtils.fromUnsignedInt32Be(data, 6) // kg * 100
-        val resistance = ConverterUtils.fromUnsignedInt16Be(data, 10)
-
-        logD("final weight=${weightX100/100f}kg, impedance=$resistance")
-        saveMeasurement(weightX100, resistance, timestampMs = null)
+        logD("final weight=${frame.weightKg}kg, impedance=${frame.resistance}")
+        saveMeasurement(frame.weightX100, frame.resistance, timestampMs = null)
     }
 
     /** 0x15 offline packet. Includes seconds elapsed since measurement. */
     private fun handleOfflineMeasurement(data: ByteArray) {
-        if (data.size < 15) return
-        val weightX100 = ConverterUtils.fromUnsignedInt32Be(data, 5)   // kg * 100
-        val resistance = ConverterUtils.fromUnsignedInt16Be(data, 9)
-        val secondsAgo = ConverterUtils.fromUnsignedInt32Be(data, 11)
-        val ts = System.currentTimeMillis() - secondsAgo * 1000L
+        val record = parseOfflineRecord(data)
+        if (record == null) {
+            logD("offline measurement too short -> ignored")
+            return
+        }
 
-        logD("offline weight=${weightX100/100f}kg, impedance=$resistance, ts=$ts")
-        saveMeasurement(weightX100, resistance, ts)
+        val ts = System.currentTimeMillis() - record.secondsAgo * 1000L
+        logD("offline weight=${record.weightKg}kg, impedance=${record.resistance}, ts=$ts")
+        saveMeasurement(record.weightX100, record.resistance, ts)
 
         acknowledgeOfflineMeasurement()
     }
 
-    /** 0x11 scale info frame (power/unit/precision/offlineCount/battery). */
+    /** 0x11 device-status frame: power, display unit, stored-record count and an unknown flag. */
     private fun parseScaleInfo(data: ByteArray) {
-        // Ensure enough bytes
         if (data.size < 10) return
         val power = data[5].toInt() and 0xFF      // 1=on, 0=shutting down
         val unit = data[6].toInt() and 0xFF       // 1=kg (others unknown)
-        val precision = data[7].toInt() and 0xFF  // usually 1
-        val offlineCount = data[8].toInt() and 0xFF
-        val battery = data[9].toInt() and 0xFF    // empirical: often 0; treat as unknown if 0
+        val byte2 = data[7].toInt() and 0xFF      // unattributed; reads 1 on captured units
+        val storedCount = data[8].toInt() and 0xFF
+        val flag = data[9].toInt() and 0xFF       // unattributed; not a battery level
 
-        logD("scale info: power=$power unit=$unit precision=$precision offlineCount=$offlineCount battery=$battery")
-        // (Optional) you could surface battery as a userInfo or store it in settings if needed.
+        logD("scale info: power=$power unit=$unit byte2=$byte2 storedCount=$storedCount flag=$flag")
     }
 
     /** 0x10 generic callback for some operation. */
@@ -168,12 +251,25 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
     }
 
     private fun saveMeasurement(weightX100: Long, resistance: Int, timestampMs: Long?) {
+        val weightKg = weightX100 / 100f
         val m = ScaleMeasurement().apply {
-            this[MeasurementType.WEIGHT] = Kg(weightX100 / 100f)
+            this[MeasurementType.WEIGHT] = Kg(weightKg)
             if (timestampMs != null) dateTime = Date(timestampMs)
-            // No BIA library is hooked here, but store the raw resistance so
-            // body composition can be computed/recomputed later.
-            if (resistance > 0) this[MeasurementType.IMPEDANCE] = Ohm(resistance.toFloat())
+            if (resistance > 0) {
+                this[MeasurementType.IMPEDANCE] = Ohm(resistance.toFloat())
+                // Body composition: renpho-escs20m algorithm 0x04 (non-athlete).
+                val user = currentAppUser()
+                val isMale = user.gender.isMale()
+                val sexF = if (isMale) 1f else 0f
+                val heightM = user.bodyHeight / 100f
+                val fat = bodyFatPercent(weightKg, heightM, user.age, isMale, resistance)
+                this[MeasurementType.BODY_FAT] = Percent(fat)
+                this[MeasurementType.WATER] = Percent(waterPercent(fat, sexF))
+                this[MeasurementType.MUSCLE] = Percent(skeletalMusclePercent(fat, sexF))
+                this[MeasurementType.BONE] = Kg(boneMass(weightKg, fat, sexF))
+                this[MeasurementType.PROTEIN] = Percent(proteinPercent(fat, sexF))
+                this[MeasurementType.LBM] = Kg(weightKg * (100f - fat) / 100f)
+            }
         }
         publish(m)
     }

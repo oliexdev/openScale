@@ -276,6 +276,9 @@ object ScaleCatalog {
         device("eufy T9148") claimedBy EufyP2Handler::class.java,
         device("ES-CS20M") claimedBy ESCS20MHandler::class.java,
         device("ES-26BB-B") claimedBy RenphoES26BBHandler::class.java,
+        // Elis Solar: advertises the model id R-A012 or R-A020; same 0x55aa protocol as ES-26BB-B.
+        device("R-A012") claimedBy RenphoES26BBHandler::class.java,
+        device("R-A020") claimedBy RenphoES26BBHandler::class.java,
         device("Mengii") claimedBy DigooDGSO38HHandler::class.java,
         device("openScale") claimedBy CustomOpenScaleHandler::class.java,
         device("BEURER BF700") claimedBy BeurerSanitasHandler::class.java,
