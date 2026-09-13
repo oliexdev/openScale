@@ -118,17 +118,15 @@ class QNHandlerBroadcastFT26RTest {
     }
 
     @Test
-    fun `bit 0 is only honoured for payloads carrying the FT-26R signature`() {
-        // Same frame, signature bytes [19-21] changed: bit 0 must no longer mean
-        // "stable", so an unknown AABB model keeps the original bit-5-only rule.
+    fun `bit 0 marks a stable measurement on AABB payloads`() {
         val foreign = payload(settled1).copyOf().also {
             it[19] = 0x00; it[20] = 0x00; it[21] = 0x00
         }
         val frame = QnBroadcastAdv.parse(QnBroadcastAdv.COMPANY_ID, foreign)!!
 
         assertThat(frame.isFt26rFamily).isFalse()
-        assertThat(frame.statusByte).isEqualTo(0x15)   // bit 0 still set
-        assertThat(frame.stable).isFalse()             // but not treated as stable
+        assertThat(frame.statusByte).isEqualTo(0x15)   // bit 0 set (status 0x15)
+        assertThat(frame.stable).isTrue()              // treated as stable
         assertThat(frame.weightKg).isWithin(0.01f).of(70.30f)
     }
 
@@ -176,6 +174,18 @@ class QNHandlerBroadcastFT26RTest {
         val frame = QnBroadcastAdv.parse(QnBroadcastAdv.COMPANY_ID, data)!!
         assertThat(frame.stable).isTrue()
         assertThat(frame.weightKg).isWithin(0.01f).of(70.30f)
+    }
+
+    @Test
+    fun `parses Renpho ES-26M-W frame with impedance and calculates body composition`() {
+        // Synthesized documentation frame for Renpho ES-26M-W: 70.00 kg (0x1B58 LE), status 0x15, impedance 500 Ohm (0x01F4 LE)
+        val renphoFrame = "aabb00005e0053017b0ea46affffff15a0581bf4012300"
+        val frame = parse(renphoFrame)
+        assertThat(frame).isNotNull()
+        assertThat(frame!!.stable).isTrue()
+        assertThat(frame.weightKg).isWithin(0.01f).of(70.00f)
+        assertThat(frame.impedanceOhm).isNotNull()
+        assertThat(frame.impedanceOhm!!).isWithin(0.01f).of(500.0f)
     }
 
     @Test
