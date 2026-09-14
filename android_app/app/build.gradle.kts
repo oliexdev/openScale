@@ -143,6 +143,12 @@ android {
         buildConfig = true
     }
 
+    lint {
+        // Translations come from Weblate and always lag behind the English strings, so a
+        // missing or stale one must not fail the build.
+        warning += setOf("MissingTranslation", "ExtraTranslation")
+    }
+
     testOptions {
         // JVM unit tests touch android.util.Log (via LogManager); return defaults
         // instead of throwing "not mocked" so pure-logic tests can run on the JVM.

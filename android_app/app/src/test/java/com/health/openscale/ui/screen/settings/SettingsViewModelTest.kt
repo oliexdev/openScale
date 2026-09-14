@@ -58,6 +58,9 @@ import java.io.File
 @Config(sdk = [34])
 class SettingsViewModelTest {
 
+    /** Any fixed start date; these tests are not about the start point. */
+    private val GOAL_START = 1_700_000_000_000L
+
     @get:Rule
     val mainRule = MainDispatcherRule(UnconfinedTestDispatcher())
 
@@ -121,7 +124,7 @@ class SettingsViewModelTest {
 
         vm.createUserWithGoals(
             user("Alice"),
-            listOf(UserGoals(userId = 0, measurementTypeId = typeId, goalValue = 80f)),
+            listOf(UserGoals(userId = 0, measurementTypeId = typeId, goalValue = 80f, startDate = GOAL_START)),
         )
 
         val uid = withTimeout(5_000) {
@@ -140,15 +143,15 @@ class SettingsViewModelTest {
         val removedType = types[1].id
 
         val uid = vm.addUser(user("Alice")).toInt()
-        repo.insertUserGoal(UserGoals(userId = uid, measurementTypeId = keptType, goalValue = 70f))
-        repo.insertUserGoal(UserGoals(userId = uid, measurementTypeId = removedType, goalValue = 90f))
+        repo.insertUserGoal(UserGoals(userId = uid, measurementTypeId = keptType, goalValue = 70f, startDate = GOAL_START))
+        repo.insertUserGoal(UserGoals(userId = uid, measurementTypeId = removedType, goalValue = 90f, startDate = GOAL_START))
         val stored = repo.getAllUsers().first().first { it.id == uid }
         val original = repo.getAllGoalsForUser(uid).first()
 
         // Keep keptType (changed 70 → 75), drop removedType.
         vm.updateUserWithGoals(
             user = stored,
-            pendingGoals = listOf(UserGoals(userId = uid, measurementTypeId = keptType, goalValue = 75f)),
+            pendingGoals = listOf(UserGoals(userId = uid, measurementTypeId = keptType, goalValue = 75f, startDate = GOAL_START)),
             originalGoals = original,
         )
 

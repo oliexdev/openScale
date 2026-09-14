@@ -126,4 +126,27 @@ class MigrationTest {
 
         assertThat(repo.getAllMeasurementTypes().first()).isNotEmpty()
     }
+
+    /**
+     * MIGRATION_16_17 adds the start date. Verifies that existing goals survive the rebuild and
+     * that the backfill uses the user's earliest measurement — the same reading the progress
+     * calculation would have snapped to — rather than a sentinel date that is untrue for anything
+     * reading the column directly.
+     */
+    @Test
+    fun migration16To17_keepsExistingGoals_andBackfillsTheStartFromTheFirstMeasurement() = runBlocking {
+        val dbFile = context.getDatabasePath(AppDatabase.DATABASE_NAME)
+        dbFile.parentFile?.mkdirs()
+        if (dbFile.exists()) dbFile.delete()
+
+        RoomTestSupport.writeV16Database(dbFile)
+
+        val opened = RoomTestSupport.onDisk(context).also { db = it }
+        val repo = RoomTestSupport.repositoryFor(opened)
+
+        val migrated = repo.getAllGoalsForUser(1).first().single()
+        assertThat(migrated.goalValue).isWithin(0.01f).of(78f)
+        assertThat(migrated.goalTargetDate).isEqualTo(1751328000000L)
+        assertThat(migrated.startDate).isEqualTo(RoomTestSupport.V16_MEASUREMENT_TIMESTAMP)
+    }
 }

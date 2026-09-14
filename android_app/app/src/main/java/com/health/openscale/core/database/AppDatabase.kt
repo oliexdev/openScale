@@ -45,7 +45,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext ctx: Context): AppDatabase =
         Room.databaseBuilder(ctx, AppDatabase::class.java, AppDatabase.Companion.DATABASE_NAME)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17)
             .build()
 
     @Provides
@@ -72,7 +72,7 @@ object DatabaseModule {
         MeasurementValue::class,
         MeasurementType::class,
     ],
-    version = 16,
+    version = 17,
     exportSchema = true
 )
 @TypeConverters(DatabaseConverters::class)
@@ -791,6 +791,48 @@ val MIGRATION_15_16 = object : Migration(15, 16) {
         db.execSQL(
             "CREATE UNIQUE INDEX IF NOT EXISTS `index_MeasurementType_identity` " +
                 "ON `MeasurementType`(`identity`)"
+        )
+    }
+}
+
+
+/**
+ * Adds the start date to a goal.
+ *
+ * Existing goals are backfilled with the user's earliest measurement rather than a sentinel date:
+ * the progress calculation snaps to the nearest reading anyway, so a placeholder would resolve to
+ * that same measurement while leaving an untrue date for anything reading the column directly.
+ * Without any measurement the goal starts at the moment of the migration.
+ *
+ * The column is NOT NULL, which SQLite cannot add to an existing table, hence the rebuild.
+ */
+val MIGRATION_16_17 = object : Migration(16, 17) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `user_goals_new` (" +
+                "`userId` INTEGER NOT NULL, `measurementTypeId` INTEGER NOT NULL, " +
+                "`goalValue` REAL NOT NULL, `goalTargetDate` INTEGER, " +
+                "`startDate` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`userId`, `measurementTypeId`), " +
+                "FOREIGN KEY(`userId`) REFERENCES `User`(`id`) " +
+                "ON UPDATE NO ACTION ON DELETE CASCADE , " +
+                "FOREIGN KEY(`measurementTypeId`) REFERENCES `MeasurementType`(`id`) " +
+                "ON UPDATE NO ACTION ON DELETE CASCADE )"
+        )
+        db.execSQL(
+            "INSERT INTO `user_goals_new` " +
+                "(`userId`, `measurementTypeId`, `goalValue`, `goalTargetDate`, `startDate`) " +
+                "SELECT g.`userId`, g.`measurementTypeId`, g.`goalValue`, g.`goalTargetDate`, " +
+                "COALESCE((SELECT MIN(m.`timestamp`) FROM `Measurement` m WHERE m.`userId` = g.`userId`), ?) " +
+                "FROM `user_goals` g",
+            arrayOf<Any?>(System.currentTimeMillis())
+        )
+        db.execSQL("DROP TABLE `user_goals`")
+        db.execSQL("ALTER TABLE `user_goals_new` RENAME TO `user_goals`")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_user_goals_userId` ON `user_goals` (`userId`)")
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_user_goals_measurementTypeId` " +
+                "ON `user_goals` (`measurementTypeId`)"
         )
     }
 }

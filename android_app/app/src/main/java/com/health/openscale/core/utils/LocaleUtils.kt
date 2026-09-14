@@ -18,14 +18,23 @@
 package com.health.openscale.core.utils
 
 import android.app.LocaleManager
+import android.icu.text.MeasureFormat
+import android.icu.util.Measure
+import android.icu.util.MeasureUnit
 import android.content.res.Configuration
 import android.content.res.Resources
+import android.text.format.DateFormat
 import android.os.Build
 import android.os.LocaleList
 import androidx.activity.ComponentActivity
 import com.health.openscale.core.data.SupportedLanguage
 import com.health.openscale.core.data.UnitType
 import java.text.NumberFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.time.temporal.WeekFields
 import java.util.Locale
 
@@ -189,6 +198,58 @@ object LocaleUtils {
         val locale = Resources.getSystem().configuration.locales[0]
         if (locale.country.isNullOrBlank()) WeekFields.ISO else WeekFields.of(locale)
     }.getOrDefault(WeekFields.ISO)
+
+    /**
+     * Formats the span from [from] to [to] as weeks and days, e.g. "6 weeks, 3 days". Zero
+     * components are left out; below a week only the day count is returned.
+     *
+     * Weeks are the coarsest unit on purpose — months would have to come from [java.time.Period]
+     * to be calendar-correct, and a diet is counted in weeks anyway.
+     *
+     * Unit names, plural rules and the list separator come from [MeasureFormat] — a hand-rolled
+     * singular/plural pair is wrong in every language with more than two forms, and openScale
+     * ships Polish, Russian and Slovenian among others.
+     */
+    @JvmStatic
+    fun formatElapsed(from: LocalDate, to: LocalDate): String {
+        val totalDays = ChronoUnit.DAYS.between(from, to).coerceAtLeast(0L).toInt()
+        if (totalDays < DAYS_PER_WEEK) return formatDays(totalDays)
+
+        val parts = buildList {
+            add(Measure(totalDays / DAYS_PER_WEEK, MeasureUnit.WEEK))
+            val days = totalDays % DAYS_PER_WEEK
+            if (days > 0) add(Measure(days, MeasureUnit.DAY))
+        }
+        return measureFormat(MeasureFormat.FormatWidth.WIDE).formatMeasures(*parts.toTypedArray())
+    }
+
+    /** An epoch timestamp as the calendar date it falls on in the device's zone. */
+    @JvmStatic
+    fun toLocalDate(timestampMillis: Long): LocalDate =
+        Instant.ofEpochMilli(timestampMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+
+    /**
+     * A short localized date, e.g. "Oct 31" or "31. Okt". The year is only spelled out when the
+     * date is not in the current one, where leaving it off would be ambiguous.
+     */
+    @JvmStatic
+    fun formatCompactDate(date: LocalDate): String {
+        val locale = effectiveLocale()
+        val skeleton = if (date.year == LocalDate.now().year) "dMMM" else "dMMMy"
+        val pattern = DateFormat.getBestDateTimePattern(locale, skeleton)
+        return date.format(DateTimeFormatter.ofPattern(pattern, locale))
+    }
+
+    /** A bare localized day count, e.g. "45 days". */
+    @JvmStatic
+    fun formatDays(days: Int): String =
+        measureFormat(MeasureFormat.FormatWidth.WIDE)
+            .formatMeasures(Measure(days.coerceAtLeast(0), MeasureUnit.DAY))
+
+    private fun measureFormat(width: MeasureFormat.FormatWidth): MeasureFormat =
+        MeasureFormat.getInstance(effectiveLocale(), width)
+
+    private const val DAYS_PER_WEEK = 7
 
     /**
      * Locale-aware number formatting with clamped fraction digits.

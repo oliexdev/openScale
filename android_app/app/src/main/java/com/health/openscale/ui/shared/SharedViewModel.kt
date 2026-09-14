@@ -42,6 +42,7 @@ import com.health.openscale.core.model.MeasurementInsight
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.usecase.MeasurementDemoUseCase
+import com.health.openscale.core.usecase.GoalProgress
 import com.health.openscale.core.usecase.SyncUseCases
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.core.facade.SettingsPreferenceKeys
@@ -685,6 +686,32 @@ class SharedViewModel @Inject constructor(
                     .map { list -> list.firstOrNull() }
             }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /**
+     * How far the selected user has come since the start point of each of their goals.
+     *
+     * Built from the user's full history rather than from [screenFlow]: each window is
+     * `[start, now]`, so switching the chart to "last 7 days" must not shrink it.
+     */
+    val goalProgressFlow: StateFlow<UiState<List<GoalProgress>>> =
+        selectedUserId
+            .flatMapLatest<Int?, UiState<List<GoalProgress>>> { uid ->
+                if (uid == null || uid == 0) {
+                    flowOf(UiState.Success(emptyList()))
+                } else {
+                    measurementTypes.flatMapLatest { types ->
+                        userFacade.observeProgress(
+                            userId = uid,
+                            types  = types.filter { it.isEnabled && !it.isInternal },
+                        ).map { UiState.Success(it) }
+                    }
+                }
+            }
+            .catch { e ->
+                LogManager.e(TAG, "Error computing start progress", e)
+                emit(UiState.Error(e.message))
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UiState.Loading)
 
     /**
      * The values to pre-fill an empty add-measurement form with — produced by the same carry-over a

@@ -61,7 +61,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -87,7 +87,7 @@ fun BluetoothDetailScreen(
     bluetoothViewModel: BluetoothViewModel
 ) {
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
+    val resources = LocalResources.current
 
     // --- Observe state from ViewModel ---
     val savedDevice by bluetoothViewModel.savedDevice.collectAsStateWithLifecycle()
@@ -125,8 +125,8 @@ fun BluetoothDetailScreen(
     }
 
     LaunchedEffect(savedDevice) {
-        val deviceName = savedDevice?.name ?: context.getString(R.string.unknown_device)
-        val title = context.getString(R.string.title_device_settings_for, deviceName)
+        val deviceName = savedDevice?.name ?: resources.getString(R.string.unknown_device)
+        val title = resources.getString(R.string.title_device_settings_for, deviceName)
         sharedViewModel.setTopBarTitle(title)
         sharedViewModel.setTopBarActions(emptyList())
     }
