@@ -841,4 +841,16 @@
     <string name="bt_error_omron_read_failed">Falha ao ler as medições armazenadas na balança.</string>
     <string name="bt_error_omron_timeout">A balança parou de responder; a transferência foi cancelada.</string>
     <string name="bt_warn_low_battery_unknown">A bateria da balança está fraca.</string>
+    <string name="goal_start_date_label">Data de início</string>
+    <string name="label_optional">%1$s (opcional)</string>
+    <string name="content_description_goal_progress">Progresso da meta: %1$d %</string>
+    <string name="progress_goal_reached">Meta atingida</string>
+    <string name="progress_held_for">por %1$s</string>
+    <string name="progress_remaining_to_go">faltam %1$s</string>
+    <string name="progress_time_left">%1$s para %2$s</string>
+    <string name="progress_since_date">Desde %1$s</string>
+    <string name="progress_until_date">Até %1$s</string>
+    <string name="progress_elapsed_in">Em %1$s</string>
+    <string name="progress_below_goal">%1$s abaixo da meta</string>
+    <string name="progress_above_goal">%1$s acima da meta</string>
 </resources>
