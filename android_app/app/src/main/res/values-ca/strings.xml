@@ -841,4 +841,16 @@
     <string name="picooc_calibration_reset">Restableix la calibració de %1$s</string>
     <string name="picooc_calibration_reset_generic">Restableix la calibració de PICOOC</string>
     <string name="settings_pure_black_label">Negre pur</string>
+    <string name="goal_start_date_label">Data d’inici</string>
+    <string name="label_optional">%1$s (opcional)</string>
+    <string name="content_description_goal_progress">Progrés de l’objectiu: %1$d per cent</string>
+    <string name="progress_goal_reached">Objectiu aconseguit</string>
+    <string name="progress_held_for">durant %1$s</string>
+    <string name="progress_remaining_to_go">%1$s restants</string>
+    <string name="progress_time_left">%1$s fins a %2$s</string>
+    <string name="progress_since_date">D’ençà de %1$s</string>
+    <string name="progress_until_date">Fins a %1$s</string>
+    <string name="progress_elapsed_in">D’aquí a %1$s</string>
+    <string name="progress_below_goal">%1$s per sota de l’objectiu</string>
+    <string name="progress_above_goal">%1$s per sobre de l’objectiu</string>
 </resources>
