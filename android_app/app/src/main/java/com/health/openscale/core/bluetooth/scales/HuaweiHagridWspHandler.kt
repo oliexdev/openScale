@@ -899,7 +899,20 @@ class HuaweiHagridWspHandler(
             logD("Ignoring unsupported Hagrid product-info payload len=${payload.size}")
             return
         }
-        pendingProductProfile = HuaweiHagridWspLib.productProfileForMarker(parsed.smartProductId)
+        val reported = HuaweiHagridWspLib.productProfileForMarker(parsed.smartProductId)
+        // The 4-char product id is coarser than the scan marker and can be shared
+        // across families (a Scale 3 fw 2.0.0.70 reports "M0CJ", which also maps
+        // to DOBBY). Never let it downgrade a specific scan-derived profile.
+        if (!isGenericProductFamily(pendingProductProfile.family) &&
+            isGenericProductFamily(reported.family)
+        ) {
+            logD(
+                "Huawei Hagrid: keeping ${pendingProductProfile.family} scan profile; " +
+                    "product-info id=${parsed.smartProductId} maps to generic ${reported.family}"
+            )
+            return
+        }
+        pendingProductProfile = reported
         logDeviceProfile("product-info")
     }
 
@@ -1154,6 +1167,10 @@ class HuaweiHagridWspHandler(
 
     private fun isScale3Profile(): Boolean =
         pendingProductProfile.family == HuaweiHagridWspLib.HagridProductFamily.SCALE_3
+
+    private fun isGenericProductFamily(family: HuaweiHagridWspLib.HagridProductFamily): Boolean =
+        family == HuaweiHagridWspLib.HagridProductFamily.UNKNOWN ||
+            family == HuaweiHagridWspLib.HagridProductFamily.DOBBY
 
     private fun logDeviceProfile(source: String) {
         val highFrequency = pendingCapabilityBits?.supportsHighFrequencyImpedance

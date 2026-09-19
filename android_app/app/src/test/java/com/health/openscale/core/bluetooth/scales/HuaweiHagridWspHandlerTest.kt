@@ -224,6 +224,38 @@ class HuaweiHagridWspHandlerTest {
     }
 
     @Test
+    fun `Scale 3 profile survives product-info reporting a shared product id`() {
+        // A Scale 3 on fw 2.0.0.70 reports smartProductId "M0CJ", which is also
+        // used by the generic DOBBY family. The specific scan-derived profile
+        // must not be downgraded — otherwise realtime stays progress-only and
+        // no measurement is ever published.
+        val user = ScaleUser(
+            id = 7,
+            birthday = Date(946684800000L),
+            bodyHeight = 175f,
+            gender = GenderType.MALE,
+        )
+        val handler = HuaweiHagridWspHandler()
+        val callbacks = CapturingCallbacks()
+        handler.supportFor(device("HUAWEI Scale 3"))
+        handler.attach(
+            transport = NoopTransport(),
+            callbacks = callbacks,
+            settings = InMemorySettings(),
+            data = FixedDataProvider(user),
+            scope = CoroutineScope(EmptyCoroutineContext),
+        )
+
+        sendWspNotification(handler, CHR_PRODUCT_INFO, "M0CJ7".encodeToByteArray())
+        sendWspNotification(handler, CHR_REALTIME_WEIGHT, scale3CompositionRealtimePayload())
+
+        assertThat(callbacks.published).hasSize(1)
+        val measurement = callbacks.published.single()
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(77.32f)
+        assertThat(measurement[MeasurementType.BODY_FAT]?.value).isGreaterThan(0f)
+    }
+
+    @Test
     fun `Scale 3 realtime publishes computed fat and preserves parsed impedances`() {
         val user = ScaleUser(
             id = 7,
