@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CompareArrows
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.SupervisorAccount
@@ -102,8 +103,11 @@ import com.health.openscale.ui.screen.components.rememberAddMeasurementActionBut
 import com.health.openscale.ui.screen.components.rememberBluetoothActionButton
 import com.health.openscale.ui.screen.components.rememberResolvedAggregationLevel
 import com.health.openscale.ui.screen.dialog.DeleteConfirmationDialog
+import com.health.openscale.ui.screen.dialog.MeasurementComparisonDialog
 import com.health.openscale.ui.screen.dialog.UserInputDialog
 import com.health.openscale.ui.screen.settings.BluetoothViewModel
+import com.health.openscale.core.model.MeasurementComparison
+import com.health.openscale.core.usecase.MeasurementComparisonUseCase
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
 import com.health.openscale.core.utils.LocaleUtils
@@ -284,6 +288,7 @@ fun TableScreen(
     val selectedUserIdState     by sharedViewModel.selectedUserId.collectAsState()
     var showDeleteConfirmDialog by rememberSaveable { mutableStateOf(false) }
     var showChangeUserDialog    by rememberSaveable { mutableStateOf(false) }
+    var comparisonResult       by remember { mutableStateOf<MeasurementComparison?>(null) }
 
     val exportCsvLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/csv"),
@@ -336,6 +341,14 @@ fun TableScreen(
             isInSelectionMode = false
             clearKeys()
         }
+    }
+
+    // ── Comparison dialog ─────────────────────────────────────────────────────
+    comparisonResult?.let { result ->
+        MeasurementComparisonDialog(
+            comparison = result,
+            onDismiss  = { comparisonResult = null },
+        )
     }
 
     // ── Dialogs ───────────────────────────────────────────────────────────────
@@ -607,7 +620,31 @@ fun TableScreen(
             sharedViewModel.setTopBarTitle(
                 resources.getString(R.string.items_selected_count, resolvedSelectionCount)
             )
-            sharedViewModel.setTopBarActions(listOf(
+            val selectionActions = mutableListOf<TopBarAction>()
+            // Compare action: only available when exactly 2 raw (non-aggregated) measurements are selected
+            if (selectedKeys.size == 2 && effectiveAggregationLevel == AggregationLevel.NONE) {
+                selectionActions.add(
+                    TopBarAction(
+                        icon                    = Icons.Filled.CompareArrows,
+                        contentDescriptionResId = R.string.desc_compare_selected,
+                        onClick                 = {
+                            scope.launch {
+                                val ids = selectedKeys.mapNotNull { it.toIntOrNull() }
+                                if (ids.size == 2) {
+                                    val mwv1 = sharedViewModel.getMeasurementById(ids[0]).first()
+                                    val mwv2 = sharedViewModel.getMeasurementById(ids[1]).first()
+                                    val types = sharedViewModel.measurementTypes.value
+                                    if (mwv1 != null && mwv2 != null) {
+                                        comparisonResult = MeasurementComparisonUseCase()
+                                            .compareChronological(mwv1, mwv2, types)
+                                    }
+                                }
+                            }
+                        },
+                    )
+                )
+            }
+            selectionActions.addAll(listOf(
                 TopBarAction(
                     icon                    = Icons.Filled.SupervisorAccount,
                     contentDescriptionResId = R.string.desc_change_user,
@@ -635,6 +672,7 @@ fun TableScreen(
                     onClick                 = { isInSelectionMode = false; clearKeys() },
                 ),
             ))
+            sharedViewModel.setTopBarActions(selectionActions)
         } else {
             sharedViewModel.setTopBarTitle(tableScreenTitle)
             val actions = mutableListOf<TopBarAction>()
