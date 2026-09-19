@@ -36,6 +36,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.CompareArrows
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Save
@@ -52,6 +53,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -75,11 +77,16 @@ import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.dialog.DateInputDialog
 import com.health.openscale.ui.screen.dialog.DeleteConfirmationDialog
 import com.health.openscale.ui.screen.dialog.DiscardChangesDialog
+import com.health.openscale.ui.screen.dialog.MeasurementComparisonDialog
 import com.health.openscale.ui.screen.dialog.NumberInputDialog
 import com.health.openscale.ui.screen.dialog.TextInputDialog
 import com.health.openscale.ui.screen.dialog.TimeInputDialog
 import com.health.openscale.ui.screen.dialog.UserInputDialog
 import com.health.openscale.ui.shared.TopBarAction
+import com.health.openscale.core.model.MeasurementComparison
+import com.health.openscale.core.usecase.MeasurementComparisonUseCase
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Calendar
 import java.util.Date
@@ -130,6 +137,8 @@ fun MeasurementDetailScreen(
     var showTimePickerForMainTimestamp by remember { mutableStateOf(false) }
     var showDeleteConfirmation by remember { mutableStateOf(false) }
     var showDiscardConfirmation by remember { mutableStateOf(false) }
+    var comparisonResult by remember { mutableStateOf<MeasurementComparison?>(null) }
+    val scope = rememberCoroutineScope()
 
     // Snapshot of the form right after it was (pre)loaded — used to detect unsaved changes ("dirty").
     var initialValues by remember { mutableStateOf<Map<Int, String>?>(null) }
@@ -245,6 +254,27 @@ fun MeasurementDetailScreen(
                     icon = Icons.Default.Delete,
                     contentDescription = resources.getString(R.string.action_delete_measurement_desc,dateFormat.format(Date(measurementTimestampState))),
                     onClick = { showDeleteConfirmation = true }
+                )
+            )
+            // Compare with previous: only available when viewing an existing measurement
+            actions.add(
+                TopBarAction(
+                    icon = Icons.Default.CompareArrows,
+                    contentDescription = resources.getString(R.string.desc_compare_with_previous),
+                    onClick = {
+                        scope.launch {
+                            val currentMwv = sharedViewModel.getMeasurementById(measurementId).first()
+                            val previousMwv = lastMeasurementToPreloadFrom
+                            if (currentMwv != null && previousMwv != null &&
+                                previousMwv.measurement.id != measurementId) {
+                                val types = sharedViewModel.measurementTypes.value
+                                comparisonResult = MeasurementComparisonUseCase()
+                                    .compareChronological(currentMwv, previousMwv, types)
+                            } else {
+                                sharedViewModel.showSnackbar(messageResId = R.string.comparison_no_previous)
+                            }
+                        }
+                    }
                 )
             )
         }
@@ -365,6 +395,14 @@ fun MeasurementDetailScreen(
             )
         )
         sharedViewModel.setTopBarActions(actions)
+    }
+
+    // Comparison dialog (shown over the existing screen content)
+    comparisonResult?.let { result ->
+        MeasurementComparisonDialog(
+            comparison = result,
+            onDismiss  = { comparisonResult = null },
+        )
     }
 
     // Show loading indicator while data for an existing measurement is being fetched.

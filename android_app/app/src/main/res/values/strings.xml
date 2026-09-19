@@ -138,6 +138,20 @@
 
     <!-- Dialogs (General & Measurement Edit) -->
     <string name="dialog_title_edit_value">Edit %1$s</string>
+
+    <!-- Measurement Comparison -->
+    <string name="title_measurement_comparison">Measurement Comparison</string>
+    <string name="action_compare">Compare</string>
+    <string name="desc_compare_selected">Compare 2 selected measurements</string>
+    <string name="desc_compare_with_previous">Compare with previous measurement</string>
+    <string name="comparison_days_apart">%1$d days apart</string>
+    <string name="comparison_same_day">Same day</string>
+    <string name="comparison_baseline">Baseline</string>
+    <string name="comparison_target">Comparison</string>
+    <string name="comparison_swap">Swap direction</string>
+    <string name="comparison_no_metrics">No comparable metrics found.</string>
+    <string name="comparison_rate_per_week">/ week</string>
+    <string name="comparison_no_previous">No previous measurement to compare with.</string>
     <string name="dialog_title_change_value">Change %1$s</string>
     <string name="dialog_title_select_color">Select color</string>
     <string name="dialog_title_select_icon">Select icon</string>
