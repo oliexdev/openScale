@@ -126,6 +126,40 @@ class HuaweiHagridWspHandlerTest {
     }
 
     @Test
+    fun `auth challenge with trailing status byte authenticates using first 16 bytes`() {
+        // Some firmwares send randA || status (17 bytes), e.g. Scale 3 fw 2.0.0.70.
+        val randA = ByteArray(16) { it.toByte() }
+        val randB = ByteArray(16) { (it + 16).toByte() }
+        val cak = ByteArray(16) { (it + 64).toByte() }
+        val c1 = ByteArray(16) { (it + 80).toByte() }
+        val c2 = ByteArray(16) { (it + 96).toByte() }
+        val handler = HuaweiHagridWspHandler(randomBytes = { size ->
+            assertThat(size).isEqualTo(16)
+            randB
+        })
+        val settings = InMemorySettings().apply {
+            putString(HuaweiHagridWspHandler.SETTINGS_KEY_CAK_HEX, cak.toHex())
+            putString(HuaweiHagridWspHandler.SETTINGS_KEY_C1_HEX, c1.toHex())
+            putString(HuaweiHagridWspHandler.SETTINGS_KEY_C2_HEX, c2.toHex())
+        }
+        val transport = CapturingTransport.allHagrid()
+        handler.supportFor(device("HUAWEI Scale 3", address = HAGRID_ADDRESS))
+        handler.attach(
+            transport = transport,
+            callbacks = CapturingCallbacks(),
+            settings = settings,
+            data = FixedDataProvider(ScaleUser(id = 7)),
+            scope = CoroutineScope(EmptyCoroutineContext),
+        )
+
+        handler.handleConnected(ScaleUser(id = 7))
+        sendWspNotification(handler, CHR_REQUEST_AUTH, randA + byteArrayOf(0x00))
+
+        assertThat(transport.reassembleWritesTo(CHR_AUTH_TOKEN))
+            .isEqualTo(HuaweiHagridWspLib.buildAuthTokenPayload(randA, randB, cak))
+    }
+
+    @Test
     fun `non Scale 3 Hagrid realtime notification is never published`() {
         // Default profile is UNKNOWN (no supportFor call) → not SCALE_3 → always progress-only.
         val handler = HuaweiHagridWspHandler()

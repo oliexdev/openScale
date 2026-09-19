@@ -89,6 +89,15 @@ class HuaweiHagridWspLibTest {
         assertThat(expectedResponse).hasLength(32)
         assertThat(HuaweiHagridWspLib.isValidAuthResponsePayload(expectedResponse, randA, randB, cak))
             .isTrue()
+        // Some firmwares append a status byte after the payload.
+        assertThat(
+            HuaweiHagridWspLib.isValidAuthResponsePayload(expectedResponse + 0x00, randA, randB, cak)
+        ).isTrue()
+        assertThat(
+            HuaweiHagridWspLib.isValidAuthResponsePayload(
+                expectedResponse.copyOf(expectedResponse.size - 1), randA, randB, cak
+            )
+        ).isFalse()
     }
 
     @Test
