@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth
 
 import android.util.SparseArray
+import com.health.openscale.core.bluetooth.scales.AlphaSmartScalePro3Handler
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
 import com.health.openscale.core.bluetooth.scales.HealthKeep280Handler
 import com.health.openscale.core.bluetooth.scales.AiLinkBroadcastHandler
@@ -253,6 +254,7 @@ object ScaleCatalog {
         device("EEBBL") claimedBy EEBBLHandler::class.java,
         device("FITTRACK Dara") claimedBy FitTrackDaraHandler::class.java,
         device("SSW532", SERVICE_FFB0) claimedBy DrTrustSSW532Handler::class.java,
+        device("MY_SCALE", SERVICE_FFB0) claimedBy AlphaSmartScalePro3Handler::class.java,
         device("swan", SERVICE_FFB0) claimedBy MGBHandler::class.java,
         device("0203B1234") claimedBy MedisanaBs44xHandler::class.java,
         device("0131971234") claimedBy MedisanaBs44xHandler::class.java,
