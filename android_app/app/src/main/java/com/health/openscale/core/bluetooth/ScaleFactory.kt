@@ -19,7 +19,6 @@ package com.health.openscale.core.bluetooth
 
 import android.content.Context
 import androidx.annotation.VisibleForTesting
-import com.health.openscale.core.bluetooth.scales.AlphaSmartScalePro3Handler
 import com.health.openscale.core.bluetooth.scales.HealthKeep280Handler
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
@@ -178,8 +177,6 @@ class ScaleFactory @Inject constructor(
             EEBBLHandler(),
             FitTrackDaraHandler(),
             DrTrustSSW532Handler(),
-            // MY_SCALE (ALPHA Smart Scale PRO 3) must precede MGBHandler's generic 0xFFB0 service match.
-            AlphaSmartScalePro3Handler(),
             MGBHandler(),
             MedisanaBs44xHandler(),
             InlifeHandler(),
