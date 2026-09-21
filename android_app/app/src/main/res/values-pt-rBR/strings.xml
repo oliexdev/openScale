@@ -853,4 +853,17 @@
     <string name="progress_elapsed_in">Em %1$s</string>
     <string name="progress_below_goal">%1$s abaixo da meta</string>
     <string name="progress_above_goal">%1$s acima da meta</string>
+    <string name="route_title_measurement_comparison">Comparativo</string>
+    <string name="desc_compare_selected">Compare as duas medidas selecionadas</string>
+    <string name="comparison_select_two">Selecione exatamente duas medidas para compará-las.</string>
+    <string name="comparison_days_apart">%1$d dias de diferença</string>
+    <string name="comparison_same_day">Mesmo dia</string>
+    <string name="comparison_no_common_metrics">Estas duas medidas não têm nenhuma métrica em comum.</string>
+    <string name="comparison_only_in_one">Apenas em uma das duas medidas</string>
+    <string name="comparison_mode_absolute">Absoluto</string>
+    <string name="comparison_mode_percent">Percentual</string>
+    <string name="comparison_mode_per_week">Por semana</string>
+    <string name="comparison_column_delta">Δ</string>
+    <string name="comparison_column_delta_percent">Δ %</string>
+    <string name="comparison_column_delta_per_week">Δ / semana</string>
 </resources>
