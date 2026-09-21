@@ -561,25 +561,29 @@ class SharedViewModel @Inject constructor(
         mutableMapOf<String, StateFlow<UiState<List<AggregatedMeasurement>>>>()
 
     /**
-     * Returns a raw (non-aggregated) [StateFlow] for a fixed time window.
+     * Returns a [StateFlow] for a fixed time window, bypassing the screen filters.
      * Used by drill-down screens that show the individual measurements within a period.
      *
-     * The flow is cached per (startMillis, endMillis) pair so repeated calls from
+     * The flow is cached per (startMillis, endMillis, level) triple so repeated calls from
      * recompositions or from resolveSelectedMeasurementIds are free after the first access.
      *
-     * Each [AggregatedMeasurement] in the result has [AggregatedMeasurement.aggregatedFromCount] == 1.
+     * With the default [AggregationLevel.NONE] every [AggregatedMeasurement] in the result has
+     * [AggregatedMeasurement.aggregatedFromCount] == 1; pass another level to get the window's
+     * period averages instead, bucketed exactly as the table shows them.
      */
     fun drillDownFlow(
         startMillis: Long,
         endMillis: Long,
+        level: AggregationLevel = AggregationLevel.NONE,
     ): StateFlow<UiState<List<AggregatedMeasurement>>> =
-        drillDownFlowCache.getOrPut("$startMillis-$endMillis") {
-            buildDrillDownFlow(startMillis, endMillis)
+        drillDownFlowCache.getOrPut("$startMillis-$endMillis-${level.name}") {
+            buildDrillDownFlow(startMillis, endMillis, level)
         }
 
     private fun buildDrillDownFlow(
         startMillis: Long,
         endMillis: Long,
+        level: AggregationLevel,
     ): StateFlow<UiState<List<AggregatedMeasurement>>> =
         selectedUserId.flatMapLatest { uid ->
             if (uid == null) return@flatMapLatest flowOf(UiState.Success(emptyList()))
@@ -594,7 +598,7 @@ class SharedViewModel @Inject constructor(
                 alphaFlow            = flowOf(0.5f),
                 windowFlow           = flowOf(5),
                 maxGapDaysFlow       = flowOf(7),
-                aggregationLevelFlow = flowOf(AggregationLevel.NONE),
+                aggregationLevelFlow = flowOf(level),
             )
                 .map<List<AggregatedMeasurement>, UiState<List<AggregatedMeasurement>>> {
                     UiState.Success(it)

@@ -162,21 +162,63 @@ object LocaleUtils {
         }
         val absVal = kotlin.math.abs(n)
 
-        return when (unit) {
-            UnitType.ST -> {
-                val (st, lb) = ConverterUtils.decimalStToStLb(absVal)
-                "$signPrefix$st st $lb lb"
-            }
-            UnitType.KG  -> "$signPrefix${formatNumber(absVal, maxFraction = 2, locale)} kg"
-            UnitType.LB  -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} lb"
-            UnitType.PERCENT -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} %"
-            UnitType.CM  -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} cm"
-            UnitType.INCH-> "$signPrefix${formatNumber(absVal, maxFraction = 2, locale)} in"
-            UnitType.KCAL-> "$signPrefix${formatNumber(absVal, maxFraction = 0, locale)} kcal"
-            UnitType.BPM -> "$signPrefix${formatNumber(absVal, maxFraction = 0, locale)} bpm"
-            UnitType.OHM -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} Ω"
-            UnitType.NONE-> signPrefix + formatNumber(absVal, maxFraction = 1, locale)
+        if (unit == UnitType.ST) {
+            val (st, lb) = ConverterUtils.decimalStToStLb(absVal)
+            return "$signPrefix$st st $lb lb"
         }
+        val number = formatNumber(absVal, maxFractionFor(unit), locale)
+        val suffix = if (unit.displayName.isEmpty()) "" else " ${unit.displayName}"
+        return "$signPrefix$number$suffix"
+    }
+
+    /**
+     * How many decimals a value of this [unit] is shown with. Single source of truth for
+     * [formatValueForDisplay] and for callers that need the bare number — a table that puts the
+     * unit in its column header still has to round the way the rest of the app rounds.
+     *
+     * [UnitType.ST] has no meaningful answer: it renders as two parts ("12 st 7 lb").
+     */
+    @JvmStatic
+    fun maxFractionFor(unit: UnitType): Int = when (unit) {
+        UnitType.KG, UnitType.INCH -> 2
+        UnitType.KCAL, UnitType.BPM -> 0
+        else -> 1
+    }
+
+    /**
+     * The value alone, rounded as [formatValueForDisplay] would round it but without the unit —
+     * for tables that name the unit once, in the row or column header.
+     *
+     * [fixedDecimals] keeps trailing zeros, so a column of numbers lines up on the decimal point:
+     * "80.61" above "78.60", not above "78.6".
+     *
+     * [UnitType.ST] keeps its suffixes, since "12 st 7 lb" cannot be written as a bare number.
+     */
+    @JvmStatic
+    fun formatValueWithoutUnit(
+        value: String,
+        unit: UnitType,
+        includeSign: Boolean = false,
+        locale: Locale = effectiveLocale(),
+        fixedDecimals: Boolean = false,
+    ): String {
+        if (unit == UnitType.ST) return formatValueForDisplay(value, unit, includeSign, locale)
+        if (value.isBlank()) return ""
+
+        val n = value.replace(',', '.').toDoubleOrNull() ?: return value
+        val signPrefix = when {
+            !includeSign -> ""
+            n > 0        -> "+"
+            n < 0        -> "−"
+            else         -> ""
+        }
+        val fractions = maxFractionFor(unit)
+        return signPrefix + formatNumber(
+            value       = kotlin.math.abs(n),
+            maxFraction = fractions,
+            locale      = locale,
+            minFraction = if (fixedDecimals) fractions else 0,
+        )
     }
 
     /**
@@ -256,10 +298,10 @@ object LocaleUtils {
      * Returns the raw string if parsing fails.
      */
     @JvmStatic
-    fun formatNumber(value: Double, maxFraction: Int, locale: Locale): String {
+    fun formatNumber(value: Double, maxFraction: Int, locale: Locale, minFraction: Int = 0): String {
         val cleaned = if (kotlin.math.abs(value) < 1e-9) 0.0 else value // avoid "-0"
         return NumberFormat.getNumberInstance(locale).apply {
-            minimumFractionDigits = 0
+            minimumFractionDigits = minFraction
             maximumFractionDigits = maxFraction
             isGroupingUsed = false
         }.format(cleaned)

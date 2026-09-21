@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.SupervisorAccount
@@ -601,13 +602,51 @@ fun TableScreen(
         screenContextName = SettingsPreferenceKeys.TABLE_SCREEN_CONTEXT,
     ) else null
 
-    LaunchedEffect(tableScreenTitle, isInSelectionMode, selectedKeys.size, aggregatedItems.size) {
+    // Keyed on selectedKeys itself, not its size: swapping which two rows are picked has to
+    // refresh the compare action's timestamps.
+    LaunchedEffect(tableScreenTitle, isInSelectionMode, selectedKeys, tableDataSnapshot, aggregatedItems.size) {
         sharedViewModel.setContextualSelectionMode(isInSelectionMode)
         if (isInSelectionMode) {
             sharedViewModel.setTopBarTitle(
                 resources.getString(R.string.items_selected_count, resolvedSelectionCount)
             )
-            sharedViewModel.setTopBarActions(listOf(
+            val selectionActions = mutableListOf<TopBarAction>()
+            // Always offered, never hidden: an action that appears only on the second tick is one
+            // nobody discovers, and an icon that comes and goes shifts the ones beside it under
+            // the user's finger. Picked the wrong number of rows, it says so instead.
+            val rowsToCompare = tableDataSnapshot
+                .filter { rowKey(it) in selectedKeys }
+                .sortedBy { it.timestamp }
+            selectionActions.add(
+                TopBarAction(
+                    icon                    = Icons.AutoMirrored.Filled.CompareArrows,
+                    contentDescriptionResId = R.string.desc_compare_selected,
+                    onClick                 = {
+                        if (rowsToCompare.size != 2) {
+                            sharedViewModel.showSnackbar(
+                                messageResId = R.string.comparison_select_two
+                            )
+                        } else {
+                            // An aggregated row stands for its whole period, a raw one for itself;
+                            // the comparison re-runs the same pipeline over the window they span.
+                            val first = rowsToCompare.first()
+                            val last = rowsToCompare.last()
+                            val windowStart = first.periodStartMillis?.takeIf { first.isAggregated }
+                                ?: first.timestamp
+                            val windowEnd = last.periodEndMillis?.takeIf { last.isAggregated }
+                                ?: last.timestamp
+                            isInSelectionMode = false
+                            clearKeys()
+                            navController.navigate(
+                                Routes.measurementComparison(
+                                    windowStart, windowEnd, effectiveAggregationLevel
+                                )
+                            )
+                        }
+                    },
+                )
+            )
+            selectionActions.addAll(listOf(
                 TopBarAction(
                     icon                    = Icons.Filled.SupervisorAccount,
                     contentDescriptionResId = R.string.desc_change_user,
@@ -635,6 +674,7 @@ fun TableScreen(
                     onClick                 = { isInSelectionMode = false; clearKeys() },
                 ),
             ))
+            sharedViewModel.setTopBarActions(selectionActions)
         } else {
             sharedViewModel.setTopBarTitle(tableScreenTitle)
             val actions = mutableListOf<TopBarAction>()

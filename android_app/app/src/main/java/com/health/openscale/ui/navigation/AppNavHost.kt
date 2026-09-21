@@ -53,6 +53,8 @@ import com.health.openscale.ui.screen.settings.SettingsScreen
 import com.health.openscale.ui.screen.settings.SettingsViewModel
 import com.health.openscale.ui.screen.settings.UserDetailScreen
 import com.health.openscale.ui.screen.settings.UserSettingsScreen
+import com.health.openscale.core.data.AggregationLevel
+import com.health.openscale.ui.screen.statistics.MeasurementComparisonScreen
 import com.health.openscale.ui.screen.statistics.StatisticsScreen
 import com.health.openscale.ui.screen.table.TableScreen
 import com.health.openscale.ui.shared.SharedViewModel
@@ -127,6 +129,26 @@ fun AppNavHost(
                     bluetoothViewModel = bluetoothViewModel,
                     drillDownStartMillis = backStackEntry.arguments?.getLong("start"),
                     drillDownEndMillis   = backStackEntry.arguments?.getLong("end"),
+                )
+            }
+            composable(
+                route = Routes.MEASUREMENT_COMPARISON,
+                arguments = listOf(
+                    navArgument("start") { type = NavType.LongType },
+                    navArgument("end")   { type = NavType.LongType },
+                    navArgument("level") {
+                        type = NavType.StringType
+                        defaultValue = AggregationLevel.NONE.name
+                    }
+                )
+            ) { backStackEntry ->
+                val levelName = backStackEntry.arguments?.getString("level")
+                MeasurementComparisonScreen(
+                    sharedViewModel = sharedViewModel,
+                    startMillis     = backStackEntry.arguments?.getLong("start") ?: 0L,
+                    endMillis       = backStackEntry.arguments?.getLong("end") ?: 0L,
+                    level           = AggregationLevel.entries.firstOrNull { it.name == levelName }
+                        ?: AggregationLevel.NONE,
                 )
             }
             composable(Routes.STATISTICS) {

@@ -975,4 +975,18 @@
     <string name="progress_below_goal">%1$s below goal</string> <!-- overshot a goal downwards -->
     <string name="progress_above_goal">%1$s above goal</string> <!-- overshot a goal upwards -->
 
+    <!-- Measurement comparison -->
+    <string name="route_title_measurement_comparison">Comparison</string>
+    <string name="desc_compare_selected">Compare the two selected measurements</string>
+    <string name="comparison_select_two">Select exactly two measurements to compare them.</string>
+    <string name="comparison_days_apart">%1$d days apart</string>
+    <string name="comparison_same_day">Same day</string>
+    <string name="comparison_no_common_metrics">These two measurements have no metric in common.</string>
+    <string name="comparison_only_in_one">Only in one of the two measurements</string>
+    <string name="comparison_mode_absolute">Absolute</string>
+    <string name="comparison_mode_percent">Percent</string>
+    <string name="comparison_mode_per_week">Per week</string>
+    <string name="comparison_column_delta">Δ</string>
+    <string name="comparison_column_delta_percent">Δ %</string>
+    <string name="comparison_column_delta_per_week">Δ / week</string>
 </resources>
