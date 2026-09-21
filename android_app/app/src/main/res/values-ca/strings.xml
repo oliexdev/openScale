@@ -853,4 +853,17 @@
     <string name="progress_elapsed_in">D’aquí a %1$s</string>
     <string name="progress_below_goal">%1$s per sota de l’objectiu</string>
     <string name="progress_above_goal">%1$s per sobre de l’objectiu</string>
+    <string name="route_title_measurement_comparison">Comparació</string>
+    <string name="desc_compare_selected">Compara les dues mesures seleccionades</string>
+    <string name="comparison_select_two">Seleccioneu exactament dues mesures per a comparar-les.</string>
+    <string name="comparison_days_apart">%1$d dies de diferència</string>
+    <string name="comparison_same_day">Mateix dia</string>
+    <string name="comparison_no_common_metrics">Aquestes dues mesures no tenen cap mètrica en comú.</string>
+    <string name="comparison_only_in_one">Només en una de les dues mesures</string>
+    <string name="comparison_mode_absolute">Absolut</string>
+    <string name="comparison_mode_percent">Percentatge</string>
+    <string name="comparison_mode_per_week">Per setmana</string>
+    <string name="comparison_column_delta">Δ</string>
+    <string name="comparison_column_delta_percent">Δ %</string>
+    <string name="comparison_column_delta_per_week">Δ / setmana</string>
 </resources>
