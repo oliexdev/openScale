@@ -126,6 +126,40 @@ class HuaweiHagridWspHandlerTest {
     }
 
     @Test
+    fun `auth challenge with trailing status byte authenticates using first 16 bytes`() {
+        // Some firmwares send randA || status (17 bytes), e.g. Scale 3 fw 2.0.0.70.
+        val randA = ByteArray(16) { it.toByte() }
+        val randB = ByteArray(16) { (it + 16).toByte() }
+        val cak = ByteArray(16) { (it + 64).toByte() }
+        val c1 = ByteArray(16) { (it + 80).toByte() }
+        val c2 = ByteArray(16) { (it + 96).toByte() }
+        val handler = HuaweiHagridWspHandler(randomBytes = { size ->
+            assertThat(size).isEqualTo(16)
+            randB
+        })
+        val settings = InMemorySettings().apply {
+            putString(HuaweiHagridWspHandler.SETTINGS_KEY_CAK_HEX, cak.toHex())
+            putString(HuaweiHagridWspHandler.SETTINGS_KEY_C1_HEX, c1.toHex())
+            putString(HuaweiHagridWspHandler.SETTINGS_KEY_C2_HEX, c2.toHex())
+        }
+        val transport = CapturingTransport.allHagrid()
+        handler.supportFor(device("HUAWEI Scale 3", address = HAGRID_ADDRESS))
+        handler.attach(
+            transport = transport,
+            callbacks = CapturingCallbacks(),
+            settings = settings,
+            data = FixedDataProvider(ScaleUser(id = 7)),
+            scope = CoroutineScope(EmptyCoroutineContext),
+        )
+
+        handler.handleConnected(ScaleUser(id = 7))
+        sendWspNotification(handler, CHR_REQUEST_AUTH, randA + byteArrayOf(0x00))
+
+        assertThat(transport.reassembleWritesTo(CHR_AUTH_TOKEN))
+            .isEqualTo(HuaweiHagridWspLib.buildAuthTokenPayload(randA, randB, cak))
+    }
+
+    @Test
     fun `non Scale 3 Hagrid realtime notification is never published`() {
         // Default profile is UNKNOWN (no supportFor call) → not SCALE_3 → always progress-only.
         val handler = HuaweiHagridWspHandler()
@@ -187,6 +221,38 @@ class HuaweiHagridWspHandlerTest {
         assertThat(callbacks.published.single()[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(77.32f)
         assertThat(callbacks.infos.map { it.resId })
             .contains(R.string.bluetooth_scale_info_measuring_weight)
+    }
+
+    @Test
+    fun `Scale 3 profile survives product-info reporting a shared product id`() {
+        // A Scale 3 on fw 2.0.0.70 reports smartProductId "M0CJ", which is also
+        // used by the generic DOBBY family. The specific scan-derived profile
+        // must not be downgraded — otherwise realtime stays progress-only and
+        // no measurement is ever published.
+        val user = ScaleUser(
+            id = 7,
+            birthday = Date(946684800000L),
+            bodyHeight = 175f,
+            gender = GenderType.MALE,
+        )
+        val handler = HuaweiHagridWspHandler()
+        val callbacks = CapturingCallbacks()
+        handler.supportFor(device("HUAWEI Scale 3"))
+        handler.attach(
+            transport = NoopTransport(),
+            callbacks = callbacks,
+            settings = InMemorySettings(),
+            data = FixedDataProvider(user),
+            scope = CoroutineScope(EmptyCoroutineContext),
+        )
+
+        sendWspNotification(handler, CHR_PRODUCT_INFO, "M0CJ7".encodeToByteArray())
+        sendWspNotification(handler, CHR_REALTIME_WEIGHT, scale3CompositionRealtimePayload())
+
+        assertThat(callbacks.published).hasSize(1)
+        val measurement = callbacks.published.single()
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(77.32f)
+        assertThat(measurement[MeasurementType.BODY_FAT]?.value).isGreaterThan(0f)
     }
 
     @Test

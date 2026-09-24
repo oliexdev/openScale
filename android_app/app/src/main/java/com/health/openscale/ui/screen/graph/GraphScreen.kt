@@ -47,7 +47,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -78,7 +78,7 @@ fun GraphScreen(
     sharedViewModel: SharedViewModel,
     bluetoothViewModel: BluetoothViewModel,
 ) {
-    val context = LocalContext.current
+    val resources = LocalResources.current
 
     val graphState by sharedViewModel
         .screenFlow(SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT, useSmoothing = true)
@@ -116,7 +116,7 @@ fun GraphScreen(
     // it as a key would re-fire this effect every time. The title and actions are
     // stable after the first composition.
     LaunchedEffect(Unit) {
-        sharedViewModel.setTopBarTitle(context.getString(R.string.route_title_graph))
+        sharedViewModel.setTopBarTitle(resources.getString(R.string.route_title_graph))
         sharedViewModel.setTopBarActions(listOfNotNull(bluetoothAction, addMeasurementAction, timeFilterAction))
     }
 

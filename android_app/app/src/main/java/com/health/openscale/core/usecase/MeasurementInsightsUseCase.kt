@@ -18,6 +18,7 @@
 package com.health.openscale.core.usecase
 
 import com.health.openscale.core.data.InputFieldType
+import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.model.BodyCompositionPattern
 import com.health.openscale.core.model.CompositionPatternType
@@ -31,10 +32,8 @@ import com.health.openscale.core.model.TrendDirection
 import com.health.openscale.core.model.Volatility
 import com.health.openscale.core.model.WeekdayPattern
 import java.time.DayOfWeek
-import java.time.Instant
 import java.time.LocalDate
 import java.time.Month
-import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -125,7 +124,7 @@ class MeasurementInsightsUseCase @Inject constructor() {
     ): MeasurementAnalysis? {
         val dataPoints: List<Pair<LocalDate, Float>> = sorted.mapNotNull { mwv ->
             val value = numericValueFor(mwv, primaryType) ?: return@mapNotNull null
-            toLocalDate(mwv.measurement.timestamp) to value
+            LocaleUtils.toLocalDate(mwv.measurement.timestamp) to value
         }
 
         if (dataPoints.size < 2) return null
@@ -279,7 +278,7 @@ class MeasurementInsightsUseCase @Inject constructor() {
             val water: Float,
         )
 
-        val datedSorted = sorted.map { it to toLocalDate(it.measurement.timestamp) }
+        val datedSorted = sorted.map { it to LocaleUtils.toLocalDate(it.measurement.timestamp) }
 
         fun quadPointsInWindow(start: LocalDate, end: LocalDate) =
             datedSorted
@@ -395,7 +394,7 @@ class MeasurementInsightsUseCase @Inject constructor() {
     ): WeekdayPattern? {
         val valuesByDay = mutableMapOf<DayOfWeek, MutableList<Float>>()
         sorted.forEach { mwv ->
-            val date  = toLocalDate(mwv.measurement.timestamp)
+            val date  = LocaleUtils.toLocalDate(mwv.measurement.timestamp)
             val value = numericValueFor(mwv, primaryType) ?: return@forEach
             valuesByDay.getOrPut(date.dayOfWeek) { mutableListOf() }.add(value)
         }
@@ -433,7 +432,7 @@ class MeasurementInsightsUseCase @Inject constructor() {
     ): SeasonalPattern? {
         val byYearMonth = mutableMapOf<Int, MutableMap<Month, MutableList<Float>>>()
         sorted.forEach { mwv ->
-            val date  = toLocalDate(mwv.measurement.timestamp)
+            val date  = LocaleUtils.toLocalDate(mwv.measurement.timestamp)
             val value = numericValueFor(mwv, primaryType) ?: return@forEach
             byYearMonth
                 .getOrPut(date.year) { mutableMapOf() }
@@ -486,7 +485,7 @@ class MeasurementInsightsUseCase @Inject constructor() {
         var prevDate: LocalDate? = null
 
         sorted.forEach { mwv ->
-            val date  = toLocalDate(mwv.measurement.timestamp)
+            val date  = LocaleUtils.toLocalDate(mwv.measurement.timestamp)
             val value = numericValueFor(mwv, primaryType) ?: return@forEach
 
             if (prevDate != null &&
@@ -550,9 +549,6 @@ class MeasurementInsightsUseCase @Inject constructor() {
                 else                 -> null
             }
         }
-
-    private fun toLocalDate(timestampMillis: Long): LocalDate =
-        Instant.ofEpochMilli(timestampMillis).atZone(ZoneId.systemDefault()).toLocalDate()
 
     private fun stdDev(values: Collection<Float>, mean: Float): Float {
         if (values.size < 2) return 0f

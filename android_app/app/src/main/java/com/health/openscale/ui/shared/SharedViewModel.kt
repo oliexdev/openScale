@@ -42,6 +42,7 @@ import com.health.openscale.core.model.MeasurementInsight
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.usecase.MeasurementDemoUseCase
+import com.health.openscale.core.usecase.GoalProgress
 import com.health.openscale.core.usecase.SyncUseCases
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.core.facade.SettingsPreferenceKeys
@@ -560,25 +561,29 @@ class SharedViewModel @Inject constructor(
         mutableMapOf<String, StateFlow<UiState<List<AggregatedMeasurement>>>>()
 
     /**
-     * Returns a raw (non-aggregated) [StateFlow] for a fixed time window.
+     * Returns a [StateFlow] for a fixed time window, bypassing the screen filters.
      * Used by drill-down screens that show the individual measurements within a period.
      *
-     * The flow is cached per (startMillis, endMillis) pair so repeated calls from
+     * The flow is cached per (startMillis, endMillis, level) triple so repeated calls from
      * recompositions or from resolveSelectedMeasurementIds are free after the first access.
      *
-     * Each [AggregatedMeasurement] in the result has [AggregatedMeasurement.aggregatedFromCount] == 1.
+     * With the default [AggregationLevel.NONE] every [AggregatedMeasurement] in the result has
+     * [AggregatedMeasurement.aggregatedFromCount] == 1; pass another level to get the window's
+     * period averages instead, bucketed exactly as the table shows them.
      */
     fun drillDownFlow(
         startMillis: Long,
         endMillis: Long,
+        level: AggregationLevel = AggregationLevel.NONE,
     ): StateFlow<UiState<List<AggregatedMeasurement>>> =
-        drillDownFlowCache.getOrPut("$startMillis-$endMillis") {
-            buildDrillDownFlow(startMillis, endMillis)
+        drillDownFlowCache.getOrPut("$startMillis-$endMillis-${level.name}") {
+            buildDrillDownFlow(startMillis, endMillis, level)
         }
 
     private fun buildDrillDownFlow(
         startMillis: Long,
         endMillis: Long,
+        level: AggregationLevel,
     ): StateFlow<UiState<List<AggregatedMeasurement>>> =
         selectedUserId.flatMapLatest { uid ->
             if (uid == null) return@flatMapLatest flowOf(UiState.Success(emptyList()))
@@ -593,7 +598,7 @@ class SharedViewModel @Inject constructor(
                 alphaFlow            = flowOf(0.5f),
                 windowFlow           = flowOf(5),
                 maxGapDaysFlow       = flowOf(7),
-                aggregationLevelFlow = flowOf(AggregationLevel.NONE),
+                aggregationLevelFlow = flowOf(level),
             )
                 .map<List<AggregatedMeasurement>, UiState<List<AggregatedMeasurement>>> {
                     UiState.Success(it)
@@ -685,6 +690,32 @@ class SharedViewModel @Inject constructor(
                     .map { list -> list.firstOrNull() }
             }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /**
+     * How far the selected user has come since the start point of each of their goals.
+     *
+     * Built from the user's full history rather than from [screenFlow]: each window is
+     * `[start, now]`, so switching the chart to "last 7 days" must not shrink it.
+     */
+    val goalProgressFlow: StateFlow<UiState<List<GoalProgress>>> =
+        selectedUserId
+            .flatMapLatest<Int?, UiState<List<GoalProgress>>> { uid ->
+                if (uid == null || uid == 0) {
+                    flowOf(UiState.Success(emptyList()))
+                } else {
+                    measurementTypes.flatMapLatest { types ->
+                        userFacade.observeProgress(
+                            userId = uid,
+                            types  = types.filter { it.isEnabled && !it.isInternal },
+                        ).map { UiState.Success(it) }
+                    }
+                }
+            }
+            .catch { e ->
+                LogManager.e(TAG, "Error computing start progress", e)
+                emit(UiState.Error(e.message))
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UiState.Loading)
 
     /**
      * The values to pre-fill an empty add-measurement form with — produced by the same carry-over a

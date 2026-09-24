@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.TableRows
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.health.openscale.R
+import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.ui.navigation.Routes.NO_TITLE_RESOURCE_ID
 
 object Routes {
@@ -53,6 +54,7 @@ object Routes {
     const val DATA_MANAGEMENT_SETTINGS = "settings/dataManagement"
     const val ABOUT_SETTINGS = "settings/about"
     const val TABLE_DRILLDOWN = "table_drilldown?start={start}&end={end}"
+    const val MEASUREMENT_COMPARISON = "measurement_comparison?start={start}&end={end}&level={level}"
     const val OVERVIEW_DRILLDOWN = "overview_drilldown?start={start}&end={end}"
 
     // Special constant for no title
@@ -77,6 +79,17 @@ object Routes {
      */
     fun tableDrillDown(startMillis: Long, endMillis: Long) =
         "table_drilldown?start=$startMillis&end=$endMillis"
+
+    /**
+     * Returns the navigation route comparing the two entries bounding the given window.
+     *
+     * @param startMillis Start of the older entry (inclusive) — its timestamp, or its period start.
+     * @param endMillis End of the newer entry (inclusive) — its timestamp, or its period end.
+     * @param level Aggregation the entries were picked in; decides whether the two sides are
+     *   single weigh-ins or the period averages the table showed.
+     */
+    fun measurementComparison(startMillis: Long, endMillis: Long, level: AggregationLevel) =
+        "measurement_comparison?start=$startMillis&end=$endMillis&level=${level.name}"
 
     /**
      * Gets the string resource ID for the title of a given route.

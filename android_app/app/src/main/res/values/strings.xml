@@ -234,6 +234,8 @@
     <string name="measurement_type_label_unit">Unit</string>
     <string name="measurement_type_label_goal">Goal</string>
     <string name="goal_target_date_label">Goal target date</string>
+    <string name="goal_start_date_label">Start date</string>
+    <string name="label_optional">%1$s (optional)</string> <!-- %1$s is a field label -->
     <string name="content_desc_select_date">Select date</string>
     <string name="my_goals_label">My Goals</string>
     <string name="user_detail_goals">%d Goals</string>
@@ -244,7 +246,6 @@
     <string name="info_no_targetable_types">No types available for setting goals.</string>
     <string name="placeholder_select_type">Select type</string>
     <string name="measurement_type_label_goal_value_for">Goal value for %1$s</string>
-    <string name="toast_goal_value_cannot_be_empty">Goal value cannot be empty for a new goal.</string>
     <string name="toast_select_measurement_type">Please select a measurement type first.</string>
     <string name="toast_goal_deleted">Goal deleted</string>
     <string name="measurement_type_label_input_type">Input Type</string>
@@ -471,25 +472,6 @@
     <string name="go_to_project_website_button">Go to Project Website</string>
 
     <!-- LegacyScaleAdapter (Bluetooth Driver) -->
-    <string name="legacy_adapter_event_initializing">Initialization process...</string>
-    <string name="legacy_adapter_event_connection_lost">Connection lost</string>
-    <string name="legacy_adapter_event_connection_disconnected">Connection disconnected</string>
-    <string name="legacy_adapter_event_device_not_found">Device not found. %s</string>
-    <string name="legacy_adapter_event_unexpected_error">Unexpected error: %s</string>
-    <string name="legacy_adapter_event_unexpected_data">Unexpected data type received: %s</string>
-    <string name="legacy_adapter_event_scale_message_fallback">Message from scale (ID: %1$d, Value: %2$s)</string>
-    <string name="legacy_adapter_event_user_selection_required">User selection required</string>
-    <string name="legacy_adapter_event_user_details">User #%1$d (Age: %2$d, Height: %3$d)</string>
-    <string name="legacy_adapter_event_user_consent_required">Consent for user %1$d (Index %2$d) required.</string>
-    <string name="legacy_adapter_event_unknown_status">Unknown status or message from driver: %s</string>
-    <string name="legacy_adapter_connect_busy">Adapter is already busy with another device (%s).</string>
-    <string name="legacy_adapter_connect_exception">Error starting connection process to %1$s: %2$s</string>
-    <string name="legacy_adapter_request_measurement_not_connected">Not connected for measurement request.</string>
-    <string name="legacy_adapter_request_measurement_auto">Measurement should start automatically (Legacy driver).</string>
-    <string name="legacy_adapter_event_missing_user_data">Error: Missing user data for selection.</string>
-    <string name="legacy_adapter_event_invalid_consent_data">Error: Invalid data received for consent.</string>
-    <string name="legacy_adapter_event_missing_consent_data">Error: Missing data required for consent.</string>
-    <string name="legacy_adapter_event_invalid_interaction_payload">Error: Invalid data payload received for user interaction.</string>
 
     <!-- Charts (LineChart) -->
     <string name="content_description_time_range_icon">Time range icon</string>
@@ -980,4 +962,31 @@
     <string name="bt_sbf72_choice_slot_other_user">P%1$d: Used by %2$s (Take over?)</string>
     <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Occupied (Not linked)</string>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d: Create \'%2$s\' here</string>
+
+    <!-- Progress since the start point recorded on a goal -->
+    <string name="content_description_goal_progress">Goal progress: %1$d percent</string>
+    <string name="progress_goal_reached">Goal reached</string>
+    <string name="progress_held_for">for %1$s</string> <!-- how long the goal has been held; follows "2.13 kg below goal"; %1$s is a duration -->
+    <string name="progress_remaining_to_go">%1$s to go</string> <!-- distance still missing to the goal -->
+    <string name="progress_time_left">%1$s to %2$s</string> <!-- %1$s is a day count, %2$s the target date without the year -->
+    <string name="progress_since_date">Since %1$s</string> <!-- the goal's start date -->
+    <string name="progress_until_date">Until %1$s</string> <!-- the goal's target date -->
+    <string name="progress_elapsed_in">In %1$s</string> <!-- time the change took, counted from the start point; %1$s is a duration -->
+    <string name="progress_below_goal">%1$s below goal</string> <!-- overshot a goal downwards -->
+    <string name="progress_above_goal">%1$s above goal</string> <!-- overshot a goal upwards -->
+
+    <!-- Measurement comparison -->
+    <string name="route_title_measurement_comparison">Comparison</string>
+    <string name="desc_compare_selected">Compare the two selected measurements</string>
+    <string name="comparison_select_two">Select exactly two measurements to compare them.</string>
+    <string name="comparison_days_apart">%1$d days apart</string>
+    <string name="comparison_same_day">Same day</string>
+    <string name="comparison_no_common_metrics">These two measurements have no metric in common.</string>
+    <string name="comparison_only_in_one">Only in one of the two measurements</string>
+    <string name="comparison_mode_absolute">Absolute</string>
+    <string name="comparison_mode_percent">Percent</string>
+    <string name="comparison_mode_per_week">Per week</string>
+    <string name="comparison_column_delta">Δ</string>
+    <string name="comparison_column_delta_percent">Δ %</string>
+    <string name="comparison_column_delta_per_week">Δ / week</string>
 </resources>

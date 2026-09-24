@@ -17,7 +17,6 @@
  */
 package com.health.openscale.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +26,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 
 private val lightScheme = lightColorScheme(
@@ -253,6 +253,13 @@ private val highContrastDarkScheme = darkColorScheme(
     surfaceContainerHigh = surfaceContainerHighDarkHighContrast,
     surfaceContainerHighest = surfaceContainerHighestDarkHighContrast,
 )
+
+/**
+ * The success role Material 3 does not define, resolved like the generated pairs are — but off the
+ * surface itself, so it also holds under dynamic colour and the pure black theme.
+ */
+val ColorScheme.success: Color
+    get() = if (surface.luminance() < 0.5f) successDark else successLight
 
 // ── Pure Black (OLED) ─────────────────────────────────────────────────────────
 

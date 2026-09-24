@@ -114,6 +114,7 @@ import com.health.openscale.core.model.AggregatedMeasurement
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.model.ValueWithDifference
+import com.health.openscale.core.usecase.GoalProgress
 import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.components.LinearGauge
@@ -220,6 +221,11 @@ fun OverviewScreen(
         sharedViewModel.getAllGoalsForUser(selectedUserId!!).collectAsState(initial = emptyList())
     } else {
         remember { mutableStateOf(emptyList<UserGoals>()) }
+    }
+    val goalProgressState by sharedViewModel.goalProgressFlow.collectAsStateWithLifecycle()
+    val progressByTypeId: Map<Int, GoalProgress> = remember(goalProgressState) {
+        (goalProgressState as? SharedViewModel.UiState.Success)?.data
+            ?.associateBy { it.type.id } ?: emptyMap()
     }
     val isGoalsSectionExpanded by sharedViewModel.myGoalsExpandedOverview.collectAsState(initial = true)
     val userEvalContext        by sharedViewModel.userEvaluationContext.collectAsState()
@@ -497,7 +503,7 @@ fun OverviewScreen(
                                             Column {
                                                 LazyRow(
                                                     modifier            = Modifier.fillMaxWidth(),
-                                                    contentPadding      = PaddingValues(horizontal = 16.dp),
+                                                    contentPadding      = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                                                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                                                 ) {
                                                     items(
@@ -514,7 +520,7 @@ fun OverviewScreen(
                                                                 UserGoalChip(
                                                                     userGoal             = goal,
                                                                     measurementType      = measurementType,
-                                                                    referenceMeasurement = goalReferenceMeasurement,
+                                                                    progress             = progressByTypeId[goal.measurementTypeId],
                                                                     onClick              = {
                                                                         val user = currentSelectedUser
                                                                         if (user != null && user.id != 0 &&
@@ -531,7 +537,11 @@ fun OverviewScreen(
                                                         }
                                                     }
                                                 }
-                                                if (goalReferenceMeasurement?.measurement?.timestamp != null) {
+                                                // Only meaningful while the chips still depend on
+                                                // the selected entry, i.e. without progress.
+                                                if (progressByTypeId.isEmpty() &&
+                                                    goalReferenceMeasurement?.measurement?.timestamp != null
+                                                ) {
                                                     Row(
                                                         modifier              = Modifier
                                                             .fillMaxWidth()
@@ -575,7 +585,7 @@ fun OverviewScreen(
                                 modifier              = Modifier
                                     .weight(if (isDrillDown) 1f else 1f - localSplitterWeight)
                                     .fillMaxSize()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                    .padding(horizontal = 16.dp, vertical = 4.dp),
                                 verticalArrangement   = Arrangement.spacedBy(12.dp),
                             ) {
                                 itemsIndexed(
@@ -695,39 +705,19 @@ fun OverviewScreen(
                 allMeasurementTypes   = allMeasurementTypes,
                 allGoalsOfCurrentUser = userGoals,
                 onDismiss             = { sharedViewModel.dismissUserGoalDialogWithContext() },
-                onConfirm             = { measurementTypeId, goalValueString, goalTargetDate ->
-                    val finalGoalValueFloat = goalValueString.replace(',', '.').toFloatOrNull()
-                    when {
-                        finalGoalValueFloat != null -> {
-                            val goalToProcess = UserGoals(
-                                userId            = userIdForDialog,
-                                measurementTypeId = measurementTypeId,
-                                goalValue         = finalGoalValueFloat,
-                                goalTargetDate    = goalTargetDate,
-                            )
-                            if (dialogContext.existingGoalForDialog != null)
-                                sharedViewModel.updateUserGoal(goalToProcess)
-                            else
-                                sharedViewModel.insertUserGoal(goalToProcess)
-                            sharedViewModel.dismissUserGoalDialogWithContext()
-                        }
-                        goalValueString.isBlank() && dialogContext.existingGoalForDialog != null -> {
-                            return@UserGoalDialog
-                        }
-                        goalValueString.isBlank() -> {
-                            Toast.makeText(context, R.string.toast_goal_value_cannot_be_empty, Toast.LENGTH_SHORT).show()
-                        }
-                        else -> {
-                            val typeName = allMeasurementTypes
-                                .find { it.id == measurementTypeId }
-                                ?.getDisplayName(context) ?: "Value"
-                            Toast.makeText(
-                                context,
-                                resources.getString(R.string.toast_invalid_number_format_short, typeName),
-                                Toast.LENGTH_SHORT,
-                            ).show()
-                        }
-                    }
+                // Parsing and validation live in the dialog — it hands back ready values.
+                onConfirm             = { measurementTypeId, goalValue, goalTargetDate, startDate ->
+                    val goalToProcess = UserGoals(
+                        userId            = userIdForDialog,
+                        measurementTypeId = measurementTypeId,
+                        goalValue         = goalValue,
+                        goalTargetDate    = goalTargetDate,
+                        startDate         = startDate,
+                    )
+                    if (dialogContext.existingGoalForDialog != null)
+                        sharedViewModel.updateUserGoal(goalToProcess)
+                    else
+                        sharedViewModel.insertUserGoal(goalToProcess)
                 },
                 onDelete = { _, measurementTypeIdToDelete ->
                     sharedViewModel.deleteUserGoal(userIdForDialog, measurementTypeIdToDelete)

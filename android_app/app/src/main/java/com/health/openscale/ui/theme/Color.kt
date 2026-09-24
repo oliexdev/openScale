@@ -21,6 +21,16 @@ import androidx.compose.ui.graphics.Color
 
 val AppBrandBlue = Color(0xFF0099CC)
 
+/**
+ * Success, as a pair rather than one colour: Material 3 has no success role, and no single green
+ * can carry both themes as text — the light surface needs a dark one, the dark surface a light one.
+ * Measured on the card background: Green 900 reaches 6.1:1, and the dark theme keeps the Green 400
+ * of [com.health.openscale.core.data.EvaluationState.NORMAL] at 5.2:1, which on light would be
+ * 1.8:1 and unreadable.
+ */
+val successLight = Color(0xFF1B5E20)
+val successDark = Color(0xFF66BB6A)
+
 // === Generated M3 Palette (Seed: #0099CC) ===
 
 // Light

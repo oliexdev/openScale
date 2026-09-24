@@ -191,7 +191,9 @@ class SettingsViewModel @Inject constructor(
                 val orig = originalGoals.find { it.measurementTypeId == goal.measurementTypeId }
                 when {
                     orig == null -> userFacade.insertUserGoal(goal)
-                    orig.goalValue != goal.goalValue -> userFacade.updateUserGoal(goal)
+                    // The whole row, not just the goal value: the target date and start point are
+                    // edited in the same dialog and were being dropped silently.
+                    orig != goal -> userFacade.updateUserGoal(goal)
                 }
             }
         }

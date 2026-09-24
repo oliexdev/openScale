@@ -21,6 +21,14 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 
+/**
+ * A measurement type the user is working on: from [startDate] towards [goalValue], with
+ * [goalTargetDate] as an optional deadline.
+ *
+ * The starting *value* is deliberately not stored — it is already in the measurements, and a
+ * second hand-typed copy could disagree with the curve drawn next to it. The progress calculation
+ * snaps [startDate] to the nearest measurement carrying a value for the type.
+ */
 @Entity(
     tableName = "user_goals",
     primaryKeys = ["userId", "measurementTypeId"],
@@ -44,5 +52,6 @@ data class UserGoals (
     val userId: Int,
     val measurementTypeId: Int,
     var goalValue: Float,
-    var goalTargetDate: Long? = null
+    var goalTargetDate: Long? = null,
+    var startDate: Long
 )

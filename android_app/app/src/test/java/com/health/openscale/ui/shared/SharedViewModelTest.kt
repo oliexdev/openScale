@@ -25,7 +25,10 @@ import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
+import com.health.openscale.core.data.TimeRangeFilter
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.UserGoals
+import com.health.openscale.core.usecase.GoalProgress
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
@@ -144,4 +147,95 @@ class SharedViewModelTest {
             assertThat(data).isNotEmpty()
         }
     }
+
+    /**
+     * Seeds one user with weight measurements [daysAgo] days apart and a goal carrying a start
+     * point at the older of the two. Returns the user id.
+     */
+    private suspend fun seedUserWithStartPoint(
+        startValue: Float = 85.4f,
+        currentValue: Float = 82.0f,
+        elapsedDays: Long = 30,
+        goalValue: Float = 78f,
+    ): Int {
+        repo.insertAllMeasurementTypes(MeasurementType.seedRows())
+        val uid = repo.insertUser(user("Alice")).toInt()
+        val weightTypeId = repo.getAllMeasurementTypes().first()
+            .first { it.key == MeasurementType.WEIGHT }.id
+
+        val dayMillis = 24L * 60 * 60 * 1000
+        val startMillis = System.currentTimeMillis() - elapsedDays * dayMillis
+        listOf(startMillis to startValue, System.currentTimeMillis() to currentValue)
+            .forEach { (ts, value) ->
+                val id = repo.insertMeasurement(Measurement(userId = uid, timestamp = ts)).toInt()
+                repo.insertMeasurementValue(
+                    MeasurementValue(measurementId = id, typeId = weightTypeId, floatValue = value)
+                )
+            }
+
+        repo.insertUserGoal(
+            UserGoals(
+                userId = uid,
+                measurementTypeId = weightTypeId,
+                goalValue = goalValue,
+                startDate = startMillis,
+            )
+        )
+        return uid
+    }
+
+    @Test
+    fun goalProgressFlow_isEmpty_whileTheUserKeepsNoGoals() {
+        runBlocking {
+            repo.insertAllMeasurementTypes(MeasurementType.seedRows())
+            val uid = repo.insertUser(user("Alice")).toInt()
+            vm.selectUser(uid)
+
+            val state = withTimeout(5_000) {
+                vm.goalProgressFlow.first { it is SharedViewModel.UiState.Success }
+            }
+            assertThat((state as SharedViewModel.UiState.Success).data).isEmpty()
+        }
+    }
+
+    @Test
+    fun goalProgressFlow_reportsProgressForTheStartedGoal() {
+        runBlocking {
+            val uid = seedUserWithStartPoint()
+            vm.selectUser(uid)
+
+            val progress = withTimeout(5_000) { awaitProgress() }.single()
+
+            assertThat(progress.startDate).isEqualTo(progress.today.minusDays(30))
+            assertThat(progress.delta).isWithin(0.01f).of(-3.4f)
+            assertThat(progress.currentValue).isWithin(0.01f).of(82.0f)
+            assertThat(progress.goalFraction!!).isWithin(0.01f).of(3.4f / 7.4f)
+        }
+    }
+
+    /**
+     * The regression that matters: each window is [start, now] by definition, so narrowing a
+     * screen's time filter must not shrink it.
+     */
+    @Test
+    fun goalProgressFlow_isUnaffectedByTheActiveTimeRangeFilter() {
+        runBlocking {
+            val uid = seedUserWithStartPoint()
+            vm.selectUser(uid)
+
+            val before = withTimeout(5_000) { awaitProgress() }.single()
+
+            vm.saveSetting("overview_screen_time_range", TimeRangeFilter.LAST_7_DAYS.name)
+
+            val after = withTimeout(5_000) { awaitProgress() }.single()
+
+            assertThat(after.startDate).isEqualTo(before.startDate)
+            assertThat(after.delta).isWithin(0.01f).of(before.delta)
+        }
+    }
+
+    private suspend fun awaitProgress(): List<GoalProgress> =
+        vm.goalProgressFlow
+            .first { it is SharedViewModel.UiState.Success && it.data.isNotEmpty() }
+            .let { (it as SharedViewModel.UiState.Success).data }
 }
