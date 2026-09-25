@@ -194,11 +194,8 @@ class ScaleFactory @Inject constructor(
             EtekcityFit8SHandler(),
             EufyC20Handler(),
             EufyP2Handler(),
-            // RenphoES26BBHandler must stay ahead of ESCS20MHandler: both drive 0x1A10
-            // Lefu-family scales, but the Elis Solar (R-A012/R-A020) speaks the simple
-            // 0x55aa "basic" flavor, not the extended QN state machine.
-            RenphoES26BBHandler(),
             ESCS20MHandler(),
+            RenphoES26BBHandler(),
             DigooDGSO38HHandler(),
             CustomOpenScaleHandler(),
             BeurerSanitasHandler(),
