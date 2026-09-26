@@ -110,6 +110,7 @@ import com.health.openscale.ui.shared.TopBarAction
 import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.screen.components.SHOW_TYPE_FILTER_ROW_SUFFIX
 import com.health.openscale.ui.components.FullscreenImageViewer
+import com.health.openscale.ui.screen.settings.ExportPhotosDialog
 import com.health.openscale.ui.components.MeasurementImageThumbnail
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -292,27 +293,42 @@ fun TableScreen(
     var showDeleteConfirmDialog by rememberSaveable { mutableStateOf(false) }
     var showChangeUserDialog    by rememberSaveable { mutableStateOf(false) }
 
-    val exportCsvLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("text/csv"),
-        onResult = { uri: Uri? ->
-            val currentUserId = sharedViewModel.selectedUserId.value
-            if (uri != null && currentUserId != null && currentUserId != 0) {
-                scope.launch {
-                    val resolvedIds = resolveSelectedMeasurementIds()
-                    if (resolvedIds.isNotEmpty()) {
-                        sharedViewModel.performCsvExport(
-                            userId                 = currentUserId,
-                            uri                    = uri,
-                            contentResolver        = context.contentResolver,
-                            filterByMeasurementIds = resolvedIds,
-                        )
-                        isInSelectionMode = false
-                        clearKeys()
-                    }
+    var showExportPhotosDialog by rememberSaveable { mutableStateOf(false) }
+
+    fun exportSelectionTo(uri: Uri?, includePhotos: Boolean) {
+        val currentUserId = sharedViewModel.selectedUserId.value
+        if (uri != null && currentUserId != null && currentUserId != 0) {
+            scope.launch {
+                val resolvedIds = resolveSelectedMeasurementIds()
+                if (resolvedIds.isNotEmpty()) {
+                    sharedViewModel.performCsvExport(
+                        userId                 = currentUserId,
+                        uri                    = uri,
+                        contentResolver        = context.contentResolver,
+                        filterByMeasurementIds = resolvedIds,
+                        includePhotos          = includePhotos,
+                    )
+                    isInSelectionMode = false
+                    clearKeys()
                 }
             }
-        },
+        }
+    }
+
+    val exportCsvLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("text/csv"),
+        onResult = { uri: Uri? -> exportSelectionTo(uri, includePhotos = false) },
     )
+    val exportZipLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/zip"),
+        onResult = { uri: Uri? -> exportSelectionTo(uri, includePhotos = true) },
+    )
+
+    fun launchSelectionExport(includePhotos: Boolean) {
+        val ts = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date())
+        if (includePhotos) exportZipLauncher.launch("${ts}_openscale_selected_export.zip")
+        else exportCsvLauncher.launch("${ts}_openscale_selected_export.csv")
+    }
 
     fun deleteSelectedItems() {
         // Resolve the selection on the composition scope (read-only; needs screen state), then hand
@@ -328,8 +344,14 @@ fun TableScreen(
     }
 
     fun exportSelectedItems() {
-        val ts = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date())
-        exportCsvLauncher.launch("${ts}_openscale_selected_export.csv")
+        val currentUserId = sharedViewModel.selectedUserId.value ?: return
+        scope.launch {
+            if (sharedViewModel.hasPhotos(currentUserId, resolveSelectedMeasurementIds())) {
+                showExportPhotosDialog = true
+            } else {
+                launchSelectionExport(includePhotos = false)
+            }
+        }
     }
 
     fun changeUserOfSelectedItems(newUserId: Int) {
@@ -371,6 +393,16 @@ fun TableScreen(
                 sharedViewModel.showSnackbar(messageResId = R.string.snackbar_no_other_users_to_change_to)
             }
         }
+    }
+
+    if (showExportPhotosDialog) {
+        ExportPhotosDialog(
+            onDismissRequest = { showExportPhotosDialog = false },
+            onChoice = { includePhotos ->
+                showExportPhotosDialog = false
+                launchSelectionExport(includePhotos)
+            },
+        )
     }
 
     if (showDeleteConfirmDialog) {

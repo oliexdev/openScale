@@ -384,7 +384,7 @@ object RoomTestSupport {
         val dataManagementFacade = DataManagementFacade(
             AutoBackupUseCases(app, settings),
             BackupRestoreUseCases(app, repo, settings, sync),
-            ImportExportUseCases(repo, sync),
+            ImportExportUseCases(app, repo, sync),
         )
         return Facades(userFacade, measurementFacade, dataManagementFacade)
     }

@@ -90,7 +90,12 @@ class SettingsViewModel @Inject constructor(
 
     // --- SAF events to the UI ---
     sealed class SafEvent {
-        data class RequestCreateFile(val suggestedName: String, val actionId: String, val userId: Int) : SafEvent()
+        data class RequestCreateFile(
+            val suggestedName: String,
+            val actionId: String,
+            val userId: Int,
+            val includePhotos: Boolean = false,
+        ) : SafEvent()
         data class RequestOpenFile(val actionId: String, val userId: Int) : SafEvent()
     }
     private val _safEvent = MutableSharedFlow<SafEvent>()
@@ -251,18 +256,7 @@ class SettingsViewModel @Inject constructor(
                 0 -> {
                     showSnackbar(R.string.export_no_users_available)
                 }
-                1 -> {
-                    val user = users.first()
-                    val safeName = user.name.replace("\\s+".toRegex(), "_").take(20)
-                    val suggested = "openScale_export_${safeName}.csv"
-                    _safEvent.emit(
-                        SafEvent.RequestCreateFile(
-                            suggested,
-                            ACTION_ID_EXPORT_USER_DATA,
-                            user.id
-                        )
-                    )
-                }
+                1 -> requestExportFile(users.first().id)
                 else -> {
                     _showUserSelectionDialogForExport.value = true
                 }
@@ -270,11 +264,49 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun performCsvExport(userId: Int, uri: Uri, contentResolver: ContentResolver) {
+    // User id whose export carries photos and waits for the CSV-or-ZIP choice.
+    private val _exportPhotoChoiceUserId = MutableStateFlow<Int?>(null)
+    val exportPhotoChoiceUserId = _exportPhotoChoiceUserId.asStateFlow()
+
+    private suspend fun requestExportFile(userId: Int) {
+        if (dataManagementFacade.hasPhotos(userId)) {
+            _exportPhotoChoiceUserId.value = userId
+        } else {
+            emitExportFileRequest(userId, includePhotos = false)
+        }
+    }
+
+    fun chooseExportPhotos(includePhotos: Boolean) = viewModelScope.launch {
+        val userId = _exportPhotoChoiceUserId.value ?: return@launch
+        _exportPhotoChoiceUserId.value = null
+        emitExportFileRequest(userId, includePhotos)
+    }
+
+    fun cancelExportPhotoChoice() { _exportPhotoChoiceUserId.value = null }
+
+    private suspend fun emitExportFileRequest(userId: Int, includePhotos: Boolean) {
+        val user = allUsers.value.firstOrNull { it.id == userId } ?: run {
+            showSnackbar(R.string.export_no_users_available); return
+        }
+        val safeName = user.name.replace("\\s+".toRegex(), "_").take(20)
+        val extension = if (includePhotos) "zip" else "csv"
+        _safEvent.emit(
+            SafEvent.RequestCreateFile(
+                "openScale_export_${safeName}.$extension",
+                ACTION_ID_EXPORT_USER_DATA,
+                user.id,
+                includePhotos,
+            )
+        )
+    }
+
+    fun performCsvExport(userId: Int, uri: Uri, contentResolver: ContentResolver, includePhotos: Boolean = false) {
         viewModelScope.launch {
             _isLoadingExport.value = true
             try {
-                val rows = dataManagementFacade.exportUserToCsv(userId, uri, contentResolver).getOrThrow()
+                val rows = dataManagementFacade.exportUserToCsv(
+                    userId, uri, contentResolver, includePhotos = includePhotos
+                ).getOrThrow()
                 if (rows > 0) showSnackbar(R.string.export_successful)
                 else showSnackbar(R.string.export_error_no_exportable_values)
             } catch (e: Exception) {
@@ -572,12 +604,7 @@ class SettingsViewModel @Inject constructor(
     // Auswahl übernehmen
     fun proceedWithExportForUser(userId: Int) = viewModelScope.launch {
         _showUserSelectionDialogForExport.value = false
-        val user = allUsers.value.firstOrNull { it.id == userId } ?: run {
-            showSnackbar(R.string.export_no_users_available); return@launch
-        }
-        val safeName = user.name.replace("\\s+".toRegex(), "_").take(20)
-        val suggested = "openScale_export_${safeName}.csv"
-        _safEvent.emit(SafEvent.RequestCreateFile(suggested, ACTION_ID_EXPORT_USER_DATA, user.id))
+        requestExportFile(userId)
     }
 
     fun proceedWithImportForUser(userId: Int) = viewModelScope.launch {

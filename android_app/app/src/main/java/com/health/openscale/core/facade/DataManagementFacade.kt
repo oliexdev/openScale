@@ -95,8 +95,12 @@ class DataManagementFacade @Inject constructor(
         userId: Int,
         uri: Uri,
         resolver: ContentResolver,
-        filterByMeasurementIds: List<Int>? = null
-    ): Result<Int> = importExport.exportUserToCsv(userId, uri, resolver, filterByMeasurementIds)
+        filterByMeasurementIds: List<Int>? = null,
+        includePhotos: Boolean = false,
+    ): Result<Int> = importExport.exportUserToCsv(userId, uri, resolver, filterByMeasurementIds, includePhotos)
+
+    suspend fun hasPhotos(userId: Int, filterByMeasurementIds: List<Int>? = null): Boolean =
+        importExport.hasPhotos(userId, filterByMeasurementIds)
 
     suspend fun importUserFromCsv(
         userId: Int,

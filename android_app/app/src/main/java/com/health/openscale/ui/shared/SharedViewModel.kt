@@ -940,16 +940,20 @@ class SharedViewModel @Inject constructor(
     fun getPlausiblePercentRange(key: MeasurementType.Key<*>?) =
         measurementFacade.plausiblePercentRangeFor(key)
 
+    suspend fun hasPhotos(userId: Int, filterByMeasurementIds: List<Int>? = null): Boolean =
+        withContext(Dispatchers.IO) { dataManagementFacade.hasPhotos(userId, filterByMeasurementIds) }
+
     fun performCsvExport(
         userId: Int,
         uri: Uri,
         contentResolver: ContentResolver,
         filterByMeasurementIds: List<Int>? = null,
+        includePhotos: Boolean = false,
     ) {
         viewModelScope.launch {
             try {
                 val rows = dataManagementFacade
-                    .exportUserToCsv(userId, uri, contentResolver, filterByMeasurementIds)
+                    .exportUserToCsv(userId, uri, contentResolver, filterByMeasurementIds, includePhotos)
                     .getOrThrow()
                 if (rows > 0) showSnackbar(messageResId = R.string.export_successful)
                 else showSnackbar(messageResId = R.string.export_error_no_exportable_values)

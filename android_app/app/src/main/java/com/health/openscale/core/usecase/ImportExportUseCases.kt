@@ -18,6 +18,7 @@
 package com.health.openscale.core.usecase
 
 import android.content.ContentResolver
+import android.content.Context
 import android.net.Uri
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
@@ -28,10 +29,16 @@ import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.utils.LogManager
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.io.IOException
+import java.io.OutputStream
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -41,6 +48,10 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoField
+import java.util.UUID
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -64,6 +75,7 @@ data class ImportReport(
  */
 @Singleton
 class ImportExportUseCases @Inject constructor(
+    @param:ApplicationContext private val appContext: Context,
     private val repository: DatabaseRepository,
     private val sync: SyncUseCases
 ) {
@@ -91,15 +103,27 @@ class ImportExportUseCases @Inject constructor(
         .optionalEnd()
         .toFormatter()
 
+    private val photoTimestampFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")
+
+    /** True if the measurements an export would cover carry at least one photo. */
+    suspend fun hasPhotos(userId: Int, filterByMeasurementIds: List<Int>? = null): Boolean =
+        repository.getMeasurementsWithValuesForUser(userId).first()
+            .filter { filterByMeasurementIds == null || it.measurement.id in filterByMeasurementIds }
+            .any { mwv -> mwv.values.any { it.type.inputType == InputFieldType.IMAGE && it.value.textValue != null } }
+
     /**
      * Export all measurements of a user to a CSV file at [uri].
+     *
+     * With [includePhotos] the file is a ZIP instead: the CSV as [CSV_ENTRY] plus every photo
+     * under [PHOTO_DIR], referenced from the photo columns by its relative path.
      * @return number of exported data rows (not counting header).
      */
     suspend fun exportUserToCsv(
         userId: Int,
         uri: Uri,
         contentResolver: ContentResolver,
-        filterByMeasurementIds: List<Int>? = null
+        filterByMeasurementIds: List<Int>? = null,
+        includePhotos: Boolean = false,
     ): Result<Int> = runCatching {
         LogManager.i(TAG, "CSV export for userId=$userId -> $uri")
 
@@ -109,7 +133,7 @@ class ImportExportUseCases @Inject constructor(
             it.key != MeasurementType.DATE &&
             it.key != MeasurementType.TIME &&
             it.key != MeasurementType.USER &&
-            it.inputType != InputFieldType.IMAGE
+            (includePhotos || it.inputType != InputFieldType.IMAGE)
         }
 
         // One header per type, guaranteed unique. Identities make that automatic; only
@@ -141,6 +165,7 @@ class ImportExportUseCases @Inject constructor(
         }
 
         val rows = mutableListOf<Map<String, String?>>()
+        val photoEntries = mutableListOf<Pair<String, File>>()
         filteredUserMeasurementsWithValues.forEach { mwv ->
             val zdt = Instant.ofEpochMilli(mwv.measurement.timestamp).atZone(ZoneId.systemDefault())
             val row = mutableMapOf<String, String?>(
@@ -167,7 +192,15 @@ class ImportExportUseCases @Inject constructor(
                         InputFieldType.TIME  -> value.dateValue?.let {
                             timeFormatter.format(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()))
                         }
-                        InputFieldType.USER, InputFieldType.IMAGE -> null
+                        InputFieldType.USER -> null
+                        InputFieldType.IMAGE -> MeasurementCrudUseCases.imageFile(appContext, value.textValue)
+                            ?.takeIf { it.isFile }
+                            ?.let { file ->
+                                val safeKey = currentColumnKey.replace(Regex("[^A-Za-z0-9_-]"), "_")
+                                val path = "$PHOTO_DIR/${photoTimestampFormatter.format(zdt)}_$safeKey.jpg"
+                                photoEntries += path to file
+                                path
+                            }
                     }
                     row[currentColumnKey] = s
                 }
@@ -177,19 +210,34 @@ class ImportExportUseCases @Inject constructor(
 
         require(rows.isNotEmpty()) { "No exportable values after transformation" }
 
+        fun writeCsv(os: OutputStream) = csvWriter().open(os) {
+            writeRow(allCsvColumnKeys)
+            rows.forEach { map ->
+                writeRow(allCsvColumnKeys.map { k -> map[k] })
+            }
+        }
+
         withContext(Dispatchers.IO) {
             val os = contentResolver.openOutputStream(uri)
                 ?: error("Cannot open OutputStream for uri=$uri")
-            var count = 0
-            csvWriter().open(os) {
-                writeRow(allCsvColumnKeys)
-                rows.forEach { map ->
-                    writeRow(allCsvColumnKeys.map { k -> map[k] })
+            if (includePhotos) {
+                // csvWriter closes the stream it writes to, so the CSV is buffered first.
+                val csvBytes = ByteArrayOutputStream().also { writeCsv(it) }.toByteArray()
+                ZipOutputStream(os).use { zip ->
+                    zip.putNextEntry(ZipEntry(CSV_ENTRY))
+                    zip.write(csvBytes)
+                    zip.closeEntry()
+                    photoEntries.forEach { (path, file) ->
+                        zip.putNextEntry(ZipEntry(path))
+                        FileInputStream(file).use { it.copyTo(zip) }
+                        zip.closeEntry()
+                    }
                 }
-                count = rows.size
+            } else {
+                writeCsv(os)
             }
-            LogManager.d(TAG, "CSV export done: rows=$count userId=$userId")
-            count
+            LogManager.d(TAG, "CSV export done: rows=${rows.size} photos=${photoEntries.size} userId=$userId")
+            rows.size
         }
     }
 
@@ -223,8 +271,8 @@ class ImportExportUseCases @Inject constructor(
     }
 
     /**
-     * Import measurements for a user from a CSV file at [uri].
-     * The CSV format matches the exporter (first row is header).
+     * Import measurements for a user from a CSV file at [uri], or from a ZIP written by
+     * [exportUserToCsv] with photos. The CSV format matches the exporter (first row is header).
      * Returns an [ImportReport] with success/skip counts.
      */
     suspend fun importUserFromCsv(
@@ -249,10 +297,18 @@ class ImportExportUseCases @Inject constructor(
         var ignoredMeasurementsCount = 0
 
         val toInsert = mutableListOf<Pair<Measurement, List<MeasurementValue>>>()
+        val importedPhotosByTimestamp = mutableMapOf<Long, MutableList<String>>()
+        val workDir = File(appContext.cacheDir, "csv_import_${System.nanoTime()}")
+        val photoDir = File(workDir, PHOTO_DIR)
 
-        withContext(Dispatchers.IO) {
-            val input = contentResolver.openInputStream(uri)
-                ?: throw IOException("Could not open InputStream for Uri: $uri")
+        try { withContext(Dispatchers.IO) {
+            val isZip = BackupRestoreUseCases.isZip(contentResolver, uri)
+            val input = if (isZip) {
+                FileInputStream(extractImportZip(contentResolver, uri, workDir, photoDir))
+            } else {
+                contentResolver.openInputStream(uri)
+                    ?: throw IOException("Could not open InputStream for Uri: $uri")
+            }
 
             csvReader {
                 skipEmptyLine = true
@@ -285,7 +341,7 @@ class ImportExportUseCases @Inject constructor(
                             var matched = allAppTypes.find { t ->
                                 t.key != MeasurementType.DATE &&
                                     t.key != MeasurementType.TIME &&
-                                    t.inputType != InputFieldType.IMAGE &&
+                                    (isZip || t.inputType != InputFieldType.IMAGE) &&
                                     t.csvColumnKey().equals(colName, ignoreCase = true)
                             }
                             // 2) fallback for files written before identity headers: user
@@ -293,7 +349,7 @@ class ImportExportUseCases @Inject constructor(
                             if (matched == null) {
                                 matched = allAppTypes.find { t ->
                                     t.isUserOwned() &&
-                                        t.inputType != InputFieldType.IMAGE &&
+                                        (isZip || t.inputType != InputFieldType.IMAGE) &&
                                         (t.name?.equals(colName, ignoreCase = true) == true)
                                 }
                             }
@@ -384,6 +440,18 @@ class ImportExportUseCases @Inject constructor(
                         val raw = row.getOrNull(colIdx)
                         if (raw.isNullOrBlank()) return@forEach
 
+                        if (type.inputType == InputFieldType.IMAGE) {
+                            val stored = importPhoto(raw, photoDir)
+                            if (stored == null) {
+                                LogManager.w(TAG, "Line ${rowIndex + 1}: photo '$raw' missing or invalid in the ZIP.")
+                                valuesSkippedParseError++
+                            } else {
+                                importedPhotosByTimestamp.getOrPut(ts) { mutableListOf() } += stored
+                                values.add(MeasurementValue(typeId = type.id, measurementId = 0, textValue = stored))
+                            }
+                            return@forEach
+                        }
+
                         try {
                             var skip = false
                             val floatVal = if (type.inputType == InputFieldType.FLOAT) raw.toFloatOrNull() else null
@@ -434,6 +502,12 @@ class ImportExportUseCases @Inject constructor(
                 importedMeasurementsCount = ids.first.size
                 ignoredMeasurementsCount = ids.second.size
 
+                // Photos copied for measurements dropped as duplicates would otherwise be orphans.
+                MeasurementCrudUseCases.deleteImageFiles(
+                    appContext,
+                    ids.second.flatMap { importedPhotosByTimestamp[it].orEmpty() }
+                )
+
                 // Recalc derived values for each inserted measurement (like in your VM)
                 ids.first.forEach { id ->
                     try { repository.recalculateDerivedValuesForMeasurement(id.toInt()) }
@@ -445,6 +519,8 @@ class ImportExportUseCases @Inject constructor(
                 // Bulk import: one coalesced "changed" wake-up instead of N per-measurement events.
                 sync.triggerSyncChangedAll()
             }
+        } } finally {
+            workDir.deleteRecursively()
         }
 
         ImportReport(
@@ -455,5 +531,58 @@ class ImportExportUseCases @Inject constructor(
             valuesSkippedParseError = valuesSkippedParseError,
             skippedColumns = skippedColumns.toList()
         )
+    }
+
+    /**
+     * Unpacks an export ZIP into [workDir]: the first root-level CSV and the photos under
+     * [PHOTO_DIR] whose names are plain file names. Everything else is ignored, which also
+     * keeps entries like `photos/../x` from escaping [workDir].
+     * @return the extracted CSV file.
+     */
+    private fun extractImportZip(contentResolver: ContentResolver, uri: Uri, workDir: File, photoDir: File): File {
+        photoDir.mkdirs()
+        var csvFile: File? = null
+        (contentResolver.openInputStream(uri) ?: throw IOException("Could not open InputStream for Uri: $uri")).use { raw ->
+            ZipInputStream(raw).use { zis ->
+                var entry = zis.nextEntry
+                while (entry != null) {
+                    val name = entry.name
+                    val photoName = name.removePrefix("$PHOTO_DIR/")
+                    val target = when {
+                        entry.isDirectory -> null
+                        csvFile == null && '/' !in name && name.endsWith(".csv", ignoreCase = true) ->
+                            File(workDir, CSV_ENTRY).also { csvFile = it }
+                        name.startsWith("$PHOTO_DIR/") && PHOTO_FILE_NAME.matches(photoName) -> File(photoDir, photoName)
+                        else -> null
+                    }
+                    if (target != null) FileOutputStream(target).use { zis.copyTo(it) }
+                    else LogManager.d(TAG, "Skipping ZIP entry '$name' during CSV import.")
+                    entry = zis.nextEntry
+                }
+            }
+        }
+        return csvFile ?: throw IOException("ZIP contains no CSV file")
+    }
+
+    /** Copies the photo a CSV cell refers to into app storage; returns its new file name or null. */
+    private fun importPhoto(cell: String, photoDir: File): String? {
+        val photoName = cell.trim().removePrefix("$PHOTO_DIR/").takeIf { PHOTO_FILE_NAME.matches(it) } ?: return null
+        val source = File(photoDir, photoName).takeIf { it.isFile && it.isJpeg() } ?: return null
+        val name = "${UUID.randomUUID()}.jpg"
+        val target = MeasurementCrudUseCases.imageFile(appContext, name) ?: return null
+        target.parentFile?.mkdirs()
+        source.copyTo(target)
+        return name
+    }
+
+    private fun File.isJpeg(): Boolean = inputStream().use { input ->
+        val header = ByteArray(2)
+        input.read(header) == 2 && header[0] == 0xFF.toByte() && header[1] == 0xD8.toByte()
+    }
+
+    companion object {
+        const val CSV_ENTRY = "measurements.csv"
+        const val PHOTO_DIR = "photos"
+        private val PHOTO_FILE_NAME = Regex("^[A-Za-z0-9._-]+\\.jpe?g$", RegexOption.IGNORE_CASE)
     }
 }

@@ -39,6 +39,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
@@ -143,6 +144,7 @@ fun DataManagementSettingsScreen(
 ) {
     val users by settingsViewModel.allUsers.collectAsState()
     val showUserSelectionDialogForExport by settingsViewModel.showUserSelectionDialogForExport.collectAsState()
+    val exportPhotoChoiceUserId by settingsViewModel.exportPhotoChoiceUserId.collectAsState()
     val showUserSelectionDialogForImport by settingsViewModel.showUserSelectionDialogForImport.collectAsState()
 
     val isLoadingExport by settingsViewModel.isLoadingExport.collectAsState()
@@ -289,6 +291,18 @@ fun DataManagementSettingsScreen(
         }
     )
 
+    val exportZipLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/zip"),
+        onResult = { uri: Uri? ->
+            uri?.let { fileUri ->
+                activeSafActionUserId?.let { userId ->
+                    settingsViewModel.performCsvExport(userId, fileUri, context.contentResolver, includePhotos = true)
+                    activeSafActionUserId = null
+                }
+            }
+        }
+    )
+
     val importCsvLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
         onResult = { uri: Uri? ->
@@ -350,10 +364,11 @@ fun DataManagementSettingsScreen(
             when (event) {
                 is SettingsViewModel.SafEvent.RequestCreateFile -> {
                     activeSafActionUserId = event.userId
-                    if (event.actionId == SettingsViewModel.ACTION_ID_BACKUP_DB) {
-                        manualBackupDbLauncher.launch(event.suggestedName)
-                    } else {
-                        exportCsvLauncher.launch(event.suggestedName)
+                    when {
+                        event.actionId == SettingsViewModel.ACTION_ID_BACKUP_DB ->
+                            manualBackupDbLauncher.launch(event.suggestedName)
+                        event.includePhotos -> exportZipLauncher.launch(event.suggestedName)
+                        else -> exportCsvLauncher.launch(event.suggestedName)
                     }
                 }
                 is SettingsViewModel.SafEvent.RequestOpenFile -> {
@@ -363,7 +378,9 @@ fun DataManagementSettingsScreen(
                         // The actual launch happens after confirmation. This SAF event is for when that's confirmed.
                         restoreDbLauncher.launch(arrayOf("*/*")) // Generic MIME type for DB files
                     } else {
-                        val mimeTypes = arrayOf("text/csv", "text/comma-separated-values", "application/csv", "text/plain")
+                        val mimeTypes = arrayOf(
+                            "text/csv", "text/comma-separated-values", "application/csv", "text/plain", "application/zip"
+                        )
                         importCsvLauncher.launch(mimeTypes)
                     }
                 }
@@ -597,6 +614,13 @@ fun DataManagementSettingsScreen(
         UserSelectionDialog(users, { settingsViewModel.proceedWithExportForUser(it) }, { if (!isLoadingExport) settingsViewModel.cancelUserSelectionForExport() }, stringResource(R.string.dialog_title_export_select_user), !isLoadingExport, !isLoadingExport)
     }
 
+    if (exportPhotoChoiceUserId != null) {
+        ExportPhotosDialog(
+            onDismissRequest = { settingsViewModel.cancelExportPhotoChoice() },
+            onChoice = { settingsViewModel.chooseExportPhotos(it) },
+        )
+    }
+
     if (showUserSelectionDialogForImport) {
         UserSelectionDialog(users, { settingsViewModel.proceedWithImportForUser(it) }, { if (!isLoadingImport) settingsViewModel.cancelUserSelectionForImport() }, stringResource(R.string.dialog_title_import_select_user), !isLoadingImport, !isLoadingImport)
     }
@@ -807,6 +831,35 @@ fun UserSelectionDialog(
         confirmButton = {
             TextButton(onClick = onDismiss, enabled = confirmButtonEnabled) {
                 Text(stringResource(R.string.cancel_button))
+            }
+        }
+    )
+}
+
+/**
+ * Asked before a CSV export whose measurements carry photos: a plain CSV without them, or a
+ * ZIP holding the CSV plus the photos.
+ *
+ * @param onChoice Invoked with `true` for the ZIP with photos, `false` for the plain CSV.
+ */
+@Composable
+fun ExportPhotosDialog(
+    onDismissRequest: () -> Unit,
+    onChoice: (includePhotos: Boolean) -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        icon = { Icon(Icons.Outlined.PhotoLibrary, contentDescription = null) },
+        title = { Text(stringResource(R.string.dialog_title_export_photos)) },
+        text = { Text(stringResource(R.string.dialog_message_export_photos)) },
+        confirmButton = {
+            TextButton(onClick = { onChoice(true) }) {
+                Text(stringResource(R.string.action_export_zip_with_photos))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { onChoice(false) }) {
+                Text(stringResource(R.string.action_export_csv_only))
             }
         }
     )

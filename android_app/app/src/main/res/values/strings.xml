@@ -1001,4 +1001,8 @@
     <string name="success_photo_exported">Photo exported.</string>
     <string name="error_saving_image">The photo could not be saved.</string>
     <string name="error_exporting_image">The photo could not be exported.</string>
+    <string name="dialog_title_export_photos">This CSV export contains photos</string>
+    <string name="dialog_message_export_photos">Export only the CSV, or a ZIP file with the CSV and all photos? The ZIP can be imported again, photos included.</string>
+    <string name="action_export_csv_only">CSV only</string>
+    <string name="action_export_zip_with_photos">ZIP with photos</string>
 </resources>
