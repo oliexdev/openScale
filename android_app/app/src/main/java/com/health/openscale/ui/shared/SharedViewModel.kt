@@ -18,6 +18,9 @@
 package com.health.openscale.ui.shared
 
 import android.content.ContentResolver
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.compose.material3.SnackbarDuration
@@ -43,6 +46,7 @@ import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.usecase.MeasurementDemoUseCase
 import com.health.openscale.core.usecase.GoalProgress
+import com.health.openscale.core.usecase.MeasurementCrudUseCases
 import com.health.openscale.core.usecase.SyncUseCases
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.core.facade.SettingsPreferenceKeys
@@ -51,6 +55,7 @@ import com.health.openscale.ui.screen.components.CUSTOM_END_DATE_MILLIS_SUFFIX
 import com.health.openscale.ui.screen.components.CUSTOM_START_DATE_MILLIS_SUFFIX
 import com.health.openscale.ui.screen.components.TIME_RANGE_SUFFIX
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -74,8 +79,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration.Companion.seconds
+import java.io.File
 import java.text.DateFormat
 import java.util.Date
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
@@ -99,6 +106,7 @@ class SharedViewModel @Inject constructor(
     private val dataManagementFacade: DataManagementFacade,
     private val settingsFacade: SettingsFacade,
     private val sync: SyncUseCases,
+    @param:ApplicationContext private val appContext: Context,
 ) : ViewModel(), SettingsFacade by settingsFacade {
 
     // When openScale can't wake an installed-but-force-stopped sync app, nudge the user to open it.
@@ -117,6 +125,8 @@ class SharedViewModel @Inject constructor(
 
     companion object {
         private const val TAG = "SharedViewModel"
+        private const val MAX_IMAGE_SIDE_PX = 1600
+        private const val JPEG_QUALITY = 85
     }
 
     // -------------------------------------------------------------------------
@@ -758,6 +768,49 @@ class SharedViewModel @Inject constructor(
         }
     }
 
+    fun imageFile(fileName: String?): File? = MeasurementCrudUseCases.imageFile(appContext, fileName)
+
+    /** Downscales and re-encodes the picked image into app storage; returns the stored file name. */
+    suspend fun saveImage(uri: Uri): Result<String> = withContext(Dispatchers.IO) {
+        runCatching {
+            val source = ImageDecoder.createSource(appContext.contentResolver, uri)
+            val bitmap = ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
+                val longSide = maxOf(info.size.width, info.size.height)
+                if (longSide > MAX_IMAGE_SIDE_PX) {
+                    val scale = MAX_IMAGE_SIDE_PX.toFloat() / longSide
+                    decoder.setTargetSize(
+                        (info.size.width * scale).toInt(),
+                        (info.size.height * scale).toInt(),
+                    )
+                }
+                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+            }
+            val fileName = "${UUID.randomUUID()}.jpg"
+            val file = File(imageDir().apply { mkdirs() }, fileName)
+            file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, it) }
+            bitmap.recycle()
+            fileName
+        }.onFailure { LogManager.e(TAG, "Saving image failed: ${it.message}", it) }
+    }
+
+    fun deleteImages(fileNames: Collection<String>) {
+        if (fileNames.isEmpty()) return
+        viewModelScope.launch(Dispatchers.IO) {
+            MeasurementCrudUseCases.deleteImageFiles(appContext, fileNames)
+        }
+    }
+
+    private fun imageDir(): File = MeasurementCrudUseCases.imageDir(appContext)
+
+    private fun undoImageDir(): File = File(appContext.cacheDir, "undo_images")
+
+    private fun copyImages(fileNames: List<String>, from: File, to: File) {
+        fileNames.filter(MeasurementCrudUseCases::isImageFileName).forEach { name ->
+            val source = File(from, name)
+            if (source.exists()) source.copyTo(File(to, name), overwrite = true)
+        }
+    }
+
     /**
      * Fire-and-forget delete: owns its coroutine on the internal [viewModelScope] so it completes
      * even if the calling screen is disposed / navigates away immediately afterwards. The result is
@@ -768,6 +821,10 @@ class SharedViewModel @Inject constructor(
             // Capture the measurement with its values before deleting, so it can be restored via Undo
             // (the delete cascades the value rows away).
             val snapshot = getMeasurementById(measurement.id).first()
+            val undoImages = snapshot?.values.orEmpty()
+                .filter { it.type.inputType == InputFieldType.IMAGE }
+                .mapNotNull { it.value.textValue }
+            withContext(Dispatchers.IO) { copyImages(undoImages, from = imageDir(), to = undoImageDir()) }
             val result = withContext(Dispatchers.IO) { measurementFacade.deleteMeasurement(measurement) }
             if (result.isSuccess) {
                 if (_currentMeasurementId.value == measurement.id) _currentMeasurementId.value = null
@@ -782,6 +839,7 @@ class SharedViewModel @Inject constructor(
                             // Re-insert as a new measurement; raw values only (derived are recomputed).
                             viewModelScope.launch {
                                 withContext(Dispatchers.IO) {
+                                    copyImages(undoImages, from = undoImageDir(), to = imageDir())
                                     measurementFacade.saveMeasurement(
                                         snap.measurement.copy(id = 0),
                                         snap.values.filter { !it.type.isDerived }.map { it.value },

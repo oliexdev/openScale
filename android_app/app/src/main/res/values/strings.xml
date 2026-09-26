@@ -221,6 +221,7 @@
     <string name="measurement_type_tdee">TDEE</string>
     <string name="measurement_type_calories">Calories</string>
     <string name="measurement_type_comment">Comment</string>
+    <string name="measurement_type_photo">Progress photo</string>
     <string name="measurement_type_date">Date</string>
     <string name="measurement_type_time">Time</string>
     <string name="measurement_type_user">User</string>
@@ -989,4 +990,15 @@
     <string name="comparison_column_delta">Δ</string>
     <string name="comparison_column_delta_percent">Δ %</string>
     <string name="comparison_column_delta_per_week">Δ / week</string>
+
+    <!-- Measurement photos -->
+    <string name="image_take_photo">Take photo</string>
+    <string name="image_choose_from_gallery">Choose from gallery</string>
+    <string name="image_remove_photo">Remove photo</string>
+    <string name="content_desc_photo">Photo: %1$s</string>
+    <string name="content_desc_close_photo">Close photo</string>
+    <string name="content_desc_export_photo">Export photo</string>
+    <string name="success_photo_exported">Photo exported.</string>
+    <string name="error_saving_image">The photo could not be saved.</string>
+    <string name="error_exporting_image">The photo could not be exported.</string>
 </resources>

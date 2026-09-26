@@ -22,6 +22,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.flow.first
@@ -148,5 +149,24 @@ class MigrationTest {
         assertThat(migrated.goalValue).isWithin(0.01f).of(78f)
         assertThat(migrated.goalTargetDate).isEqualTo(1751328000000L)
         assertThat(migrated.startDate).isEqualTo(RoomTestSupport.V16_MEASUREMENT_TIMESTAMP)
+    }
+
+    /** MIGRATION_17_18 adds the progress photo type behind the existing rows, enabled and unpinned. */
+    @Test
+    fun migration17To18_addsThePhotoTypeBehindTheExistingOnes() = runBlocking {
+        val dbFile = context.getDatabasePath(AppDatabase.DATABASE_NAME)
+        dbFile.parentFile?.mkdirs()
+        if (dbFile.exists()) dbFile.delete()
+
+        RoomTestSupport.writeV16Database(dbFile)
+
+        val opened = RoomTestSupport.onDisk(context).also { db = it }
+        val types = RoomTestSupport.repositoryFor(opened).getAllMeasurementTypes().first()
+
+        val photo = types.single { it.identity == MeasurementType.PHOTO.identity }
+        assertThat(photo.inputType).isEqualTo(InputFieldType.IMAGE)
+        assertThat(photo.isEnabled).isTrue()
+        assertThat(photo.isPinned).isFalse()
+        assertThat(photo.displayOrder).isGreaterThan(types.single { it.key == MeasurementType.WEIGHT }.displayOrder)
     }
 }

@@ -109,6 +109,8 @@ import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
 import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.screen.components.SHOW_TYPE_FILTER_ROW_SUFFIX
+import com.health.openscale.ui.components.FullscreenImageViewer
+import com.health.openscale.ui.components.MeasurementImageThumbnail
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.filter
@@ -117,6 +119,7 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import java.text.DateFormat
+import java.io.File
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -133,6 +136,9 @@ data class TableCellData(
     val flagged: Boolean = false,
     val unitType: UnitType? = null,
     val rawCount: Int = 1,
+    val imageFile: File? = null,
+    val imageType: MeasurementType? = null,
+    val imageTypeName: String? = null,
 )
 
 data class TableRowDataInternal(
@@ -461,6 +467,7 @@ fun TableScreen(
                             InputFieldType.INT   -> originalMeasurementValue.intValue
                                 ?.let { LocaleUtils.formatValueForDisplay(it.toString(), actualType.unit) } ?: "-"
                             InputFieldType.TEXT  -> originalMeasurementValue.textValue ?: "-"
+                            InputFieldType.IMAGE -> "-"
                             else                 -> originalMeasurementValue.textValue
                                 ?: originalMeasurementValue.floatValue?.toString()
                                 ?: originalMeasurementValue.intValue?.toString()
@@ -507,6 +514,12 @@ fun TableScreen(
                             flagged      = noAgeBand || outOfPlausibleRange,
                             unitType     = actualType.unit,
                             rawCount     = periodRawCount,
+                            imageFile    = if (actualType.inputType == InputFieldType.IMAGE)
+                                sharedViewModel.imageFile(originalMeasurementValue.textValue) else null,
+                            imageType    = actualType,
+                            imageTypeName = actualType.getDisplayName(context).takeIf {
+                                actualType.inputType == InputFieldType.IMAGE && originalMeasurementValue.textValue != null
+                            },
                         )
                     } else {
                         typeId to TableCellData(
@@ -995,14 +1008,32 @@ fun TableDataCellInternal(
                             modifier   = Modifier.padding(end = 2.dp),
                         )
                     }
-                    Text(
-                        text       = cellData.displayValue,
-                        style      = MaterialTheme.typography.bodyLarge,
-                        fontWeight = if (isAggregated) FontWeight.SemiBold else FontWeight.Normal,
-                        textAlign  = alignment,
-                        maxLines   = 2,
-                        overflow   = TextOverflow.Ellipsis,
-                    )
+                    if (cellData.imageTypeName != null) {
+                        var showImageViewer by remember { mutableStateOf(false) }
+                        MeasurementImageThumbnail(
+                            file               = cellData.imageFile,
+                            contentDescription = stringResource(R.string.content_desc_photo, cellData.imageTypeName),
+                            modifier           = Modifier.size(36.dp),
+                            onClick            = { showImageViewer = true },
+                        )
+                        if (showImageViewer) {
+                            FullscreenImageViewer(
+                                file      = cellData.imageFile,
+                                title     = cellData.imageTypeName,
+                                type      = cellData.imageType,
+                                onDismiss = { showImageViewer = false },
+                            )
+                        }
+                    } else {
+                        Text(
+                            text       = cellData.displayValue,
+                            style      = MaterialTheme.typography.bodyLarge,
+                            fontWeight = if (isAggregated) FontWeight.SemiBold else FontWeight.Normal,
+                            textAlign  = alignment,
+                            maxLines   = 2,
+                            overflow   = TextOverflow.Ellipsis,
+                        )
+                    }
                     if (cellData.evalState != null) {
                         val evalIcon = when {
                             cellData.flagged                            -> Icons.Filled.Warning

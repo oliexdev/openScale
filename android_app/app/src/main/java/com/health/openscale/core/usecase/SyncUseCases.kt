@@ -261,6 +261,7 @@ object GenericValueJson {
         val arr = JSONArray()
         for (v in values) {
             val type = typesById[v.typeId] ?: continue
+            if (type.inputType == InputFieldType.IMAGE) continue
             val obj = JSONObject()
             obj.put("identity", type.identity)
             obj.put("name", type.name ?: MeasurementType.identityColumnKey(type.identity))
@@ -325,7 +326,7 @@ object GenericValueJson {
                     // build() sends dateValue verbatim as epoch millis in a decimal string.
                     InputFieldType.DATE, InputFieldType.TIME ->
                         o.optString("text", "").toLongOrNull()?.let { empty.copy(dateValue = it) }
-                    InputFieldType.USER -> null
+                    InputFieldType.USER, InputFieldType.IMAGE -> null
                 }
                 if (parsed != null) out.add(type to parsed)
             }

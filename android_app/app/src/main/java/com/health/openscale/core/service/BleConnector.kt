@@ -513,7 +513,7 @@ class BleConnector(
                     InputFieldType.DATE, InputFieldType.TIME -> MeasurementValue(
                         measurementId = 0, typeId = type.id, dateValue = (raw as java.util.Date).time
                     )
-                    InputFieldType.USER -> continue
+                    InputFieldType.USER, InputFieldType.IMAGE -> continue
                 }
             }
 

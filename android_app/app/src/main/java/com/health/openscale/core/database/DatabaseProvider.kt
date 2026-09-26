@@ -25,12 +25,14 @@ import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
 import com.health.openscale.BuildConfig
+import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.usecase.GenericValueJson
+import com.health.openscale.core.usecase.MeasurementCrudUseCases
 import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
 import dagger.hilt.EntryPoint
@@ -566,7 +568,11 @@ class DatabaseProvider : ContentProvider() {
                             LogManager.d(TAG, "No measurement to delete for user $userId at $datetime.")
                             return@runBlocking 0
                         }
+                        val images = target.values
+                            .filter { it.type.inputType == InputFieldType.IMAGE }
+                            .mapNotNull { it.value.textValue }
                         databaseRepository.deleteMeasurement(target.measurement)
+                        MeasurementCrudUseCases.deleteImageFiles(context!!, images)
                         context!!.contentResolver.notifyChange(uri, null)
                         1
                     } catch (e: Exception) {

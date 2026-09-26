@@ -34,6 +34,7 @@ import com.health.openscale.core.database.MIGRATION_13_14
 import com.health.openscale.core.database.MIGRATION_14_15
 import com.health.openscale.core.database.MIGRATION_15_16
 import com.health.openscale.core.database.MIGRATION_16_17
+import com.health.openscale.core.database.MIGRATION_17_18
 import com.health.openscale.core.database.MIGRATION_1_2
 import com.health.openscale.core.database.MIGRATION_2_3
 import com.health.openscale.core.database.MIGRATION_3_4
@@ -85,7 +86,7 @@ object RoomTestSupport {
         MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6,
         MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
         MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15,
-        MIGRATION_15_16, MIGRATION_16_17,
+        MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18,
     )
 
     /** On-disk database at the real [AppDatabase.DATABASE_NAME] path, with all migrations applied. */
@@ -360,7 +361,7 @@ object RoomTestSupport {
     fun facadesFor(app: Application, repo: DatabaseRepository, settings: SettingsFacade): Facades {
         val typeCrud = MeasurementTypeCrudUseCases(repo, ApplicationProvider.getApplicationContext())
         val sync = SyncUseCases(app, typeCrud)
-        val userUseCases = UserUseCases(repo, settings, sync)
+        val userUseCases = UserUseCases(ApplicationProvider.getApplicationContext(), repo, settings, sync)
         val userFacade = UserFacade(userUseCases, UserGoalsUseCases(repo))
 
         val query = MeasurementQueryUseCases(repo)
@@ -395,7 +396,7 @@ object RoomTestSupport {
     /** Wires the real [MeasurementCrudUseCases] graph (same constructors as production) over [repo]. */
     fun measurementCrudFor(app: Application, repo: DatabaseRepository, settings: SettingsFacade): MeasurementCrudUseCases {
         val sync = SyncUseCases(app, MeasurementTypeCrudUseCases(repo, ApplicationProvider.getApplicationContext()))
-        val userUseCases = UserUseCases(repo, settings, sync)
+        val userUseCases = UserUseCases(ApplicationProvider.getApplicationContext(), repo, settings, sync)
         val query = MeasurementQueryUseCases(repo)
         val transformation = MeasurementTransformationUseCase(settings, userUseCases, query)
         return MeasurementCrudUseCases(app, settings, sync, transformation, repo)

@@ -45,7 +45,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext ctx: Context): AppDatabase =
         Room.databaseBuilder(ctx, AppDatabase::class.java, AppDatabase.Companion.DATABASE_NAME)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18)
             .build()
 
     @Provides
@@ -72,7 +72,7 @@ object DatabaseModule {
         MeasurementValue::class,
         MeasurementType::class,
     ],
-    version = 17,
+    version = 18,
     exportSchema = true
 )
 @TypeConverters(DatabaseConverters::class)
@@ -833,6 +833,38 @@ val MIGRATION_16_17 = object : Migration(16, 17) {
         db.execSQL(
             "CREATE INDEX IF NOT EXISTS `index_user_goals_measurementTypeId` " +
                 "ON `user_goals` (`measurementTypeId`)"
+        )
+    }
+}
+
+/**
+ * Adds the predefined progress photo type. It goes behind all existing rows so an order the
+ * user has arranged stays as it is; fresh installs get it at its canonical place instead.
+ * Databases that came through the older allKeys-seeding migrations may already carry it.
+ */
+val MIGRATION_17_18 = object : Migration(17, 18) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        val key = MeasurementType.PHOTO
+        db.execSQL(
+            "INSERT INTO MeasurementType " +
+                "(`identity`, `name`, `color`, `icon`, `unit`, `inputType`, `displayOrder`, " +
+                "`isDerived`, `isEnabled`, `isPinned`, `isOnRightYAxis`, `isInternal`) " +
+                "SELECT ?, NULL, ?, ?, ?, ?, COALESCE((SELECT MAX(`displayOrder`) FROM MeasurementType), 0) + 1, " +
+                "?, ?, ?, ?, ? " +
+                "WHERE NOT EXISTS (SELECT 1 FROM MeasurementType WHERE `identity` = ?)",
+            arrayOf<Any?>(
+                key.identity,
+                key.defaultColor,
+                key.defaultIcon.name,
+                key.defaultUnit.name,
+                key.inputType.name,
+                if (key.isDerived) 1 else 0,
+                if (key.defaultEnabled) 1 else 0,
+                if (key.defaultPinned) 1 else 0,
+                if (key.defaultOnRightYAxis) 1 else 0,
+                if (key.isInternal) 1 else 0,
+                key.identity,
+            )
         )
     }
 }

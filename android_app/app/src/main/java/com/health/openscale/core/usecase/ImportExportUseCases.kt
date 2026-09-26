@@ -108,7 +108,8 @@ class ImportExportUseCases @Inject constructor(
         val exportableValueTypes = allAppTypes.filter {
             it.key != MeasurementType.DATE &&
             it.key != MeasurementType.TIME &&
-            it.key != MeasurementType.USER
+            it.key != MeasurementType.USER &&
+            it.inputType != InputFieldType.IMAGE
         }
 
         // One header per type, guaranteed unique. Identities make that automatic; only
@@ -166,7 +167,7 @@ class ImportExportUseCases @Inject constructor(
                         InputFieldType.TIME  -> value.dateValue?.let {
                             timeFormatter.format(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()))
                         }
-                        InputFieldType.USER -> null
+                        InputFieldType.USER, InputFieldType.IMAGE -> null
                     }
                     row[currentColumnKey] = s
                 }
@@ -284,6 +285,7 @@ class ImportExportUseCases @Inject constructor(
                             var matched = allAppTypes.find { t ->
                                 t.key != MeasurementType.DATE &&
                                     t.key != MeasurementType.TIME &&
+                                    t.inputType != InputFieldType.IMAGE &&
                                     t.csvColumnKey().equals(colName, ignoreCase = true)
                             }
                             // 2) fallback for files written before identity headers: user
@@ -291,6 +293,7 @@ class ImportExportUseCases @Inject constructor(
                             if (matched == null) {
                                 matched = allAppTypes.find { t ->
                                     t.isUserOwned() &&
+                                        t.inputType != InputFieldType.IMAGE &&
                                         (t.name?.equals(colName, ignoreCase = true) == true)
                                 }
                             }

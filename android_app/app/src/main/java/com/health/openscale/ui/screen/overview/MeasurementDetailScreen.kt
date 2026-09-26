@@ -17,10 +17,14 @@
  */
 package com.health.openscale.ui.screen.overview
 
+import android.net.Uri
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,20 +42,28 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,6 +73,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
@@ -70,6 +83,8 @@ import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.utils.LocaleUtils
+import com.health.openscale.ui.components.FullscreenImageViewer
+import com.health.openscale.ui.components.MeasurementImageThumbnail
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.dialog.DateInputDialog
@@ -80,11 +95,14 @@ import com.health.openscale.ui.screen.dialog.TextInputDialog
 import com.health.openscale.ui.screen.dialog.TimeInputDialog
 import com.health.openscale.ui.screen.dialog.UserInputDialog
 import com.health.openscale.ui.shared.TopBarAction
+import kotlinx.coroutines.launch
+import java.io.File
 import java.text.DateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import java.util.UUID
 
 /**
  * A screen for creating a new measurement or editing an existing one.
@@ -147,6 +165,44 @@ fun MeasurementDetailScreen(
     var pendingUserId by remember { mutableStateOf<Int?>(null) }
     var showUserPicker by remember { mutableStateOf(false) }
 
+    // Photos stored during this edit session; the ones not saved are removed when the screen is left.
+    val createdImages = remember { mutableStateListOf<String>() }
+    var savedImages by remember { mutableStateOf<Set<String>>(emptySet()) }
+    DisposableEffect(Unit) {
+        onDispose { sharedViewModel.deleteImages(createdImages.toSet() - savedImages) }
+    }
+    var imageSheetType by remember { mutableStateOf<MeasurementType?>(null) }
+    var imageLoadingTypeId by remember { mutableStateOf<Int?>(null) }
+    var cameraCapture by remember { mutableStateOf<Pair<Int, File>?>(null) }
+    var viewerImage by remember { mutableStateOf<Pair<String, MeasurementType>?>(null) }
+    val scope = rememberCoroutineScope()
+
+    fun storeImage(typeId: Int, uri: Uri, onDone: () -> Unit = {}) {
+        scope.launch {
+            imageLoadingTypeId = typeId
+            sharedViewModel.saveImage(uri)
+                .onSuccess { name ->
+                    createdImages += name
+                    valuesState[typeId] = name
+                }
+                .onFailure { Toast.makeText(context, R.string.error_saving_image, Toast.LENGTH_LONG).show() }
+            imageLoadingTypeId = null
+            onDone()
+        }
+    }
+
+    val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        val (typeId, file) = cameraCapture ?: return@rememberLauncherForActivityResult
+        cameraCapture = null
+        if (success) storeImage(typeId, Uri.fromFile(file)) { file.delete() } else file.delete()
+    }
+    var galleryTargetTypeId by remember { mutableStateOf<Int?>(null) }
+    val pickImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        val typeId = galleryTargetTypeId ?: return@rememberLauncherForActivityResult
+        galleryTargetTypeId = null
+        if (uri != null) storeImage(typeId, uri)
+    }
+
     // Show a loading indicator if navigation is pending (e.g., after saving).
     if (isPendingNavigation) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -179,7 +235,7 @@ fun MeasurementDetailScreen(
                         val valueString = when (mvWithType.type.inputType) {
                             InputFieldType.FLOAT -> mvWithType.value.floatValue?.let { String.format(Locale.US, "%.2f", it) } ?: ""
                             InputFieldType.INT -> mvWithType.value.intValue?.toString() ?: ""
-                            InputFieldType.TEXT -> mvWithType.value.textValue ?: ""
+                            InputFieldType.TEXT, InputFieldType.IMAGE -> mvWithType.value.textValue ?: ""
                             else -> "" // Should not happen for these types
                         }
                         if (valueString.isNotEmpty()) {
@@ -330,7 +386,7 @@ fun MeasurementDetailScreen(
                                     }
                                 }
 
-                                InputFieldType.TEXT -> {
+                                InputFieldType.TEXT, InputFieldType.IMAGE -> {
                                     textVal = inputString
                                 }
 
@@ -357,6 +413,7 @@ fun MeasurementDetailScreen(
                     // Fire-and-forget on the ViewModel's scope → the save completes even though we
                     // navigate away immediately; the result snackbar is shown by the ViewModel
                     // (and may appear on the previous screen).
+                    savedImages = valueList.mapNotNull { it.textValue }.toSet()
                     sharedViewModel.saveMeasurement(measurementToSave, valueList)
                     pendingUserId = null
                     isPendingNavigation = true
@@ -423,9 +480,15 @@ fun MeasurementDetailScreen(
                                     InputFieldType.DATE -> showDatePickerForMainTimestamp = true
                                     InputFieldType.TIME -> showTimePickerForMainTimestamp = true
                                     InputFieldType.USER -> showUserPicker = true
+                                    InputFieldType.IMAGE -> imageSheetType = type
                                     else -> dialogTargetType = type // Show generic dialog
                                 }
                             }
+                        },
+                        imageFile = if (type.inputType == InputFieldType.IMAGE) sharedViewModel.imageFile(valuesState[type.id]) else null,
+                        imageLoading = imageLoadingTypeId == type.id,
+                        onImageClick = valuesState[type.id]?.let { name ->
+                            { viewerImage = name to type }
                         },
                         showIncrementDecrement = (type.inputType == InputFieldType.FLOAT || type.inputType == InputFieldType.INT) && !type.isDerived,
                         onIncrement = if ((type.inputType == InputFieldType.FLOAT || type.inputType == InputFieldType.INT) && !type.isDerived) {
@@ -520,6 +583,39 @@ fun MeasurementDetailScreen(
             }
             else -> { /* Should not be reached as DATE/TIME have their own flags and derived are not editable here. */ }
         }
+    }
+
+    imageSheetType?.let { type ->
+        ImageSourceSheet(
+            hasImage = !valuesState[type.id].isNullOrBlank(),
+            onDismiss = { imageSheetType = null },
+            onTakePhoto = {
+                imageSheetType = null
+                val file = File(File(context.cacheDir, "camera").apply { mkdirs() }, "${UUID.randomUUID()}.jpg")
+                cameraCapture = type.id to file
+                takePictureLauncher.launch(
+                    FileProvider.getUriForFile(context, "${context.packageName}.file_provider", file)
+                )
+            },
+            onPickFromGallery = {
+                imageSheetType = null
+                galleryTargetTypeId = type.id
+                pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            },
+            onRemove = {
+                imageSheetType = null
+                valuesState.remove(type.id)
+            },
+        )
+    }
+
+    viewerImage?.let { (name, type) ->
+        FullscreenImageViewer(
+            file = sharedViewModel.imageFile(name),
+            title = type.getDisplayName(context),
+            type = type,
+            onDismiss = { viewerImage = null },
+        )
     }
 
     if (showDeleteConfirmation && loadedData != null) {
@@ -678,7 +774,10 @@ fun MeasurementValueEditRow(
     onEditClick: () -> Unit,
     showIncrementDecrement: Boolean,
     onIncrement: (() -> Unit)? = null,
-    onDecrement: (() -> Unit)? = null
+    onDecrement: (() -> Unit)? = null,
+    imageFile: File? = null,
+    imageLoading: Boolean = false,
+    onImageClick: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     Row(
@@ -698,11 +797,26 @@ fun MeasurementValueEditRow(
             val displayText = when (type.inputType) {
                 InputFieldType.FLOAT, InputFieldType.INT -> LocaleUtils.formatValueForDisplay(value, type.unit)
                 InputFieldType.TEXT, InputFieldType.USER, InputFieldType.DATE, InputFieldType.TIME -> value
+                InputFieldType.IMAGE -> if (imageFile == null) value else null
             }
-            Text(
-                text = displayText,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            if (displayText != null) {
+                Text(
+                    text = displayText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        if (imageLoading) {
+            Box(Modifier.size(56.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+            }
+        } else if (imageFile != null) {
+            MeasurementImageThumbnail(
+                file = imageFile,
+                contentDescription = stringResource(R.string.content_desc_photo, type.getDisplayName(context)),
+                modifier = Modifier.size(56.dp),
+                onClick = onImageClick,
             )
         }
         if (showIncrementDecrement && onIncrement != null && onDecrement != null && !type.isDerived) {
@@ -723,6 +837,45 @@ fun MeasurementValueEditRow(
                 Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.content_desc_edit_value, type.getDisplayName(context)))
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ImageSourceSheet(
+    hasImage: Boolean,
+    onDismiss: () -> Unit,
+    onTakePhoto: () -> Unit,
+    onPickFromGallery: () -> Unit,
+    onRemove: () -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        val itemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.image_take_photo)) },
+            leadingContent = { Icon(Icons.Default.PhotoCamera, contentDescription = null) },
+            colors = itemColors,
+            modifier = Modifier.clickable(onClick = onTakePhoto)
+        )
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.image_choose_from_gallery)) },
+            leadingContent = { Icon(Icons.Default.PhotoLibrary, contentDescription = null) },
+            colors = itemColors,
+            modifier = Modifier.clickable(onClick = onPickFromGallery)
+        )
+        if (hasImage) {
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.image_remove_photo)) },
+                leadingContent = { Icon(Icons.Default.Delete, contentDescription = null) },
+                colors = ListItemDefaults.colors(
+                    containerColor = Color.Transparent,
+                    headlineColor = MaterialTheme.colorScheme.error,
+                    leadingIconColor = MaterialTheme.colorScheme.error,
+                ),
+                modifier = Modifier.clickable(onClick = onRemove)
+            )
+        }
+        Spacer(Modifier.padding(bottom = 16.dp))
     }
 }
 

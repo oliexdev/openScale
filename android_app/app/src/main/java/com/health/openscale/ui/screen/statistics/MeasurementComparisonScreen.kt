@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -69,6 +70,10 @@ import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.model.AggregatedMeasurement
 import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.core.utils.LocaleUtils
+import com.health.openscale.ui.components.ComparedImage
+import com.health.openscale.ui.components.FullscreenImageComparisonViewer
+import com.health.openscale.ui.components.FullscreenImageViewer
+import com.health.openscale.ui.components.MeasurementImageThumbnail
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.shared.SharedViewModel
 import java.text.DateFormat
@@ -213,6 +218,18 @@ fun MeasurementComparisonScreen(
 
                 LazyColumn(Modifier.fillMaxSize()) {
                     items(split.inBoth, key = { it.id }) { type ->
+                        if (type.inputType == InputFieldType.IMAGE) {
+                            ComparisonPhotoRow(
+                                measurementType = type,
+                                baseImage = imageOf(base, type),
+                                targetImage = imageOf(target, type),
+                                baseTimestamp = baseTs,
+                                targetTimestamp = targetTs,
+                                sharedViewModel = sharedViewModel,
+                            )
+                            HorizontalDivider()
+                            return@items
+                        }
                         val stats = remember(base, target, type) {
                             calculateStatisticsForType(listOf(base, target), type)
                         }
@@ -241,6 +258,19 @@ fun MeasurementComparisonScreen(
                             )
                         }
                         items(split.inOneOnly, key = { it.type.id }) { entry ->
+                            if (entry.type.inputType == InputFieldType.IMAGE) {
+                                val image = imageOf(entry.present, entry.type)
+                                ComparisonPhotoRow(
+                                    measurementType = entry.type,
+                                    baseImage = if (entry.onBase) image else null,
+                                    targetImage = if (entry.onBase) null else image,
+                                    baseTimestamp = baseTs,
+                                    targetTimestamp = targetTs,
+                                    sharedViewModel = sharedViewModel,
+                                )
+                                HorizontalDivider()
+                                return@items
+                            }
                             val stats = remember(entry) {
                                 calculateStatisticsForType(listOf(entry.present), entry.type)
                             }
@@ -523,6 +553,74 @@ private fun ComparisonTableRow(
     }
 }
 
+private fun imageOf(entry: EnrichedMeasurement, type: MeasurementType): String? =
+    entry.measurementWithValues.values.find { it.type.id == type.id }?.value?.textValue
+
+/** A photo type laid out like any metric row, with the two photos in the value columns and no Δ. */
+@Composable
+private fun ComparisonPhotoRow(
+    measurementType: MeasurementType,
+    baseImage: String?,
+    targetImage: String?,
+    baseTimestamp: Long,
+    targetTimestamp: Long,
+    sharedViewModel: SharedViewModel,
+) {
+    val name = measurementType.getDisplayName(LocalContext.current)
+    val locale = ComposeLocale.current.platformLocale
+    val dateFormat = remember(locale) { DateFormat.getDateInstance(DateFormat.MEDIUM, locale) }
+    val base = baseImage?.let { ComparedImage(sharedViewModel.imageFile(it), dateFormat.format(Date(baseTimestamp))) }
+    val target = targetImage?.let { ComparedImage(sharedViewModel.imageFile(it), dateFormat.format(Date(targetTimestamp))) }
+    var showViewer by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RoundMeasurementIcon(
+            icon = measurementType.icon.resource,
+            backgroundTint = Color(measurementType.color),
+            size = 16.dp,
+            modifier = Modifier.width(ICON_COLUMN_WIDTH),
+        )
+        Text(
+            text = name,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(NAME_COLUMN_WEIGHT).padding(start = 8.dp),
+        )
+        listOf(base, target).forEach { image ->
+            Box(Modifier.weight(VALUE_COLUMN_WEIGHT), contentAlignment = Alignment.CenterEnd) {
+                if (image != null) {
+                    MeasurementImageThumbnail(
+                        file = image.file,
+                        contentDescription = stringResource(R.string.content_desc_photo, "$name, ${image.label}"),
+                        modifier = Modifier.size(56.dp),
+                        onClick = { showViewer = true },
+                    )
+                } else {
+                    ValueCell(text = NO_VALUE, isMean = false)
+                }
+            }
+        }
+        Spacer(Modifier.weight(VALUE_COLUMN_WEIGHT))
+    }
+
+    if (showViewer) {
+        val onDismiss = { showViewer = false }
+        when {
+            base != null && target != null ->
+                FullscreenImageComparisonViewer(
+                    first = base, second = target, title = name, type = measurementType, onDismiss = onDismiss
+                )
+            else -> (base ?: target)?.let { single ->
+                FullscreenImageViewer(
+                    file = single.file, title = "$name · ${single.label}", type = measurementType, onDismiss = onDismiss
+                )
+            }
+        }
+    }
+}
+
 /**
  * One value. An aggregated column holds period means, and each of them says so: the Δ beside them
  * is a difference of two means, not a mean itself, so the mark has to sit on the values.
@@ -590,7 +688,8 @@ private fun splitTypes(
     val candidates = allTypes
         .filter {
             it.isEnabled &&
-                (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) &&
+                (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT ||
+                    it.inputType == InputFieldType.IMAGE) &&
                 (it.id in onBase || it.id in onTarget)
         }
         .sortedWith(

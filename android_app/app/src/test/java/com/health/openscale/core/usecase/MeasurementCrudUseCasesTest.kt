@@ -22,6 +22,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
@@ -41,6 +42,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.io.File
+import java.util.UUID
 
 /**
  * Tests [MeasurementCrudUseCases.saveMeasurement] — insert and the update value-diff
@@ -194,5 +196,110 @@ class MeasurementCrudUseCasesTest {
         assertThat(db.measurementDao().getMeasurementById(m2)!!.timestamp).isEqualTo(2_000L)
         assertThat(repo.getValuesForMeasurement(m1).first().first { it.typeId == weightId }.floatValue)
             .isWithin(1e-3f).of(60f)
+    }
+
+    // --- Photo files (IMAGE values store only the file name in textValue) ---
+
+    private suspend fun insertPhotoType(): MeasurementType {
+        val id = repo.insertMeasurementType(
+            MeasurementType(identity = "user.photo_front", name = "Photo front", inputType = InputFieldType.IMAGE)
+        ).toInt()
+        return repo.getAllMeasurementTypes().first().first { it.id == id }
+    }
+
+    private fun createPhoto(): String {
+        val name = "${UUID.randomUUID()}.jpg"
+        MeasurementCrudUseCases.imageDir(app).mkdirs()
+        MeasurementCrudUseCases.imageFile(app, name)!!.writeBytes(byteArrayOf(1, 2, 3))
+        return name
+    }
+
+    private fun photoExists(name: String) = MeasurementCrudUseCases.imageFile(app, name)!!.exists()
+
+    private suspend fun saveWithPhoto(photoTypeId: Int, photo: String, timestamp: Long = 5_000L): Int =
+        crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = timestamp),
+            listOf(MeasurementValue(measurementId = 0, typeId = photoTypeId, textValue = photo)),
+        ).getOrThrow()
+
+    @Test
+    fun saveMeasurement_replacedPhoto_deletesOldFile() = runBlocking {
+        val photoType = insertPhotoType()
+        val oldPhoto = createPhoto()
+        val id = saveWithPhoto(photoType.id, oldPhoto)
+        val valueId = repo.getValuesForMeasurement(id).first().first { it.typeId == photoType.id }.id
+
+        val newPhoto = createPhoto()
+        crud.saveMeasurement(
+            Measurement(id = id, userId = userId, timestamp = 5_000L),
+            listOf(MeasurementValue(id = valueId, measurementId = id, typeId = photoType.id, textValue = newPhoto)),
+        ).getOrThrow()
+
+        assertThat(photoExists(oldPhoto)).isFalse()
+        assertThat(photoExists(newPhoto)).isTrue()
+    }
+
+    @Test
+    fun saveMeasurement_removedPhoto_deletesFile() = runBlocking {
+        val photoType = insertPhotoType()
+        val photo = createPhoto()
+        val id = saveWithPhoto(photoType.id, photo)
+
+        crud.saveMeasurement(
+            Measurement(id = id, userId = userId, timestamp = 5_000L),
+            listOf(MeasurementValue(measurementId = id, typeId = weightId, floatValue = 70f)),
+        ).getOrThrow()
+
+        assertThat(photoExists(photo)).isFalse()
+    }
+
+    @Test
+    fun deleteMeasurement_deletesPhotoFile() = runBlocking {
+        val photoType = insertPhotoType()
+        val photo = createPhoto()
+        val id = saveWithPhoto(photoType.id, photo)
+
+        crud.deleteMeasurement(db.measurementDao().getMeasurementById(id)!!).getOrThrow()
+
+        assertThat(photoExists(photo)).isFalse()
+    }
+
+    @Test
+    fun deleteUserAndPurge_deletePhotoFiles() = runBlocking {
+        val photoType = insertPhotoType()
+        val settings = RoomTestSupport.settingsFacadeFor(
+            CoroutineScope(SupervisorJob() + Dispatchers.IO),
+            File(app.cacheDir, "crud-user-${System.nanoTime()}.preferences_pb"),
+        )
+        val userUseCases = UserUseCases(
+            app, repo, settings, SyncUseCases(app, MeasurementTypeCrudUseCases(repo, app))
+        )
+        val purged = createPhoto()
+        saveWithPhoto(photoType.id, purged, timestamp = 6_000L)
+        userUseCases.purgeMeasurementsForUser(userId).getOrThrow()
+        assertThat(photoExists(purged)).isFalse()
+
+        val deleted = createPhoto()
+        saveWithPhoto(photoType.id, deleted, timestamp = 7_000L)
+        userUseCases.deleteUser(repo.getAllUsers().first().first { it.id == userId }).getOrThrow()
+        assertThat(photoExists(deleted)).isFalse()
+    }
+
+    @Test
+    fun deleteType_deletesPhotoFiles() = runBlocking {
+        val photoType = insertPhotoType()
+        val photo = createPhoto()
+        saveWithPhoto(photoType.id, photo)
+
+        MeasurementTypeCrudUseCases(repo, app).delete(photoType).getOrThrow()
+
+        assertThat(photoExists(photo)).isFalse()
+    }
+
+    @Test
+    fun imageFile_rejectsNamesOutsideTheImageDirectory() {
+        assertThat(MeasurementCrudUseCases.imageFile(app, "../openScale.db")).isNull()
+        assertThat(MeasurementCrudUseCases.imageFile(app, "notes.txt")).isNull()
+        assertThat(MeasurementCrudUseCases.imageFile(app, null)).isNull()
     }
 }

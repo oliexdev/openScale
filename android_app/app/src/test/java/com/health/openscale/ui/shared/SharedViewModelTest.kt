@@ -18,6 +18,9 @@
 package com.health.openscale.ui.shared
 
 import android.app.Application
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
@@ -31,6 +34,7 @@ import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.usecase.GoalProgress
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
+import com.health.openscale.core.usecase.MeasurementCrudUseCases
 import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
 import com.health.openscale.core.usecase.SyncUseCases
 import com.health.openscale.testutil.MainDispatcherRule
@@ -50,6 +54,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import java.io.File
 
 /**
@@ -86,7 +91,7 @@ class SharedViewModelTest {
         val facades = RoomTestSupport.facadesFor(app, repo, settings)
         val sync = SyncUseCases(app, MeasurementTypeCrudUseCases(repo, ApplicationProvider.getApplicationContext()))
         vm = SharedViewModel(
-            facades.userFacade, facades.measurementFacade, facades.dataManagementFacade, settings, sync,
+            facades.userFacade, facades.measurementFacade, facades.dataManagementFacade, settings, sync, app,
         )
     }
 
@@ -238,4 +243,49 @@ class SharedViewModelTest {
         vm.goalProgressFlow
             .first { it is SharedViewModel.UiState.Success && it.data.isNotEmpty() }
             .let { (it as SharedViewModel.UiState.Success).data }
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun saveImage_downscalesToTheLongSideLimitAndStoresUnderAValidName() {
+        runBlocking {
+            val source = File(app.cacheDir, "big-${System.nanoTime()}.png")
+            source.outputStream().use {
+                Bitmap.createBitmap(3200, 1600, Bitmap.Config.ARGB_8888).compress(Bitmap.CompressFormat.PNG, 100, it)
+            }
+
+            val name = vm.saveImage(Uri.fromFile(source)).getOrThrow()
+
+            assertThat(MeasurementCrudUseCases.isImageFileName(name)).isTrue()
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(MeasurementCrudUseCases.imageFile(app, name)!!.path, bounds)
+            assertThat(bounds.outWidth).isEqualTo(1600)
+            assertThat(bounds.outHeight).isEqualTo(800)
+        }
+    }
+
+    @Test
+    fun screenFlow_overview_keepsCommentAndPhotoValues() {
+        runBlocking {
+            repo.insertAllMeasurementTypes(MeasurementType.seedRows())
+            val uid = repo.insertUser(user("Alice")).toInt()
+            val types = repo.getAllMeasurementTypes().first()
+            val weight = types.first { it.key == MeasurementType.WEIGHT }.id
+            val comment = types.first { it.key == MeasurementType.COMMENT }.id
+            val photo = types.first { it.key == MeasurementType.PHOTO }.id
+            val mId = repo.insertMeasurement(Measurement(userId = uid, timestamp = System.currentTimeMillis())).toInt()
+            repo.insertMeasurementValue(MeasurementValue(measurementId = mId, typeId = weight, floatValue = 72.5f))
+            repo.insertMeasurementValue(MeasurementValue(measurementId = mId, typeId = comment, textValue = "hello"))
+            repo.insertMeasurementValue(
+                MeasurementValue(measurementId = mId, typeId = photo, textValue = "0b7e1c2a-7d3f-4e61-9a55-1f2e3d4c5b6a.jpg")
+            )
+
+            vm.selectUser(uid)
+            val state = withTimeout(5_000) {
+                vm.screenFlow("overview").first { it is SharedViewModel.UiState.Success && it.data.isNotEmpty() }
+            }
+            val shown = (state as SharedViewModel.UiState.Success).data.single().enriched.valuesWithTrend
+                .map { it.currentValue.type.id }
+            assertThat(shown).containsAtLeast(weight, comment, photo)
+        }
+    }
 }

@@ -8,6 +8,9 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- openScale works fully offline: strip network access even if a library declares it. -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+
     <permission
         android:name="${applicationId}.READ_WRITE_DATA"
         android:description="@string/permission_read_write_data_description"

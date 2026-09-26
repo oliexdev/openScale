@@ -57,6 +57,7 @@ import androidx.compose.material.icons.filled.Mood
 import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.OilBarrel
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material.icons.filled.RemoveCircleOutline
@@ -364,7 +365,8 @@ enum class MeasurementTypeIcon(val resource: IconResource) {
     IC_M_WATER_DROP(IconResource.VectorResource(Icons.Filled.WaterDrop)),
     IC_M_SCATTER_PLOT(IconResource.VectorResource(Icons.Filled.ScatterPlot)),
     IC_M_BUBBLE_CHART(IconResource.VectorResource(Icons.Filled.BubbleChart)),
-    IC_M_HIVE(IconResource.VectorResource(Icons.Filled.Hive));
+    IC_M_HIVE(IconResource.VectorResource(Icons.Filled.Hive)),
+    IC_PHOTO(IconResource.VectorResource(Icons.Filled.PhotoCamera));
 }
 
 
@@ -477,7 +479,8 @@ enum class InputFieldType {
     TEXT,
     DATE,
     TIME,
-    USER
+    USER,
+    IMAGE
 }
 
 enum class Trend {

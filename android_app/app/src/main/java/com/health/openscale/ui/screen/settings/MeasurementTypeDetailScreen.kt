@@ -135,14 +135,19 @@ fun MeasurementTypeDetailScreen(
             else -> UnitType.entries.toList()
         }
     }
-    val allowedInputTypesForKey = remember(editedKey, originalExistingType) {
+    // IMAGE is only offered for a new type: its values are file names, which no other input
+    // type can read, and switching away would leave the stored photos unreachable.
+    val allowedInputTypesForKey = remember(editedKey, originalExistingType, isEdit) {
+        val customTypes = listOf(
+            InputFieldType.FLOAT, InputFieldType.INT, InputFieldType.TEXT,
+            InputFieldType.DATE, InputFieldType.TIME
+        )
         when {
             editedKey != null -> editedKey.allowedInputTypes
             originalExistingType?.isDeviceOwned() == true -> listOf(originalExistingType.inputType)
-            else -> listOf(
-                InputFieldType.FLOAT, InputFieldType.INT, InputFieldType.TEXT,
-                InputFieldType.DATE, InputFieldType.TIME
-            )
+            originalExistingType?.inputType == InputFieldType.IMAGE -> listOf(InputFieldType.IMAGE)
+            isEdit -> customTypes
+            else -> customTypes + InputFieldType.IMAGE
         }
     }
 
@@ -243,7 +248,7 @@ fun MeasurementTypeDetailScreen(
                     name = name,
                     icon = selectedIcon,
                     color = selectedColor,
-                    unit = selectedUnit,
+                    unit = if (selectedInputType == InputFieldType.IMAGE) UnitType.NONE else selectedUnit,
                     inputType = selectedInputType,
                     displayOrder = originalExistingType?.displayOrder ?: measurementTypes.size,
                     isEnabled = isEnabled,
@@ -528,7 +533,7 @@ fun MeasurementTypeDetailScreen(
             else -> Unit
         }
 
-        if (unitDropdownEnabled) {
+        if (unitDropdownEnabled && selectedInputType != InputFieldType.IMAGE) {
             ExposedDropdownMenuBox(
                 expanded = expandedUnit,
                 onExpandedChange = { expandedUnit = !expandedUnit },
@@ -597,7 +602,13 @@ fun MeasurementTypeDetailScreen(
                     allowedInputTypesForKey.forEach { type ->
                         DropdownMenuItem(
                             text = { Text(type.name.lowercase().replaceFirstChar { it.uppercase() }) },
-                            onClick = { selectedInputType = type; expandedInputType = false }
+                            onClick = {
+                                selectedInputType = type
+                                expandedInputType = false
+                                if (type == InputFieldType.IMAGE && selectedIcon == MeasurementTypeIcon.IC_DEFAULT) {
+                                    selectedIcon = MeasurementTypeIcon.IC_PHOTO
+                                }
+                            }
                         )
                     }
                 }

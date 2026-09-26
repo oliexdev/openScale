@@ -261,6 +261,15 @@ data class MeasurementType(
                 false, true, true, false, false
             )
         )
+        /** Progress photo; the value is the file name of the stored image. */
+        val PHOTO: Key<String> = reg(
+            Key(
+                BUILTIN_PREFIX + "photo", R.string.measurement_type_photo,
+                InputFieldType.IMAGE, UnitType.NONE, NONE_UNIT, listOf(InputFieldType.IMAGE),
+                UnitType.NONE, 0xFFD4E157.toInt(), MeasurementTypeIcon.IC_PHOTO,
+                false, true, false, false, false
+            )
+        )
         /** Table column for the measurement date — not a value handlers set (use [ScaleMeasurement.dateTime]). */
         val DATE: Key<java.util.Date> = reg(
             Key(

@@ -8,4 +8,8 @@
     <external-files-path
         name="log_files"
         path="logs/" />
+    <!-- Temporary camera captures for measurement photos; the camera app writes here. -->
+    <cache-path
+        name="camera"
+        path="camera/" />
 </paths>

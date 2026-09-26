@@ -22,12 +22,14 @@ import android.database.sqlite.SQLiteConstraintException
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.ui.widget.MeasurementWidget
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.File
 import kotlinx.coroutines.flow.first
 import java.util.Date
 import javax.inject.Inject
@@ -117,6 +119,7 @@ class MeasurementCrudUseCases @Inject constructor(
                 .map { it.id }
                 .toSet()
             val newSetIds = finalValues.mapNotNull { if (it.id != 0) it.id else null }.toSet()
+            val previousImages = imageFileNames(existing)
 
             // Delete raw values that are no longer present.
             (existingRawIds - newSetIds).forEach { id -> databaseRepository.deleteMeasurementValueById(id) }
@@ -134,6 +137,8 @@ class MeasurementCrudUseCases @Inject constructor(
             // Ensure derived values reflect the final raw state once (also covers the case where all
             // raw values were cleared, so the loop above triggered no recalculation).
             databaseRepository.recalculateDerivedValuesForMeasurement(measurement.id)
+
+            deleteImageFiles(appContext, previousImages - imageFileNames(finalValues))
 
             sync.triggerSyncUpdate(measurement, finalValues, "com.health.openscale.sync")
             sync.triggerSyncUpdate(measurement, finalValues,"com.health.openscale.sync.oss")
@@ -157,12 +162,22 @@ class MeasurementCrudUseCases @Inject constructor(
     suspend fun deleteMeasurement(
         measurement: Measurement
     ): Result<Unit> = runCatching {
+        val images = imageFileNames(databaseRepository.getValuesForMeasurement(measurement.id).first())
         databaseRepository.deleteMeasurement(measurement)
+        deleteImageFiles(appContext, images)
         sync.triggerSyncDelete(measurement.id, measurement.userId, Date(measurement.timestamp), "com.health.openscale.sync")
         sync.triggerSyncDelete(measurement.id, measurement.userId, Date(measurement.timestamp), "com.health.openscale.sync.oss")
         sync.triggerSyncDelete(measurement.id, measurement.userId, Date(measurement.timestamp), "com.health.openscale.sync.debug")
 
         MeasurementWidget.refreshAll(appContext)
+    }
+
+    private suspend fun imageFileNames(values: List<MeasurementValue>): Set<String> {
+        val imageTypeIds = databaseRepository.getAllMeasurementTypes().first()
+            .filter { it.inputType == InputFieldType.IMAGE }
+            .map { it.id }
+            .toSet()
+        return values.filter { it.typeId in imageTypeIds }.mapNotNull { it.textValue }.toSet()
     }
 
     suspend fun recalculateDerivedValuesForMeasurement(measurementId: Int) {
@@ -188,5 +203,21 @@ class MeasurementCrudUseCases @Inject constructor(
             255
         )
         vibrator.vibrate(effect)
+    }
+
+    companion object {
+        private const val IMAGE_DIR = "measurement_images"
+        private val IMAGE_FILE_NAME = Regex("^[0-9a-f-]{36}\\.jpg$")
+
+        fun imageDir(context: Context): File = File(context.filesDir, IMAGE_DIR)
+
+        fun isImageFileName(fileName: String): Boolean = IMAGE_FILE_NAME.matches(fileName)
+
+        fun imageFile(context: Context, fileName: String?): File? =
+            fileName?.takeIf(::isImageFileName)?.let { File(imageDir(context), it) }
+
+        fun deleteImageFiles(context: Context, fileNames: Collection<String>) {
+            fileNames.forEach { imageFile(context, it)?.delete() }
+        }
     }
 }

@@ -117,7 +117,9 @@ import com.health.openscale.core.model.ValueWithDifference
 import com.health.openscale.core.usecase.GoalProgress
 import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LocaleUtils
+import com.health.openscale.ui.components.FullscreenImageViewer
 import com.health.openscale.ui.components.LinearGauge
+import com.health.openscale.ui.components.MeasurementImageThumbnail
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.screen.components.ChartSplitterHandle
@@ -966,8 +968,10 @@ fun MeasurementValueRow(
         InputFieldType.TEXT  -> originalValue.textValue
         InputFieldType.DATE  -> originalValue.dateValue?.let { DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault()).format(Date(it)) }
         InputFieldType.TIME  -> originalValue.dateValue?.let { DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault()).format(Date(it)) }
-        InputFieldType.USER  -> null
+        InputFieldType.USER, InputFieldType.IMAGE -> null
     } ?: "-"
+    val imageFile = if (type.inputType == InputFieldType.IMAGE) sharedViewModel.imageFile(originalValue.textValue) else null
+    var showImageViewer by remember { mutableStateOf(false) }
 
     val iconMeasurementType = remember(type.icon) { type.icon }
     val numeric: Float? = when (type.inputType) {
@@ -1074,12 +1078,20 @@ fun MeasurementValueRow(
                     color      = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 )
             }
-            Text(
-                text       = displayValue,
-                style      = MaterialTheme.typography.bodyLarge,
-                fontWeight = if (valuePrefix.isNotEmpty()) FontWeight.SemiBold else FontWeight.Normal,
-                textAlign  = TextAlign.End,
-            )
+            if (imageFile != null) {
+                MeasurementImageThumbnail(
+                    file               = imageFile,
+                    contentDescription = stringResource(R.string.content_desc_photo, type.getDisplayName(context)),
+                    onClick            = { showImageViewer = true },
+                )
+            } else {
+                Text(
+                    text       = displayValue,
+                    style      = MaterialTheme.typography.bodyLarge,
+                    fontWeight = if (valuePrefix.isNotEmpty()) FontWeight.SemiBold else FontWeight.Normal,
+                    textAlign  = TextAlign.End,
+                )
+            }
             Spacer(Modifier.width(6.dp))
             if (evalIcon != null) {
                 Icon(
@@ -1092,6 +1104,14 @@ fun MeasurementValueRow(
                 Spacer(modifier = Modifier.size(iconSize))
             }
         }
+    }
+
+    if (showImageViewer) {
+        val title = remember(measuredAtMillis) {
+            "${type.getDisplayName(context)} · " +
+                DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault()).format(Date(measuredAtMillis))
+        }
+        FullscreenImageViewer(file = imageFile, title = title, type = type, onDismiss = { showImageViewer = false })
     }
 }
 

@@ -428,4 +428,27 @@ class ImportExportUseCasesTest {
         assertThat(report.skippedColumns).containsExactly("SOMETHING_ELSE")
         assertThat(report.importedMeasurementsCount).isEqualTo(1)
     }
+
+    @Test
+    fun csv_photoTypesAreNeitherExportedNorImported() = runBlocking {
+        val crud = MeasurementTypeCrudUseCases(repo, context)
+        val photo = crud.add(MeasurementType(name = "Photo", inputType = InputFieldType.IMAGE)).getOrThrow().toInt()
+        val mId = db.measurementDao().insert(Measurement(userId = userId, timestamp = 6_000L)).toInt()
+        db.measurementValueDao().insert(
+            MeasurementValue(measurementId = mId, typeId = photo, textValue = "0b7e1c2a-7d3f-4e61-9a55-1f2e3d4c5b6a.jpg")
+        )
+
+        val file = File(context.cacheDir, "photo-${System.nanoTime()}.csv")
+        useCases.exportUserToCsv(userId, Uri.fromFile(file), context.contentResolver).getOrThrow()
+        assertThat(file.readText()).doesNotContain("PHOTO")
+
+        val report = useCases.importUserFromCsv(
+            userId, csvUri("DATE,TIME,WEIGHT,PHOTO\n2025-04-07,08:30,72.5,x.jpg\n"), context.contentResolver
+        ).getOrThrow()
+        assertThat(report.importedMeasurementsCount).isEqualTo(1)
+        val importedTs = timestampOn(LocalDate.of(2025, 4, 7)).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val imported = repo.getMeasurementsWithValuesForUser(userId).first()
+            .first { it.measurement.timestamp == importedTs }
+        assertThat(imported.values.none { it.type.id == photo }).isTrue()
+    }
 }
