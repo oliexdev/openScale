@@ -64,3 +64,6 @@ fastlane/README.md
 
 #kotin
 .kotlin
+
+# Bundler lock file (fastlane is only run locally)
+Gemfile.lock

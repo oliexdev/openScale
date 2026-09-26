@@ -15,21 +15,12 @@ opt_out_usage
 # Uncomment the line if you want fastlane to automatically update itself
 # update_fastlane
 
-# Add gradle get version name plugin
-# fastlane add_plugin get_version_name
-
 default_platform(:android)
 
 platform :android do 
-    versionName = get_version_name(
-        gradle_file_path:"android_app/app/build.gradle.kts",
-        ext_constant_name:"versionName"
-    )
-
-    versionCode = get_version_name(
-        gradle_file_path:"android_app/app/build.gradle.kts",
-        ext_constant_name:"versionCode"
-    )
+    gradle = File.read("../android_app/app/build.gradle.kts")
+    versionName = gradle[/versionName\s*=\s*"([^"]+)"/, 1]
+    versionCode = gradle[/versionCode\s*=\s*(\d+)/, 1]
 
     desc "Generate openScale release version"
     lane :release do |options|
