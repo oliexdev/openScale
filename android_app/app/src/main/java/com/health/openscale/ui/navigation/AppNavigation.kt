@@ -21,17 +21,24 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
@@ -52,6 +59,9 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailDefaults
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -60,6 +70,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -85,6 +96,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.window.core.layout.WindowSizeClass
 import com.health.openscale.BuildConfig
 import com.health.openscale.R
 import com.health.openscale.core.data.IconResource
@@ -157,6 +169,42 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
         else -> "" // Default to empty string if title data is null or unexpected type
     }
 
+    // From medium width on (tablets, unfolded foldables, phones in landscape) a navigation rail
+    // replaces the modal drawer.
+    val useNavigationRail = currentWindowAdaptiveInfoV2().windowSizeClass
+        .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
+
+    LaunchedEffect(useNavigationRail) {
+        if (useNavigationRail) drawerState.snapTo(DrawerValue.Closed)
+    }
+
+    // The main destination whose back stack is showing, also on its sub-pages (e.g. Settings
+    // while editing a user), so the drawer/rail can mark it and a second tap can reset it.
+    // Only the start destination and at most one other main destination are on the back stack.
+    val activeMainRoute = remember(currentBackStackEntry) {
+        mainRoutes.lastOrNull { route ->
+            runCatching { navController.getBackStackEntry(route) }.isSuccess
+        }
+    }
+
+    val navigateToMainRoute: (String) -> Unit = { route ->
+        // Tapping the destination that is already active returns to its start page.
+        if (route == activeMainRoute) {
+            navController.popBackStack(route, inclusive = false)
+        } else {
+            navController.navigate(route) {
+                // Pop up to the start destination of the graph to avoid building up a large back stack.
+                popUpTo(navController.graph.startDestinationId) {
+                    saveState = true // Save the state of popped destinations.
+                }
+                // Avoid multiple copies of the same destination when reselecting the same item.
+                launchSingleTop = true
+                // Restore state when reselecting a previously visited item.
+                restoreState = true
+            }
+        }
+    }
+
     BackHandler(enabled = drawerState.isOpen) {
         scope.launch { drawerState.close() }
     }
@@ -205,6 +253,7 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
 
     ModalNavigationDrawer(
         drawerState = drawerState,
+        gesturesEnabled = !useNavigationRail,
         drawerContent = {
             ModalDrawerSheet {
                 // Drawer Header: Displays the app logo and name.
@@ -251,12 +300,7 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                             )
                         }
 
-                        val titleResId = Routes.getTitleResourceId(route)
-                        val titleText = if (titleResId != Routes.NO_TITLE_RESOURCE_ID) {
-                            stringResource(id = titleResId)
-                        } else {
-                            route // Fallback to the raw route string if no title resource ID is defined.
-                        }
+                        val titleText = mainRouteTitle(route)
 
                         NavigationDrawerItem(
                             icon = {
@@ -266,19 +310,9 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                                 )
                             },
                             label = { Text(titleText) },
-                            selected = currentRoute == route, // Highlights the item if it's the current route.
+                            selected = activeMainRoute == route, // Highlights the item if its section is showing.
                             onClick = {
-                                navController.navigate(route) {
-                                    // Pop up to the start destination of the graph to avoid building up a large back stack.
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        saveState =
-                                            true // Save the state of popped destinations.
-                                    }
-                                    // Avoid multiple copies of the same destination when reselecting the same item.
-                                    launchSingleTop = true
-                                    // Restore state when reselecting a previously visited item.
-                                    restoreState = true
-                                }
+                                navigateToMainRoute(route)
                                 scope.launch { drawerState.close() } // Close the drawer after selection.
                             },
                             colors = NavigationDrawerItemDefaults.colors(
@@ -297,113 +331,179 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
             }
         }
     ) {
-        Scaffold(
-            snackbarHost = {
-                SnackbarHost(hostState = snackbarHostState) { snackbarData ->
-                    // Custom Snackbar appearance defined here.
-                    Snackbar(
-                        modifier = Modifier.padding(8.dp), // Padding around the snackbar.
-                        shape = RoundedCornerShape(8.dp), // Rounded corners for the snackbar.
-                        containerColor = MaterialTheme.colorScheme.inverseSurface,
-                        contentColor = MaterialTheme.colorScheme.inverseOnSurface,
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Filled.Info,
-                                contentDescription = stringResource(R.string.app_logo_content_description), // Accessibility.
-                                tint = LocalContentColor.current // Uses the contentColor from Snackbar.
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(snackbarData.visuals.message)
+        Row {
+            if (useNavigationRail) {
+                AppNavigationRail(
+                    mainRoutes = mainRoutes,
+                    activeMainRoute = activeMainRoute,
+                    onNavigate = navigateToMainRoute
+                )
+            }
+            Scaffold(
+                modifier = if (useNavigationRail) {
+                    // Not the top: the top bar still needs the status bar inset. The bottom one is
+                    // covered by the filler below the NavHost.
+                    Modifier.consumeWindowInsets(
+                        NavigationRailDefaults.windowInsets.only(WindowInsetsSides.Start + WindowInsetsSides.Bottom)
+                    )
+                } else {
+                    Modifier
+                },
+                snackbarHost = {
+                    SnackbarHost(hostState = snackbarHostState) { snackbarData ->
+                        // Custom Snackbar appearance defined here.
+                        Snackbar(
+                            modifier = Modifier.padding(8.dp), // Padding around the snackbar.
+                            shape = RoundedCornerShape(8.dp), // Rounded corners for the snackbar.
+                            containerColor = MaterialTheme.colorScheme.inverseSurface,
+                            contentColor = MaterialTheme.colorScheme.inverseOnSurface,
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Filled.Info,
+                                    contentDescription = stringResource(R.string.app_logo_content_description), // Accessibility.
+                                    tint = LocalContentColor.current // Uses the contentColor from Snackbar.
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(snackbarData.visuals.message)
+                            }
                         }
                     }
-                }
-            },
-            topBar = {
-                TopAppBar(
-                    title = { Text(
-                        text = topBarTitle,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    ) },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                        actionIconContentColor = MaterialTheme.colorScheme.onSurface,
-                    ),
-                    navigationIcon = {
-                        if (currentRoute in mainRoutes) {
-                            // Show menu icon for main routes to open the drawer.
-                            IconButton(onClick = {
-                                scope.launch { drawerState.open() }
-                            }) {
-                                Icon(
-                                    Icons.Default.Menu,
-                                    contentDescription = stringResource(R.string.content_desc_open_menu)
-                                )
-                            }
-                        } else {
-                            // Show back arrow for non-main (detail or sub-page) routes. Route it
-                            // through the back dispatcher (instead of popBackStack directly) so screens
-                            // can intercept it via BackHandler (e.g. unsaved-changes guard); if nothing
-                            // intercepts, the NavHost handles it as a normal back.
-                            val backDispatcher =
-                                LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-                            IconButton(onClick = {
-                                if (backDispatcher != null) backDispatcher.onBackPressed()
-                                else navController.popBackStack()
-                            }) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = stringResource(R.string.content_desc_back)
-                                )
-                            }
-                        }
-                    },
-                    actions = {
-                        // Display actions defined in SharedViewModel.
-                        topBarActions.forEach { action ->
-                            val contentDesc = action.contentDescriptionResId?.let { stringResource(id = it) }
-                                ?: action.contentDescription
-                            IconButton(onClick = action.onClick) {
-                                Icon(
-                                    imageVector = action.icon,
-                                    contentDescription = contentDesc,
-                                    tint = action.tint ?: LocalContentColor.current
-                                )
-                            }
-                            // If the action has associated dropdown content, invoke it here.
-                            // This allows TopAppBar actions to also host DropdownMenus.
-                            action.dropdownContent?.invoke()
-                        }
-
-                        // Show user switcher dropdown if on a main route and users exist.
-                        if (!isInContextualSelectionMode && currentRoute in mainRoutes && allUsers.isNotEmpty() && currentRoute != Routes.SETTINGS) {
-                            UserDropdownAsAction(
-                                users = allUsers,
-                                selectedUser = selectedUser,
-                                onUserSelected = { userId ->
-                                    sharedViewModel.selectUser(userId)
-                                    // Consider closing the drawer if open, or other UI updates.
-                                },
-                                onManageUsersClicked = {
-                                    navController.navigate(Routes.USER_SETTINGS)
-                                    // Consider closing the drawer if open.
+                },
+                topBar = {
+                    TopAppBar(
+                        title = { Text(
+                            text = topBarTitle,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        ) },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            titleContentColor = MaterialTheme.colorScheme.onSurface,
+                            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                            actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+                        ),
+                        navigationIcon = {
+                            if (currentRoute in mainRoutes) {
+                                // Show menu icon for main routes to open the drawer.
+                                if (!useNavigationRail) IconButton(onClick = {
+                                    scope.launch { drawerState.open() }
+                                }) {
+                                    Icon(
+                                        Icons.Default.Menu,
+                                        contentDescription = stringResource(R.string.content_desc_open_menu)
+                                    )
                                 }
-                            )
+                            } else {
+                                // Show back arrow for non-main (detail or sub-page) routes. Route it
+                                // through the back dispatcher (instead of popBackStack directly) so screens
+                                // can intercept it via BackHandler (e.g. unsaved-changes guard); if nothing
+                                // intercepts, the NavHost handles it as a normal back.
+                                val backDispatcher =
+                                    LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+                                IconButton(onClick = {
+                                    if (backDispatcher != null) backDispatcher.onBackPressed()
+                                    else navController.popBackStack()
+                                }) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = stringResource(R.string.content_desc_back)
+                                    )
+                                }
+                            }
+                        },
+                        actions = {
+                            // Display actions defined in SharedViewModel.
+                            topBarActions.forEach { action ->
+                                val contentDesc = action.contentDescriptionResId?.let { stringResource(id = it) }
+                                    ?: action.contentDescription
+                                IconButton(onClick = action.onClick) {
+                                    Icon(
+                                        imageVector = action.icon,
+                                        contentDescription = contentDesc,
+                                        tint = action.tint ?: LocalContentColor.current
+                                    )
+                                }
+                                // If the action has associated dropdown content, invoke it here.
+                                // This allows TopAppBar actions to also host DropdownMenus.
+                                action.dropdownContent?.invoke()
+                            }
+
+                            // Show user switcher dropdown if on a main route and users exist.
+                            if (!isInContextualSelectionMode && currentRoute in mainRoutes && allUsers.isNotEmpty() && currentRoute != Routes.SETTINGS) {
+                                UserDropdownAsAction(
+                                    users = allUsers,
+                                    selectedUser = selectedUser,
+                                    onUserSelected = { userId ->
+                                        sharedViewModel.selectUser(userId)
+                                        // Consider closing the drawer if open, or other UI updates.
+                                    },
+                                    onManageUsersClicked = {
+                                        navController.navigate(Routes.USER_SETTINGS)
+                                        // Consider closing the drawer if open.
+                                    }
+                                )
+                            }
                         }
+                    )
+                }
+            ) { innerPadding ->
+                AppNavHost(
+                    navController = navController,
+                    innerPadding = innerPadding,
+                    sharedViewModel = sharedViewModel,
+                    settingsViewModel = settingsViewModel,
+                    bluetoothViewModel = bluetoothViewModel
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun mainRouteTitle(route: String): String {
+    val titleResId = Routes.getTitleResourceId(route)
+    return if (titleResId != Routes.NO_TITLE_RESOURCE_ID) {
+        stringResource(id = titleResId)
+    } else {
+        route // Fallback to the raw route string if no title resource ID is defined.
+    }
+}
+
+/**
+ * Navigation rail with the same destinations as the modal drawer, used from medium window
+ * width on. Scrolls vertically so all items stay reachable on short windows (phone landscape).
+ */
+@Composable
+private fun AppNavigationRail(
+    mainRoutes: List<String>,
+    activeMainRoute: String?,
+    onNavigate: (String) -> Unit
+) {
+    NavigationRail(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            mainRoutes.forEach { route ->
+                if (route == Routes.SETTINGS) {
+                    HorizontalDivider(modifier = Modifier.width(48.dp).padding(vertical = 4.dp))
+                }
+                val titleText = mainRouteTitle(route)
+                NavigationRailItem(
+                    selected = activeMainRoute == route,
+                    onClick = { onNavigate(route) },
+                    icon = { Icon(imageVector = getIconForRoute(route), contentDescription = null) },
+                    label = {
+                        Text(
+                            text = titleText,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
                 )
             }
-        ) { innerPadding ->
-            AppNavHost(
-                navController = navController,
-                innerPadding = innerPadding,
-                sharedViewModel = sharedViewModel,
-                settingsViewModel = settingsViewModel,
-                bluetoothViewModel = bluetoothViewModel
-            )
         }
     }
 }

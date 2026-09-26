@@ -25,18 +25,22 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -45,6 +49,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -54,6 +59,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -68,6 +74,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
@@ -75,6 +82,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
+import androidx.window.core.layout.WindowSizeClass
 import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Measurement
@@ -437,7 +445,24 @@ fun MeasurementDetailScreen(
     } else {
         // Main content: List of measurement value edit rows.
         Column(modifier = Modifier.padding(16.dp)) {
-            LazyColumn {
+            // One column on phones; expanded windows put the fields side by side as tiles
+            // instead of stretching each row across the whole width.
+            val useTiles = currentWindowAdaptiveInfoV2().windowSizeClass
+                .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
+            val tileModifier = if (useTiles) {
+                Modifier
+                    .clip(CardDefaults.shape)
+                    .background(CardDefaults.cardColors().containerColor) // same as the overview cards
+                    .heightIn(min = 64.dp) // same height with or without the increment buttons
+                    .padding(horizontal = 12.dp)
+            } else {
+                Modifier
+            }
+            LazyVerticalGrid(
+                columns               = GridCells.Adaptive(minSize = 360.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement   = Arrangement.spacedBy(if (useTiles) 12.dp else 0.dp),
+            ) {
                 val activeMeasurementTypes = allMeasurementTypes.filter { it.isEnabled }
 
                 items(activeMeasurementTypes, key = { it.id }) { type ->
@@ -502,7 +527,8 @@ fun MeasurementDetailScreen(
                                 val currentStr = currentValueForIncrementDecrement ?: if (type.inputType == InputFieldType.FLOAT) "0.0" else "0"
                                 valuesState[type.id] = decrementValue(currentStr, type)
                             }
-                        } else null
+                        } else null,
+                        modifier = tileModifier,
                     )
                 }
             }
@@ -778,11 +804,12 @@ fun MeasurementValueEditRow(
     imageFile: File? = null,
     imageLoading: Boolean = false,
     onImageClick: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
             .clickable(onClick = onEditClick, enabled = !type.isDerived) // Clicking row triggers edit, disabled for derived

@@ -17,6 +17,21 @@
  */
 package com.health.openscale.ui.navigation
 
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.material3.adaptive.layout.AnimatedPane
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldDefaults
+import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
+import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldDestinationItem
+import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
+import androidx.compose.material3.adaptive.layout.calculateThreePaneScaffoldValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,11 +46,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.health.openscale.R
 import com.health.openscale.ui.screen.graph.GraphScreen
 import com.health.openscale.ui.screen.insights.InsightsScreen
 import com.health.openscale.ui.screen.overview.MeasurementDetailScreen
@@ -166,26 +183,47 @@ fun AppNavHost(
                 )
             }
             composable(Routes.SETTINGS) {
-                SettingsScreen(
+                ListDetailRoute(
                     navController = navController,
-                    sharedViewModel = sharedViewModel,
-                    settingsViewModel = settingsViewModel
-                )
-            }
-            composable(Routes.GENERAL_SETTINGS) {
-                GeneralSettingsScreen(
-                    sharedViewModel = sharedViewModel,
-                    settingsViewModel = settingsViewModel
-                )
-            }
-            composable(Routes.USER_SETTINGS) {
-                UserSettingsScreen(
-                    sharedViewModel = sharedViewModel,
-                    settingsViewModel = settingsViewModel,
-                    onEditUser = { userId ->
-                        navController.navigate(Routes.userDetail(userId))
+                    defaultKey = Routes.GENERAL_SETTINGS,
+                    detailRoute = { route -> route },
+                    list = { openedRoute, openDetail ->
+                        SettingsScreen(
+                            navController = navController,
+                            sharedViewModel = sharedViewModel,
+                            settingsViewModel = settingsViewModel,
+                            selectedRoute = openedRoute,
+                            onOpenItem = openDetail
+                        )
+                    },
+                    detail = { route ->
+                        // Reset what the previously shown category put into the top bar; runs
+                        // before the category's own effects, which may set their title/actions.
+                        val settingsTitle = stringResource(R.string.route_title_settings)
+                        LaunchedEffect(route) {
+                            sharedViewModel.setTopBarTitle(settingsTitle)
+                            sharedViewModel.setTopBarActions(emptyList())
+                        }
+                        SettingsCategoryScreen(
+                            route = route,
+                            navController = navController,
+                            sharedViewModel = sharedViewModel,
+                            settingsViewModel = settingsViewModel,
+                            bluetoothViewModel = bluetoothViewModel
+                        )
                     }
                 )
+            }
+            settingsCategoryRoutes.forEach { route ->
+                composable(route) {
+                    SettingsCategoryScreen(
+                        route = route,
+                        navController = navController,
+                        sharedViewModel = sharedViewModel,
+                        settingsViewModel = settingsViewModel,
+                        bluetoothViewModel = bluetoothViewModel
+                    )
+                }
             }
             composable(
                 route = "${Routes.USER_DETAIL}?id={id}", // Argument in route pattern
@@ -200,15 +238,6 @@ fun AppNavHost(
                     userId = userId,
                     sharedViewModel = sharedViewModel,
                     settingsViewModel = settingsViewModel
-                )
-            }
-            composable(Routes.MEASUREMENT_TYPES) {
-                MeasurementTypeSettingsScreen(
-                    sharedViewModel = sharedViewModel,
-                    settingsViewModel = settingsViewModel,
-                    onEditType = { typeId ->
-                        navController.navigate(Routes.measurementTypeDetail(typeId))
-                    }
                 )
             }
             composable(
@@ -248,34 +277,11 @@ fun AppNavHost(
                     settingsViewModel = settingsViewModel
                 )
             }
-            composable(Routes.BLUETOOTH_SETTINGS) {
-                BluetoothScreen(
-                    navController = navController,
-                    sharedViewModel = sharedViewModel,
-                    bluetoothViewModel = bluetoothViewModel
-                )
-            }
             composable(Routes.BLUETOOTH_DETAIL) {
                 BluetoothDetailScreen(
                     navController = navController,
                     sharedViewModel = sharedViewModel,
                     bluetoothViewModel = bluetoothViewModel
-                )
-            }
-            composable(Routes.CHART_SETTINGS) {
-                ChartSettingsScreen(
-                    sharedViewModel = sharedViewModel
-                )
-            }
-            composable(Routes.DATA_MANAGEMENT_SETTINGS) {
-                DataManagementSettingsScreen(
-                    settingsViewModel = settingsViewModel
-                )
-            }
-            composable(Routes.ABOUT_SETTINGS) {
-                AboutScreen(
-                    navController = navController,
-                    sharedViewModel = sharedViewModel
                 )
             }
         }
@@ -293,4 +299,105 @@ fun AppNavHost(
                 .background(MaterialTheme.colorScheme.surfaceContainer) // Match TopAppBar color or general theme background.
         )
     }
+}
+
+/** Settings categories listed on the settings screen. */
+private val settingsCategoryRoutes = listOf(
+    Routes.GENERAL_SETTINGS,
+    Routes.USER_SETTINGS,
+    Routes.MEASUREMENT_TYPES,
+    Routes.BLUETOOTH_SETTINGS,
+    Routes.CHART_SETTINGS,
+    Routes.DATA_MANAGEMENT_SETTINGS,
+    Routes.ABOUT_SETTINGS,
+)
+
+@Composable
+private fun SettingsCategoryScreen(
+    route: String,
+    navController: NavHostController,
+    sharedViewModel: SharedViewModel,
+    settingsViewModel: SettingsViewModel,
+    bluetoothViewModel: BluetoothViewModel
+) {
+    when (route) {
+        Routes.GENERAL_SETTINGS -> GeneralSettingsScreen(
+            sharedViewModel = sharedViewModel,
+            settingsViewModel = settingsViewModel
+        )
+        Routes.USER_SETTINGS -> UserSettingsScreen(
+            sharedViewModel = sharedViewModel,
+            settingsViewModel = settingsViewModel,
+            onEditUser = { userId -> navController.navigate(Routes.userDetail(userId)) }
+        )
+        Routes.MEASUREMENT_TYPES -> MeasurementTypeSettingsScreen(
+            sharedViewModel = sharedViewModel,
+            settingsViewModel = settingsViewModel,
+            onEditType = { typeId -> navController.navigate(Routes.measurementTypeDetail(typeId)) }
+        )
+        Routes.BLUETOOTH_SETTINGS -> BluetoothScreen(
+            navController = navController,
+            sharedViewModel = sharedViewModel,
+            bluetoothViewModel = bluetoothViewModel
+        )
+        Routes.CHART_SETTINGS -> ChartSettingsScreen(sharedViewModel = sharedViewModel)
+        Routes.DATA_MANAGEMENT_SETTINGS -> DataManagementSettingsScreen(settingsViewModel = settingsViewModel)
+        Routes.ABOUT_SETTINGS -> AboutScreen(
+            navController = navController,
+            sharedViewModel = sharedViewModel
+        )
+    }
+}
+
+/**
+ * M3 list-detail layout: once the window has room for two panes the item opened in [list] shows
+ * beside it, starting with [defaultKey]; on a single pane it opens [detailRoute] full screen.
+ * Keys are strings so the selection survives folding and rotation.
+ */
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+@Composable
+private fun ListDetailRoute(
+    navController: NavHostController,
+    defaultKey: String,
+    detailRoute: (key: String) -> String,
+    list: @Composable (openedKey: String?, openDetail: (String) -> Unit) -> Unit,
+    detail: @Composable (key: String) -> Unit,
+) {
+    val directive = calculatePaneScaffoldDirective(currentWindowAdaptiveInfoV2())
+    val twoPane = directive.maxHorizontalPartitions > 1
+    // Only set once the user opened an item, so folding doesn't jump into the default one.
+    var openedKey by rememberSaveable { mutableStateOf<String?>(null) }
+
+    // Shrinking to a single pane (folding, rotating) keeps the opened item on its full-screen route.
+    LaunchedEffect(twoPane) {
+        val key = openedKey
+        if (!twoPane && key != null) {
+            openedKey = null
+            navController.navigate(detailRoute(key))
+        }
+    }
+
+    ListDetailPaneScaffold(
+        directive = directive,
+        value = calculateThreePaneScaffoldValue(
+            maxHorizontalPartitions = directive.maxHorizontalPartitions,
+            adaptStrategies = ListDetailPaneScaffoldDefaults.adaptStrategies(),
+            currentDestination = ThreePaneScaffoldDestinationItem<Nothing>(
+                if (twoPane) ListDetailPaneScaffoldRole.Detail else ListDetailPaneScaffoldRole.List
+            )
+        ),
+        listPane = {
+            AnimatedPane {
+                list(if (twoPane) openedKey ?: defaultKey else null) { key ->
+                    if (twoPane) openedKey = key else navController.navigate(detailRoute(key))
+                }
+            }
+        },
+        detailPane = {
+            AnimatedPane {
+                val paneKey = openedKey ?: defaultKey
+                key(paneKey) { detail(paneKey) }
+            }
+        }
+    )
 }

@@ -21,13 +21,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
@@ -54,6 +57,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
@@ -69,6 +73,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -78,6 +83,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.WindowCompat
+import androidx.window.core.layout.WindowSizeClass
 import com.health.openscale.R
 import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.TimeRangeFilter
@@ -193,6 +199,9 @@ fun provideFilterTopBarAction(
         // Material 3 presents range selection as a full-screen dialog. The range picker has no
         // month arrows - it is one continuously scrolling list of months - so inside a standard
         // dialog only a single month is visible at a time and it reads as if it were stuck.
+        // Wider windows get a bounded sheet instead, tall enough to show several months.
+        val fullScreen = !currentWindowAdaptiveInfoV2().windowSizeClass
+            .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
         Dialog(
             onDismissRequest = { showDateRangePicker = false },
             properties = DialogProperties(
@@ -216,13 +225,24 @@ fun provideFilterTopBarAction(
             // One continuous sheet: the app bar takes the date picker's own container colour so
             // there is no seam between the bar and the picker header below it.
             Surface(
-                modifier = Modifier.fillMaxSize(),
+                modifier = if (fullScreen) {
+                    Modifier.fillMaxSize()
+                } else {
+                    Modifier
+                        .widthIn(max = 560.dp)
+                        .fillMaxWidth()
+                        .heightIn(max = 680.dp)
+                        .fillMaxHeight()
+                },
+                shape = if (fullScreen) RectangleShape else MaterialTheme.shapes.extraLarge,
                 color = containerColor
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .safeDrawingPadding()
+                    modifier = if (fullScreen) {
+                        Modifier.fillMaxSize().safeDrawingPadding()
+                    } else {
+                        Modifier.fillMaxSize()
+                    }
                 ) {
                     TopAppBar(
                         title = { Text(stringResource(R.string.time_range_custom_dialog_title)) },

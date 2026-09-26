@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -69,6 +70,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -101,6 +104,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.window.core.layout.WindowSizeClass
 import com.health.openscale.R
 import com.health.openscale.core.data.AggregationLevel
 import com.health.openscale.core.data.EvaluationState
@@ -124,6 +128,7 @@ import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.screen.components.ChartSplitterHandle
 import com.health.openscale.ui.screen.components.MeasurementChart
+import com.health.openscale.ui.screen.components.MeasurementChartTypeFilterRow
 import com.health.openscale.ui.screen.components.UserGoalChip
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
 import com.health.openscale.ui.screen.components.rememberAddMeasurementActionButton
@@ -159,6 +164,8 @@ fun OverviewScreen(
     drillDownEndMillis: Long? = null,
 ) {
     val isDrillDown = drillDownStartMillis != null && drillDownEndMillis != null
+    val useSideBySide = currentWindowAdaptiveInfoV2().windowSizeClass
+        .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
 
     val selectedUserId by sharedViewModel.selectedUserId.collectAsState()
     val context = LocalContext.current
@@ -374,91 +381,56 @@ fun OverviewScreen(
                             }
 
                             // ── Chart + divider + goals (hidden in drill-down) ────────
-                            if (!isDrillDown) {
-                                if (localSplitterWeight > 0f) Box(modifier = Modifier.weight(localSplitterWeight)) {
-                                    MeasurementChart(
-                                        sharedViewModel   = sharedViewModel,
-                                        screenContextName = SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
-                                        showFilterControls = true,
-                                        modifier          = Modifier.fillMaxWidth(),
-                                        showYAxis         = false,
-                                        onPointSelected   = { selectedTs ->
-                                            if (isAggregated) {
-                                                // AggregatedMeasurement carries pre-computed period bounds —
-                                                // no need to call periodBoundsFor().
-                                                val idx = aggregatedItems.indexOfFirst { item ->
-                                                    selectedTs in item.periodStartMillis until item.periodEndMillis
-                                                }
-                                                if (idx >= 0) {
-                                                    val itemTs = aggregatedItems[idx]
-                                                        .enriched.measurementWithValues.measurement.timestamp
-                                                    scope.launch {
-                                                        listState.smartScrollTo(idx)
-                                                        highlightedMeasurementId =
-                                                            aggregatedItems[idx].enriched.measurementWithValues.measurement.id
-                                                        currentSelectedAggregatedTs = itemTs
-                                                        delay(600.milliseconds)
-                                                        highlightedMeasurementId = null
-                                                    }
-                                                }
-                                            } else {
-                                                val listForFind = aggregatedItems.map {
-                                                    it.enriched.measurementWithValues
-                                                }
-                                                sharedViewModel
-                                                    .findClosestMeasurement(selectedTs, listForFind)
-                                                    ?.let { (targetIndex, mwv) ->
-                                                        val targetId = mwv.measurement.id
-                                                        scope.launch {
-                                                            listState.smartScrollTo(targetIndex)
-                                                            highlightedMeasurementId          = targetId
-                                                            currentSelectedMeasurementId      = targetId
-                                                            delay(600.milliseconds)
-                                                            if (highlightedMeasurementId == targetId)
-                                                                highlightedMeasurementId = null
-                                                        }
-                                                    }
+                            val chartContent: @Composable (Modifier) -> Unit = { chartModifier ->
+                                MeasurementChart(
+                                    sharedViewModel   = sharedViewModel,
+                                    screenContextName = SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
+                                    showFilterControls = true,
+                                    // Side by side, the filter row spans the full width above chart and list.
+                                    showTypeFilterRow = !useSideBySide,
+                                    modifier          = chartModifier,
+                                    showYAxis         = false,
+                                    onPointSelected   = { selectedTs ->
+                                        if (isAggregated) {
+                                            // AggregatedMeasurement carries pre-computed period bounds —
+                                            // no need to call periodBoundsFor().
+                                            val idx = aggregatedItems.indexOfFirst { item ->
+                                                selectedTs in item.periodStartMillis until item.periodEndMillis
                                             }
-                                        },
-                                    )
-                                }
-
-                                // Draggable + tappable splitter handle (drag = resize, tap = collapse/show).
-                                // Top padding lives on the handle (not the chart) so the spacing is
-                                // kept even when the chart is collapsed and not rendered. The bottom
-                                // gap comes from the goals/list top padding.
-                                ChartSplitterHandle(
-                                    modifier  = Modifier.padding(top = 8.dp),
-                                    collapsed = localSplitterWeight <= 0f,
-                                    onDrag = { dy ->
-                                        localSplitterWeight =
-                                            (localSplitterWeight + dy / 2000f).coerceIn(0f, 0.8f)
-                                    },
-                                    onDragEnd = {
-                                        scope.launch {
-                                            sharedViewModel.setSplitterWeight(
-                                                SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
-                                                localSplitterWeight,
-                                            )
-                                        }
-                                    },
-                                    onToggleCollapse = {
-                                        localSplitterWeight = if (localSplitterWeight > 0f) {
-                                            lastExpandedWeight = localSplitterWeight
-                                            0f
+                                            if (idx >= 0) {
+                                                val itemTs = aggregatedItems[idx]
+                                                    .enriched.measurementWithValues.measurement.timestamp
+                                                scope.launch {
+                                                    listState.smartScrollTo(idx)
+                                                    highlightedMeasurementId =
+                                                        aggregatedItems[idx].enriched.measurementWithValues.measurement.id
+                                                    currentSelectedAggregatedTs = itemTs
+                                                    delay(600.milliseconds)
+                                                    highlightedMeasurementId = null
+                                                }
+                                            }
                                         } else {
-                                            lastExpandedWeight.takeIf { it > 0f } ?: 0.3f
-                                        }
-                                        scope.launch {
-                                            sharedViewModel.setSplitterWeight(
-                                                SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
-                                                localSplitterWeight,
-                                            )
+                                            val listForFind = aggregatedItems.map {
+                                                it.enriched.measurementWithValues
+                                            }
+                                            sharedViewModel
+                                                .findClosestMeasurement(selectedTs, listForFind)
+                                                ?.let { (targetIndex, mwv) ->
+                                                    val targetId = mwv.measurement.id
+                                                    scope.launch {
+                                                        listState.smartScrollTo(targetIndex)
+                                                        highlightedMeasurementId          = targetId
+                                                        currentSelectedMeasurementId      = targetId
+                                                        delay(600.milliseconds)
+                                                        if (highlightedMeasurementId == targetId)
+                                                            highlightedMeasurementId = null
+                                                    }
+                                                }
                                         }
                                     },
                                 )
-
-                                // Goals section
+                            }
+                            val goalsSection: @Composable () -> Unit = {
                                 if (userGoals.isNotEmpty()) {
                                     Column {
                                         Row(
@@ -579,89 +551,150 @@ fun OverviewScreen(
                                         HorizontalDivider()
                                     }
                                 }
-                            } // end !isDrillDown chart+goals block
+                            }
+                            val measurementList: @Composable (Modifier) -> Unit = { listModifier ->
+                                // ── Main list ─────────────────────────────────────────────
+                                LazyColumn(
+                                    state                 = listState,
+                                    modifier              = listModifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                                    verticalArrangement   = Arrangement.spacedBy(12.dp),
+                                ) {
+                                    itemsIndexed(
+                                        items = aggregatedItems,
+                                        // Must not depend on isAggregated: that flag comes from the
+                                        // settings flow while the items come from the data flow, so
+                                        // the two disagree for a frame after an aggregation change.
+                                        // Aggregated entries are synthetic and all carry id = -1,
+                                        // which then yields duplicate keys and crashes the list.
+                                        // id + timestamp is unique in both modes.
+                                        key   = { _, item ->
+                                            val m = item.enriched.measurementWithValues.measurement
+                                            "${m.id}_${m.timestamp}"
+                                        },
+                                    ) { _, aggItem ->
+                                        val enrichedItem = aggItem.enriched
+                                        val ts           = enrichedItem.measurementWithValues.measurement.timestamp
 
-                            // ── Main list ─────────────────────────────────────────────
-                            LazyColumn(
-                                state                 = listState,
-                                modifier              = Modifier
-                                    .weight(if (isDrillDown) 1f else 1f - localSplitterWeight)
-                                    .fillMaxSize()
-                                    .padding(horizontal = 16.dp, vertical = 4.dp),
-                                verticalArrangement   = Arrangement.spacedBy(12.dp),
-                            ) {
-                                itemsIndexed(
-                                    items = aggregatedItems,
-                                    // Must not depend on isAggregated: that flag comes from the
-                                    // settings flow while the items come from the data flow, so
-                                    // the two disagree for a frame after an aggregation change.
-                                    // Aggregated entries are synthetic and all carry id = -1,
-                                    // which then yields duplicate keys and crashes the list.
-                                    // id + timestamp is unique in both modes.
-                                    key   = { _, item ->
-                                        val m = item.enriched.measurementWithValues.measurement
-                                        "${m.id}_${m.timestamp}"
-                                    },
-                                ) { _, aggItem ->
-                                    val enrichedItem = aggItem.enriched
-                                    val ts           = enrichedItem.measurementWithValues.measurement.timestamp
-
-                                    if (isAggregated) {
-                                        // aggregatedFromCount and period bounds come directly from
-                                        // AggregatedMeasurement — no recomputation needed.
-                                        val periodStart = aggItem.periodStartMillis
-                                        val periodEnd   = aggItem.periodEndMillis
-                                        MeasurementCard(
-                                            sharedViewModel            = sharedViewModel,
-                                            measurementWithValues      = enrichedItem.measurementWithValues,
-                                            processedValuesForDisplay  = enrichedItem.valuesWithTrend,
-                                            userEvaluationContext      = userEvalContext,
-                                            onClick = {
-                                                currentSelectedAggregatedTs = ts
-                                                sharedViewModel.setLastDrillDownPeriodStart(periodStart)
-                                                navController.navigate(Routes.overviewDrillDown(periodStart, periodEnd))
-                                            },
-                                            onEdit                     = {
-                                                currentSelectedAggregatedTs = ts
-                                                navController.navigate(
-                                                    Routes.overviewDrillDown(periodStart, periodEnd)
-                                                )
-                                            },
-                                            onDelete                   = null,
-                                            isAggregated               = true,
-                                            rawCount                   = aggItem.aggregatedFromCount,
-                                            aggregatedPeriodLabel      = activeAggregationLevel.periodLabel(
-                                                timestamp            = ts,
-                                                calendarWeekAbbrev  = stringResource(R.string.calendar_week_abbrev),
-                                                weekFields          = weekFields,
-                                            ),
-                                        )
-                                    } else {
-                                        MeasurementCard(
-                                            sharedViewModel           = sharedViewModel,
-                                            measurementWithValues     = enrichedItem.measurementWithValues,
-                                            processedValuesForDisplay = enrichedItem.valuesWithTrend,
-                                            userEvaluationContext     = userEvalContext,
-                                            onClick                   = {
-                                                currentSelectedMeasurementId =
-                                                    enrichedItem.measurementWithValues.measurement.id
-                                            },
-                                            onEdit                    = {
-                                                selectedUserId?.let { userId ->
+                                        if (isAggregated) {
+                                            // aggregatedFromCount and period bounds come directly from
+                                            // AggregatedMeasurement — no recomputation needed.
+                                            val periodStart = aggItem.periodStartMillis
+                                            val periodEnd   = aggItem.periodEndMillis
+                                            MeasurementCard(
+                                                sharedViewModel            = sharedViewModel,
+                                                measurementWithValues      = enrichedItem.measurementWithValues,
+                                                processedValuesForDisplay  = enrichedItem.valuesWithTrend,
+                                                userEvaluationContext      = userEvalContext,
+                                                onClick = {
+                                                    currentSelectedAggregatedTs = ts
+                                                    sharedViewModel.setLastDrillDownPeriodStart(periodStart)
+                                                    navController.navigate(Routes.overviewDrillDown(periodStart, periodEnd))
+                                                },
+                                                onEdit                     = {
+                                                    currentSelectedAggregatedTs = ts
                                                     navController.navigate(
-                                                        Routes.measurementDetail(
-                                                            enrichedItem.measurementWithValues.measurement.id,
-                                                            userId,
-                                                        )
+                                                        Routes.overviewDrillDown(periodStart, periodEnd)
                                                     )
-                                                }
-                                            },
-                                            onDelete                  = { measurementToDelete = aggItem },
-                                            isHighlighted             = (highlightedMeasurementId ==
-                                                    enrichedItem.measurementWithValues.measurement.id),
-                                        )
+                                                },
+                                                onDelete                   = null,
+                                                isAggregated               = true,
+                                                rawCount                   = aggItem.aggregatedFromCount,
+                                                aggregatedPeriodLabel      = activeAggregationLevel.periodLabel(
+                                                    timestamp            = ts,
+                                                    calendarWeekAbbrev  = stringResource(R.string.calendar_week_abbrev),
+                                                    weekFields          = weekFields,
+                                                ),
+                                            )
+                                        } else {
+                                            MeasurementCard(
+                                                sharedViewModel           = sharedViewModel,
+                                                measurementWithValues     = enrichedItem.measurementWithValues,
+                                                processedValuesForDisplay = enrichedItem.valuesWithTrend,
+                                                userEvaluationContext     = userEvalContext,
+                                                onClick                   = {
+                                                    currentSelectedMeasurementId =
+                                                        enrichedItem.measurementWithValues.measurement.id
+                                                },
+                                                onEdit                    = {
+                                                    selectedUserId?.let { userId ->
+                                                        navController.navigate(
+                                                            Routes.measurementDetail(
+                                                                enrichedItem.measurementWithValues.measurement.id,
+                                                                userId,
+                                                            )
+                                                        )
+                                                    }
+                                                },
+                                                onDelete                  = { measurementToDelete = aggItem },
+                                                isHighlighted             = (highlightedMeasurementId ==
+                                                        enrichedItem.measurementWithValues.measurement.id),
+                                            )
+                                        }
                                     }
                                 }
+                            }
+
+                            // Expanded windows put the chart beside the list instead of above it.
+                            if (!isDrillDown && useSideBySide) {
+                                MeasurementChartTypeFilterRow(
+                                    sharedViewModel    = sharedViewModel,
+                                    screenContextName  = SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
+                                    showFilterControls = true,
+                                )
+                                Row(Modifier.weight(1f).fillMaxWidth()) {
+                                    chartContent(Modifier.weight(0.6f).fillMaxHeight())
+                                    VerticalDivider()
+                                    Column(Modifier.weight(0.4f).fillMaxHeight()) {
+                                        goalsSection()
+                                        measurementList(Modifier.weight(1f))
+                                    }
+                                }
+                            } else {
+                                if (!isDrillDown) {
+                                    if (localSplitterWeight > 0f) Box(modifier = Modifier.weight(localSplitterWeight)) {
+                                        chartContent(Modifier.fillMaxWidth())
+                                    }
+
+                                    // Draggable + tappable splitter handle (drag = resize, tap = collapse/show).
+                                    // Top padding lives on the handle (not the chart) so the spacing is
+                                    // kept even when the chart is collapsed and not rendered. The bottom
+                                    // gap comes from the goals/list top padding.
+                                    ChartSplitterHandle(
+                                        modifier  = Modifier.padding(top = 8.dp),
+                                        collapsed = localSplitterWeight <= 0f,
+                                        onDrag = { dy ->
+                                            localSplitterWeight =
+                                                (localSplitterWeight + dy / 2000f).coerceIn(0f, 0.8f)
+                                        },
+                                        onDragEnd = {
+                                            scope.launch {
+                                                sharedViewModel.setSplitterWeight(
+                                                    SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
+                                                    localSplitterWeight,
+                                                )
+                                            }
+                                        },
+                                        onToggleCollapse = {
+                                            localSplitterWeight = if (localSplitterWeight > 0f) {
+                                                lastExpandedWeight = localSplitterWeight
+                                                0f
+                                            } else {
+                                                lastExpandedWeight.takeIf { it > 0f } ?: 0.3f
+                                            }
+                                            scope.launch {
+                                                sharedViewModel.setSplitterWeight(
+                                                    SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
+                                                    localSplitterWeight,
+                                                )
+                                            }
+                                        },
+                                    )
+
+                                    goalsSection()
+                                }
+                                measurementList(Modifier.weight(if (isDrillDown) 1f else 1f - localSplitterWeight))
                             }
                         }
                     }

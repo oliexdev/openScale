@@ -838,7 +838,7 @@ val MIGRATION_16_17 = object : Migration(16, 17) {
 }
 
 /**
- * Adds the predefined progress photo type. It goes behind all existing rows so an order the
+ * Adds the predefined photo type. It goes behind all existing rows so an order the
  * user has arranged stays as it is; fresh installs get it at its canonical place instead.
  * Databases that came through the older allKeys-seeding migrations may already carry it.
  */

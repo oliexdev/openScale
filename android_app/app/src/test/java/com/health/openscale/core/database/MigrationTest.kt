@@ -151,7 +151,7 @@ class MigrationTest {
         assertThat(migrated.startDate).isEqualTo(RoomTestSupport.V16_MEASUREMENT_TIMESTAMP)
     }
 
-    /** MIGRATION_17_18 adds the progress photo type behind the existing rows, enabled and unpinned. */
+    /** MIGRATION_17_18 adds the photo type behind the existing rows, enabled and unpinned. */
     @Test
     fun migration17To18_addsThePhotoTypeBehindTheExistingOnes() = runBlocking {
         val dbFile = context.getDatabasePath(AppDatabase.DATABASE_NAME)

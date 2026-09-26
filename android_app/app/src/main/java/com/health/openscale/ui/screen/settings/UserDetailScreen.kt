@@ -28,6 +28,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -298,11 +300,14 @@ fun UserDetailScreen(
 
     val scrollState = rememberScrollState()
 
+    // Scrolls across the full width, but the form itself keeps a readable width on tablets.
     Column(
         modifier = Modifier
-            .padding(16.dp)
             .fillMaxSize()
-            .verticalScroll(scrollState),
+            .verticalScroll(scrollState)
+            .wrapContentWidth()
+            .widthIn(max = 640.dp)
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         UserIconPicker(

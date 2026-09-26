@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -403,11 +404,14 @@ fun MeasurementTypeDetailScreen(
 
 
 
+    // Scrolls across the full width, but the form itself keeps a readable width on tablets.
     Column(
         modifier = Modifier
-            .padding(16.dp)
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .wrapContentWidth()
+            .widthIn(max = 640.dp)
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Marks the whole type rather than any single field, so it sits above the

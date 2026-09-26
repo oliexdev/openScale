@@ -70,10 +70,12 @@ import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.Zoom
 import com.patrykandpatrick.vico.compose.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisLabelComponent
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoScrollState
 import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
+import com.patrykandpatrick.vico.compose.common.Insets
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -116,6 +118,7 @@ internal data class ChartSeries(
  * @param showFilterTitle        If true, a title showing the current time range and count is shown.
  * @param showYAxis              If true, both Y-axes (start and end) are displayed.
  * @param targetMeasurementTypeId If non-null, only this type is shown. Hides the type filter row.
+ * @param showTypeFilterRow      If false, the caller places [MeasurementChartTypeFilterRow] itself.
  * @param onPointSelected        Callback invoked with the timestamp when a data point is selected.
  */
 @Composable
@@ -128,6 +131,7 @@ fun MeasurementChart(
     showFilterTitle: Boolean = false,
     showYAxis: Boolean = true,
     targetMeasurementTypeId: Int? = null,
+    showTypeFilterRow: Boolean = true,
     onPointSelected: (timestamp: Long) -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -148,24 +152,7 @@ fun MeasurementChart(
 
     // Resolved via the predefined Key constants, never via MeasurementType.id: the row id of a
     // MeasurementType is auto-generated on insert and does not match the enum id.
-    val defaultSelectedTypesValue = remember(targetMeasurementTypeId, allAvailableMeasurementTypes) {
-        if (targetMeasurementTypeId != null) {
-            setOf(targetMeasurementTypeId.toString())
-        } else {
-            val defaultKeys = setOf(
-                MeasurementType.WEIGHT,
-                MeasurementType.BMI,
-                MeasurementType.BODY_FAT,
-                MeasurementType.WATER,
-                MeasurementType.MUSCLE,
-                MeasurementType.COMMENT,
-            )
-            allAvailableMeasurementTypes
-                .filter { it.key in defaultKeys }
-                .map { it.id.toString() }
-                .toSet()
-        }
-    }
+    val defaultSelectedTypesValue = rememberDefaultSelectedTypes(targetMeasurementTypeId, allAvailableMeasurementTypes)
 
     // ── Splitter (period chart / main chart) ──────────────────────────────────
     val splitterWeight by remember(SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT, sharedViewModel) {
@@ -334,45 +321,12 @@ fun MeasurementChart(
     // ── Layout ────────────────────────────────────────────────────────────────
     Column(modifier = modifier) {
 
-        AnimatedVisibility(visible = effectiveShowTypeFilterRow) {
-            MeasurementTypeFilterRow(
-                allMeasurementTypesProvider  = { allAvailableMeasurementTypes },
-                selectedTypeIdsFlowProvider  = {
-                    sharedViewModel.observeSetting(
-                        "${screenContextName}${SELECTED_TYPES_SUFFIX}",
-                        defaultSelectedTypesValue,
-                    )
-                },
-                onPersistSelectedTypeIds     = { newIds ->
-                    scope.launch {
-                        sharedViewModel.saveSetting(
-                            "${screenContextName}${SELECTED_TYPES_SUFFIX}",
-                            newIds,
-                        )
-                    }
-                },
-                filterLogic                  = { allTypes ->
-                    allTypes.filter {
-                        it.isEnabled &&
-                                (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT)
-                    }
-                },
-                onSelectionChanged           = {},
-                defaultSelectionLogic        = { selectableFilteredTypes ->
-                    if (targetMeasurementTypeId != null) {
-                        selectableFilteredTypes
-                            .find { it.id == targetMeasurementTypeId }
-                            ?.let { listOf(it.id) } ?: emptyList()
-                    } else {
-                        val defaultKeys = setOf(MeasurementType.WEIGHT, MeasurementType.BODY_FAT)
-                        selectableFilteredTypes
-                            .filter { it.key in defaultKeys }
-                            .map { it.id }
-                            .ifEmpty {
-                                selectableFilteredTypes.firstOrNull()?.let { listOf(it.id) } ?: emptyList()
-                            }
-                    }
-                },
+        if (showTypeFilterRow) {
+            MeasurementChartTypeFilterRow(
+                sharedViewModel         = sharedViewModel,
+                screenContextName       = screenContextName,
+                showFilterControls      = showFilterControls,
+                targetMeasurementTypeId = targetMeasurementTypeId,
             )
         }
 
@@ -511,6 +465,9 @@ fun MeasurementChart(
 
                 val xAxis = if (targetMeasurementTypeId == null) {
                     HorizontalAxis.rememberBottom(
+                        // Vico sizes the label spacing from a few sample dates only; the extra
+                        // padding leaves room for wider ones (e.g. "17 May") instead of truncating them.
+                        label = rememberAxisLabelComponent(padding = Insets(horizontal = 8.dp, vertical = 4.dp)),
                         valueFormatter = rememberXAxisValueFormatter(chartSeries, activeAggregationLevel),
                         itemPlacer = remember(activeAggregationLevel) {
                             val spacing = when (activeAggregationLevel) {
@@ -766,5 +723,93 @@ fun ChartSplitterHandle(
                     .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)),
             )
         }
+    }
+}
+@Composable
+private fun rememberDefaultSelectedTypes(
+    targetMeasurementTypeId: Int?,
+    allAvailableMeasurementTypes: List<MeasurementType>,
+): Set<String> = remember(targetMeasurementTypeId, allAvailableMeasurementTypes) {
+    if (targetMeasurementTypeId != null) {
+        setOf(targetMeasurementTypeId.toString())
+    } else {
+        val defaultKeys = setOf(
+            MeasurementType.WEIGHT,
+            MeasurementType.BMI,
+            MeasurementType.BODY_FAT,
+            MeasurementType.WATER,
+            MeasurementType.MUSCLE,
+            MeasurementType.COMMENT,
+        )
+        allAvailableMeasurementTypes
+            .filter { it.key in defaultKeys }
+            .map { it.id.toString() }
+            .toSet()
+    }
+}
+
+/**
+ * The measurement type filter row of [MeasurementChart], for callers that place it themselves
+ * (e.g. across the full width above a chart shown beside a list).
+ */
+@Composable
+fun MeasurementChartTypeFilterRow(
+    sharedViewModel: SharedViewModel,
+    screenContextName: String,
+    showFilterControls: Boolean,
+    targetMeasurementTypeId: Int? = null,
+) {
+    val scope = rememberCoroutineScope()
+    val showTypeFilterRowSetting by rememberContextualBooleanSetting(
+        screenContextName = screenContextName,
+        settingSuffix     = SHOW_TYPE_FILTER_ROW_SUFFIX,
+        observeBoolean    = { key, default -> sharedViewModel.observeSetting(key, default) },
+        defaultValue      = showFilterControls,
+    )
+    val effectiveShowTypeFilterRow =
+        if (targetMeasurementTypeId != null) false else showTypeFilterRowSetting
+    val allAvailableMeasurementTypes by sharedViewModel.measurementTypes.collectAsState()
+    val defaultSelectedTypesValue = rememberDefaultSelectedTypes(targetMeasurementTypeId, allAvailableMeasurementTypes)
+
+    AnimatedVisibility(visible = effectiveShowTypeFilterRow) {
+        MeasurementTypeFilterRow(
+            allMeasurementTypesProvider  = { allAvailableMeasurementTypes },
+            selectedTypeIdsFlowProvider  = {
+                sharedViewModel.observeSetting(
+                    "${screenContextName}${SELECTED_TYPES_SUFFIX}",
+                    defaultSelectedTypesValue,
+                )
+            },
+            onPersistSelectedTypeIds     = { newIds ->
+                scope.launch {
+                    sharedViewModel.saveSetting(
+                        "${screenContextName}${SELECTED_TYPES_SUFFIX}",
+                        newIds,
+                    )
+                }
+            },
+            filterLogic                  = { allTypes ->
+                allTypes.filter {
+                    it.isEnabled &&
+                            (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT)
+                }
+            },
+            onSelectionChanged           = {},
+            defaultSelectionLogic        = { selectableFilteredTypes ->
+                if (targetMeasurementTypeId != null) {
+                    selectableFilteredTypes
+                        .find { it.id == targetMeasurementTypeId }
+                        ?.let { listOf(it.id) } ?: emptyList()
+                } else {
+                    val defaultKeys = setOf(MeasurementType.WEIGHT, MeasurementType.BODY_FAT)
+                    selectableFilteredTypes
+                        .filter { it.key in defaultKeys }
+                        .map { it.id }
+                        .ifEmpty {
+                            selectableFilteredTypes.firstOrNull()?.let { listOf(it.id) } ?: emptyList()
+                        }
+                }
+            },
+        )
     }
 }

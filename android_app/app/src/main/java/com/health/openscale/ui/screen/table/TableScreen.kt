@@ -75,7 +75,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.state.ToggleableState
@@ -83,6 +85,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale as ComposeLocale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -127,6 +130,7 @@ import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.Date
 import java.util.Locale
+import kotlin.math.floor
 
 data class TableCellData(
     val typeId: Int,
@@ -753,13 +757,39 @@ fun TableScreen(
     val colWidth     = 110.dp
     val commentWidth = 250.dp
 
+    // Columns keep their minimum width and scroll when they don't fit; with room to spare they
+    // stretch proportionally to fill the width, whichever columns are shown.
+    val density = LocalDensity.current
+    var tableWidth by remember { mutableStateOf(0.dp) }
+    // One date column width for header and all rows (the widest date seen), so columns line up.
+    var dateColWidth by remember { mutableStateOf(dateColMin) }
+    val dateColModifier = Modifier
+        .widthIn(min = dateColWidth, max = dateColMax)
+        .onSizeChanged { size ->
+            val width = with(density) { size.width.toDp() }
+            if (width > dateColWidth) dateColWidth = width
+        }
+    val tableViewportWidth = tableWidth - dateColWidth - (if (isInSelectionMode) 60.dp else 0.dp)
+    val columnScale = remember(displayedTypes, tableViewportWidth) {
+        val minTotal = displayedTypes.sumOf {
+            (if (it.key == MeasurementType.COMMENT) commentWidth else colWidth).value.toDouble()
+        }.toFloat()
+        if (minTotal > 0f) (tableViewportWidth.value / minTotal).coerceAtLeast(1f) else 1f
+    }
+    fun columnWidth(type: MeasurementType): Dp =
+        floor((if (type.key == MeasurementType.COMMENT) commentWidth else colWidth).value * columnScale).dp
+
     val noColumnsOrMeasurementsMessage = stringResource(R.string.table_message_no_columns_or_measurements)
     val noMeasurementsMessage          = stringResource(R.string.no_data_available)
     val noColumnsSelectedMessage       = stringResource(R.string.table_message_no_columns_selected)
     val noDataForSelectionMessage      = stringResource(R.string.table_message_no_data_for_selection)
     val dateColumnHeader               = stringResource(R.string.table_header_date)
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .onSizeChanged { tableWidth = with(density) { it.width.toDp() } }
+    ) {
         AnimatedVisibility(visible = !isDrillDown && showTypeFilterRow) {
             MeasurementTypeFilterRow(
                 allMeasurementTypesProvider = { allAvailableTypesFromVM },
@@ -855,22 +885,22 @@ fun TableScreen(
                     }
                     TableHeaderCellInternal(
                         text      = dateColumnHeader,
-                        modifier  = Modifier
-                            .widthIn(min = dateColMin, max = dateColMax)
-                            .padding(horizontal = 6.dp)
+                        modifier  = dateColModifier
+                            .padding(horizontal = 8.dp)
                             .fillMaxHeight(),
                         alignment = TextAlign.Start,
                     )
                     Row(Modifier.weight(1f).horizontalScroll(horizontalScrollState)) {
                         displayedTypes.forEach { type ->
-                            val width = if (type.key == MeasurementType.COMMENT) commentWidth else colWidth
+                            val width = columnWidth(type)
                             TableHeaderCellInternal(
                                 text      = type.getDisplayName(LocalContext.current),
+                                // Lines up with the cell values: end-aligned before the evaluation symbol.
                                 modifier  = Modifier
                                     .width(width)
-                                    .padding(horizontal = 6.dp)
+                                    .padding(start = 8.dp, end = 8.dp + 18.dp)
                                     .fillMaxHeight(),
-                                alignment = TextAlign.Center,
+                                alignment = TextAlign.End,
                             )
                         }
                     }
@@ -932,9 +962,7 @@ fun TableScreen(
                             TableDataCellInternal(
                                 cellData     = null,
                                 fixedText    = rowData.formattedTimestamp,
-                                modifier     = Modifier
-                                    .widthIn(min = dateColMin, max = dateColMax)
-                                    .fillMaxHeight(),
+                                modifier     = dateColModifier.fillMaxHeight(),
                                 alignment    = TextAlign.Start,
                                 isDateCell   = true,
                                 isAggregated = rowData.isAggregated,
@@ -947,7 +975,7 @@ fun TableScreen(
                             ) {
                                 displayedTypes.forEach { colType ->
                                     val cellData = rowData.values[colType.id]
-                                    val width    = if (colType.key == MeasurementType.COMMENT) commentWidth else colWidth
+                                    val width    = columnWidth(colType)
                                     TableDataCellInternal(
                                         cellData     = cellData,
                                         modifier     = Modifier.width(width).fillMaxHeight(),

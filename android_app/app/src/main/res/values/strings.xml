@@ -221,7 +221,7 @@
     <string name="measurement_type_tdee">TDEE</string>
     <string name="measurement_type_calories">Calories</string>
     <string name="measurement_type_comment">Comment</string>
-    <string name="measurement_type_photo">Progress photo</string>
+    <string name="measurement_type_photo">Photo</string>
     <string name="measurement_type_date">Date</string>
     <string name="measurement_type_time">Time</string>
     <string name="measurement_type_user">User</string>

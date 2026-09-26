@@ -30,17 +30,20 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingDown
@@ -65,6 +68,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
@@ -102,6 +106,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.window.core.layout.WindowSizeClass
 import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.facade.SettingsPreferenceKeys.INSIGHTS_SCREEN_CONTEXT
@@ -235,54 +240,72 @@ fun InsightsScreen(
                     ?: insight.weekdayPattern?.type
                     ?: insight.seasonalPattern?.type
 
+                val twoColumns = currentWindowAdaptiveInfoV2().windowSizeClass
+                    .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
+                val sections: List<@Composable (Modifier) -> Unit> = listOf(
+                    { cardModifier ->
+                        val analysis = insight.measurementAnalysis
+                        if (analysis != null && analysis.confidence != InsightConfidence.INSUFFICIENT) {
+                            MeasurementAnalysisCard(analysis, cardModifier)
+                        } else {
+                            InsightPlaceholderCard(
+                                title    = stringResource(R.string.insights_section_measurement_analysis, primaryType?.getDisplayName(context) ?: ""),
+                                message  = stringResource(R.string.insights_placeholder_measurement_analysis, MeasurementInsightsUseCase.MIN_TOTAL_MEASUREMENTS),
+                                modifier = cardModifier,
+                            )
+                        }
+                    },
+                    { cardModifier ->
+                        val pattern = insight.bodyCompositionPattern
+                        if (pattern != null && pattern.confidence != InsightConfidence.INSUFFICIENT) {
+                            BodyCompositionPlaneCard(pattern, cardModifier)
+                        } else {
+                            InsightPlaceholderCard(
+                                title    = stringResource(R.string.insights_section_body_pattern),
+                                message  = stringResource(R.string.insights_placeholder_body_pattern, MeasurementInsightsUseCase.CORRELATION_MIN_MEASUREMENTS, MeasurementInsightsUseCase.CORRELATION_WINDOW_DAYS),
+                                modifier = cardModifier,
+                            )
+                        }
+                    },
+                    { cardModifier ->
+                        val pattern = insight.weekdayPattern
+                        if (pattern != null && pattern.confidence != InsightConfidence.INSUFFICIENT) {
+                            WeekdayPatternCard(pattern, cardModifier)
+                        } else {
+                            InsightPlaceholderCard(
+                                title    = stringResource(R.string.insights_section_weekday),
+                                message  = stringResource(R.string.insights_placeholder_weekday, WeekdayPattern.MIN_MEASUREMENTS_PER_DAY),
+                                modifier = cardModifier,
+                            )
+                        }
+                    },
+                    { cardModifier ->
+                        val pattern = insight.seasonalPattern
+                        if (pattern != null && pattern.confidence != InsightConfidence.INSUFFICIENT) {
+                            SeasonalPatternCard(pattern, cardModifier)
+                        } else {
+                            InsightPlaceholderCard(
+                                title    = stringResource(R.string.insights_section_seasonal),
+                                message  = stringResource(R.string.insights_placeholder_seasonal, SeasonalPattern.MIN_YEARS_FOR_PATTERN),
+                                modifier = cardModifier,
+                            )
+                        }
+                    },
+                )
+
                 LazyColumn(
                     modifier            = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    item {
-                        val analysis = insight.measurementAnalysis
-                        if (analysis != null && analysis.confidence != InsightConfidence.INSUFFICIENT) {
-                            MeasurementAnalysisCard(analysis)
-                        } else {
-                            InsightPlaceholderCard(
-                                title   = stringResource(R.string.insights_section_measurement_analysis, primaryType?.getDisplayName(context) ?: ""),
-                                message = stringResource(R.string.insights_placeholder_measurement_analysis, MeasurementInsightsUseCase.MIN_TOTAL_MEASUREMENTS),
-                            )
-                        }
-                    }
-                    item {
-                        val pattern = insight.bodyCompositionPattern
-                        if (pattern != null && pattern.confidence != InsightConfidence.INSUFFICIENT) {
-                            BodyCompositionPlaneCard(pattern)
-                        } else {
-                            InsightPlaceholderCard(
-                                title   = stringResource(R.string.insights_section_body_pattern),
-                                message = stringResource(R.string.insights_placeholder_body_pattern, MeasurementInsightsUseCase.CORRELATION_MIN_MEASUREMENTS, MeasurementInsightsUseCase.CORRELATION_WINDOW_DAYS),
-                            )
-                        }
-                    }
-                    item {
-                        val pattern = insight.weekdayPattern
-                        if (pattern != null && pattern.confidence != InsightConfidence.INSUFFICIENT) {
-                            WeekdayPatternCard(pattern)
-                        } else {
-                            InsightPlaceholderCard(
-                                title   = stringResource(R.string.insights_section_weekday),
-                                message = stringResource(R.string.insights_placeholder_weekday, WeekdayPattern.MIN_MEASUREMENTS_PER_DAY),
-                            )
-                        }
-                    }
-                    item {
-                        val pattern = insight.seasonalPattern
-                        if (pattern != null && pattern.confidence != InsightConfidence.INSUFFICIENT) {
-                            SeasonalPatternCard(pattern)
-                        } else {
-                            InsightPlaceholderCard(
-                                title   = stringResource(R.string.insights_section_seasonal),
-                                message = stringResource(R.string.insights_placeholder_seasonal, SeasonalPattern.MIN_YEARS_FOR_PATTERN),
-                            )
+                    // Expanded windows show two cards per row, stretched to the taller one.
+                    items(sections.chunked(if (twoColumns) 2 else 1)) { row ->
+                        Row(
+                            modifier              = Modifier.fillMaxWidth().height(IntrinsicSize.Max),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            row.forEach { section -> section(Modifier.weight(1f).fillMaxHeight()) }
                         }
                     }
                     item {
@@ -313,7 +336,7 @@ fun InsightsScreen(
  * - Compact insight chips for trend and volatility
  */
 @Composable
-private fun MeasurementAnalysisCard(analysis: MeasurementAnalysis) {
+private fun MeasurementAnalysisCard(analysis: MeasurementAnalysis, modifier: Modifier = Modifier) {
     val locale  = ComposeLocale.current.platformLocale
     val context = LocalContext.current
 
@@ -326,6 +349,7 @@ private fun MeasurementAnalysisCard(analysis: MeasurementAnalysis) {
     InsightCard(
         title      = stringResource(R.string.insights_section_measurement_analysis, analysis.type.getDisplayName(context)),
         confidence = analysis.confidence,
+        modifier   = modifier,
     ) {
         Spacer(Modifier.height(8.dp))
 
@@ -720,7 +744,7 @@ private fun AnalysisSparkline(
 // ---------------------------------------------------------------------------
 
 @Composable
-private fun BodyCompositionPlaneCard(pattern: BodyCompositionPattern) {
+private fun BodyCompositionPlaneCard(pattern: BodyCompositionPattern, modifier: Modifier = Modifier) {
     val history  = pattern.history
     val locale   = ComposeLocale.current.platformLocale
     val shortFmt = DateTimeFormatter.ofPattern("MMM yy", locale)
@@ -781,7 +805,7 @@ private fun BodyCompositionPlaneCard(pattern: BodyCompositionPattern) {
         }
     }
 
-    InsightCard(title = stringResource(R.string.insights_section_body_pattern), confidence = pattern.confidence) {
+    InsightCard(title = stringResource(R.string.insights_section_body_pattern), confidence = pattern.confidence, modifier = modifier) {
         Spacer(Modifier.height(12.dp))
 
         Box(modifier = Modifier.fillMaxWidth().height(240.dp)) {
@@ -887,12 +911,12 @@ private fun BodyCompositionPlaneCard(pattern: BodyCompositionPattern) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun WeekdayPatternCard(pattern: WeekdayPattern) {
+private fun WeekdayPatternCard(pattern: WeekdayPattern, modifier: Modifier = Modifier) {
     val locale = ComposeLocale.current.platformLocale
     var animationPlayed by remember { mutableStateOf(false) }
     LaunchedEffect(pattern) { animationPlayed = true }
 
-    InsightCard(title = stringResource(R.string.insights_section_weekday), confidence = pattern.confidence) {
+    InsightCard(title = stringResource(R.string.insights_section_weekday), confidence = pattern.confidence, modifier = modifier) {
         Spacer(Modifier.height(8.dp))
         val maxAbs = pattern.deviationByDay.values.maxOfOrNull { abs(it) }?.takeIf { it > 0f } ?: 1f
 
@@ -963,12 +987,12 @@ private fun WeekdayPatternCard(pattern: WeekdayPattern) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SeasonalPatternCard(pattern: SeasonalPattern) {
+private fun SeasonalPatternCard(pattern: SeasonalPattern, modifier: Modifier = Modifier) {
     val locale = ComposeLocale.current.platformLocale
     var animationPlayed by remember { mutableStateOf(false) }
     LaunchedEffect(pattern) { animationPlayed = true }
 
-    InsightCard(title = stringResource(R.string.insights_section_seasonal), confidence = pattern.confidence) {
+    InsightCard(title = stringResource(R.string.insights_section_seasonal), confidence = pattern.confidence, modifier = modifier) {
         Spacer(Modifier.height(8.dp))
 
         val allValues       = pattern.averageValueByMonthAndYear.values.flatMap { it.values }
@@ -1110,12 +1134,14 @@ private fun AnomalyRow(anomaly: MeasurementAnomaly, onAnomalyClick: (Measurement
 private fun InsightCard(
     title: String,
     confidence: InsightConfidence?,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
+    Card(modifier = modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            // Fixed minimum height, so titles line up whether or not the confidence chip is shown.
+            Row(modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
                 if (confidence == InsightConfidence.LOW) {
                     Spacer(Modifier.width(8.dp))
                     SuggestionChip(
@@ -1132,14 +1158,14 @@ private fun InsightCard(
 
 /** Dimmed placeholder card shown when a section lacks sufficient data. */
 @Composable
-private fun InsightPlaceholderCard(title: String, message: String) {
+private fun InsightPlaceholderCard(title: String, message: String, modifier: Modifier = Modifier) {
     Card(
-        modifier  = Modifier.fillMaxWidth(),
+        modifier  = modifier.fillMaxWidth(),
         colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(6.dp))
             Text(message, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }

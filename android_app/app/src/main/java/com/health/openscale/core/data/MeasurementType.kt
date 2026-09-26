@@ -261,7 +261,7 @@ data class MeasurementType(
                 false, true, true, false, false
             )
         )
-        /** Progress photo; the value is the file name of the stored image. */
+        /** Photo; the value is the file name of the stored image. */
         val PHOTO: Key<String> = reg(
             Key(
                 BUILTIN_PREFIX + "photo", R.string.measurement_type_photo,
