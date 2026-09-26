@@ -95,37 +95,35 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
         // Parameters: weight (kg), height (m), age (years), sex, resistance (Ω).
         // All outputs are clamped to physiologically plausible ranges.
 
-        private fun clamp(v: Float, lo: Float, hi: Float) = maxOf(lo, minOf(hi, v))
-
         /** Body fat % — linear regression on BMI, age and impedance. */
-        fun bodyFatPercent(weightKg: Float, heightM: Float, age: Int, sexIsMale: Float, resistance: Int): Float {
+        fun bodyFatPercent(weightKg: Float, heightM: Float, age: Int, isMale: Boolean, resistance: Int): Float {
             val bmi = weightKg / (heightM * heightM)
-            return if (sexIsMale != 0f)
-                clamp(1.524f * bmi + 0.103f * age - 21.992f - 500f / resistance, 1f, 60f)
+            return if (isMale)
+                (1.524f * bmi + 0.103f * age - 21.992f - 500f / resistance).coerceIn(1f, 60f)
             else
-                clamp(1.545f * bmi + 0.097f * age - 12.689f - 500f / resistance, 1f, 60f)
+                (1.545f * bmi + 0.097f * age - 12.689f - 500f / resistance).coerceIn(1f, 60f)
         }
 
         /** Water % — derived from body fat via sex-specific linear coefficients. */
-        fun waterPercent(bf: Float, sexIsMale: Float) = clamp(
-            if (sexIsMale != 0f) 72.202f - 0.72223f * bf else 68.651f - 0.68725f * bf, 20f, 80f)
+        fun waterPercent(bf: Float, isMale: Boolean) =
+            (if (isMale) 72.202f - 0.72223f * bf else 68.651f - 0.68725f * bf).coerceIn(20f, 80f)
 
         /** Skeletal muscle % — derived from body fat. */
-        fun skeletalMusclePercent(bf: Float, sexIsMale: Float) = clamp(
-            if (sexIsMale != 0f) 64.713f - 0.65508f * bf else 58.390f - 0.58654f * bf, 17.5f, 70f)
+        fun skeletalMusclePercent(bf: Float, isMale: Boolean) =
+            (if (isMale) 64.713f - 0.65508f * bf else 58.390f - 0.58654f * bf).coerceIn(17.5f, 70f)
 
         /** Bone mass (kg) — weight minus soft-lean mass minus fat mass. */
-        fun boneMass(weightKg: Float, bf: Float, sexIsMale: Float): Float {
-            val softLeanPct = clamp(
-                if (sexIsMale != 0f) 94.992f - 0.94969f * bf else 93.988f - 0.93960f * bf, 0f, 100f)
-            val softLeanKg = clamp(weightKg * softLeanPct / 100f, 3.75f, 110f)
+        fun boneMass(weightKg: Float, bf: Float, isMale: Boolean): Float {
+            val softLeanPct =
+                (if (isMale) 94.992f - 0.94969f * bf else 93.988f - 0.93960f * bf).coerceIn(0f, 100f)
+            val softLeanKg = (weightKg * softLeanPct / 100f).coerceIn(3.75f, 110f)
             val bfKg = bf * weightKg / 100f
-            return clamp(weightKg - softLeanKg - bfKg, 1f, 7f)
+            return (weightKg - softLeanKg - bfKg).coerceIn(1f, 7f)
         }
 
         /** Protein % — derived from body fat. */
-        fun proteinPercent(bf: Float, sexIsMale: Float) = clamp(
-            if (sexIsMale != 0f) 22.787f - 0.22735f * bf else 25.340f - 0.30245f * bf, 5f, 24f)
+        fun proteinPercent(bf: Float, isMale: Boolean) =
+            (if (isMale) 22.787f - 0.22735f * bf else 25.340f - 0.30245f * bf).coerceIn(5f, 24f)
     }
 
     private val SVC get() = uuid16(0x1A10)
@@ -260,14 +258,13 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
                 // Body composition: renpho-escs20m algorithm 0x04 (non-athlete).
                 val user = currentAppUser()
                 val isMale = user.gender.isMale()
-                val sexF = if (isMale) 1f else 0f
                 val heightM = user.bodyHeight / 100f
-                val fat = bodyFatPercent(weightKg, heightM, user.age, sexF, resistance)
+                val fat = bodyFatPercent(weightKg, heightM, user.age, isMale, resistance)
                 this[MeasurementType.BODY_FAT] = Percent(fat)
-                this[MeasurementType.WATER] = Percent(waterPercent(fat, sexF))
-                this[MeasurementType.MUSCLE] = Percent(skeletalMusclePercent(fat, sexF))
-                this[MeasurementType.BONE] = Kg(boneMass(weightKg, fat, sexF))
-                this[MeasurementType.PROTEIN] = Percent(proteinPercent(fat, sexF))
+                this[MeasurementType.WATER] = Percent(waterPercent(fat, isMale))
+                this[MeasurementType.MUSCLE] = Percent(skeletalMusclePercent(fat, isMale))
+                this[MeasurementType.BONE] = Kg(boneMass(weightKg, fat, isMale))
+                this[MeasurementType.PROTEIN] = Percent(proteinPercent(fat, isMale))
                 this[MeasurementType.LBM] = Kg(weightKg * (100f - fat) / 100f)
             }
         }
