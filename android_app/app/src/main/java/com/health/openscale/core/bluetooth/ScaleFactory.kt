@@ -61,6 +61,7 @@ import com.health.openscale.core.bluetooth.scales.MiScaleHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
 import com.health.openscale.core.bluetooth.scales.XiaomiS800Handler
 import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
+import com.health.openscale.core.bluetooth.scales.BodyPod2Handler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
 import com.health.openscale.core.bluetooth.scales.OmronWlcHandler
 import com.health.openscale.core.bluetooth.scales.PicoocHandler
@@ -202,6 +203,7 @@ class ScaleFactory @Inject constructor(
             AAAxHandler(),
             ScaleupHandler(),
             BodyConnectHandler(),
+            BodyPod2Handler(),
             WeightGurusA3Handler(),
         )
     }
