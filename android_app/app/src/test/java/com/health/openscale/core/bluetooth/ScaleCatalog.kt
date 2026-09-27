@@ -27,6 +27,7 @@ import com.health.openscale.core.bluetooth.scales.AfuB1Handler
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
+import com.health.openscale.core.bluetooth.scales.BodyPod2Handler
 import com.health.openscale.core.bluetooth.scales.CultSmartScaleProHandler
 import com.health.openscale.core.bluetooth.scales.CustomOpenScaleHandler
 import com.health.openscale.core.bluetooth.scales.DeviceCapability
@@ -218,6 +219,7 @@ object ScaleCatalog {
         device("BIA SCALE", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
         device("RYFIT") claimedBy RyFitHandler::class.java,
         device("CULT Smart Scale Pro") claimedBy CultSmartScaleProHandler::class.java,
+        device("Body Pod 2", uuid16(0xFFF0)) claimedBy BodyPod2Handler::class.java,
         device("realme Smart Scale") claimedBy RealmeSmartScaleHandler::class.java,
         device("YUNMAI-ISSE-1234") claimedBy YunmaiHandler::class.java,
         device("YUNMAI-SIGNAL-1234") claimedBy YunmaiHandler::class.java,
