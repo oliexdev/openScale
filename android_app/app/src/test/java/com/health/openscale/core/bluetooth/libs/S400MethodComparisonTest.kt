@@ -77,6 +77,15 @@ class S400MethodComparisonTest {
             val ffm = 0.340 * h * h / it.r50 + 15.34 * h / 100.0 + 0.273 * w - 0.127 * it.age + 4.56 * sex - 12.44
             (w - ffm) / w * 100.0
         },
+        // Wu 2015 Nutr J 14:52, doi:10.1186/s12937-015-0041-0: 50 kHz
+        // foot-to-foot against DXA, n = 554 healthy Taiwanese adults, Z 326-733 Ω.
+        Method("1F Wu 2015 foot-to-foot vs DXA @50 kHz") {
+            val h = it.heightCm.toDouble()
+            val w = it.weightKg.toDouble()
+            val sex = if (it.sexMale) 1.0 else 0.0
+            val ffm = 13.055 + 0.204 * w + 0.394 * h * h / it.r50 - 0.136 * it.age + 8.125 * sex
+            (w - ffm) / w * 100.0
+        },
         hanaiMethod,
         // bodymiscale's S400 mode: its hardware LBM on the 50 kHz band. The Xiaomi
         // formula family, so its agreement with the app is partly by construction.
