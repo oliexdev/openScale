@@ -83,7 +83,8 @@ import kotlin.math.sqrt
  *  - §3.7 Bone: see [BoneFormula]
  *  - §3.8 VFI: empirical anthropometric regression (no impedance input)
  *  - §3.9 BMR: see [BmrFormula]; Mifflin-St Jeor fallback when FFM is suppressed
- *  - §3.10 BCM = ICW / 0.70; the 0.70 cell hydration has no verified source
+ *  - §3.10 BCM = ICW / 0.70 (Wang 2004 p. E125: ICW is 0.70 of BCM, 0.69-0.71
+ *    in healthy adults)
  *  - §3.11 Phase angle: not derivable from magnitudes alone; always null
  *
  * ## Accuracy against DXA
@@ -158,7 +159,9 @@ import kotlin.math.sqrt
  * 1945 *J Biol Chem* 158:685-691 (FFM hydration); Janssen 2000 *J Appl Physiol*
  * 89:465-471 (SMM); Cunningham 1991 *Am J Clin Nutr* 54:963-969 (BMR);
  * Mifflin-St Jeor 1990 *Am J Clin Nutr* 51:241-247 (BMR fallback); Heymsfield
- * 2007 *Am J Clin Nutr* 86:82-91 (bone, see [BoneFormula]); Wu 2015 *Nutr J* 14:52, doi:10.1186/s12937-015-0041-0
+ * 2007 *Am J Clin Nutr* 86:82-91 (bone, see [BoneFormula]); Wang 2004
+ * *Am J Physiol Endocrinol Metab* 286:E123-E128, doi:10.1152/ajpendo.00227.2003
+ * (BCM); Wu 2015 *Nutr J* 14:52, doi:10.1186/s12937-015-0041-0
  * (foot-to-foot comparison); CDC NHANES 1999-2004 BIX/DXX/DEMO/BMX files
  * (public domain; Cole constants, band-ratio distribution, DXA validation).
  */
@@ -419,7 +422,7 @@ object S400BodyComposition {
         }
         val bmr = bmrFromFfm.coerceIn(800f, 4000f)
 
-        // §3.10 BCM = ICW / 0.70. Suppressed when ICW suppressed.
+        // §3.10 BCM = ICW / 0.70 (Wang 2004). Suppressed when ICW suppressed.
         val bcm = if (icw != null) (icw / 0.70f).coerceIn(10f, 60f) else null
 
         // Protein + SLM derivations (spec is silent; cheap approximations).
