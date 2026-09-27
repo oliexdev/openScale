@@ -201,6 +201,7 @@ class StoreScreenshotTest {
         }
         open(R.string.route_title_table)
         capture(7)
+        if (kind == "phone") captureFeatureGraphic()
 
         shell("cmd uimode night no")
         setLocale("ja")
@@ -264,15 +265,24 @@ class StoreScreenshotTest {
     /** Store screenshot n, written with the repository layout so the output can be copied as-is. */
     private fun capture(n: Int) {
         val (slug, caption) = SCREENS.getValue(n)
-        val image = shoot(caption)
+        val screen = shoot()
+        val image = storeLayout(screen, caption)
         val store = if (kind == "phone") "phoneScreenshots" else "tenInchScreenshots"
         save(image, "fastlane/metadata/android/en-GB/images/$store/${n}_en-GB.png")
-        if (kind == "phone") save(image, "docs/screens/${n}_$slug.png")
+        if (kind == "phone") {
+            save(image, "docs/screens/${n}_$slug.png")
+            featureScreens[n] = screen
+        }
     }
 
-    private fun captureReadme(name: String, caption: String) = save(shoot(caption), "docs/screens/$name.png")
+    private fun captureReadme(name: String, caption: String) =
+        save(storeLayout(shoot(), caption), "docs/screens/$name.png")
 
-    private fun shoot(caption: String): Bitmap {
+    private class Screen(val bitmap: Bitmap, val statusBar: Int)
+
+    private val featureScreens = mutableMapOf<Int, Screen>()
+
+    private fun shoot(): Screen {
         settle()
         Thread.sleep(1500) // chart and list animations
         settle()
@@ -282,7 +292,7 @@ class StoreScreenshotTest {
             statusBar = it.window.decorView.rootWindowInsets.getInsets(WindowInsets.Type.statusBars()).top
         }
         drawStatusBar(screen, statusBar)
-        return storeLayout(screen, statusBar, caption)
+        return Screen(screen, statusBar)
     }
 
     private fun save(image: Bitmap, path: String) {
@@ -331,12 +341,12 @@ class StoreScreenshotTest {
     }
 
     /** Caption on the openScale blue, app screenshot inside a drawn device frame. */
-    private fun storeLayout(screen: Bitmap, statusBar: Int, caption: String): Bitmap {
-        val landscape = screen.width > screen.height
+    private fun storeLayout(screen: Screen, caption: String): Bitmap {
+        val landscape = screen.bitmap.width > screen.bitmap.height
         val (w, h) = if (landscape) 2560 to 1440 else 1440 to 2560
         val out = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(out)
-        canvas.drawColor(Color.rgb(52, 152, 219))
+        canvas.drawColor(BLUE)
 
         val text = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE
@@ -352,28 +362,36 @@ class StoreScreenshotTest {
         lines.forEach { canvas.drawText(it, w / 2f, y, text); y += lineHeight }
         y = (if (landscape) 70f else 110f) - text.ascent() + blockLines * lineHeight
 
-        val bezel = if (landscape) 44f else 26f
-        val screenRadius = if (landscape) 36f else 96f
         val screenWidth = if (landscape) 2060f else 1130f
-        val scale = screenWidth / screen.width
-        val left = (w - screenWidth) / 2f
-        val top = y - lineHeight + text.descent() + (if (landscape) 60f else 90f) + bezel
-        val display = RectF(left, top, left + screenWidth, top + screen.height * scale)
+        val top = y - lineHeight + text.descent() + (if (landscape) 60f else 90f) + (if (landscape) 44f else 26f)
+        drawDevice(canvas, screen, (w - screenWidth) / 2f, top, screenWidth)
+        return out
+    }
+
+    /** Device frame around [screen]; all measures scale with [screenWidth] (display left/top given). */
+    private fun drawDevice(canvas: Canvas, screen: Screen, left: Float, top: Float, screenWidth: Float) {
+        val landscape = screen.bitmap.width > screen.bitmap.height
+        val k = screenWidth / if (landscape) 2060f else 1130f
+        val bezel = (if (landscape) 44f else 26f) * k
+        val screenRadius = (if (landscape) 36f else 96f) * k
+        val scale = screenWidth / screen.bitmap.width
+        val display = RectF(left, top, left + screenWidth, top + screen.bitmap.height * scale)
         val body = RectF(display).apply { inset(-bezel, -bezel) }
         val bodyRadius = screenRadius + bezel
 
         if (!landscape) { // side buttons
             val button = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(70, 74, 80) }
-            canvas.drawRoundRect(RectF(body.right - 4, body.top + 330, body.right + 7, body.top + 450), 6f, 6f, button)
-            canvas.drawRoundRect(RectF(body.right - 4, body.top + 520, body.right + 7, body.top + 760), 6f, 6f, button)
+            canvas.drawRoundRect(RectF(body.right - 4 * k, body.top + 330 * k, body.right + 7 * k, body.top + 450 * k), 6 * k, 6 * k, button)
+            canvas.drawRoundRect(RectF(body.right - 4 * k, body.top + 520 * k, body.right + 7 * k, body.top + 760 * k), 6 * k, 6 * k, button)
         }
         canvas.drawRoundRect(body, bodyRadius, bodyRadius, Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.rgb(17, 18, 20)
-            setShadowLayer(48f, 0f, 16f, Color.argb(100, 0, 0, 0))
+            setShadowLayer(48f * k, 0f, 16f * k, Color.argb(100, 0, 0, 0))
         })
-        canvas.drawRoundRect(RectF(body).apply { inset(3f, 3f) }, bodyRadius - 3, bodyRadius - 3, Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        val edge = maxOf(7f * k, 1.5f)
+        canvas.drawRoundRect(RectF(body).apply { inset(edge / 2, edge / 2) }, bodyRadius - edge / 2, bodyRadius - edge / 2, Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.STROKE
-            strokeWidth = 7f
+            strokeWidth = edge
             shader = android.graphics.LinearGradient(
                 0f, body.top, 0f, body.bottom,
                 intArrayOf(Color.rgb(160, 166, 176), Color.rgb(78, 82, 90), Color.rgb(150, 156, 166)),
@@ -381,8 +399,14 @@ class StoreScreenshotTest {
             )
         })
 
-        val shader = BitmapShader(screen, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP).apply {
-            setLocalMatrix(android.graphics.Matrix().apply { setScale(scale, scale); postTranslate(left, top) })
+        // halve step by step before the final scale; a single bilinear step leaves text jagged
+        var bitmap = screen.bitmap
+        while (bitmap.width / 2 >= screenWidth) {
+            bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.width / 2, bitmap.height / 2, true)
+        }
+        val bitmapScale = screenWidth / bitmap.width
+        val shader = BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP).apply {
+            setLocalMatrix(android.graphics.Matrix().apply { setScale(bitmapScale, bitmapScale); postTranslate(left, top) })
         }
         canvas.drawRoundRect(display, screenRadius, screenRadius, Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG).apply {
             this.shader = shader
@@ -390,13 +414,64 @@ class StoreScreenshotTest {
 
         val lens = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(8, 8, 10) }
         val ring = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(44, 46, 52) }
+        val cx = display.centerX()
         if (landscape) {
-            canvas.drawCircle(w / 2f, body.top + bezel / 2, 9f, ring)
-            canvas.drawCircle(w / 2f, body.top + bezel / 2, 5f, lens)
+            canvas.drawCircle(cx, body.top + bezel / 2, 9f * k, ring)
+            canvas.drawCircle(cx, body.top + bezel / 2, 5f * k, lens)
         } else {
             val r = 11 * context.resources.displayMetrics.density * scale
-            canvas.drawCircle(w / 2f, top + statusBar * scale * 0.55f, r + 3, ring)
-            canvas.drawCircle(w / 2f, top + statusBar * scale * 0.55f, r, lens)
+            canvas.drawCircle(cx, top + screen.statusBar * scale * 0.55f, r + 3 * k, ring)
+            canvas.drawCircle(cx, top + screen.statusBar * scale * 0.55f, r, lens)
+        }
+    }
+
+    /** Play Store feature graphic (1024x500): two phones plus app icon, name and slogan. */
+    private fun captureFeatureGraphic() {
+        val out = Bitmap.createBitmap(1024, 500, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(out)
+        canvas.drawColor(BLUE)
+        drawDevice(canvas, featureScreens.getValue(1), 74f, 66f, 188f)
+        drawDevice(canvas, featureScreens.getValue(7), 322f, 66f, 188f)
+
+        val iconSize = 84
+        canvas.drawBitmap(appIcon(iconSize), 614f, 114f, null)
+        val white = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
+        canvas.drawText("openScale", 718f, 170f, Paint(white).apply {
+            textSize = 36f
+            letterSpacing = 0.03f
+            typeface = Typeface.create("sans-serif-light", Typeface.NORMAL)
+        })
+        canvas.drawText("MONITOR YOUR WEIGHT & BODY", 618f, 246f, Paint(white).apply {
+            textSize = 21f
+            letterSpacing = 0.08f
+            typeface = Typeface.create("sans-serif", Typeface.BOLD)
+        })
+        canvas.drawText("Simple, Private & Open-Source", 618f, 276f, Paint(white).apply {
+            textSize = 21f
+            letterSpacing = 0.04f
+            typeface = Typeface.create("sans-serif", Typeface.NORMAL)
+        })
+        save(out, "fastlane/metadata/android/en-GB/images/featureGraphic.png")
+    }
+
+    /** Release launcher icon (the debug build shows a dev variant) as a rounded square. */
+    private fun appIcon(size: Int): Bitmap {
+        val out = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(out)
+        val clip = android.graphics.Path().apply {
+            addRoundRect(RectF(0f, 0f, size.toFloat(), size.toFloat()), size * 0.12f, size * 0.12f, android.graphics.Path.Direction.CW)
+        }
+        canvas.clipPath(clip)
+        when (val icon = context.getDrawable(R.mipmap.ic_launcher)!!) {
+            is android.graphics.drawable.AdaptiveIconDrawable -> {
+                // adaptive layers are 108dp with the visible 72dp in the middle
+                val inset = size / 4
+                listOfNotNull(icon.background, icon.foreground).forEach {
+                    it.setBounds(-inset, -inset, size + inset, size + inset)
+                    it.draw(canvas)
+                }
+            }
+            else -> { icon.setBounds(0, 0, size, size); icon.draw(canvas) }
         }
         return out
     }
@@ -526,6 +601,8 @@ class StoreScreenshotTest {
     }
 
     companion object {
+        private val BLUE = Color.rgb(52, 152, 219)
+
         /** Screen number to docs/screens file slug and caption. */
         private val SCREENS = mapOf(
             1 to ("overview" to "Private by design –\nno account, no cloud"),
