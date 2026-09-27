@@ -23,17 +23,18 @@ import org.junit.Test
 /**
  * Tests for [S400BodyComposition]. Section markers (§7.x) match the KDoc on
  * [S400BodyComposition], which is the specification. Expected values are
- * computed by hand from the equations documented there, not read back from
- * this implementation.
+ * worked from the published equations documented there, by a reference
+ * implementation written independently of this one, and not read back from it.
+ * `R_0` is listed per subject so each chain can be re-derived by hand.
  *
  * Edge cases come first (§7.4 label swap, §7.5 unreliable contact) — cheapest
  * defensive checks to ship; they cover the two failure modes most likely to
  * break the model in production.
  *
- * Reference subjects (computed with `c = 1.10`, MI_LEGACY bone, CUN91 BMR):
- *  - §7.1 young athletic male: age 27, M, 172 cm, 76.5 kg, R 365/402
- *  - §7.2 middle-aged female: age 55, F, 162 cm, 68 kg, R 600/690
- *  - §7.3 older male:         age 70, M, 170 cm, 80 kg, R 520/610
+ * Reference subjects (computed with `c = 1.00`, MI_LEGACY bone, CUN91 BMR):
+ *  - §7.1 young athletic male: age 27, M, 172 cm, 76.5 kg, R 365/402, R_0 451.8
+ *  - §7.2 middle-aged female: age 55, F, 162 cm, 68 kg, R 600/690, R_0 788.3
+ *  - §7.3 older male:         age 70, M, 170 cm, 80 kg, R 520/610, R_0 728.2
  */
 class S400BodyCompositionTest {
 
@@ -54,8 +55,8 @@ class S400BodyCompositionTest {
         val r = S400BodyComposition.compute(swapped)
         assertThat(r.labelSwapApplied).isTrue()
         // After swap, result must equal §7.1 Subject A.
-        assertThat(r.tbwKg!!).isWithin(tolKg).of(45.08f)
-        assertThat(r.ffmKg!!).isWithin(tolKg).of(61.58f)
+        assertThat(r.tbwKg!!).isWithin(tolKg).of(48.09f)
+        assertThat(r.ffmKg!!).isWithin(tolKg).of(65.69f)
     }
 
     @Test
@@ -96,25 +97,25 @@ class S400BodyCompositionTest {
     @Test
     fun subjectA_defaultOptions_matchesSpec() {
         val r = subjectA()
-        assertThat(r.tbwKg!!).isWithin(tolKg).of(45.08f)
-        assertThat(r.tbwPct!!).isWithin(tolPct).of(58.92f)
-        assertThat(r.ecwKg!!).isWithin(tolKg).of(19.80f)
-        assertThat(r.ecwPct!!).isWithin(tolPct).of(25.89f)
-        assertThat(r.icwKg!!).isWithin(tolKg).of(25.27f)
+        assertThat(r.tbwKg!!).isWithin(tolKg).of(48.09f)
+        assertThat(r.tbwPct!!).isWithin(tolPct).of(62.86f)
+        assertThat(r.ecwKg!!).isWithin(tolKg).of(21.10f)
+        assertThat(r.ecwPct!!).isWithin(tolPct).of(27.59f)
+        assertThat(r.icwKg!!).isWithin(tolKg).of(26.98f)
         assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.439f)
         assertThat(r.r0RinfRatio!!).isWithin(0.005f).of(1.319f)
         // 1.319 is 2.61 SD from the Table 2 male mean, hence APPROXIMATE.
-        assertThat(r.tbwCrossCheckDelta!!).isWithin(0.002f).of(-0.1695f)
+        assertThat(r.tbwCrossCheckDelta!!).isWithin(0.002f).of(-0.1704f)
         assertThat(r.reliability).isEqualTo(Reliability.APPROXIMATE)
-        assertThat(r.ffmKg!!).isWithin(tolKg).of(61.58f)
-        assertThat(r.bfKg!!).isWithin(tolKg).of(14.92f)
-        assertThat(r.bfPct!!).isWithin(tolPct).of(19.50f)
-        assertThat(r.smmKg!!).isWithin(tolKg).of(33.84f)
-        assertThat(r.smmPct!!).isWithin(tolPct).of(44.23f)
+        assertThat(r.ffmKg!!).isWithin(tolKg).of(65.69f)
+        assertThat(r.bfKg!!).isWithin(tolKg).of(10.81f)
+        assertThat(r.bfPct!!).isWithin(tolPct).of(14.13f)
+        assertThat(r.smmKg!!).isWithin(tolKg).of(36.52f)
+        assertThat(r.smmPct!!).isWithin(tolPct).of(47.74f)
         assertThat(r.boneKg!!).isWithin(tolKg).of(2.99f)  // Option A default
         assertThat(r.vfi!!).isWithin(0.1f).of(13.24f)
-        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1700f)  // Cun91 default
-        assertThat(r.bcmKg!!).isWithin(tolKg).of(36.10f)
+        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1789f)  // Cun91 default
+        assertThat(r.bcmKg!!).isWithin(tolKg).of(38.55f)
         assertThat(r.phaseAngleDeg).isNull()
     }
 
@@ -127,7 +128,7 @@ class S400BodyCompositionTest {
     @Test
     fun subjectA_bmrCunningham1980_matchesSpec() {
         val r = subjectA(bmrFormula = BmrFormula.CUNNINGHAM_1980)
-        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1855f)
+        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1945f)
     }
 
     // ---------- §7.2 — Subject B (middle-aged female) ----------
@@ -138,20 +139,20 @@ class S400BodyCompositionTest {
             age = 55, sexMale = false, heightCm = 162f, weightKg = 68f,
             rHighRaw = 600f, rLowRaw = 690f,
         ))
-        assertThat(r.tbwKg!!).isWithin(tolKg).of(26.79f)
-        assertThat(r.tbwPct!!).isWithin(tolPct).of(39.40f)
-        assertThat(r.ecwKg!!).isWithin(tolKg).of(12.53f)
-        assertThat(r.icwKg!!).isWithin(tolKg).of(14.26f)
-        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.468f)
+        assertThat(r.tbwKg!!).isWithin(tolKg).of(28.35f)
+        assertThat(r.tbwPct!!).isWithin(tolPct).of(41.68f)
+        assertThat(r.ecwKg!!).isWithin(tolKg).of(13.35f)
+        assertThat(r.icwKg!!).isWithin(tolKg).of(15.00f)
+        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.471f)
         assertThat(r.r0RinfRatio!!).isWithin(0.005f).of(1.492f)
-        assertThat(r.tbwCrossCheckDelta!!).isWithin(0.002f).of(0.0806f)
-        assertThat(r.ffmKg!!).isWithin(tolKg).of(36.60f)
-        assertThat(r.bfKg!!).isWithin(tolKg).of(31.40f)
-        assertThat(r.bfPct!!).isWithin(tolPct).of(46.18f)
-        assertThat(r.smmKg!!).isWithin(tolKg).of(15.06f)
+        assertThat(r.tbwCrossCheckDelta!!).isWithin(0.002f).of(0.0883f)
+        assertThat(r.ffmKg!!).isWithin(tolKg).of(38.72f)
+        assertThat(r.bfKg!!).isWithin(tolKg).of(29.28f)
+        assertThat(r.bfPct!!).isWithin(tolPct).of(43.05f)
+        assertThat(r.smmKg!!).isWithin(tolKg).of(16.45f)
         assertThat(r.boneKg!!).isWithin(tolKg).of(2.47f)
-        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1161f)
-        assertThat(r.bcmKg!!).isWithin(tolKg).of(20.38f)
+        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1206f)
+        assertThat(r.bcmKg!!).isWithin(tolKg).of(21.42f)
     }
 
     @Test
@@ -171,20 +172,20 @@ class S400BodyCompositionTest {
             age = 70, sexMale = true, heightCm = 170f, weightKg = 80f,
             rHighRaw = 520f, rLowRaw = 610f,
         ))
-        assertThat(r.tbwKg!!).isWithin(tolKg).of(34.98f)
-        assertThat(r.tbwPct!!).isWithin(tolPct).of(43.73f)
-        assertThat(r.ecwKg!!).isWithin(tolKg).of(14.40f)
-        assertThat(r.icwKg!!).isWithin(tolKg).of(20.59f)
-        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.412f)
+        assertThat(r.tbwKg!!).isWithin(tolKg).of(36.92f)
+        assertThat(r.tbwPct!!).isWithin(tolPct).of(46.15f)
+        assertThat(r.ecwKg!!).isWithin(tolKg).of(15.34f)
+        assertThat(r.icwKg!!).isWithin(tolKg).of(21.58f)
+        assertThat(r.ecwTbwRatio!!).isWithin(0.005f).of(0.416f)
         assertThat(r.r0RinfRatio!!).isWithin(0.005f).of(1.568f)
-        assertThat(r.tbwCrossCheckDelta!!).isWithin(0.002f).of(0.0208f)
-        assertThat(r.ffmKg!!).isWithin(tolKg).of(47.79f)
-        assertThat(r.bfKg!!).isWithin(tolKg).of(32.21f)
-        assertThat(r.bfPct!!).isWithin(tolPct).of(40.26f)
-        assertThat(r.smmKg!!).isWithin(tolKg).of(21.23f)
+        assertThat(r.tbwCrossCheckDelta!!).isWithin(0.002f).of(0.0307f)
+        assertThat(r.ffmKg!!).isWithin(tolKg).of(50.44f)
+        assertThat(r.bfKg!!).isWithin(tolKg).of(29.56f)
+        assertThat(r.bfPct!!).isWithin(tolPct).of(36.95f)
+        assertThat(r.smmKg!!).isWithin(tolKg).of(22.96f)
         assertThat(r.boneKg!!).isWithin(tolKg).of(2.84f)
-        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1402f)
-        assertThat(r.bcmKg!!).isWithin(tolKg).of(29.41f)
+        assertThat(r.bmrKcal!!).isWithin(tolKcal).of(1459f)
+        assertThat(r.bcmKg!!).isWithin(tolKg).of(30.83f)
     }
 
     @Test
@@ -220,9 +221,9 @@ class S400BodyCompositionTest {
         val r = S400BodyComposition.compute(S400Inputs(27, true, 172f, 76.5f, 369f, 402f))
         assertThat(r.r0RinfRatio!!).isWithin(0.005f).of(1.280f)
         assertThat(r.reliability).isEqualTo(Reliability.APPROXIMATE)
-        assertThat(r.ecwKg!!).isWithin(tolKg).of(19.96f)
-        assertThat(r.icwKg!!).isWithin(tolKg).of(25.12f)
-        assertThat(r.bcmKg!!).isWithin(tolKg).of(35.88f)
+        assertThat(r.ecwKg!!).isWithin(tolKg).of(21.27f)
+        assertThat(r.icwKg!!).isWithin(tolKg).of(26.82f)
+        assertThat(r.bcmKg!!).isWithin(tolKg).of(38.31f)
     }
 
     @Test
@@ -236,12 +237,38 @@ class S400BodyCompositionTest {
         assertThat(male.bcmKg).isNotNull()
     }
 
+    // ---------- band attribution ----------
+
+    @Test
+    fun bandAttribution_regressionsReadOnlyThe50kHzBand() {
+        // Sun 2003 and Janssen 2000 are 50 kHz equations. Moving only the
+        // 250 kHz band must leave them untouched and move only ECW, through R_0.
+        // Both label orders are checked so the §2.1 swap is covered too.
+        for (transposed in listOf(false, true)) {
+            fun run(r50: Float, r250: Float) = S400BodyComposition.compute(
+                if (transposed) S400Inputs(27, true, 172f, 76.5f, rHighRaw = r50, rLowRaw = r250)
+                else S400Inputs(27, true, 172f, 76.5f, rHighRaw = r250, rLowRaw = r50),
+            )
+            val base = run(402f, 365f)
+            val moved250 = run(402f, 355f)
+            assertThat(moved250.tbwKg).isEqualTo(base.tbwKg)
+            assertThat(moved250.ffmKg).isEqualTo(base.ffmKg)
+            assertThat(moved250.bfPct).isEqualTo(base.bfPct)
+            assertThat(moved250.smmKg).isEqualTo(base.smmKg)
+            assertThat(moved250.ecwKg).isNotEqualTo(base.ecwKg)
+
+            val moved50 = run(412f, 365f)
+            assertThat(moved50.tbwKg!!).isLessThan(base.tbwKg!!)
+            assertThat(moved50.smmKg!!).isLessThan(base.smmKg!!)
+        }
+    }
+
     // ---------- §3.1b anthropometric cross-check ----------
 
     @Test
     fun deurenbergGuard_suppressesTheWholeWaterChain() {
-        // The same capture reports 11.4 % body fat where Deurenberg gives 29.3,
-        // 17.9 points apart. TBW, FFM and BF are one number in three forms, so
+        // The same capture reports 5.1 % body fat where Deurenberg gives 29.3,
+        // 24.2 points apart. TBW, FFM and BF are one number in three forms, so
         // all three go, and BMR falls back to Mifflin-St Jeor.
         val r = S400BodyComposition.compute(S400Inputs(
             age = 45, sexMale = true, heightCm = 196f, weightKg = 112.5f,

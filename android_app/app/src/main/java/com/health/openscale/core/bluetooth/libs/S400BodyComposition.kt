@@ -60,9 +60,11 @@ import kotlin.math.sqrt
  *    stepped off mid-measurement); mark UNRELIABLE and suppress per-compartment
  *    fields. Weight and BMI still display.
  *  - **§2.2 Foot-to-foot correction.** The S400 measures only the lower body
- *    (foot↔foot), but every published BIA equation was derived for
- *    wrist-to-ankle BIA. Foot-to-foot R is ~10 % lower because the path omits
- *    the arm segment (Organ 1994, Bracco 1996, Demura 2004). Both bands are
+ *    (foot↔foot), but Sun 2003, Janssen 2000 and De Lorenzo Eq. B2 (through
+ *    `K_B`, Appendix C) all assume a wrist-to-ankle path. No source gives the
+ *    conversion. De Lorenzo's five-cylinder geometry (Eqs. C5-C8) applied to a
+ *    leg-to-leg path would put it above 1, yet S400 magnitudes (400-630 Ω on the
+ *    bodymiscale #349 cohort) already sit at wrist-ankle levels. Both bands are
  *    multiplied by [FOOT_TO_FOOT_CORRECTION], which scales `R_0` and `R_INF`
  *    together and so leaves the §2.3 band ratio untouched. The raw
  *    (un-corrected) high band is kept for the §3.7 empirical bone formula, which
@@ -126,7 +128,7 @@ import kotlin.math.sqrt
  * ~1.4× the value its own `C_m`, `R_E` and `R_I` imply under Eq. A1. Sweeping
  * `α` over 0.60-0.80 and `f_c` over 30-80 kHz moves `ECW/TBW` by under 0.06 on
  * the §7.1-7.3 subjects, but that is the flattering statistic: over the same box
- * `R_0` moves ±7-15 % and **ECW itself moves 1.4-1.9 kg**, which is what the UI
+ * `R_0` moves -7 to +15 % and **ECW itself moves 1.5-2.0 kg**, which is what the UI
  * displays. Within the healthy 43-110 kHz `f_c` range the `ECW/TBW` spread is
  * nearer ±0.01.
  *
@@ -148,10 +150,12 @@ import kotlin.math.sqrt
  * and 2.78 SD read as a female, so a 3 SD cut would have withheld the
  * compartment split from a man and granted it to a woman on the same reading;
  * assume 150 kHz instead of 250 and the same capture sits at 1.44 SD (male) or
- * 0.80 SD (female). A ±20 %
- * error in the assumed band moves the figure by 0.3 to 1.2 SD, and asymmetrically:
- * -20 % moves it about twice as far as +20 %, because the deviation is concave in
- * the assumed frequency and crosses the mean near 121 kHz (men) / 135 kHz (women). What suppresses
+ * 0.80 SD (female). The same holds across real users: the eleven S400 weighings
+ * in `S400ReferenceCohortTest` span `r` 1.30-1.56, below the Table 2 means, and
+ * 6 of 11 lie beyond 2 SD. A ±20 % error in the assumed band moves the figure by
+ * 0.3 to 1.2 SD, and asymmetrically: -20 % moves it about twice as far as +20 %,
+ * because the deviation is concave in the assumed frequency and crosses the mean
+ * near 121 kHz (men) / 135 kHz (women). What suppresses
  * §3.2 is the §3.3 `ECW/TBW` window and §3.1b, both of which read quantities the
  * band frequencies do not enter.
  *
@@ -170,9 +174,9 @@ import kotlin.math.sqrt
  * untouched; Sun's TBW then moves as `λ^-0.668`, its impedance term being 66.8 %
  * of the total, while the Matthie route moves as `λ^-2/3`. Sweeping `λ` from
  * 0.85 to 1.30 on the §7.1 subject, a 53 % swing in absolute impedance, moves the
- * gap by 0.6 percentage points. Sweeping [FOOT_TO_FOOT_CORRECTION] over its
- * stated 1.00-1.18 range moves the gap by 0.09 points while moving the displayed
- * ECW by 10.4 %. **Nothing here guards common-mode impedance error**: contact
+ * gap by 0.4 percentage points. Sweeping [FOOT_TO_FOOT_CORRECTION] over its
+ * stated 1.00-1.18 range moves the gap by 0.05 points while moving the displayed
+ * ECW by 11.7 %. **Nothing here guards common-mode impedance error**: contact
  * resistance, the scale's absolute calibration and the foot-to-foot factor all
  * pass unexamined, and §3.1b is the only check anywhere that can see them.
  *
@@ -200,7 +204,7 @@ import kotlin.math.sqrt
  * p. 1547 puts NaBr and ³⁵SO₄ spaces 20 % apart, so the displayed `ECW/TBW` is
  * tracer-dependent before any impedance error and has no published validation as
  * a pair. And because §2.3 lowers ECW it raises ICW, so `BCM/FFM` moves from
- * 0.55/0.51/0.56 to 0.59/0.56/0.62 on the §7.1-7.3 subjects, away from Kotler's
+ * 0.55/0.51/0.56 to 0.59/0.55/0.61 on the §7.1-7.3 subjects, away from Kotler's
  * 0.50-0.55 rather than toward it. §2.3 improves one displayed ratio and
  * degrades another, and neither is gated.
  *
@@ -216,8 +220,9 @@ import kotlin.math.sqrt
  *    effectively ungated with respect to §2.3: the band ratio alone can move ECW
  *    by up to 30 % without any check seeing it. Healthy reference: 0.36-0.40
  *    young adult, 0.38-0.42 older; De Lorenzo p. 1547 puts his own dilution
- *    cohort at 0.40-0.42. This pipeline reads at or above that band (0.412,
- *    0.439, 0.468 on the §7.1-7.3 subjects).
+ *    cohort at 0.40-0.42. This pipeline reads at or above that band (0.439,
+ *    0.471, 0.416 on the §7.1-7.3 subjects, 0.42-0.48 on the eleven weighings in
+ *    `S400ReferenceCohortTest`).
  *  - §3.1b BF % more than [DEURENBERG_MARGIN] from Deurenberg 1991 in either
  *    direction → suppress TBW and everything downstream. TBW, FFM and BF are one
  *    number in three forms, so all three go together.
@@ -247,7 +252,10 @@ import kotlin.math.sqrt
  *
  * ## Test vectors
  * §7.1-7.3 reference subjects and §7.4-7.5 edge cases (label swap, unreliable
- * contact) live in `S400BodyCompositionTest.kt`.
+ * contact) live in `S400BodyCompositionTest.kt`. Agreement with real S400
+ * weighings, and the comparison against single-frequency and full two-band
+ * alternatives, live in `S400ReferenceCohortTest.kt` and
+ * `S400MethodComparisonTest.kt`.
  *
  * ## Primary references
  * Sun 2003 *Am J Clin Nutr* 77:331-340 (TBW); De Lorenzo 1997
@@ -255,8 +263,7 @@ import kotlin.math.sqrt
  * C); Matthie 2005 *J Appl Physiol* 99:780-781,
  * doi:10.1152/japplphysiol.00145.2005 (second-generation ICW; restates Eq. B2
  * unchanged); Pace & Rathbun 1945 *J Biol Chem* 158:685-691
- * (FFM hydration); Janssen 2000 *J Appl Physiol* 89:465-471 (SMM); Bracco 1996
- * *Int J Obes* 20:1067-1073 (foot-to-foot correction); Cunningham 1991
+ * (FFM hydration); Janssen 2000 *J Appl Physiol* 89:465-471 (SMM); Cunningham 1991
  * *Am J Clin Nutr* 54:963-969 (BMR); Mifflin-St Jeor 1990 *Am J Clin Nutr*
  * 51:241-247 (BMR fallback); Kotler 1996 *Am J Clin Nutr* 64:489S-497S (BCM);
  * Heymsfield 2007 *Am J Clin Nutr* 86:82-91 (anthropometric bone);
@@ -326,13 +333,13 @@ object S400BodyComposition {
 
     /**
      * §2.2 multiplicative correction applied to both bands, so it scales `R_0`
-     * and `R_INF` together and cancels out of the §2.3 ratio. Bracco 1996 default
-     * for mid-range adults.
-     * Defensible literature range 1.00-1.18: athletic/lean closer to 1.05,
-     * overweight closer to 1.15. Exposed as a parameter to [compute] so a
-     * caller can override per user profile without recompiling.
+     * and `R_INF` together and cancels out of the §2.3 ratio. The file KDoc §2.2
+     * explains why no source fixes it. 1.00 is the value consistent with the
+     * external cohort in `S400ReferenceCohortTest`: against the Mi app's body fat
+     * it gives a mean bias of +0.7 points, where 1.10 gives +5.1. Exposed as a
+     * parameter to [compute] so a caller can override it per user profile.
      */
-    const val FOOT_TO_FOOT_CORRECTION = 1.10f
+    const val FOOT_TO_FOOT_CORRECTION = 1.00f
 
     /**
      * §3.2 `k_ECW`, De Lorenzo 1997 p. 1544. These are the values Xitron's
