@@ -110,7 +110,7 @@ import kotlin.math.sqrt
  * equation agrees with Wu 2015, the 50 kHz foot-to-foot equation calibrated on
  * DXA, at 1.00. Consumer foot plates evidently do not report the textbook path
  * resistance, so the empirical checks carry more weight: 1.00 sits within them,
- * and the plausible range 0.95-1.14 spans about -1.8 to +4.2 points of body fat.
+ * and the plausible range 0.95-1.14 spans about -1.8 to +4.1 points of body fat.
  * Both 1.00 and Wu 2015 read about 4 points above the Mi app.
  *
  * The band ratio does not depend on the path (R50/R200 1.125 for the leg sum,
