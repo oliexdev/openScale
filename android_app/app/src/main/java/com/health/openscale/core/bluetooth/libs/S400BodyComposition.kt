@@ -95,13 +95,26 @@ import kotlin.math.sqrt
  * agrees: fed the resistance at each measured frequency, its bias crosses zero
  * at 50 kHz (+2.0 at 20 kHz, -1.6 at 100 kHz). Feeding `|Z_50|` instead of `R_50`
  * costs 0.2 points of bias.
- * Sun 2003 TBW reads -1.6 / 4.1, the Hanai/Matthie two-band TBW -0.7 / 5.2, and
+ * Sun 2003 TBW reads -1.6 / 4.1, the Hanai/Matthie two-band TBW -2.6 / 5.7, and
  * Xitron's own full-spectrum FFM -0.7 / 5.6. NHANES is hand-to-foot, so it
- * validates the equation, not [FOOT_TO_FOOT_CORRECTION]. For the foot-to-foot
- * path the comparison is Wu 2015, the 50 kHz foot-to-foot equation calibrated
- * on DXA: on the real S400 weighings in `S400ReferenceCohortTest` the two agree
- * to within 1 point on average at a factor of 1.00. Both read about 4 points
- * above the Mi app, which therefore appears to read low against DXA.
+ * validates the equation, not [FOOT_TO_FOOT_CORRECTION].
+ *
+ * ## Foot-to-foot uncertainty
+ * The factor is the least certain input: each 0.1 moves body fat by about 3
+ * points. `S400FootToFootTest` bounds it from two sides. Physically, a
+ * hand-to-foot path measures 1.14× the sum of the two legs on the same people
+ * (seca, 204 adults), an upper bound since the leg sum leaves out the pelvis.
+ * Empirically, real foot-to-foot impedance from a consumer scale (Tanita, 69
+ * adolescent sprinters) matches underwater weighing through the §3.1 equation at
+ * 0.95, and on the real S400 weighings in `S400ReferenceCohortTest` the §3.1
+ * equation agrees with Wu 2015, the 50 kHz foot-to-foot equation calibrated on
+ * DXA, at 1.00. Consumer foot plates evidently do not report the textbook path
+ * resistance, so the empirical checks carry more weight: 1.00 sits within them,
+ * and the plausible range 0.95-1.14 spans about -1.8 to +4.2 points of body fat.
+ * Both 1.00 and Wu 2015 read about 4 points above the Mi app.
+ *
+ * The band ratio does not depend on the path (R50/R200 1.125 for the leg sum,
+ * 1.122 hand to foot), so §2.3 and [S400HydrationShift] carry over unchanged.
  *
  * ## Compartment cross-checks (§3.2b)
  * `R_0/R_INF` is compared against the robust NHANES 1999-2002 distribution of
@@ -229,11 +242,9 @@ object S400BodyComposition {
 
     /**
      * §2.2 multiplicative correction applied to both bands, so it scales `R_0`
-     * and `R_INF` together and cancels out of the §2.3 ratio. The file KDoc §2.2
-     * explains why no source fixes it. At 1.00 the §3.1 equation agrees on
-     * average with Wu 2015, the foot-to-foot equation calibrated on DXA, over the
-     * real S400 weighings in `S400ReferenceCohortTest`. Exposed as a parameter to
-     * [compute] so a caller can override it per user profile.
+     * and `R_INF` together and cancels out of the §2.3 ratio. See "Foot-to-foot
+     * uncertainty" in the file KDoc for what bounds it (0.95-1.14). Exposed as a
+     * parameter to [compute] so a caller can override it per user profile.
      */
     const val FOOT_TO_FOOT_CORRECTION = 1.00f
 
