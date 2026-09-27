@@ -51,6 +51,7 @@ import com.health.openscale.core.bluetooth.libs.BmrFormula
 import com.health.openscale.core.bluetooth.libs.BoneFormula
 import com.health.openscale.core.bluetooth.libs.S400Aggregator
 import com.health.openscale.core.bluetooth.libs.S400BodyComposition
+import com.health.openscale.core.bluetooth.libs.S400HydrationShift
 import com.health.openscale.core.bluetooth.libs.S400Decryptor
 import com.health.openscale.core.bluetooth.libs.S400Inputs
 import com.health.openscale.core.data.GenderType
@@ -101,6 +102,11 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
         val BODY_CELL_MASS = MeasurementType.deviceKg(
             "bcm", R.string.measurement_type_bcm,
             icon = MeasurementTypeIcon.IC_M_HIVE, color = 0xFF558B2F.toInt()
+        )
+        /** [S400HydrationShift] against the user's previous weighing; |value| >= 3 % is a warning. */
+        val HYDRATION_SHIFT = MeasurementType.devicePercent(
+            "hydration_shift", R.string.measurement_type_hydration_shift,
+            icon = MeasurementTypeIcon.IC_M_WATER_DROP, color = 0xFF26A69A.toInt()
         )
 
         private const val SETTINGS_KEY_BIND_KEY = "s400_bind_key"
@@ -373,6 +379,14 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
             bmrFormula = bmrFormula,
         )
 
+        val previous = lastMeasurementFor(user.id)
+        val hydrationShift = S400HydrationShift.shiftPct(
+            currentLow = finalized.impedanceLow,
+            currentHigh = finalized.impedanceHigh,
+            previousLow = previous?.get(MeasurementType.IMPEDANCE_LOW)?.value,
+            previousHigh = previous?.get(MeasurementType.IMPEDANCE)?.value,
+        )
+
         val scaleMeasurement = ScaleMeasurement().apply {
             dateTime = Date()
             userId = user.id
@@ -396,6 +410,7 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
             composition.ecwPct?.let { this[EXTRACELLULAR_WATER] = Percent(it) }
             composition.icwPct?.let { this[INTRACELLULAR_WATER] = Percent(it) }
             composition.bcmKg?.let { this[BODY_CELL_MASS] = Kg(it) }
+            hydrationShift?.let { this[HYDRATION_SHIFT] = Percent(it) }
         }
 
         publish(scaleMeasurement)

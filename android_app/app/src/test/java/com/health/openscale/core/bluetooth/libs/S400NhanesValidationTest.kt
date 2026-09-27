@@ -22,17 +22,16 @@ import com.health.openscale.core.bluetooth.libs.S400ReferenceCohort.mean
 import com.health.openscale.core.bluetooth.libs.S400ReferenceCohort.pearson
 import com.health.openscale.core.bluetooth.libs.S400ReferenceCohort.rmse
 import com.health.openscale.core.bluetooth.libs.S400ReferenceCohort.sd
+import com.health.openscale.core.bluetooth.libs.S400NhanesFixture.Row
 import com.health.openscale.core.data.GenderType
 import org.junit.Test
-import java.util.zip.GZIPInputStream
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 /**
  * [S400BodyComposition] against DXA on NHANES 1999-2004 adults 18-49 (public
- * domain; `src/test/resources/s400/make_nhanes_fixture.py` documents the rows and
- * columns). NHANES measures right hand to right foot with a Xitron spectroscope,
+ * domain; see [S400NhanesFixture]). NHANES measures right hand to right foot with a Xitron spectroscope,
  * so the pipeline runs with a foot-to-foot factor of 1.00 on native wrist-ankle
  * magnitudes: this validates the equations, not the S400's electrode path.
  * Foot-to-foot equations (Wu 2015, bodymiscale) are scored off their path and
@@ -40,23 +39,7 @@ import kotlin.math.sqrt
  */
 class S400NhanesValidationTest {
 
-    private class Row(
-        val cycle: String, val male: Boolean, val age: Int, val h: Float, val w: Float,
-        val z50: Float, val z250: Float, val bfDxa: Double, val re: Float,
-    ) {
-        val inputs get() = S400Inputs(age, male, h, w, rHighRaw = z250, rLowRaw = z50)
-    }
-
-    private val rows: List<Row> by lazy {
-        val stream = javaClass.getResourceAsStream("/s400/nhanes_1999_2004.csv.gz")!!
-        GZIPInputStream(stream).bufferedReader().useLines { lines ->
-            lines.drop(1).map { line ->
-                val f = line.split(',')
-                Row(f[0], f[1] == "1", f[2].toInt(), f[3].toFloat(), f[4].toFloat(),
-                    f[5].toFloat(), f[6].toFloat(), f[7].toDouble(), f[8].toFloat())
-            }.toList()
-        }
-    }
+    private val rows = S400NhanesFixture.rows
 
     private val results by lazy { rows.map { S400BodyComposition.compute(it.inputs) } }
 

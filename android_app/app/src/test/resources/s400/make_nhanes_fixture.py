@@ -21,6 +21,8 @@ Columns:
             magnitudes
   bf_dxa    DXA whole-body fat, % (DXDTOPF)
   re        Xitron Cole fit R_E, ohm (BIDRECF)
+  ecf, tbw  Xitron full-spectrum ECF and TBW, L (BIDECF, BIDTBW); empty when
+            not reported
 
 Usage: python make_nhanes_fixture.py <dir with the 12 .xpt files>
 Requires pandas.
@@ -61,6 +63,8 @@ def main(src: Path, out: Path) -> None:
             "z250": (z245 + t * (z273 - z245)).round(2),
             "bf_dxa": m.DXDTOPF.round(1),
             "re": m.BIDRECF.round(1),
+            "ecf": m.BIDECF.round(2),
+            "tbw": m.BIDTBW.round(2),
         })
         parts.append(part[part.z50 > part.z250])
     df = pd.concat(parts, ignore_index=True)
