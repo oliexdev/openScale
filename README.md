@@ -102,19 +102,18 @@ If you want to help to translate the app in your language please see [here](http
         <img src='docs/screens/1_overview.png' width='200px' alt='image missing' /> </a>
     </th>
     <th>
-        <a href="docs/screens/2_chart.png" target="_blank">
-        <img src='docs/screens/2_chart.png' width='200px' alt='image missing' /> </a>
+        <a href="docs/screens/2_bluetooth.png" target="_blank">
+        <img src='docs/screens/2_bluetooth.png' width='200px' alt='image missing' /> </a>
     </th>
     <th>
-        <a href="docs/screens/3_bluetooth.png" target="_blank">
-        <img src='docs/screens/3_bluetooth.png' width='200px' alt='image missing' /> </a>
+        <a href="docs/screens/3_chart.png" target="_blank">
+        <img src='docs/screens/3_chart.png' width='200px' alt='image missing' /> </a>
     </th>
     <th>
-        <a href="docs/screens/4_table.png" target="_blank">
-        <img src='docs/screens/4_table.png' width='200px' alt='image missing' /> </a>
+        <a href="docs/screens/4_insights.png" target="_blank">
+        <img src='docs/screens/4_insights.png' width='200px' alt='image missing' /> </a>
     </th>
   </tr>
-  
   <tr>
     <th>
         <a href="docs/screens/5_statistics.png" target="_blank">
@@ -125,12 +124,25 @@ If you want to help to translate the app in your language please see [here](http
         <img src='docs/screens/6_body_metrics.png' width='200px' alt='image missing' /> </a>
     </th>
     <th>
-        <a href="docs/screens/7_translations.png" target="_blank">
-        <img src='docs/screens/7_translations.png' width='200px' alt='image missing' /> </a>
+        <a href="docs/screens/7_table.png" target="_blank">
+        <img src='docs/screens/7_table.png' width='200px' alt='image missing' /> </a>
     </th>
     <th>
-        <a href="docs/screens/8_themes.png" target="_blank">
-        <img src='docs/screens/8_themes.png' width='200px' alt='image missing' /> </a>
+        <a href="docs/screens/8_languages_themes.png" target="_blank">
+        <img src='docs/screens/8_languages_themes.png' width='200px' alt='image missing' /> </a>
+    </th>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th>
+        <a href="docs/screens/tablet.png" target="_blank">
+        <img src='docs/screens/tablet.png' width='408px' alt='image missing' /> </a>
+    </th>
+    <th>
+        <a href="docs/screens/tablet_settings.png" target="_blank">
+        <img src='docs/screens/tablet_settings.png' width='408px' alt='image missing' /> </a>
     </th>
   </tr>
 </table>

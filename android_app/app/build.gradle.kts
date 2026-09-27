@@ -35,6 +35,8 @@ android {
         manifestPlaceholders["appName"] = "openScale"
         manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"
         manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_round"
+
+        testInstrumentationRunner = "com.health.openscale.ScreenshotTestRunner"
     }
 
     signingConfigs {
@@ -197,6 +199,12 @@ androidComponents {
 }
 
 
+// androidx.test 1.7 wants a newer concurrent-futures than the app ships; AGP forces the app's
+// version onto the test APK, and the classes come from the app APK at runtime anyway.
+configurations.matching { it.name.contains("AndroidTest") }.configureEach {
+    exclude(group = "androidx.concurrent")
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -266,6 +274,15 @@ dependencies {
     testImplementation(libs.androidx.room.testing)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.work.testing)
+
+    // Store screenshots (./gradlew connectedDebugAndroidTest)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.runner)
+    // Compose UI test brings 3.5.0, which fails on Android 17 (InputManager.getInstance removed)
+    androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation(libs.hilt.android.testing)
+    kspAndroidTest(libs.hilt.compiler)
 }
 
 fun safeExec(vararg cmd: String): String = try {
