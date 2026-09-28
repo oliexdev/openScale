@@ -866,4 +866,18 @@
     <string name="comparison_column_delta">Δ</string>
     <string name="comparison_column_delta_percent">Δ %</string>
     <string name="comparison_column_delta_per_week">Δ / semana</string>
+    <string name="measurement_type_photo">Foto</string>
+    <string name="image_take_photo">Tirar foto</string>
+    <string name="image_choose_from_gallery">Selecionar na galeria</string>
+    <string name="image_remove_photo">Remover foto</string>
+    <string name="content_desc_photo">Foto: %1$s</string>
+    <string name="content_desc_close_photo">Fechar foto</string>
+    <string name="content_desc_export_photo">Exportar foto</string>
+    <string name="success_photo_exported">Foto exportada.</string>
+    <string name="error_saving_image">Não foi possível salvar a foto.</string>
+    <string name="error_exporting_image">Não foi possível exportar a foto.</string>
+    <string name="dialog_title_export_photos">Esta exportação CSV contém fotos</string>
+    <string name="dialog_message_export_photos">Exportar apenas o CSV ou um arquivo ZIP com o CSV e todas as fotos? O ZIP pode ser importado novamente, incluindo as fotos.</string>
+    <string name="action_export_csv_only">Somente CSV</string>
+    <string name="action_export_zip_with_photos">ZIP com fotos</string>
 </resources>
