@@ -199,6 +199,7 @@
     <string name="picooc_calibration_reset">Reset calibration for %1$s</string>
     <string name="picooc_calibration_reset_generic">Reset PICOOC calibration</string>
     <string name="measurement_type_bcm">Body cell mass</string>
+    <string name="measurement_type_hydration_shift">Hydration shift</string>
     <string name="measurement_type_from_scale">Added by a scale</string>
     <string name="measurement_type_label_csv_column">CSV column</string>
     <string name="measurement_type_csv_column_taken">This CSV column is already in use.</string>

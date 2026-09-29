@@ -136,11 +136,13 @@ class S400DecryptorTest {
         assertThat(result.impedanceLow).isNull()
     }
 
-    // --- Dual-impedance vectors: high-frequency (A) and low-frequency (B) packets ---
+    // --- Dual-impedance vectors: Packet A (weight) and Packet B (impedance only) ---
     // The two hex payloads exercise the disambiguation rule in parseDecryptedData.
+    // Packet A reads 543.2 Ω against Packet B's 497.6 Ω, and resistance falls
+    // with frequency, so Packet A carries the 50 kHz band.
 
     @Test
-    fun decrypt_highFrequencyPacket_returnsHighImpedance() {
+    fun decrypt_weightPacket_returnsLowFrequencyImpedance() {
         val data = hex("4859d53b0abc078ff2348c844138e930220000009e538599")
         val mac = "8C:D0:B2:F6:BE:EF"
         val key = "0728974d657a4b60964c1b1677f35f7c"
@@ -149,14 +151,14 @@ class S400DecryptorTest {
 
         assertThat(result).isNotNull()
         assertThat(result!!.weightKg).isWithin(0.05f).of(69.9f)
-        assertThat(result.impedanceHigh).isNotNull()
-        assertThat(result.impedanceHigh!!).isWithin(0.05f).of(543.2f)
-        assertThat(result.impedanceLow).isNull()
+        assertThat(result.impedanceLow).isNotNull()
+        assertThat(result.impedanceLow!!).isWithin(0.05f).of(543.2f)
+        assertThat(result.impedanceHigh).isNull()
         assertThat(result.heartRate).isEqualTo(92)
     }
 
     @Test
-    fun decrypt_lowFrequencyPacket_returnsLowImpedance() {
+    fun decrypt_impedanceOnlyPacket_returnsHighFrequencyImpedance() {
         val data = hex("4859d53b0bd6ef0b25db72785e7e2f46d6000000d8642df6")
         val mac = "8C:D0:B2:F6:BE:EF"
         val key = "0728974d657a4b60964c1b1677f35f7c"
@@ -165,9 +167,9 @@ class S400DecryptorTest {
 
         assertThat(result).isNotNull()
         assertThat(result!!.weightKg).isEqualTo(0f)
-        assertThat(result.impedanceHigh).isNull()
-        assertThat(result.impedanceLow).isNotNull()
-        assertThat(result.impedanceLow!!).isWithin(0.05f).of(497.6f)
+        assertThat(result.impedanceLow).isNull()
+        assertThat(result.impedanceHigh).isNotNull()
+        assertThat(result.impedanceHigh!!).isWithin(0.05f).of(497.6f)
         assertThat(result.heartRate).isNull()
     }
 
