@@ -17,8 +17,12 @@
  */
 package com.health.openscale.core.bluetooth.libs
 
+import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
+import kotlin.math.abs
+import kotlin.math.sqrt
 
 /**
  * Tests for [S400BodyComposition]. Section markers (§7.x) match the KDoc on
@@ -35,6 +39,10 @@ import org.junit.Test
  *  - §7.1 young athletic male: age 27, M, 172 cm, 76.5 kg, R 365/402, R_0 470.0
  *  - §7.2 middle-aged female: age 55, F, 162 cm, 68 kg, R 600/690, R_0 834.7
  *  - §7.3 older male:         age 70, M, 170 cm, 80 kg, R 520/610, R_0 771.0
+ *
+ * The real S400 weighings have no reference measurement: their body fat is
+ * pinned to this implementation's output, to catch unintended changes, and only
+ * the cohort mean is checked against an independent equation (Wu 2015).
  */
 class S400BodyCompositionTest {
 
@@ -349,6 +357,98 @@ class S400BodyCompositionTest {
         assertThat(loose.tbwKg!!).isLessThan(baseline.tbwKg!!)
     }
 
+    // ---------- hydration shift ----------
+
+    @Test
+    fun hydrationShift_bandRatioIgnoresLabelOrderAndRejectsBadContact() {
+        assertThat(S400HydrationShift.bandRatio(460f, 510f)).isWithin(1e-6f).of(510f / 460f)
+        assertThat(S400HydrationShift.bandRatio(510f, 460f)).isWithin(1e-6f).of(510f / 460f)
+        assertThat(S400HydrationShift.bandRatio(null, 460f)).isNull()
+        assertThat(S400HydrationShift.bandRatio(460f, 463f)).isNull()
+    }
+
+    @Test
+    fun hydrationShift_isSignedAgainstThePreviousWeighing() {
+        val base = 510f / 460f
+        val lower = S400HydrationShift.shiftPct(500f, 460f, 510f, 460f)!!
+        assertThat(lower).isWithin(1e-4f).of(((500f / 460f) / base - 1f) * 100f)
+        assertThat(lower).isLessThan(0f)
+        assertThat(S400HydrationShift.shiftPct(510f, 460f, null, null)).isNull()
+    }
+
+    @Test
+    fun hydrationShift_warningThreshold() {
+        assertThat(S400HydrationShift.isWarning(2.99f)).isFalse()
+        assertThat(S400HydrationShift.isWarning(3.0f)).isTrue()
+        assertThat(S400HydrationShift.isWarning(-3.5f)).isTrue()
+    }
+
+    @Test
+    fun hydrationShift_repeatWeighingsStayFarBelowTheThreshold() {
+        val shifts = repeats.zipWithNext { prev, cur ->
+            S400HydrationShift.shiftPct(cur.r50, cur.r250, prev.r50, prev.r250)!!
+        }
+        for (s in shifts) {
+            assertThat(abs(s)).isLessThan(0.5f)
+            assertThat(S400HydrationShift.isWarning(s)).isFalse()
+        }
+    }
+
+    // ---------- real S400 weighings ----------
+
+    @Test
+    fun realWeighings_noneIsRejectedOrSuppressed() {
+        for (w in weighings) {
+            val r = S400BodyComposition.compute(w.inputs)
+            assertWithMessage(w.label).that(r.reliability).isNotEqualTo(Reliability.NOT_AVAILABLE)
+            assertWithMessage(w.label).that(r.reliability).isNotEqualTo(Reliability.UNRELIABLE)
+            assertWithMessage(w.label).that(r.tbwKg).isNotNull()
+            assertWithMessage(w.label).that(r.ecwKg).isNotNull()
+            assertWithMessage(w.label).that(r.icwKg).isNotNull()
+            assertWithMessage(w.label).that(r.bcmKg).isNotNull()
+            assertWithMessage(w.label).that(r.ecwTbwRatio!!).isIn(Range.closed(0.38f, 0.50f))
+        }
+    }
+
+    @Test
+    fun realWeighings_bodyFatMatchesPinnedValues() {
+        val expected = listOf(30.04f, 27.95f, 39.94f, 23.49f, 33.76f, 27.35f, 23.28f, 15.49f, 29.77f, 33.05f, 35.59f)
+        for ((w, bf) in weighings.zip(expected)) {
+            assertWithMessage(w.label).that(S400BodyComposition.compute(w.inputs).bfPct!!).isWithin(tolPct).of(bf)
+        }
+    }
+
+    @Test
+    fun realWeighings_bandRatioFlagsSevenOfEleven() {
+        // Foot-to-foot band ratios run below the NHANES hand-to-foot distribution;
+        // see the §3.2b KDoc.
+        val flagged = weighings.filter { S400BodyComposition.compute(it.inputs).reliability == Reliability.APPROXIMATE }
+        assertThat(flagged.map { it.label }).containsExactly("M56", "M28", "M26", "M50", "M38", "M27", "F26")
+    }
+
+    @Test
+    fun realWeighings_bodyFatAgreesWithTheFootToFootDxaEquation() {
+        // Wu 2015 (Nutr J 14:52): 50 kHz foot-to-foot FFM calibrated on DXA,
+        // n = 554, SEE 3.17 kg. Its individual error is several points, so only
+        // the mean gap is bounded: -0.7 at a foot-to-foot factor of 1.00, +1.7 at 1.10.
+        val gaps = weighings.map { w ->
+            val h = w.heightCm.toDouble()
+            val kg = w.weightKg.toDouble()
+            val ffm = 13.055 + 0.204 * kg + 0.394 * h * h / w.r50 - 0.136 * w.age + (if (w.sexMale) 8.125 else 0.0)
+            S400BodyComposition.compute(w.inputs).bfPct!! - (kg - ffm) / kg * 100.0
+        }
+        assertThat(abs(gaps.average())).isAtMost(1.5)
+    }
+
+    @Test
+    fun realWeighings_repeatBodyFatIsStable() {
+        // The Mi app's own SD over the same four weighings is 0.10 points.
+        val bf = repeats.map { S400BodyComposition.compute(it.inputs).bfPct!!.toDouble() }
+        val mean = bf.average()
+        val sd = sqrt(bf.sumOf { (it - mean) * (it - mean) } / (bf.size - 1))
+        assertThat(sd).isAtMost(0.5)
+    }
+
     // ---------- helpers ----------
 
     private fun subjectA(
@@ -363,5 +463,46 @@ class S400BodyCompositionTest {
         boneFormula = boneFormula,
         bmrFormula = bmrFormula,
         footToFootCorrection = footToFoot,
+    )
+
+    private class Weighing(
+        val label: String,
+        val sexMale: Boolean,
+        val age: Int,
+        val heightCm: Float,
+        val weightKg: Float,
+        val r50: Float,
+        val r250: Float,
+    ) {
+        val inputs get() = S400Inputs(age, sexMale, heightCm, weightKg, rHighRaw = r250, rLowRaw = r50)
+    }
+
+    /**
+     * Real S400 weighings shared publicly in
+     * https://github.com/dckiller51/bodymiscale/issues/349, contributors
+     * identified only by sex and age. There the entity `impedance_low` carries
+     * the smaller magnitude, which is physically the 250 kHz band, so the bands
+     * are mapped by magnitude: [Weighing.r50] is the larger value.
+     */
+    private val weighings = listOf(
+        Weighing("M62", true, 62, 170f, 76.9f, 437.0f, 387.0f),
+        Weighing("M56", true, 56, 170f, 67.9f, 509.1f, 457.8f),
+        Weighing("M28", true, 28, 187f, 132.5f, 454.6f, 414.9f),
+        Weighing("M48", true, 48, 183f, 79.1f, 458.6f, 408.5f),
+        Weighing("M26", true, 26, 173f, 91.1f, 505.7f, 457.5f),
+        Weighing("M50", true, 50, 180f, 83.3f, 451.6f, 407.9f),
+        Weighing("M38", true, 38, 172f, 71.9f, 460.3f, 414.7f),
+        Weighing("M30", true, 30, 171f, 56.0f, 568.2f, 485.8f),
+        Weighing("F27", false, 27, 164f, 63.1f, 513.8f, 454.9f),
+        Weighing("M27", true, 27, 178f, 88.0f, 570.0f, 510.6f),
+        Weighing("F26", false, 26, 163f, 63.6f, 630.0f, 571.5f),
+    )
+
+    /** Four weighings of the M56 contributor on different days, from the same thread. */
+    private val repeats = listOf(
+        Weighing("M56-a", true, 56, 170f, 67.6f, 514.2f, 461.5f),
+        Weighing("M56-b", true, 56, 170f, 67.7f, 512.6f, 459.7f),
+        Weighing("M56-c", true, 56, 170f, 67.7f, 506.3f, 455.8f),
+        weighings[1],
     )
 }

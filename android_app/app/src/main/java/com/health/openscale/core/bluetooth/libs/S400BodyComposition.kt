@@ -21,6 +21,8 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.hypot
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -40,7 +42,7 @@ import kotlin.math.sqrt
  * ## What each band is used for
  * Fat-free mass, body fat, TBW and SMM read the 50 kHz band only. On NHANES
  * 1999-2004 (Xitron BIS against Hologic DXA, n = 5,939 adults 18-49; see
- * `S400NhanesValidationTest`) a fat-free-mass regression refitted on 1999-2002
+ * Validation data below) a fat-free-mass regression refitted on 1999-2002
  * and scored on 2003-04 reaches the same body-fat error with or without the
  * ~250 kHz magnitude (RMSE 3.38 against 3.39 points), so the second band carries
  * no fat-free-mass information. What it does carry is the ECW/ICW split: §2.3
@@ -101,12 +103,12 @@ import kotlin.math.sqrt
  *
  * ## Foot-to-foot uncertainty
  * The factor is the least certain input: each 0.1 moves body fat by about 3
- * points. `S400FootToFootTest` bounds it from two sides. Physically, a
+ * points. It is bounded from two sides. Physically, a
  * hand-to-foot path measures 1.14× the sum of the two legs on the same people
  * (seca, 204 adults), an upper bound since the leg sum leaves out the pelvis.
  * Empirically, real foot-to-foot impedance from a consumer scale (Tanita, 69
  * adolescent sprinters) matches underwater weighing through the §3.1 equation at
- * 0.95, and on the real S400 weighings in `S400ReferenceCohortTest` the §3.1
+ * 0.95, and on the real S400 weighings in `S400BodyCompositionTest` the §3.1
  * equation agrees with Wu 2015, the 50 kHz foot-to-foot equation calibrated on
  * DXA, at 1.00. Consumer foot plates evidently do not report the textbook path
  * resistance, so the empirical checks carry more weight: 1.00 sits within them,
@@ -120,7 +122,7 @@ import kotlin.math.sqrt
  * `R_0/R_INF` is compared against the robust NHANES 1999-2002 distribution of
  * the same two-band estimate (median ± 1.4826·MAD by sex). Beyond 2 SD the result
  * is APPROXIMATE, which flags 3.9 % of men and 7.5 % of women on 2003-04. It does
- * not suppress: foot-to-foot band ratios run lower than hand-to-foot ones, and 6
+ * not suppress: foot-to-foot band ratios run lower than hand-to-foot ones, and 7
  * of the 11 S400 weighings sit beyond 2 SD, so the flag says the path differs as
  * much as that the reading is unusual.
  *
@@ -157,10 +159,13 @@ import kotlin.math.sqrt
  * for bone; Mifflin-St Jeor for BMR; the anthropometric VFI.
  *
  * ## Test vectors
- * §7.1-7.3 reference subjects and §7.4-7.5 edge cases live in
- * `S400BodyCompositionTest.kt`; DXA validation in `S400NhanesValidationTest.kt`;
- * real S400 weighings in `S400ReferenceCohortTest.kt` and
- * `S400MethodComparisonTest.kt`.
+ * §7.1-7.3 reference subjects, §7.4-7.5 edge cases and the real S400 weighings
+ * live in `S400BodyCompositionTest.kt`.
+ *
+ * ## Validation data
+ * The NHANES, seca and Tanita data sets and the tests that produce the figures
+ * above are kept outside this repository, at
+ * https://gist.github.com/DanyPM/396ffaf54cf8a3ac23e809c0248ee964
  *
  * ## Primary references
  * Deurenberg 1991 *Int J Obes* 15:17-25 (BIA FFM equation, densitometry,
@@ -596,3 +601,51 @@ object S400BodyComposition {
     }
 }
 
+/**
+ * Change in body-water distribution between two weighings of the same person,
+ * read from the S400's band ratio `|Z_50| / |Z_250|`.
+ *
+ * The band ratio carries almost no fat-free-mass information but tracks the
+ * extracellular share of body water: on NHANES 1999-2004 adults it correlates
+ * with full-spectrum ECW/TBW at r = -0.86, and +1 % of ratio corresponds to
+ * about -0.018 ECW/TBW and to +0.35 points of 50 kHz body-fat error against DXA.
+ * A negative shift therefore means relatively more extracellular water (fluid
+ * retention), under which the 50 kHz body fat reads low; a positive shift the
+ * reverse.
+ *
+ * The shift is signed and in percent of the previous ratio. It compares two
+ * weighings, not a weighing against a long-term baseline, so it flags a sudden
+ * fluid shift in either of the two and ignores slow drift.
+ */
+object S400HydrationShift {
+
+    /**
+     * Shift at which the 50 kHz body fat is biased by about one point (ECW/TBW
+     * moving by about 0.05). Day-to-day variation of the ratio in one S400 user
+     * over four weighings is 0.18 % SD, so the difference of two weighings has an
+     * SD near 0.25 % and the threshold sits about 12 SD above it.
+     */
+    const val WARNING_THRESHOLD_PCT = 3.0f
+
+    /**
+     * `|Z_50| / |Z_250|` from the two magnitudes in either order, or null when
+     * either is missing or the bands are within 1 %, the contact failure that
+     * [S400BodyComposition] rejects as UNRELIABLE.
+     */
+    fun bandRatio(first: Float?, second: Float?): Float? {
+        if (first == null || second == null) return null
+        val high = max(first, second)
+        val low = min(first, second)
+        if (low <= 0f || (high - low) / low < 0.01f) return null
+        return high / low
+    }
+
+    /** Signed shift in percent from the previous weighing, or null if either ratio is unavailable. */
+    fun shiftPct(currentLow: Float?, currentHigh: Float?, previousLow: Float?, previousHigh: Float?): Float? {
+        val current = bandRatio(currentLow, currentHigh) ?: return null
+        val previous = bandRatio(previousLow, previousHigh) ?: return null
+        return (current / previous - 1f) * 100f
+    }
+
+    fun isWarning(shiftPct: Float): Boolean = abs(shiftPct) >= WARNING_THRESHOLD_PCT
+}
