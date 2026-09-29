@@ -775,4 +775,9 @@
     <string name="insights_plateau_days">%1$d giorni</string>
     <string name="insights_section_weekday">Le tue abitudini settimanali</string>
     <string name="insights_weekday_summary_high">Tendi ad avere misurazioni più alte di %1$s e più basse di %2$s</string>
+    <string name="picooc_calibration_description">PICOOC definisce un punto di riferimento stabile per la composizione corporea da quattro misurazioni BIA effettuate nelle vicinanze.</string>
+    <string name="picooc_calibration_fixed">%1$s: calibrato, beta %2$d, ancoraggio %3$d kg</string>
+    <string name="measurement_type_photo">Foto</string>
+    <string name="insights_weekday_summary_low">Andamento preliminare: per risultati affidabili, effettuare misurazioni più regolari.</string>
+    <string name="insights_section_seasonal">Riepilogo dell\'anno</string>
 </resources>
