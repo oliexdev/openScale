@@ -488,7 +488,7 @@
     <string name="settings_auto_backup_title">Automatisk säkerhetskopiering</string>
     <string name="settings_enable_auto_backups">Aktivera automatisk säkerhetskopiering</string>
     <string name="content_desc_auto_backups_toggle">Slå på (eller av) automatiska säkerhetskopior</string>
-    <string name="settings_last_backup_status_label">Senaste säkerhetskopieringsstatus</string>
+    <string name="settings_last_backup_status_label">Säkerhetskopieringsstatus</string>
     <string name="content_desc_backup_status_icon">Information om säkerhetskopieringsstatus</string>
     <string name="settings_backup_location_label">Plats för säkerhetskopiering</string>
     <string name="content_desc_backup_location_icon">Inställning av säkerhetskopieringsplats</string>
