@@ -57,6 +57,7 @@ import com.health.openscale.core.bluetooth.scales.KeepS3Handler
 import com.health.openscale.core.bluetooth.scales.LinkMode
 import com.health.openscale.core.bluetooth.scales.MGBHandler
 import com.health.openscale.core.bluetooth.scales.MedisanaBs44xHandler
+import com.health.openscale.core.bluetooth.scales.MeditiveUip50Handler
 import com.health.openscale.core.bluetooth.scales.MiScaleHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
 import com.health.openscale.core.bluetooth.scales.XiaomiS800Handler
@@ -127,8 +128,8 @@ class ScaleFactory @Inject constructor(
          * Builds the list of modern Kotlin-based device handlers.
          *
          * Order matters: [createCommunicator] returns the FIRST handler whose [ScaleDeviceHandler.supportFor]
-         * is non-null. TaylorBIAHandler, FitTrackDaraHandler, RelaxmedicHandler, RobiS9Handler and
-         * DrTrustSSW532Handler must stay ahead of MGBHandler — all live on service 0xFFB0, which
+         * is non-null. TaylorBIAHandler, MeditiveUip50Handler, FitTrackDaraHandler, RelaxmedicHandler,
+         * RobiS9Handler and DrTrustSSW532Handler must stay ahead of MGBHandler — all live on service 0xFFB0, which
          * MGBHandler matches on its own, so a later position would let MGB wrongly claim them.
          *
          * Exposed so the registry (order, device claims, duplicates) can be asserted in unit tests
@@ -147,6 +148,7 @@ class ScaleFactory @Inject constructor(
             OmronWlcHandler(),
             BeurerBF450Handler(),
             TaylorBIAHandler(),
+            MeditiveUip50Handler(),
             RyFitHandler(),
             CultSmartScaleProHandler(),
             RealmeSmartScaleHandler(),
