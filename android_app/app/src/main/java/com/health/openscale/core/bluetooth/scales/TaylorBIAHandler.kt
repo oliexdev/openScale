@@ -40,6 +40,7 @@ import java.util.UUID
  *
  *  - **Taylor 5331891 BIA** — advertises as "5331891 BIA Scale" (PR #1393).
  *  - **ALPHA Smart Scale PRO 3** (model SCP-03, sold in Poland) — advertises as "MY_SCALE";
+ *  - **Meditive Smart Scale UIP-50** — advertises as "meditive";
  *    weight, impedance and the weigh-ins it stored while the phone was away (issue #1358).
  *
  * Both share the GATT layout with the MGB family, which is why [MGBHandler] used to mis-claim
@@ -90,7 +91,7 @@ import java.util.UUID
 class TaylorBIAHandler : ScaleDeviceHandler() {
 
     /** The products this driver serves. */
-    internal enum class Model { TAYLOR_BIA, ALPHA_PRO3 }
+    internal enum class Model { TAYLOR_BIA, ALPHA_PRO3, MEDITIVE_UIP50 }
 
     /** Decoded NOTIFY frame. */
     internal sealed class ScaleFrame {
@@ -129,7 +130,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val matched = modelFor(device.name) ?: return null
         // "MY_SCALE" is a generic enough name to demand the service as well; the Taylor's is not.
-        if (matched == Model.ALPHA_PRO3 && device.serviceUuids.none { it == SERVICE }) return null
+        if (matched != Model.TAYLOR_BIA && device.serviceUuids.none { it == SERVICE }) return null
 
         model = matched
         return when (matched) {
@@ -167,6 +168,25 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
                 ),
                 linkMode = LinkMode.CONNECT_GATT
             )
+
+            Model.MEDITIVE_UIP50 -> DeviceSupport(
+                displayName = "Meditive Smart Scale UIP-50",
+                capabilities = setOf(
+                    DeviceCapability.LIVE_WEIGHT_STREAM,
+                    DeviceCapability.BODY_COMPOSITION,
+                    DeviceCapability.HISTORY_READ,
+                    DeviceCapability.TIME_SYNC,
+                    DeviceCapability.USER_SYNC,
+                ),
+                implemented = setOf(
+                    DeviceCapability.LIVE_WEIGHT_STREAM,
+                    DeviceCapability.BODY_COMPOSITION,
+                    DeviceCapability.HISTORY_READ,
+                    DeviceCapability.TIME_SYNC,
+                    DeviceCapability.USER_SYNC,
+                ),
+                linkMode = LinkMode.CONNECT_GATT
+            )
         }
     }
 
@@ -188,7 +208,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         // 2) The handshake the respective vendor app performs.
         when (model) {
             Model.TAYLOR_BIA -> writeTaylorHandshake(user)
-            Model.ALPHA_PRO3 -> writeAlphaHandshake(user)
+            Model.ALPHA_PRO3, Model.MEDITIVE_UIP50 -> writeAlphaHandshake(user)
         }
 
         // Prompt the user to step on; the result arrives asynchronously via onNotification().
@@ -198,9 +218,8 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
     override fun onDisconnected() {
         fallbackJob?.cancel()
         fallbackJob = null
-        // Last-chance weight-only publish if a live weight was seen but never finalized. Only the
-        // Taylor needs it: the ALPHA publishes on its final-result frame.
-        if (model == Model.TAYLOR_BIA && !published && pendingWeightGrams > 0) {
+        // Last-chance weight-only publish if a live weight was seen but never finalized.
+        if (model != Model.ALPHA_PRO3 && !published && pendingWeightGrams > 0) {
             publishFinal(currentAppUser(), pendingWeightGrams, impedanceOhms = 0)
         }
     }
@@ -226,7 +245,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
     // --- Frame handling -------------------------------------------------------
 
     private fun onLiveWeight(frame: ScaleFrame.LiveWeight, user: ScaleUser) {
-        if (model == Model.ALPHA_PRO3) {
+        if (model != Model.TAYLOR_BIA) {
             // The ALPHA always follows up with a final result, so live frames are only logged.
             if (frame.weightGrams != pendingWeightGrams) {
                 pendingWeightGrams = frame.weightGrams
@@ -256,7 +275,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         acknowledge(WIRE_FINAL_RESULT)
 
         if (model == Model.TAYLOR_BIA) {
-            publishAndDisconnect(user, frame.weightGrams, frame.impedanceOhms)
+            publishAndDisconnect(user, frame.weightGrams.takeIf { it > 0 } ?: pendingWeightGrams, frame.impedanceOhms)
             return
         }
 
@@ -264,7 +283,8 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
             logD("final result already published for this session, ignoring")
             return
         }
-        if (!publishFinal(user, frame.weightGrams, frame.impedanceOhms)) return
+        val weightGrams = frame.weightGrams.takeIf { it > 0 } ?: pendingWeightGrams
+        if (!publishFinal(user, weightGrams, frame.impedanceOhms)) return
         // The ACK is queued behind the publish; give the adapter a moment to send it.
         scope.launch {
             delay(DISCONNECT_DELAY_MS)
@@ -412,9 +432,9 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         writeTo(SERVICE, CHAR_CFG, frame)
     }
 
-    /** Only the ALPHA expects its results to be acknowledged; the Taylor has never seen a 0xDF. */
+    /** The FitDays-style scales expect their results to be acknowledged; the Taylor does not. */
     private fun acknowledge(wireType: Int) {
-        if (model != Model.ALPHA_PRO3) return
+        if (model == Model.TAYLOR_BIA) return
         writeTo(SERVICE, CHAR_CFG, buildAck(wireType))
     }
 
@@ -501,6 +521,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
             val name = advertisedName.trim().uppercase(Locale.ROOT)
             return when {
                 name == "MY_SCALE" -> Model.ALPHA_PRO3
+                name == "MEDITIVE" -> Model.MEDITIVE_UIP50
                 name.startsWith("5331891") || name.contains("BIA SCALE") -> Model.TAYLOR_BIA
                 else -> null
             }
