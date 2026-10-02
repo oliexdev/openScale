@@ -45,6 +45,8 @@ import java.util.UUID
  *    weight, impedance and the weigh-ins it stored while the phone was away (issue #1358).
  *  - **Urikar Aero I / Aero I Pro** — advertises as "Aero I"; the same frames, plus the display
  *    unit (kg, lb or st) that follows the weight unit chosen in openScale.
+ *  - **Meditive Smart Scale UIP-50** — advertises as "meditive"; the ALPHA handshake, and a result
+ *    without weight like the Aero I's (PR #1541).
  *
  * Both share the GATT layout with the MGB family, which is why [MGBHandler] used to mis-claim
  * them; this handler must stay ahead of it in ScaleFactory.
@@ -119,7 +121,7 @@ import java.util.UUID
 class TaylorBIAHandler : ScaleDeviceHandler() {
 
     /** The products this driver serves. */
-    internal enum class Model { TAYLOR_BIA, ALPHA_PRO3, AERO_I }
+    internal enum class Model { TAYLOR_BIA, ALPHA_PRO3, AERO_I, MEDITIVE_UIP50 }
 
     /** Decoded NOTIFY frame. */
     internal sealed class ScaleFrame {
@@ -153,15 +155,19 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
     /** Guards against publishing more than one final measurement per session (Aero I: per weigh-in). */
     private var published = false
 
-    /** Aero I: the weight of the locked `0xD5` packet, held until the `0xD6` result brings the impedance. */
+    /** Aero I / Meditive: the weight of the locked `0xD5` packet, held until the `0xD6` result brings the impedance. */
     private var lockedWeightGrams = 0
+
+    /** Scales whose `0xD6` result carries no weight, so it is taken from the locked `0xD5` packet. */
+    private val resultWithoutWeight: Boolean
+        get() = model == Model.AERO_I || model == Model.MEDITIVE_UIP50
 
     /** Last-resort timer (see [FALLBACK_DELAY_MS]) for the case where the weight never settles. */
     private var fallbackJob: Job? = null
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val matched = modelFor(device.name) ?: return null
-        // "MY_SCALE" and "Aero I" are generic enough names to demand the service as well; the Taylor's is not.
+        // "MY_SCALE", "Aero I" and "meditive" are generic enough names to demand the service as well; the Taylor's is not.
         if (matched != Model.TAYLOR_BIA && device.serviceUuids.none { it == SERVICE }) return null
         // The Fitdays FG2202WB also advertises as "MY_SCALE" on 0xFFB0, but speaks the Runstar R6
         // protocol (RunstarR6Handler). It adds 0x1530, which the ALPHA does not (#1534).
@@ -224,6 +230,25 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
                 ),
                 linkMode = LinkMode.CONNECT_GATT
             )
+
+            Model.MEDITIVE_UIP50 -> DeviceSupport(
+                displayName = "Meditive Smart Scale UIP-50",
+                capabilities = setOf(
+                    DeviceCapability.LIVE_WEIGHT_STREAM,
+                    DeviceCapability.BODY_COMPOSITION,
+                    DeviceCapability.HISTORY_READ,
+                    DeviceCapability.TIME_SYNC,
+                    DeviceCapability.USER_SYNC,
+                ),
+                implemented = setOf(
+                    DeviceCapability.LIVE_WEIGHT_STREAM,
+                    DeviceCapability.BODY_COMPOSITION,
+                    DeviceCapability.HISTORY_READ,
+                    DeviceCapability.TIME_SYNC,
+                    DeviceCapability.USER_SYNC,
+                ),
+                linkMode = LinkMode.CONNECT_GATT
+            )
         }
     }
 
@@ -246,7 +271,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         // 2) The handshake the respective vendor app performs.
         when (model) {
             Model.TAYLOR_BIA -> writeTaylorHandshake(user)
-            Model.ALPHA_PRO3 -> writeAlphaHandshake(user)
+            Model.ALPHA_PRO3, Model.MEDITIVE_UIP50 -> writeAlphaHandshake(user)
             Model.AERO_I -> writeAeroHandshake(user)
         }
 
@@ -285,7 +310,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
     // --- Frame handling -------------------------------------------------------
 
     private fun onLiveWeight(frame: ScaleFrame.LiveWeight, user: ScaleUser) {
-        if (model == Model.AERO_I) {
+        if (resultWithoutWeight) {
             onAeroLiveWeight(frame, user)
             return
         }
@@ -343,7 +368,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         logI("final result ${frame.weightGrams} g, impedance=${frame.impedanceOhms} Ω, locked=${frame.locked}")
         acknowledge(WIRE_FINAL_RESULT)
 
-        if (model == Model.AERO_I) {
+        if (resultWithoutWeight) {
             // The result carries the impedance but no weight; that came with the locked packet.
             if (published || lockedWeightGrams <= 0) {
                 logD("result without a pending locked weight, ignoring")
@@ -532,7 +557,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         writeTo(SERVICE, CHAR_CFG, frame)
     }
 
-    /** The ALPHA and Aero I expect their results to be acknowledged; the Taylor has never seen a 0xDF. */
+    /** The ALPHA, Aero I and Meditive expect their results to be acknowledged; the Taylor has never seen a 0xDF. */
     private fun acknowledge(wireType: Int) {
         if (model == Model.TAYLOR_BIA) return
         writeTo(SERVICE, CHAR_CFG, buildAck(wireType))
@@ -635,6 +660,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
             return when {
                 name == "MY_SCALE" -> Model.ALPHA_PRO3
                 name == "AERO I" || name.startsWith("AERO I ") -> Model.AERO_I
+                name == "MEDITIVE" -> Model.MEDITIVE_UIP50
                 name.startsWith("5331891") || name.contains("BIA SCALE") -> Model.TAYLOR_BIA
                 else -> null
             }

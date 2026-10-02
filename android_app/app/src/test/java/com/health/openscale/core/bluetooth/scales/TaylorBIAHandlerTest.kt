@@ -40,7 +40,7 @@ import java.util.UUID
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
- * Tests for [TaylorBIAHandler], which drives three scales on the same `AC 27` protocol:
+ * Tests for [TaylorBIAHandler], which drives four scales on the same `AC 27` protocol:
  *
  *  - **Taylor 5331891 BIA** — frames from btsnoop_hci.log. Ground truth: the user's recorded
  *    12:49 pm weigh-in read 171.2 lb, and the matching stable frame was `AC 27 80 8D 2F 52 …`
@@ -51,6 +51,8 @@ import kotlin.coroutines.EmptyCoroutineContext
  *  - **Urikar Aero I Pro** — frames from openScale's own GATT log of the scale, taken on a phone
  *    in the Toronto time zone. The three `0xD0` frames below are the ones that switched the
  *    scale's display to kg, lb and st.
+ *  - **Meditive Smart Scale UIP-50** — frames captured with nRF Connect (2026-10-02). Its locked
+ *    live frame reads 102 310 g; its final frame carries 532 Ohm without repeating the weight.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class TaylorBIAHandlerTest {
@@ -79,6 +81,10 @@ class TaylorBIAHandlerTest {
     private val aeroLocked = hex("AC 27 80 8D 3B 3C 00 00 00 00 00 00 00 00 00 00 00 00 D5 19")
     private val aeroResult = hex("AC 27 01 00 02 28 00 00 00 00 00 00 00 00 00 00 00 07 D6 08")
     private val aeroResultNoContact = hex("AC 27 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 D6 1E")
+    // --- Meditive UIP-50 frames (nRF Connect capture) ---
+    private val meditiveLocked = hex("AC 27 80 6D 8F A6 00 00 00 00 00 00 00 00 00 00 00 03 D5 1A")
+    private val meditiveResult = hex("AC 27 01 00 02 14 00 00 00 00 00 00 00 00 00 00 00 03 D6 10")
+
     private val aeroStored = hex("AC 27 00 6A D6 CC C3 80 8D 3C CC 00 00 00 01 02 30 07 D8 16")
 
     // --- Matching --------------------------------------------------------------
@@ -95,6 +101,10 @@ class TaylorBIAHandlerTest {
         assertThat(handler.supportFor(device("my_scale", serviceFfb0))!!.displayName)
             .isEqualTo("ALPHA Smart Scale PRO 3")
         assertThat(handler.supportFor(device("MY_SCALE"))).isNull()
+
+        assertThat(handler.supportFor(device("meditive", serviceFfb0))!!.displayName)
+            .isEqualTo("Meditive Smart Scale UIP-50")
+        assertThat(handler.supportFor(device("meditive"))).isNull()
     }
 
     @Test
@@ -110,7 +120,11 @@ class TaylorBIAHandlerTest {
     fun `both models implement body composition, computed from the impedance`() {
         val handler = TaylorBIAHandler()
 
-        listOf(device("BIA SCALE", serviceFfb0), device("MY_SCALE", serviceFfb0)).forEach { scale ->
+        listOf(
+            device("BIA SCALE", serviceFfb0),
+            device("MY_SCALE", serviceFfb0),
+            device("meditive", serviceFfb0),
+        ).forEach { scale ->
             val support = handler.supportFor(scale)!!
             assertThat(support.linkMode).isEqualTo(LinkMode.CONNECT_GATT)
             assertThat(support.implemented).contains(DeviceCapability.BODY_COMPOSITION)
@@ -713,6 +727,35 @@ class TaylorBIAHandlerTest {
         assertThat(measurement[MeasurementType.IMPEDANCE]?.value).isWithin(1e-4f).of(552f)
     }
 
+    // --- Meditive UIP-50 ---------------------------------------------------------
+
+    @Test
+    fun `the Meditive result carries the impedance but no weight`() {
+        assertThat(TaylorBIAHandler.parse(meditiveLocked))
+            .isEqualTo(ScaleFrame.LiveWeight(weightGrams = 102_310, locked = true))
+        assertThat(TaylorBIAHandler.parse(meditiveResult))
+            .isEqualTo(ScaleFrame.FinalResult(weightGrams = 0, impedanceOhms = 532, locked = false))
+    }
+
+    @Test
+    fun `the Meditive combines its locked weight with the result's impedance`() {
+        val user = user(heightCm = 180f, ageYears = 40).apply { gender = GenderType.MALE }
+        val setup = attached(Model.MEDITIVE_UIP50, user)
+        setup.handler.handleConnected(user)
+        setup.transport.writes.clear()
+
+        setup.handler.handleNotification(charData, meditiveLocked)
+        assertThat(setup.callbacks.published).isEmpty()
+        setup.handler.handleNotification(charData, meditiveResult)
+
+        val measurement = setup.callbacks.published.single()
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(1e-4f).of(102.31f)
+        assertThat(measurement[MeasurementType.IMPEDANCE]?.value).isWithin(1e-4f).of(532f)
+        assertThat(measurement[MeasurementType.BODY_FAT]?.value).isGreaterThan(0f)
+        assertThat(setup.transport.writes.last().payload)
+            .isEqualTo(hex("AC 27 04 D6 00 00 00 00 00 00 00 00 00 00 00 00 00 00 DF B9"))
+    }
+
     /** A 0xD8 record: Unix time at 3..6, the weight word at 8..10, a valid 5-bit checksum. */
     private fun storedRecord(epochSeconds: Long, grams: Int): ByteArray {
         val f = ByteArray(20)
@@ -843,6 +886,7 @@ class TaylorBIAHandlerTest {
         val name = when (model) {
             Model.ALPHA_PRO3 -> "MY_SCALE"
             Model.AERO_I -> "Aero I"
+            Model.MEDITIVE_UIP50 -> "meditive"
             Model.TAYLOR_BIA -> "BIA SCALE"
         }
         assertThat(handler.supportFor(device(name, serviceFfb0))).isNotNull()
