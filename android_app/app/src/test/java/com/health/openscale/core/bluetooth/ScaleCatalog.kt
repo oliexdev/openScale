@@ -54,6 +54,7 @@ import com.health.openscale.core.bluetooth.scales.KeepS3Handler
 import com.health.openscale.core.bluetooth.scales.LinkMode
 import com.health.openscale.core.bluetooth.scales.MGBHandler
 import com.health.openscale.core.bluetooth.scales.MedisanaBs44xHandler
+import com.health.openscale.core.bluetooth.scales.MeditiveUip50Handler
 import com.health.openscale.core.bluetooth.scales.MiScaleHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
@@ -216,6 +217,7 @@ object ScaleCatalog {
         device("PICOOC-L") claimedBy PicoocBroadcastHandler::class.java,
         device("Beurer BF450") claimedBy BeurerBF450Handler::class.java,
         device("BIA SCALE", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
+        device("meditive", SERVICE_FFB0) claimedBy MeditiveUip50Handler::class.java,
         device("RYFIT") claimedBy RyFitHandler::class.java,
         device("CULT Smart Scale Pro") claimedBy CultSmartScaleProHandler::class.java,
         device("realme Smart Scale") claimedBy RealmeSmartScaleHandler::class.java,
