@@ -74,6 +74,22 @@ class RunstarR6HandlerTest {
     }
 
     @Test
+    fun `decodes the frame captured from a Fitdays FG2202WB`() {
+        // Verbatim from a weigh-in of a 10.3 kg object (the display read 10.3). The FG2202WB
+        // sends 0x25 where the R6 sends status 00, and a 0x1A length: the frame is the first
+        // of two parts, the second is not decoded. The object conducts nothing, so the
+        // impedance field holds a meaningless 50 Ω.
+        val result = RunstarR6Handler.decodeFinalResult(
+            hex("05 1a 00 a3 25 00 28 64 00 00 32 00 0a 00 00 00 0a 00 00 1a")
+        )
+
+        assertThat(result).isNotNull()
+        assertThat(result!!.status).isEqualTo(0x25)
+        assertThat(result.grams).isEqualTo(10340)
+        assertThat(result.heartRate).isEqualTo(0)
+    }
+
+    @Test
     fun `surfaces a non-zero status instead of hiding it`() {
         // The status byte is reported, not used to reject the frame: its non-zero values
         // have never been observed, so discarding a weigh-in on it would be a guess.
