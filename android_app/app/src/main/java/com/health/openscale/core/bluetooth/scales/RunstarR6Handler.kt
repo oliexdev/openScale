@@ -27,6 +27,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import kotlin.math.abs
+import kotlin.math.roundToInt
 import com.health.openscale.core.data.Bpm
 import com.health.openscale.core.data.Kcal
 import com.health.openscale.core.data.Kg
@@ -34,7 +35,7 @@ import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.Percent
 
 /**
- * Runstar R6 smart scale.
+ * Runstar R6 smart scale, and the Hoffen HO-36 (ICOMON model FG2210LB, Fitdays app).
  *
  * Same FFB0 frame family as [RobiS9Handler] — 20-byte frames
  * `[seq][len][00][type][payload…][chk]`, trailer checksum `sum(bytes[3..18]) & 0x1F`
@@ -50,6 +51,15 @@ import com.health.openscale.core.data.Percent
  * unacked entries keep reappearing on later connects, so every 0xA4 must be acked. 0xA4
  * only carries a timestamp + weight, no impedance/heart rate.
  *
+ * The HO-36 speaks the same protocol (checksum verified across 422 unique frames from HCI
+ * snoops of the Fitdays app and of this handler) with two differences seen so far:
+ *  - it sets 0x68 in the top byte of every 24-bit weight field — `68 24 ea` for 9.45 kg,
+ *    `68 00 00` with the scale empty. [WEIGHT_MASK] clears those bits for every scale
+ *    this handler serves.
+ *  - it only measures impedance after the app has sent a 0xBA user frame (see
+ *    [encodeHoffenUserInfo]); without one, 0xA3 carries impedance 0 and the scale's own
+ *    display shows weight only.
+ *
  * Despite the name this is a different, incompatible protocol from [RunstarR5Handler].
  */
 class RunstarR6Handler : ScaleDeviceHandler() {
@@ -62,15 +72,22 @@ class RunstarR6Handler : ScaleDeviceHandler() {
     private var lastPreviewWeightKg = -1f
     private var lastPublishedWeightRaw: Int? = null
     private var outgoingSeq = 0
+    private var isHoffen = false
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.lowercase(Locale.ROOT)
         // Claim strictly by advertised name — openScale only sees the name (not the
         // characteristic list) before connecting.
-        if (name != "runstar-r6" && !name.startsWith("runstar-r6")) return null
+        val displayName = when {
+            name == "runstar-r6" || name.startsWith("runstar-r6") -> "Runstar R6"
+            // The HO-36 advertises as "HOFFEN" with 0xFFB0 (and 0x1530) — MGBHandler would
+            // otherwise claim it by service.
+            name == "hoffen" && SERVICE in device.serviceUuids -> "Hoffen HO-36"
+            else -> return null
+        }
 
         return DeviceSupport(
-            displayName = "Runstar R6",
+            displayName = displayName,
             // The scale reports only weight, heart rate and raw impedance; fat/water/muscle
             // are derived from the impedance via StandardImpedanceLib, as in
             // VitafitVT701Handler and EtekcityESF551Handler.
@@ -92,6 +109,7 @@ class RunstarR6Handler : ScaleDeviceHandler() {
         lastPreviewWeightKg = -1f
         lastPublishedWeightRaw = null
         outgoingSeq = 0
+        isHoffen = getPeripheral()?.name.equals(HOFFEN_NAME, ignoreCase = true)
 
         // Subscribe live first, then result — mirrors RobiS9Handler's subscription order
         // for the same FFB0 family.
@@ -117,6 +135,8 @@ class RunstarR6Handler : ScaleDeviceHandler() {
             TYPE_DEVICE_INFO -> {
                 logD("Runstar R6 device info ${data.toHexPreview(20)}")
                 sendAck(seq)
+                // Fitdays sends the HO-36's user frame right after this ack.
+                if (isHoffen) sendHoffenUserInfo(user)
             }
             TYPE_ACK -> logD("Runstar R6 ack ${data.toHexPreview(20)}")
             TYPE_FINAL_RESULT -> handleFinalResult(data, seq, user)
@@ -138,7 +158,7 @@ class RunstarR6Handler : ScaleDeviceHandler() {
         val state = data[4].toInt() and 0xFF
         if (state != STATE_MEASURING && state != STATE_SETTLING) return
 
-        val weightKg = u24be(data, 6) / 1000.0f
+        val weightKg = weightGrams(data, 6) / 1000.0f
         if (abs(weightKg - lastPreviewWeightKg) >= 0.05f) {
             userInfo(R.string.bluetooth_scale_info_measuring_weight, weightKg)
             lastPreviewWeightKg = weightKg
@@ -241,7 +261,7 @@ class RunstarR6Handler : ScaleDeviceHandler() {
      */
     private fun handleHistoryEntry(data: ByteArray, seq: Int) {
         val epochSeconds = u32be(data, 4)
-        val grams = u24be(data, 9)
+        val grams = weightGrams(data, 9)
         val entryDate = plausibleDate(epochSeconds)
         logI("Runstar R6 history entry seq=$seq date=$entryDate weight=${grams / 1000.0f}kg")
 
@@ -265,6 +285,23 @@ class RunstarR6Handler : ScaleDeviceHandler() {
         }
         logW("Runstar R6 implausible history timestamp ${epochSeconds}s, using current time")
         return Date()
+    }
+
+    private fun sendHoffenUserInfo(user: ScaleUser) {
+        val heightCm = user.bodyHeight.roundToInt()
+        if (heightCm !in 1..255) {
+            // The frame carries the height in one byte; without one there is nothing
+            // truthful to send, and body composition would be skipped anyway.
+            logW("Runstar R6 HO-36 no usable body height, not sending the user frame")
+            return
+        }
+        val payload = encodeHoffenUserInfo(
+            epochSeconds = System.currentTimeMillis() / 1000L,
+            heightCm = heightCm,
+            age = user.age,
+            isMale = user.gender.isMale(),
+        )
+        writeTo(SERVICE, CHAR_WRITE, buildFrame(TYPE_USER_INFO_OUT, payload), withResponse = true)
     }
 
     /** Ack a scale indication: 0xB0, payload = [seq being acked][0x00]. */
@@ -300,6 +337,10 @@ class RunstarR6Handler : ScaleDeviceHandler() {
         private const val TYPE_FINAL_RESULT = 0xA3
         private const val TYPE_HISTORY_ENTRY = 0xA4
         private const val TYPE_ACK_OUT = 0xB0
+        private const val TYPE_USER_INFO_OUT = 0xBA
+
+        /** Advertised name of the Hoffen HO-36. */
+        private const val HOFFEN_NAME = "HOFFEN"
 
         private const val STATE_MEASURING = 0x01
         private const val STATE_SETTLING = 0x02
@@ -341,7 +382,7 @@ class RunstarR6Handler : ScaleDeviceHandler() {
 
             return FinalResult(
                 status = data[4].toInt() and 0xFF,
-                grams = u24be(data, 5),
+                grams = weightGrams(data, 5),
                 heartRate = data[8].toInt() and 0xFF,
                 impedanceOhm = u16be(data, 9),
             )
@@ -358,6 +399,49 @@ class RunstarR6Handler : ScaleDeviceHandler() {
 
         internal fun isChecksumValid(frame: ByteArray): Boolean =
             (frame[19].toInt() and 0xFF) == computeChecksum(frame)
+
+        /**
+         * Low 19 bits of a 24-bit weight field (up to 524 kg). The HO-36 sets 0x68 in the
+         * top byte (bits 19, 21 and 22) on every frame, loaded or empty; the R6 captures
+         * leave them clear, and none of them can be part of a real weight.
+         */
+        internal const val WEIGHT_MASK = 0x07FFFF
+
+        /** u24 BE weight in grams at [offset], with the HO-36's flag bits cleared. */
+        internal fun weightGrams(data: ByteArray, offset: Int): Int =
+            u24be(data, offset) and WEIGHT_MASK
+
+        /**
+         * Payload of the HO-36's 0xBA user frame (15 bytes, after the type byte):
+         *
+         * `[time u32 BE][01][4A 00 00 00 00][height cm][00 00][sex 0x80 | age][2F]`
+         *
+         * Time is Unix seconds. Height, age and the sex bit were matched against three known
+         * profiles (female and male) in HCI snoops of the Fitdays app. The bytes written as
+         * constants are copied from those captures and their meaning is unknown: they were
+         * the same for all three profiles. The one exception is `00 00` after the height,
+         * which read `17 70` in a frame Fitdays sends first with a stale profile before
+         * the current one.
+         */
+        internal fun encodeHoffenUserInfo(
+            epochSeconds: Long,
+            heightCm: Int,
+            age: Int,
+            isMale: Boolean,
+        ): ByteArray {
+            val sexAge = (if (isMale) 0x80 else 0x00) or age.coerceIn(0, 0x7F)
+            return byteArrayOf(
+                (epochSeconds ushr 24).toByte(),
+                (epochSeconds ushr 16).toByte(),
+                (epochSeconds ushr 8).toByte(),
+                epochSeconds.toByte(),
+                0x01, 0x4A, 0x00, 0x00, 0x00, 0x00,
+                heightCm.toByte(),
+                0x00, 0x00,
+                sexAge.toByte(),
+                0x2F,
+            )
+        }
 
         private fun u24be(data: ByteArray, offset: Int): Int =
             ((data[offset].toInt() and 0xFF) shl 16) or
