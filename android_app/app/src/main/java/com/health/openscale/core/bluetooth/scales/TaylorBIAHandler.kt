@@ -110,6 +110,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
     private val SERVICE: UUID = uuid16(0xFFB0)
     private val CHAR_CFG: UUID = uuid16(0xFFB1)   // FFB1: config/command writes (App → Scale)
     private val CHAR_DATA: UUID = uuid16(0xFFB2)  // FFB2: measurement notifications (Scale → App)
+    private val SERVICE_FG2202WB: UUID = uuid16(0x1530) // not ours, see supportFor
 
     /** Latched by [supportFor] when the device is matched, re-checked against the peripheral name. */
     private var model: Model = Model.TAYLOR_BIA
@@ -130,6 +131,9 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         val matched = modelFor(device.name) ?: return null
         // "MY_SCALE" is a generic enough name to demand the service as well; the Taylor's is not.
         if (matched == Model.ALPHA_PRO3 && device.serviceUuids.none { it == SERVICE }) return null
+        // The Fitdays FG2202WB also advertises as "MY_SCALE" on 0xFFB0, but speaks the Runstar R6
+        // protocol (RunstarR6Handler). It adds 0x1530, which the ALPHA does not (#1534).
+        if (matched == Model.ALPHA_PRO3 && SERVICE_FG2202WB in device.serviceUuids) return null
 
         model = matched
         return when (matched) {

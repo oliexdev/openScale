@@ -35,7 +35,8 @@ import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.Percent
 
 /**
- * Runstar R6 smart scale, and the Hoffen HO-36 (ICOMON model FG2210LB, Fitdays app).
+ * Runstar R6 smart scale, the Hoffen HO-36 (ICOMON model FG2210LB, Fitdays app), and the
+ * Fitdays FG2202WB (an 8-electrode "Smart Body fat Scale").
  *
  * Same FFB0 frame family as [RobiS9Handler] — 20-byte frames
  * `[seq][len][00][type][payload…][chk]`, trailer checksum `sum(bytes[3..18]) & 0x1F`
@@ -60,11 +61,17 @@ import com.health.openscale.core.data.Percent
  *    [encodeHoffenUserInfo]); without one, 0xA3 carries impedance 0 and the scale's own
  *    display shows weight only.
  *
+ * The FG2202WB speaks the same protocol with two differences seen so far: 0x25 where the R6
+ * sends status 00, and 0xA3/0xA4 frames that are the first of two parts (length 0x1A/0x1E);
+ * the second part is not decoded. Its impedance is only measured with the handlebar held —
+ * feet only, the scale reports 50 Ω, which the plausibility range below rejects.
+ *
  * Despite the name this is a different, incompatible protocol from [RunstarR5Handler].
  */
 class RunstarR6Handler : ScaleDeviceHandler() {
 
     private val SERVICE: UUID = uuid16(0xFFB0)
+    private val SERVICE_FG2202WB: UUID = uuid16(0x1530) // advertised next to 0xFFB0, see supportFor
     private val CHAR_WRITE: UUID = uuid16(0xFFB1)   // write (ack / future handshake)
     private val CHAR_LIVE: UUID = uuid16(0xFFB2)    // notify (live A2 frames)
     private val CHAR_RESULT: UUID = uuid16(0xFFB3)  // indicate (A1 info / A0 ack / A3 result / A4 history)
@@ -83,6 +90,11 @@ class RunstarR6Handler : ScaleDeviceHandler() {
             // The HO-36 advertises as "HOFFEN" with 0xFFB0 (and 0x1530) — MGBHandler would
             // otherwise claim it by service.
             name == "hoffen" && SERVICE in device.serviceUuids -> "Hoffen HO-36"
+            // The FG2202WB advertises as "MY_SCALE", like the ALPHA Smart Scale PRO 3 that
+            // TaylorBIAHandler serves — but only the FG2202WB advertises 0x1530 next to 0xFFB0,
+            // and TaylorBIAHandler leaves it alone for that.
+            name == "my_scale" && SERVICE in device.serviceUuids &&
+                SERVICE_FG2202WB in device.serviceUuids -> "Fitdays FG2202WB"
             else -> return null
         }
 
@@ -184,9 +196,10 @@ class RunstarR6Handler : ScaleDeviceHandler() {
             dateTime = Date()
             this[MeasurementType.WEIGHT] = Kg(weightKg)
             if (result.heartRate != 0) this[MeasurementType.HEART_RATE] = Bpm(result.heartRate)
-            // Keep the raw value even when it is out of range below, so a later recompute
-            // can still use it.
-            if (result.impedanceOhm != 0) {
+            // Only a plausible impedance is stored: the scales report fixed placeholders when
+            // they measured none (0 on the HO-36, 50 Ω on the FG2202WB feet only), and those
+            // in the history would be worse than nothing.
+            if (result.impedanceOhm in IMPEDANCE_MIN..IMPEDANCE_MAX) {
                 this[MeasurementType.IMPEDANCE] = Ohm(result.impedanceOhm.toFloat())
             }
         }
