@@ -130,6 +130,8 @@ class ScaleFactory @Inject constructor(
          * is non-null. TaylorBIAHandler, FitTrackDaraHandler, RelaxmedicHandler, RobiS9Handler and
          * DrTrustSSW532Handler must stay ahead of MGBHandler — all live on service 0xFFB0, which
          * MGBHandler matches on its own, so a later position would let MGB wrongly claim them.
+         * RunstarR6Handler must in turn stay ahead of TaylorBIAHandler: both claim "MY_SCALE",
+         * and only the R6 handler checks for the FG2202WB's extra 0x1530 service.
          *
          * Exposed so the registry (order, device claims, duplicates) can be asserted in unit tests
          * without building the Hilt graph — see `ScaleFactoryTest`.
@@ -146,6 +148,7 @@ class ScaleFactory @Inject constructor(
             KeepS3Handler(),
             OmronWlcHandler(),
             BeurerBF450Handler(),
+            RunstarR6Handler(),
             TaylorBIAHandler(),
             RyFitHandler(),
             CultSmartScaleProHandler(),
@@ -169,7 +172,6 @@ class ScaleFactory @Inject constructor(
             MiScaleS400Handler(),
             XiaomiS800Handler(),
             MiScaleHandler(),
-            RunstarR6Handler(),
             RunstarR5Handler(),
             RelaxmedicHandler(),
             RobiS9Handler(),

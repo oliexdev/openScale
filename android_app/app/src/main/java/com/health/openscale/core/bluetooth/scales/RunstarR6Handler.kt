@@ -34,7 +34,7 @@ import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.Percent
 
 /**
- * Runstar R6 smart scale.
+ * Runstar R6 smart scale, and the Fitdays FG2202WB (an 8-electrode "Smart Body fat Scale").
  *
  * Same FFB0 frame family as [RobiS9Handler] — 20-byte frames
  * `[seq][len][00][type][payload…][chk]`, trailer checksum `sum(bytes[3..18]) & 0x1F`
@@ -50,11 +50,17 @@ import com.health.openscale.core.data.Percent
  * unacked entries keep reappearing on later connects, so every 0xA4 must be acked. 0xA4
  * only carries a timestamp + weight, no impedance/heart rate.
  *
+ * The FG2202WB speaks the same protocol with two differences seen so far: 0x25 where the R6
+ * sends status 00, and 0xA3/0xA4 frames that are the first of two parts (length 0x1A/0x1E);
+ * the second part is not decoded. Its impedance is only measured with the handlebar held —
+ * feet only, the scale reports 50 Ω, which the plausibility range below rejects.
+ *
  * Despite the name this is a different, incompatible protocol from [RunstarR5Handler].
  */
 class RunstarR6Handler : ScaleDeviceHandler() {
 
     private val SERVICE: UUID = uuid16(0xFFB0)
+    private val SERVICE_FG2202WB: UUID = uuid16(0x1530) // advertised next to 0xFFB0, see supportFor
     private val CHAR_WRITE: UUID = uuid16(0xFFB1)   // write (ack / future handshake)
     private val CHAR_LIVE: UUID = uuid16(0xFFB2)    // notify (live A2 frames)
     private val CHAR_RESULT: UUID = uuid16(0xFFB3)  // indicate (A1 info / A0 ack / A3 result / A4 history)
@@ -67,10 +73,17 @@ class RunstarR6Handler : ScaleDeviceHandler() {
         val name = device.name.lowercase(Locale.ROOT)
         // Claim strictly by advertised name — openScale only sees the name (not the
         // characteristic list) before connecting.
-        if (name != "runstar-r6" && !name.startsWith("runstar-r6")) return null
+        val displayName = when {
+            name == "runstar-r6" || name.startsWith("runstar-r6") -> "Runstar R6"
+            // The FG2202WB advertises as "MY_SCALE", like the ALPHA Smart Scale PRO 3 that
+            // TaylorBIAHandler serves — but only the FG2202WB advertises 0x1530 next to 0xFFB0.
+            name == "my_scale" && SERVICE in device.serviceUuids &&
+                SERVICE_FG2202WB in device.serviceUuids -> "Fitdays FG2202WB"
+            else -> return null
+        }
 
         return DeviceSupport(
-            displayName = "Runstar R6",
+            displayName = displayName,
             // The scale reports only weight, heart rate and raw impedance; fat/water/muscle
             // are derived from the impedance via StandardImpedanceLib, as in
             // VitafitVT701Handler and EtekcityESF551Handler.
