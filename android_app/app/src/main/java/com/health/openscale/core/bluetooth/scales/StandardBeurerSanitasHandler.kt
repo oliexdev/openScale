@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.Kg
 import com.health.openscale.core.data.Percent
 import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
@@ -39,6 +40,7 @@ import java.util.UUID
 class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
 
     private enum class Model { BEURER_BF105, BEURER_BF1000, BEURER_BF950, BEURER_BF500, BEURER_BF600 }
+    private var bf500PendingMeasurement: ScaleMeasurement? = null
     private val scaleUserList = mutableListOf<ScaleUser>()
     private val bf1000AmbiguousScaleUserList = mutableListOf<ScaleUser>()
 
@@ -145,7 +147,7 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             DeviceCapability.USER_SYNC,
             DeviceCapability.BATTERY_LEVEL,
             DeviceCapability.LIVE_WEIGHT_STREAM
-        )
+        ) + if (model == Model.BEURER_BF500) setOf(DeviceCapability.HISTORY_READ) else emptySet()
         return DeviceSupport(
             displayName = driverName(),
             capabilities = caps,
@@ -156,6 +158,7 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
 
     // ---- Vendor-specific extras on connect -----------------------------------
     override fun onConnected(user: ScaleUser) {
+        bf500PendingMeasurement = null
         super.onConnected(user) // standard UDS/WSS/BCS
         logD("Scale connected: userId=${user.id}, name=${user.userName}")
 
@@ -229,6 +232,52 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             else ->
                 super.onNotification(characteristic, data, user)
         }
+    }
+
+    // BF500 history arrives as weight/composition pairs during consent, before
+    // its response. Only assembly differs; standard bytes are decoded by the base.
+    override fun onWeightMeasurement(packet: StandardMeasurementPacket) {
+        if (activeModel != Model.BEURER_BF500) {
+            super.onWeightMeasurement(packet)
+            return
+        }
+        val next = packet.measurement
+        if (!next.hasWeight()) return
+        bf500PendingMeasurement?.let(::publish)
+        bf500PendingMeasurement = next.takeUnless { it.userId == -1 }
+    }
+
+    override fun onBodyCompositionMeasurement(packet: StandardMeasurementPacket) {
+        if (activeModel != Model.BEURER_BF500) {
+            super.onBodyCompositionMeasurement(packet)
+            return
+        }
+        if (packet.flags and 0x1000 != 0) return // No verified BF500 fragment assembly.
+        val composition = packet.measurement
+        val weight = bf500PendingMeasurement ?: return
+        if (composition.userId == -1) return
+        if (composition.userId != 0xFF && weight.userId != 0xFF && composition.userId != weight.userId) return
+        if (composition.dateTime != null && weight.dateTime != null && composition.dateTime != weight.dateTime) return
+        bf500PendingMeasurement = null
+        weight.mergeWith(composition)
+        val kg = weight[MeasurementType.WEIGHT]!!.value
+        packet.waterMass?.value?.takeIf { it > 0f }?.let {
+            weight[MeasurementType.WATER] = Percent(it / kg * 100f)
+        }
+        val fat = composition[MeasurementType.BODY_FAT]?.value
+        val softLean = packet.softLeanMass?.value?.takeIf { it > 0f }
+        if (fat != null && softLean != null) {
+            val lean = kg * (1f - fat / 100f)
+            weight[MeasurementType.LBM] = Kg(lean)
+            weight[MeasurementType.BONE] = Kg(lean - softLean)
+        }
+        publish(weight)
+    }
+
+    override fun onDisconnected() {
+        bf500PendingMeasurement?.let(::publish)
+        bf500PendingMeasurement = null
+        super.onDisconnected()
     }
 
     override fun onRequestMeasurement() {
