@@ -291,13 +291,48 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
 
     // ---- Decoding & merge logic ----------------------------------------------
 
+    /** Decoded standard fields; mass metadata stays in kg until assembly. */
+    protected data class StandardMeasurementPacket(
+        val measurement: ScaleMeasurement,
+        val flags: Int,
+        val softLeanMass: Kg? = null,
+        val waterMass: Kg? = null,
+    )
+
     private fun handleWeightMeasurement(value: ByteArray) {
-        val m = parseWeightToMeasurement(value) ?: return
-        handleNewMeasurement(m)
+        decodeStandardMeasurement(value, body = false)?.let(::onWeightMeasurement)
     }
 
     private fun handleBodyCompositionMeasurement(value: ByteArray) {
-        val m = parseBodyCompToMeasurement(value) ?: return
+        decodeStandardMeasurement(value, body = true)?.let(::onBodyCompositionMeasurement)
+    }
+
+    /** Default assembly is retained; devices may override record boundaries. */
+    protected open fun onWeightMeasurement(packet: StandardMeasurementPacket) {
+        val m = packet.measurement
+        if (m.userId == -1) m.userId = 0xFF
+        handleNewMeasurement(m)
+    }
+
+    protected open fun onBodyCompositionMeasurement(packet: StandardMeasurementPacket) {
+        val m = packet.measurement
+        if (m.userId == -1) m.userId = 0xFF
+        packet.waterMass?.let { m[MeasurementType.WATER] = Percent(it.value) }
+        if (!m.hasWeight()) {
+            pendingMeasurement?.get(MeasurementType.WEIGHT)?.let { m[MeasurementType.WEIGHT] = it }
+        }
+        if (packet.flags and 0x1000 != 0) logW("Body Composition: multi-packet measurement not supported")
+
+        // Preserve the existing default derivation and publication flow. BF500
+        // applies its own completeness checks when assembling decoded packets.
+        val weight = m[MeasurementType.WEIGHT]?.value ?: 0f
+        packet.softLeanMass?.let { softLean ->
+            if (weight > 0f) {
+                val lean = weight * (1f - (m[MeasurementType.BODY_FAT]?.value ?: 0f) / 100f)
+                m[MeasurementType.LBM] = Kg(lean)
+                m[MeasurementType.BONE] = Kg(lean - softLean.value)
+            }
+        }
         handleNewMeasurement(m)
     }
 
@@ -332,161 +367,62 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         }
     }
 
-    private fun parseWeightToMeasurement(value: ByteArray): ScaleMeasurement? {
-        if (value.isEmpty()) return null
-        var offset = 0
-
-        val flags = u8(value, offset); offset += 1
-        val isKg        = (flags and 0x01) == 0
-        val tsPresent   = (flags and 0x02) != 0
-        val userPresent = (flags and 0x04) != 0
-        val bmiHeight   = (flags and 0x08) != 0
-
-        val multiplier = if (isKg) 0.005f else 0.01f
-        val weightRaw = u16le(value, offset); offset += 2
-
-        val m = ScaleMeasurement()
-        m[MeasurementType.WEIGHT] = Kg(weightRaw * multiplier)
-
-        if (tsPresent) {
-            val cal = Calendar.getInstance()
-            val year = u16le(value, offset); offset += 2
-            val month = u8(value, offset); offset += 1
-            val day = u8(value, offset); offset += 1
-            val hour = u8(value, offset); offset += 1
-            val minute = u8(value, offset); offset += 1
-            val second = u8(value, offset); offset += 1
-            cal.set(year, (month - 1).coerceAtLeast(0), day, hour, minute, second)
-            cal.set(Calendar.MILLISECOND, 0)
-            m.dateTime = cal.time
+    /** One decoder for standard WSS and BCS payloads, independent of pending records. */
+    private fun decodeStandardMeasurement(data: ByteArray, body: Boolean): StandardMeasurementPacket? {
+        try {
+            val r = StandardMeasurementReader(data)
+            val flags = if (body) r.u16() else r.u8()
+            val isKg = flags and 1 == 0
+            fun mass(raw: Int): Kg = if (isKg) Kg(raw * 0.005f) else Kg.fromLb(raw * 0.01f)
+            val m = ScaleMeasurement()
+            val primary = r.u16()
+            if (body) m[MeasurementType.BODY_FAT] = Percent(primary * 0.1f)
+            else m[MeasurementType.WEIGHT] = mass(primary)
+            if (flags and 2 != 0) m.dateTime = r.date()
+            if (flags and 4 != 0) {
+                val slot = r.u8()
+                if (slot != 0xFF) m.userId = loadUserIdForScaleIndex(slot)
+            }
+            if (!body) {
+                if (flags and 8 != 0) { r.u16(); r.u16() } // BMI and height
+                return StandardMeasurementPacket(m, flags)
+            }
+            if (flags and 0x0008 != 0) r.u16() // basal metabolism
+            if (flags and 0x0010 != 0) m[MeasurementType.MUSCLE] = Percent(r.u16() * 0.1f)
+            if (flags and 0x0020 != 0) r.u16() // muscle mass
+            if (flags and 0x0040 != 0) r.u16() // fat-free mass
+            val softLean = if (flags and 0x0080 != 0) mass(r.u16()) else null
+            val water = if (flags and 0x0100 != 0) mass(r.u16()) else null
+            if (flags and 0x0200 != 0) m[MeasurementType.IMPEDANCE] = Ohm(r.u16() * 0.1f)
+            if (flags and 0x0400 != 0) m[MeasurementType.WEIGHT] = mass(r.u16())
+            if (flags and 0x0800 != 0) r.u16() // height
+            return StandardMeasurementPacket(m, flags, softLean, water)
+        } catch (_: IndexOutOfBoundsException) {
+            logW("Truncated standard measurement packet")
+            return null
+        } catch (_: IllegalArgumentException) {
+            logW("Invalid standard measurement timestamp")
+            return null
         }
-
-        if (userPresent) {
-            val scaleUserIndex = u8(value, offset); offset += 1
-            val appId = loadUserIdForScaleIndex(scaleUserIndex)
-            if (appId != -1) m.userId = appId
-            logD("Weight: flags=0x${flags.toString(16)} idx=$scaleUserIndex mappedAppId=$appId kg=$isKg value=${m[MeasurementType.WEIGHT]}")
-        }
-
-        if (bmiHeight) {
-            val bmi = u16le(value, offset) * 0.1f; offset += 2
-            val heightMeters = u16le(value, offset) * 0.001f
-            logD("BMI=$bmi height(m)=$heightMeters")
-        }
-
-        return m
     }
 
-    private fun parseBodyCompToMeasurement(value: ByteArray): ScaleMeasurement? {
-        if (value.size < 4) return null
-        var offset = 0
-
-        val flags = u16le(value, offset); offset += 2
-        val isKg              = (flags and 0x0001) == 0
-        val tsPresent         = (flags and 0x0002) != 0
-        val userPresent       = (flags and 0x0004) != 0
-        val bmrPresent        = (flags and 0x0008) != 0
-        val musclePctPresent  = (flags and 0x0010) != 0
-        val muscleMassPresent = (flags and 0x0020) != 0
-        val fatFreeMassPresent= (flags and 0x0040) != 0
-        val softLeanPresent   = (flags and 0x0080) != 0
-        val waterMassPresent  = (flags and 0x0100) != 0
-        val impedancePresent  = (flags and 0x0200) != 0
-        val weightPresent     = (flags and 0x0400) != 0
-        val heightPresent     = (flags and 0x0800) != 0
-        val multiPacket       = (flags and 0x1000) != 0
-
-        val massMultiplier = if (isKg) 0.005f else 0.01f
-
-        val m = ScaleMeasurement()
-
-        val bodyFatPct = u16le(value, offset) * 0.1f; offset += 2
-        m[MeasurementType.BODY_FAT] = Percent(bodyFatPct)
-
-        if (tsPresent) {
-            val cal = Calendar.getInstance()
-            val year = u16le(value, offset); offset += 2
-            val month = u8(value, offset); offset += 1
-            val day = u8(value, offset); offset += 1
-            val hour = u8(value, offset); offset += 1
-            val minute = u8(value, offset); offset += 1
-            val second = u8(value, offset); offset += 1
-            cal.set(year, (month - 1).coerceAtLeast(0), day, hour, minute, second)
-            cal.set(Calendar.MILLISECOND, 0)
-            m.dateTime = cal.time
+    private class StandardMeasurementReader(private val data: ByteArray) {
+        private var offset = 0
+        fun u8(): Int = data[offset++].toInt() and 0xFF
+        fun u16(): Int = u8() or (u8() shl 8)
+        fun date(): Date {
+            val year = u16()
+            val month = u8()
+            val day = u8()
+            val hour = u8()
+            val minute = u8()
+            val second = u8()
+            return Calendar.getInstance().apply {
+                clear()
+                isLenient = false
+                set(year, month - 1, day, hour, minute, second)
+            }.time
         }
-
-        if (userPresent) {
-            val scaleUserIndex = u8(value, offset); offset += 1
-            val appId = loadUserIdForScaleIndex(scaleUserIndex)
-            if (appId != -1) m.userId = appId
-            logD("BodyComp: idx=$scaleUserIndex mappedAppId=$appId fat=$bodyFatPct%")
-        }
-
-        if (bmrPresent) {
-            val bmrJ = u16le(value, offset); offset += 2
-            val bmrKcal = ((bmrJ / 4.1868f) * 10f).toInt() / 10f
-            logD("BMR ≈ $bmrKcal kcal")
-        }
-
-        if (musclePctPresent) {
-            val musclePct = u16le(value, offset) * 0.1f; offset += 2
-            m[MeasurementType.MUSCLE] = Percent(musclePct)
-        }
-
-        var softLean = 0.0f
-        if (muscleMassPresent) {
-            val muscleMass = u16le(value, offset) * massMultiplier; offset += 2
-            logD("Muscle mass=$muscleMass kg")
-        }
-
-        if (fatFreeMassPresent) {
-            val ffm = u16le(value, offset) * massMultiplier; offset += 2
-            logD("Fat-free mass=$ffm kg")
-        }
-
-        if (softLeanPresent) {
-            softLean = u16le(value, offset) * massMultiplier; offset += 2
-            logD("Soft lean mass=$softLean kg")
-        }
-
-        if (waterMassPresent) {
-            val bodyWaterMass = u16le(value, offset) * massMultiplier; offset += 2
-            m[MeasurementType.WATER] = Percent(bodyWaterMass)
-        }
-
-        if (impedancePresent) {
-            val z = u16le(value, offset) * 0.1f; offset += 2
-            logD("Impedance=$z Ω")
-            // Store the raw impedance so body composition can be recomputed later.
-            if (z > 0f) m[MeasurementType.IMPEDANCE] = Ohm(z)
-        }
-
-        if (weightPresent) {
-            val w = u16le(value, offset) * massMultiplier; offset += 2
-            m[MeasurementType.WEIGHT] = Kg(w)
-        } else {
-            pendingMeasurement?.get(MeasurementType.WEIGHT)?.value?.takeIf { it > 0f }?.let { m[MeasurementType.WEIGHT] = Kg(it) }
-        }
-
-        if (heightPresent) {
-            val heightVal = u16le(value, offset)
-            logD("Height(raw)=$heightVal")
-        }
-
-        if (multiPacket) logW("Body Composition: multi-packet measurement not supported")
-
-        // Derive LBM & bone if we have soft-lean and weight
-        val w2 = (m[MeasurementType.WEIGHT]?.value ?: 0f)
-        if (w2 > 0f && softLeanPresent) {
-            val fatMass = w2 * ((m[MeasurementType.BODY_FAT]?.value ?: 0f) / 100f)
-            val leanBodyMass = w2 - fatMass
-            val boneMass = leanBodyMass - softLean
-            m[MeasurementType.LBM] = Kg(leanBodyMass)
-            m[MeasurementType.BONE] = Kg(boneMass)
-        }
-
-        return m
     }
 
     // ---- UDS: User Control Point + User data writes ---------------------------

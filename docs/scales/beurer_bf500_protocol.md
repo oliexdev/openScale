@@ -13,9 +13,8 @@ optional field or accepts every command.
 
 ## Implementation references
 
-- [StandardBeurerSanitasHandler](../../android_app/app/src/main/java/com/health/openscale/core/bluetooth/scales/StandardBeurerSanitasHandler.kt): BF500 detection, vendor characteristics, user list, activity level, and measurement request.
-- [StandardWeightProfileHandler](../../android_app/app/src/main/java/com/health/openscale/core/bluetooth/scales/StandardWeightProfileHandler.kt): connection setup, clock, battery, user mapping, consent, registration, and profile writes.
-- [BeurerBf500Lib](../../android_app/app/src/main/java/com/health/openscale/core/bluetooth/libs/BeurerBf500Lib.kt): weight/composition decoding and record assembly for live and stored readings.
+- [StandardBeurerSanitasHandler](../../android_app/app/src/main/java/com/health/openscale/core/bluetooth/scales/StandardBeurerSanitasHandler.kt): BF500 detection, vendor characteristics, user list, activity level, measurement request, and BF500-specific record assembly.
+- [StandardWeightProfileHandler](../../android_app/app/src/main/java/com/health/openscale/core/bluetooth/scales/StandardWeightProfileHandler.kt): shared standard packet decoding and default assembly, connection setup, clock, battery, user mapping, consent, registration, and profile writes.
 - [StandardBeurerSanitasHandlerTest](../../android_app/app/src/test/java/com/health/openscale/core/bluetooth/scales/StandardBeurerSanitasHandlerTest.kt): sanitized packet replay and regression coverage.
 
 ## Discovery and GATT characteristics
@@ -241,7 +240,21 @@ fields therefore do not create zero metrics or fabricated lean/bone mass.
 
 ## Live and stored record assembly
 
-Both paths use the same indications and assembler:
+`StandardWeightProfileHandler` decodes both standard characteristics into a
+`StandardMeasurementPacket`, carrying measurement fields, flags, and typed mass
+metadata independently of any pending record. Its protected
+`onWeightMeasurement()` and `onBodyCompositionMeasurement()` methods provide the
+default merge/publication flow. The BF500 path in `StandardBeurerSanitasHandler`
+overrides those methods for record assembly; other models delegate to the base
+implementation. There is no separate BF500 decoder/library.
+
+The shared decoder now bounds-checks optional fields, rejects invalid dates, and
+converts imperial masses to kilograms rather than wrapping pound values as `Kg`.
+Default assembly otherwise retains the existing order-independent merge flow,
+user fallback, disconnect flush, and publication transformation. The BF500's
+strict record boundaries and missing-composition safeguards apply only to BF500.
+
+Both BF500 live and stored paths use the same indications and assembly:
 
 1. A valid weight packet starts a pending record. If another record is already
    pending, publish that earlier weight-only record first.
@@ -276,16 +289,24 @@ for two consecutive offline readings.
 
 ## Validation and limits
 
-All 11 handler tests and 6 scale-catalog tests passed, and the debug APK built.
+All 19 handler tests, 6 scale-catalog tests, and 3 BF1000 library tests passed
+(28 total), and the debug APK built.
 Packet replay covers timestamps, consecutive records, user mapping, truncated
 packets, missing body analysis, and nonzero composition from the earlier capture.
+Regression cases exercise the base handler with both packet orders, its existing
+consecutive-packet policy, unmapped-user fallback, and disconnect flush. They also
+check shared imperial decoding/date validation and weight-only publication through
+A&D UC-352BLE, Sanitas SBF72, BF450, and BF105; existing BF1000 tests cover segmental
+values and publication transforms.
 
-On the physical BF500 running firmware 1.13, two readings taken with phone
+Before the shared-decoder refactor, on the physical BF500 running firmware 1.13,
+two readings taken with phone
 Bluetooth disabled were imported using an existing profile. Both retained their
 original timestamps, about nine and eleven minutes before sync. Both weight and
 composition records arrived before the consent-success response. Composition had
 zero fat, muscle, soft lean mass, water, and impedance, so only weight was
-published. Nonzero composition still needs a physical test with this debug app.
+published. Nonzero composition and a repeat offline sync after the shared-decoder refactor
+still need a physical test with this debug app.
 
 This retrieves readings still available on the scale. After openScale synced the
 two readings, the vendor app decoded the scale advertisement as having no pending
