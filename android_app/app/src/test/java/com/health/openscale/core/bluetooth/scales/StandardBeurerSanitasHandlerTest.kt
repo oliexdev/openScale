@@ -152,6 +152,94 @@ class StandardBeurerSanitasHandlerTest {
         assertThat(keys.none { it.defaultPinned }).isTrue()
     }
 
+    @Test
+    fun `BF500 preserves stored timestamps and composition for each record`() {
+        val setup = attachedHandler("BF500")
+        setup.handler.handleNotification(chrWeightMeasurement, storedWeight(8, 1))
+        setup.handler.handleNotification(UUID.fromString("00002a9c-0000-1000-8000-00805f9b34fb"), composition())
+        setup.handler.handleNotification(chrWeightMeasurement, storedWeight(9, 1))
+        setup.handler.handleNotification(UUID.fromString("00002a9c-0000-1000-8000-00805f9b34fb"), composition())
+        setup.handler.handleDisconnected()
+        val records = setup.callbacks.published
+        assertThat(records).hasSize(2)
+        assertThat(records.map { Calendar.getInstance().apply { time = it.dateTime!! }.get(Calendar.HOUR_OF_DAY) })
+            .containsExactly(8, 9).inOrder()
+        records.forEach {
+            assertThat(it.userId).isEqualTo(7)
+            assertThat(it[MeasurementType.WEIGHT]!!.value).isWithin(0.001f).of(70f)
+            assertThat(it[MeasurementType.BODY_FAT]!!.value).isWithin(0.001f).of(16.9f)
+            assertThat(it[MeasurementType.WATER]!!.value).isWithin(0.001f).of(59.85714f)
+        }
+    }
+
+    @Test
+    fun `BF500 consecutive weight-only history records do not merge`() {
+        val setup = attachedHandler("BF500")
+        setup.handler.handleNotification(chrWeightMeasurement, storedWeight(8, 1))
+        setup.handler.handleNotification(chrWeightMeasurement, storedWeight(9, 1))
+        setup.handler.handleDisconnected()
+        assertThat(setup.callbacks.published).hasSize(2)
+    }
+
+    @Test
+    fun `BF500 skips unmapped user and rejects truncated composition`() {
+        val setup = attachedHandler("BF500")
+        setup.handler.handleNotification(chrWeightMeasurement, storedWeight(8, 2))
+        setup.handler.handleNotification(UUID.fromString("00002a9c-0000-1000-8000-00805f9b34fb"), composition())
+        setup.handler.handleNotification(chrWeightMeasurement, storedWeight(9, 1))
+        setup.handler.handleNotification(UUID.fromString("00002a9c-0000-1000-8000-00805f9b34fb"), composition().copyOf(5))
+        setup.handler.handleDisconnected()
+        assertThat(setup.callbacks.published).hasSize(1)
+        assertThat(setup.callbacks.published.single()[MeasurementType.BODY_FAT]).isNull()
+    }
+
+    @Test
+    fun `BF500 zero composition does not fabricate lean or bone mass`() {
+        val setup = attachedHandler("BF500")
+        setup.handler.handleNotification(chrWeightMeasurement, storedWeight(8, 1))
+        setup.handler.handleNotification(UUID.fromString("00002a9c-0000-1000-8000-00805f9b34fb"),
+            byteArrayOf(0x98.toByte(), 0x03) + ByteArray(12))
+        val m = setup.callbacks.published.single()
+        assertThat(m[MeasurementType.LBM]).isNull()
+        assertThat(m[MeasurementType.BONE]).isNull()
+        assertThat(m[MeasurementType.WATER]).isNull()
+    }
+
+    @Test
+    fun `BF500 advertises history only for that model`() {
+        val bf500 = StandardBeurerSanitasHandler().supportFor(device("BF500"))!!
+        val bf105 = StandardBeurerSanitasHandler().supportFor(device("BF105"))!!
+        assertThat(bf500.implemented).contains(DeviceCapability.HISTORY_READ)
+        assertThat(bf105.implemented).doesNotContain(DeviceCapability.HISTORY_READ)
+    }
+
+    @Test
+    fun `BF500 rejects every truncated stored packet without crashing`() {
+        for (length in 0 until storedWeight(8, 1).size) {
+            val setup = attachedHandler("BF500")
+            setup.handler.handleNotification(chrWeightMeasurement, storedWeight(8, 1).copyOf(length))
+            setup.handler.handleDisconnected()
+            assertThat(setup.callbacks.published).isEmpty()
+        }
+        for (length in 0 until composition().size) {
+            val setup = attachedHandler("BF500")
+            setup.handler.handleNotification(chrWeightMeasurement, storedWeight(8, 1))
+            setup.handler.handleNotification(UUID.fromString("00002a9c-0000-1000-8000-00805f9b34fb"), composition().copyOf(length))
+            setup.handler.handleDisconnected()
+            assertThat(setup.callbacks.published.single()[MeasurementType.BODY_FAT]).isNull()
+        }
+    }
+
+    // Sanitized packets matching the layouts in our vendor-app capture; no consent code.
+    private fun storedWeight(hour: Int, slot: Int) = byteArrayOf(
+        0x0e, 0xb0.toByte(), 0x36, 0xea.toByte(), 0x07, 0x0a, 0x04,
+        hour.toByte(), 0, 0, slot.toByte(), 0xe9.toByte(), 0, 0xc2.toByte(), 6,
+    )
+    private fun composition() = byteArrayOf(
+        0x98.toByte(), 3, 0xa9.toByte(), 0, 0xb9.toByte(), 0x1a, 0x99.toByte(), 1,
+        0xf8.toByte(), 0x2a, 0xbc.toByte(), 0x20, 0xfc.toByte(), 0x2b,
+    )
+
     // --- helpers ---------------------------------------------------------------
 
     /** Standard Weight Scale 2A9D: flags 0x00 (kg, nothing optional) + 72.5 kg / 0.005. */
@@ -186,7 +274,7 @@ class StandardBeurerSanitasHandlerTest {
         handler.attach(
             transport = NoopTransport(),
             callbacks = callbacks,
-            settings = InMemorySettings(),
+            settings = InMemorySettings().apply { putInt("userMap/userIdByIndex/1", 7) },
             data = FixedDataProvider(user()),
             scope = CoroutineScope(EmptyCoroutineContext),
         )

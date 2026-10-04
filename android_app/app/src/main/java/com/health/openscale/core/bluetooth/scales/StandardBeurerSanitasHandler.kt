@@ -23,6 +23,7 @@ import com.health.openscale.core.data.Percent
 import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.bluetooth.libs.BeurerBf500Lib
 import com.health.openscale.core.bluetooth.libs.BeurerBf1000Lib
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
@@ -39,6 +40,7 @@ import java.util.UUID
 class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
 
     private enum class Model { BEURER_BF105, BEURER_BF1000, BEURER_BF950, BEURER_BF500, BEURER_BF600 }
+    private val bf500Measurements = BeurerBf500Lib()
     private val scaleUserList = mutableListOf<ScaleUser>()
     private val bf1000AmbiguousScaleUserList = mutableListOf<ScaleUser>()
 
@@ -145,7 +147,7 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             DeviceCapability.USER_SYNC,
             DeviceCapability.BATTERY_LEVEL,
             DeviceCapability.LIVE_WEIGHT_STREAM
-        )
+        ) + if (model == Model.BEURER_BF500) setOf(DeviceCapability.HISTORY_READ) else emptySet()
         return DeviceSupport(
             displayName = driverName(),
             capabilities = caps,
@@ -156,6 +158,7 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
 
     // ---- Vendor-specific extras on connect -----------------------------------
     override fun onConnected(user: ScaleUser) {
+        bf500Measurements.reset()
         super.onConnected(user) // standard UDS/WSS/BCS
         logD("Scale connected: userId=${user.id}, name=${user.userName}")
 
@@ -216,6 +219,12 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
         }
 
         when {
+            activeModel == Model.BEURER_BF500 && characteristic == uuid16(0x2A9D) -> {
+                bf500Measurements.weight(data, ::loadUserIdForScaleIndex).forEach(::publish)
+            }
+            activeModel == Model.BEURER_BF500 && characteristic == uuid16(0x2A9C) -> {
+                bf500Measurements.body(data, ::loadUserIdForScaleIndex).forEach(::publish)
+            }
             characteristic == p.chrUserList -> {
                 if (activeModel == Model.BEURER_BF1000) {
                     handleBf1000UserList(data, user)
@@ -229,6 +238,11 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             else ->
                 super.onNotification(characteristic, data, user)
         }
+    }
+
+    override fun onDisconnected() {
+        if (activeModel == Model.BEURER_BF500) bf500Measurements.flush()?.let(::publish)
+        super.onDisconnected()
     }
 
     override fun onRequestMeasurement() {
