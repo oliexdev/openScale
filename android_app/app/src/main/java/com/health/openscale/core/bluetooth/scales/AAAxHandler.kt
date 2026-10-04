@@ -44,6 +44,10 @@ import com.health.openscale.core.data.Kg
  *
  * We publish a measurement once when a *final* 0xAD frame is seen, then ask the adapter
  * to stop scanning for this session.
+ *
+ * Some boards use names like "AAA07A" and advertise services such as 0xFFB0. We match the
+ * frame itself: bytes 0..5 echo the advertiser's MAC reversed, with a valid payload checksum.
+ * AAAxHandler needs to be registered ahead of [MGBHandler].
  */
 class AAAxHandler : ScaleDeviceHandler() {
 
@@ -52,25 +56,23 @@ class AAAxHandler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.trim()
-        val isAaaFamily = name == "AAA002" || name == "AAA007" || name == "AAA013"
+        val isKnownName = name in KNOWN_NAMES
+        val hasAaaxFrame = device.manufacturerData?.let { m ->
+            (0 until m.size()).any { i ->
+                val data = m.valueAt(i) ?: return@any false
+                echoesAddress(data, device.address) && decodePayload(m.keyAt(i), data) != null
+            }
+        } ?: false
 
-        // If the name is recognized, we advertise support immediately.
-        if (isAaaFamily) {
-            val caps = setOf(DeviceCapability.LIVE_WEIGHT_STREAM)
-            return DeviceSupport(
-                displayName = "AAA-series Broadcast Scale (${name})",
-                capabilities = caps,
-                implemented = caps,
-                linkMode = LinkMode.BROADCAST_ONLY
-            )
-        }
+        if (!isKnownName && !hasAaaxFrame) return null
 
-        // Otherwise, we can try to be permissive and accept broadcast-only devices that
-        // carry a single manufacturer record of length >= 12 (quick heuristic). If your
-        // scanner fills manufacturerData in ScannedDeviceInfo, you can probe it here.
-
-        // No positive signal → not our device.
-        return null
+        val caps = setOf(DeviceCapability.LIVE_WEIGHT_STREAM)
+        return DeviceSupport(
+            displayName = "AAA-series Broadcast Scale (${name.ifEmpty { "AAAx" }})",
+            capabilities = caps,
+            implemented = caps,
+            linkMode = LinkMode.BROADCAST_ONLY
+        )
     }
 
     override fun onAdvertisement(result: ScanResult, user: com.health.openscale.core.bluetooth.data.ScaleUser): BroadcastAction {
@@ -84,24 +86,7 @@ class AAAxHandler : ScaleDeviceHandler() {
         for (i in 0 until m.size()) {
             val companyId = m.keyAt(i) // 16-bit company id
             val data = m.valueAt(i) ?: continue
-            if (data.size < 12) continue
-
-            // XOR key is the high byte of companyId (matches legacy implementation)
-            val xorKey = ((companyId ushr 8) and 0xFF).toByte()
-
-            // Deobfuscate last 6 bytes
-            val payload = ByteArray(6)
-            for (p in 0 until 6) {
-                payload[p] = (data[6 + p].toInt() xor xorKey.toInt()).toByte()
-            }
-
-            // 5-bit checksum over payload[0..4]
-            var chk = 0
-            for (p in 0 until 5) chk += payload[p].toInt() and 0xFF
-            if ((chk and 0x1F) != (payload[5].toInt() and 0x1F)) {
-                logD("AAAx: checksum mismatch (sum=${chk and 0x1F}, got=${payload[5].toInt() and 0x1F})")
-                continue
-            }
+            val payload = decodePayload(companyId, data) ?: continue
 
             when (payload[4].toUByte().toInt()) {
                 0xAD -> { // weight
@@ -143,5 +128,29 @@ class AAAxHandler : ScaleDeviceHandler() {
         }
 
         return BroadcastAction.IGNORED
+    }
+
+    companion object {
+        private val KNOWN_NAMES = setOf("AAA002", "AAA007", "AAA013", "AAA07A")
+
+        /**
+         * Deobfuscates bytes 6..11 of a manufacturer record with the XOR key taken from the high
+         * byte of [companyId]. Returns the 6-byte payload, or null if the record is too short or
+         * the 5-bit checksum over payload[0..4] does not match.
+         */
+        internal fun decodePayload(companyId: Int, data: ByteArray): ByteArray? {
+            if (data.size < 12) return null
+            val xorKey = (companyId ushr 8) and 0xFF
+            val payload = ByteArray(6) { p -> (data[6 + p].toInt() xor xorKey).toByte() }
+            val chk = (0 until 5).sumOf { payload[it].toInt() and 0xFF }
+            return if ((chk and 0x1F) == (payload[5].toInt() and 0x1F)) payload else null
+        }
+
+        /** True if bytes 0..5 are [address] ("AA:BB:CC:DD:EE:FF") in reverse byte order. */
+        internal fun echoesAddress(data: ByteArray, address: String): Boolean {
+            val mac = address.split(":").mapNotNull { it.toIntOrNull(16) }
+            if (mac.size != 6 || data.size < 6) return false
+            return (0 until 6).all { (data[it].toInt() and 0xFF) == mac[5 - it] }
+        }
     }
 }
