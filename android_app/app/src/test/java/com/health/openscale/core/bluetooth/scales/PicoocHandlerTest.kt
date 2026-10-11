@@ -35,6 +35,9 @@ import org.robolectric.annotation.Config
 import java.util.Calendar
 import java.util.UUID
 import kotlin.coroutines.EmptyCoroutineContext
+import com.health.openscale.core.bluetooth.ScaleCatalog.hex
+import com.health.openscale.core.bluetooth.ScaleCatalog.uuid16
+import com.health.openscale.core.bluetooth.ScaleCatalog.device
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -97,9 +100,9 @@ class PicoocHandlerTest {
     @Test
     fun `builds three byte acknowledgements`() {
         assertThat(PicoocHandler.buildAck(PicoocHandler.PREFIX_LATIN, 0x39))
-            .isEqualTo(bytes("F1 03 39"))
+            .isEqualTo(hex("F1 03 39"))
         assertThat(PicoocHandler.buildAck(PicoocHandler.PREFIX_MODERN, 0x52))
-            .isEqualTo(bytes("A1 03 52"))
+            .isEqualTo(hex("A1 03 52"))
     }
 
     @Test
@@ -111,7 +114,7 @@ class PicoocHandlerTest {
             unit = 0,
         )
 
-        assertThat(reply).isEqualTo(bytes("F1 0A 3A 12 34 56 78 00 00 00"))
+        assertThat(reply).isEqualTo(hex("F1 0A 3A 12 34 56 78 00 00 00"))
         assertThat(reply.size).isEqualTo(reply[1].toInt())
     }
 
@@ -132,14 +135,14 @@ class PicoocHandlerTest {
     fun `an unusable height still produces a well-formed profile`() {
         val user = user(GenderType.MALE, 180f, 24).apply { bodyHeight = Float.NaN }
 
-        assertThat(PicoocHandler.buildUserProfile(user)).isEqualTo(bytes("31 06 01 01 00 18"))
+        assertThat(PicoocHandler.buildUserProfile(user)).isEqualTo(hex("31 06 01 01 00 18"))
     }
 
     @Test
     fun `user profile matches its own length field and carries the real user`() {
         val profile = PicoocHandler.buildUserProfile(user(GenderType.MALE, 180f, 24))
 
-        assertThat(profile).isEqualTo(bytes("31 06 01 01 A0 18"))
+        assertThat(profile).isEqualTo(hex("31 06 01 01 A0 18"))
         assertThat(profile.size).isEqualTo(profile[1].toInt())
     }
 
@@ -147,7 +150,7 @@ class PicoocHandlerTest {
     fun `user profile encodes women as sex two`() {
         val profile = PicoocHandler.buildUserProfile(user(GenderType.FEMALE, 165f, 31))
 
-        assertThat(profile).isEqualTo(bytes("31 06 01 02 82 1F"))
+        assertThat(profile).isEqualTo(hex("31 06 01 02 82 1F"))
     }
 
     @Test
@@ -177,7 +180,7 @@ class PicoocHandlerTest {
     @Test
     fun `parses the captured PICOOC-CQ weight frame`() {
         val frame = PicoocHandler.parseLiveFrame(
-            bytes("39 10 6A 7B 9A E1 05 9A 13 A6 86 2C 00 02 B7 00"),
+            hex("39 10 6A 7B 9A E1 05 9A 13 A6 86 2C 00 02 B7 00"),
         )!!
 
         assertThat(frame.weightKg).isWithin(0.0001f).of(71.7f)
@@ -221,12 +224,12 @@ class PicoocHandlerTest {
      */
     @Test
     fun `parses the captured heart rate exchange`() {
-        val measuring = bytes("3C 05 00 00 01")
+        val measuring = hex("3C 05 00 00 01")
         assertThat(PicoocHandler.parseHeartRate(measuring)).isNull()
         assertThat(PicoocHandler.heartRateStatus(measuring))
             .isEqualTo(PicoocHandler.HEART_RATE_MEASURING)
 
-        val result = bytes("3C 05 00 44 02")
+        val result = hex("3C 05 00 44 02")
         assertThat(PicoocHandler.parseHeartRate(result)).isEqualTo(68)
         assertThat(PicoocHandler.heartRateStatus(result))
             .isEqualTo(PicoocHandler.HEART_RATE_FINAL)
@@ -234,14 +237,14 @@ class PicoocHandlerTest {
 
     @Test
     fun `falls back to a single byte on shorter heart rate frames`() {
-        assertThat(PicoocHandler.parseHeartRate(bytes("3C 03 48"))).isEqualTo(72)
-        assertThat(PicoocHandler.parseHeartRate(bytes("3C 03 00"))).isNull()
-        assertThat(PicoocHandler.parseHeartRate(bytes("3C 03"))).isNull()
+        assertThat(PicoocHandler.parseHeartRate(hex("3C 03 48"))).isEqualTo(72)
+        assertThat(PicoocHandler.parseHeartRate(hex("3C 03 00"))).isNull()
+        assertThat(PicoocHandler.parseHeartRate(hex("3C 03"))).isNull()
     }
 
     @Test
     fun `dumps every heart rate candidate for diagnosing other models`() {
-        val candidates = PicoocHandler.heartRateCandidates(bytes("3C 05 00 44 02")).toMap()
+        val candidates = PicoocHandler.heartRateCandidates(hex("3C 05 00 44 02")).toMap()
 
         assertThat(candidates).containsExactly(
             "u16be[2..3]", 68,
@@ -264,7 +267,7 @@ class PicoocHandlerTest {
 
         val reply = setup.transport.writes.single().payload
         assertThat(reply.size).isEqualTo(10)
-        assertThat(reply.copyOf(3)).isEqualTo(bytes("F1 0A 3A"))
+        assertThat(reply.copyOf(3)).isEqualTo(hex("F1 0A 3A"))
     }
 
     /**
@@ -283,7 +286,7 @@ class PicoocHandlerTest {
         runCurrent()
 
         assertThat(setup.transport.writes).hasSize(2)
-        assertThat(setup.transport.writes[1].payload).isEqualTo(bytes("31 06 01 01 A0 18"))
+        assertThat(setup.transport.writes[1].payload).isEqualTo(hex("31 06 01 01 A0 18"))
     }
 
     @Test
@@ -297,7 +300,7 @@ class PicoocHandlerTest {
         advanceTimeBy(PicoocHandler.PROFILE_DELAY_MS)
         runCurrent()
 
-        assertThat(setup.transport.writes.count { it.payload.contentEquals(bytes("31 06 01 01 A0 18")) })
+        assertThat(setup.transport.writes.count { it.payload.contentEquals(hex("31 06 01 01 A0 18")) })
             .isEqualTo(1)
     }
 
@@ -316,14 +319,14 @@ class PicoocHandlerTest {
         setup.handler.handleConnected(setup.user)
         setup.transport.clearWrites()
 
-        setup.handler.handleNotification(notifyCharacteristic, bytes("30 02"))
+        setup.handler.handleNotification(notifyCharacteristic, hex("30 02"))
 
-        assertThat(setup.transport.writes.single().payload).isEqualTo(bytes("F1 03 30"))
+        assertThat(setup.transport.writes.single().payload).isEqualTo(hex("F1 03 30"))
         advanceTimeBy(PicoocHandler.PROFILE_DELAY_MS)
         runCurrent()
 
         assertThat(setup.transport.writes).hasSize(2)
-        assertThat(setup.transport.writes[1].payload).isEqualTo(bytes("31 06 01 01 A0 18"))
+        assertThat(setup.transport.writes[1].payload).isEqualTo(hex("31 06 01 01 A0 18"))
     }
 
     @Test
@@ -332,12 +335,12 @@ class PicoocHandlerTest {
         setup.handler.handleConnected(setup.user)
         setup.transport.clearWrites()
 
-        setup.handler.handleNotification(notifyCharacteristic, bytes("51 0B 01 02 03 04 05 06 07 08 09"))
+        setup.handler.handleNotification(notifyCharacteristic, hex("51 0B 01 02 03 04 05 06 07 08 09"))
         setup.handler.handleNotification(notifyCharacteristic, liveFrame(complete = false))
 
         // The reply to 0x51 is still a 0x3A time frame, only the prefix changes.
-        assertThat(setup.transport.writes[0].payload.copyOf(3)).isEqualTo(bytes("A1 0A 3A"))
-        assertThat(setup.transport.writes[1].payload).isEqualTo(bytes("A1 03 39"))
+        assertThat(setup.transport.writes[0].payload.copyOf(3)).isEqualTo(hex("A1 0A 3A"))
+        assertThat(setup.transport.writes[1].payload).isEqualTo(hex("A1 03 39"))
     }
 
     // --- measurement session ---------------------------------------------------------------
@@ -354,7 +357,7 @@ class PicoocHandlerTest {
 
         assertThat(setup.callbacks.published).isEmpty()
         assertThat(setup.transport.writes.map { it.payload.toList() })
-            .containsExactlyElementsIn(List(3) { bytes("F1 03 39").toList() })
+            .containsExactlyElementsIn(List(3) { hex("F1 03 39").toList() })
     }
 
     @Test
@@ -364,7 +367,7 @@ class PicoocHandlerTest {
 
         setup.handler.handleNotification(notifyCharacteristic, liveFrame(complete = true))
         setup.handler.handleNotification(notifyCharacteristic, compositionFrame())
-        setup.handler.handleNotification(notifyCharacteristic, bytes("3C 03 48"))
+        setup.handler.handleNotification(notifyCharacteristic, hex("3C 03 48"))
 
         assertThat(setup.callbacks.published).isEmpty()
         advanceTimeBy(PicoocHandler.SETTLE_WAIT_MS - 1)
@@ -394,7 +397,7 @@ class PicoocHandlerTest {
         setup.handler.handleConnected(setup.user)
 
         setup.handler.handleNotification(notifyCharacteristic, liveFrame(complete = true))
-        setup.handler.handleNotification(notifyCharacteristic, bytes("3C 03 48"))
+        setup.handler.handleNotification(notifyCharacteristic, hex("3C 03 48"))
         setup.handler.handleNotification(notifyCharacteristic, compositionFrame())
         advanceTimeBy(PicoocHandler.SETTLE_WAIT_MS)
         runCurrent()
@@ -465,19 +468,19 @@ class PicoocHandlerTest {
 
         setup.handler.handleNotification(
             notifyCharacteristic,
-            bytes("39 10 6A 7B A5 50 05 A2 13 BA 86 36 00 02 C8 00"),
+            hex("39 10 6A 7B A5 50 05 A2 13 BA 86 36 00 02 C8 00"),
         )
         // 4 s of silence, then the scale reports that it is measuring the heart rate.
         advanceTimeBy(4_000)
         runCurrent()
-        setup.handler.handleNotification(notifyCharacteristic, bytes("3C 05 00 00 01"))
+        setup.handler.handleNotification(notifyCharacteristic, hex("3C 05 00 00 01"))
 
         // 6.4 s more before the reading lands — far longer than the old 1.5 s window.
         advanceTimeBy(6_400)
         runCurrent()
         assertThat(setup.callbacks.published).isEmpty()
 
-        setup.handler.handleNotification(notifyCharacteristic, bytes("3C 05 00 44 02"))
+        setup.handler.handleNotification(notifyCharacteristic, hex("3C 05 00 44 02"))
         setup.handler.handleDisconnected()
 
         val measurement = setup.callbacks.published.single()
@@ -494,20 +497,20 @@ class PicoocHandlerTest {
         setup.handler.handleConnected(setup.user)
         setup.transport.clearWrites()
 
-        setup.handler.handleNotification(notifyCharacteristic, bytes("3E 08 01 02 03 04 05 06"))
-        setup.handler.handleNotification(notifyCharacteristic, bytes("3F 05 01 02 03"))
-        setup.handler.handleNotification(notifyCharacteristic, bytes("36 04 01 02"))
-        setup.handler.handleNotification(notifyCharacteristic, bytes("37 02"))
+        setup.handler.handleNotification(notifyCharacteristic, hex("3E 08 01 02 03 04 05 06"))
+        setup.handler.handleNotification(notifyCharacteristic, hex("3F 05 01 02 03"))
+        setup.handler.handleNotification(notifyCharacteristic, hex("36 04 01 02"))
+        setup.handler.handleNotification(notifyCharacteristic, hex("37 02"))
         // Neither of these carries data the scale waits on, so neither is acked.
-        setup.handler.handleNotification(notifyCharacteristic, bytes("3B 03 01"))
-        setup.handler.handleNotification(notifyCharacteristic, bytes("7F 02"))
+        setup.handler.handleNotification(notifyCharacteristic, hex("3B 03 01"))
+        setup.handler.handleNotification(notifyCharacteristic, hex("7F 02"))
 
         assertThat(setup.callbacks.published).isEmpty()
         assertThat(setup.transport.writes.map { it.payload.toList() }).containsExactly(
-            bytes("F1 03 3E").toList(),
-            bytes("F1 03 3F").toList(),
-            bytes("F1 03 36").toList(),
-            bytes("F1 03 37").toList(),
+            hex("F1 03 3E").toList(),
+            hex("F1 03 3F").toList(),
+            hex("F1 03 36").toList(),
+            hex("F1 03 37").toList(),
         )
     }
 
@@ -521,10 +524,10 @@ class PicoocHandlerTest {
         setup.handler.handleConnected(setup.user)
         setup.transport.clearWrites()
 
-        repeat(3) { setup.handler.handleNotification(notifyCharacteristic, bytes("3C 05 00 00 01")) }
+        repeat(3) { setup.handler.handleNotification(notifyCharacteristic, hex("3C 05 00 00 01")) }
 
         assertThat(setup.transport.writes.map { it.payload.toList() })
-            .containsExactlyElementsIn(List(3) { bytes("F1 03 3C").toList() })
+            .containsExactlyElementsIn(List(3) { hex("F1 03 3C").toList() })
     }
 
     @Test
@@ -535,28 +538,28 @@ class PicoocHandlerTest {
 
         setup.handler.handleNotification(notifyCharacteristic, compositionFrame())
 
-        assertThat(setup.transport.writes.single().payload).isEqualTo(bytes("F1 03 32"))
+        assertThat(setup.transport.writes.single().payload).isEqualTo(hex("F1 03 32"))
     }
 
     // --- helpers ---------------------------------------------------------------------------
 
     /** The 0x3A handshake a PICOOC-CQ actually sent, BOM block and all. */
     private val capturedHandshake =
-        bytes("3A 12 0A 00 00 00 00 00 00 00 00 10 39 03 A0 46 47 03")
+        hex("3A 12 0A 00 00 00 00 00 00 00 00 10 39 03 A0 46 47 03")
 
     /**
      * A 0x39 frame reading 70.00 kg / 500.0 Ω / 154.3 lb / 5.25° phase angle.
      * Byte 15 is the completion flag: 0 means settled and reportable.
      */
     private fun liveFrame(complete: Boolean): ByteArray =
-        bytes("39 10 12 34 56 78 05 78 13 88 06 07 00 02 0D") + byteArrayOf(if (complete) 0 else 1)
+        hex("39 10 12 34 56 78 05 78 13 88 06 07 00 02 0D") + byteArrayOf(if (complete) 0 else 1)
 
     /**
      * A 0x32 frame reading 70.00 kg / 18.5 % fat / 55.2 % water / 3.00 kg bone /
      * visceral 8 / body age 27 / 500 Ω, with recognisable filler in the undocumented fields.
      */
     private fun compositionFrame(): ByteArray =
-        bytes("32 14 05 78 00 B9 02 28 11 22 00 3C 33 44 08 1B 00 00 01 F4")
+        hex("32 14 05 78 00 B9 02 28 11 22 00 3C 33 44 08 1B 00 00 01 F4")
 
     private fun attachedHandler(
         user: ScaleUser = user(GenderType.MALE, 180f, 24),
@@ -579,24 +582,6 @@ class PicoocHandlerTest {
         val birthday = Calendar.getInstance().apply { add(Calendar.YEAR, -age) }.time
         return ScaleUser(id = 7, birthday = birthday, bodyHeight = heightCm, gender = gender)
     }
-
-    private fun device(name: String) = ScannedDeviceInfo(
-        name = name,
-        address = "00:11:22:33:44:55",
-        rssi = -50,
-        serviceUuids = emptyList(),
-        manufacturerData = null,
-    )
-
-    private fun uuid16(short: Int): UUID =
-        UUID.fromString(String.format("0000%04x-0000-1000-8000-00805f9b34fb", short))
-
-    private fun bytes(hex: String): ByteArray = hex
-        .trim()
-        .split(Regex("\\s+"))
-        .filter(String::isNotEmpty)
-        .map { it.toInt(16).toByte() }
-        .toByteArray()
 
     private data class Setup(
         val handler: PicoocHandler,

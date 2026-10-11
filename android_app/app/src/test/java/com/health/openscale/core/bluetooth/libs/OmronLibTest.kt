@@ -20,6 +20,7 @@ package com.health.openscale.core.bluetooth.libs
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import java.util.Calendar
+import com.health.openscale.core.bluetooth.ScaleCatalog.hex
 
 /**
  * Unit tests for the Omron WLC record decoder.
@@ -33,8 +34,6 @@ import java.util.Calendar
  */
 class OmronBodyCompositionLibTest {
 
-    private fun hex(s: String): ByteArray =
-        s.filterNot { it.isWhitespace() }.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 
     /** 48-byte HBF-702T record; visceral fat is stored in half levels (raw 16 → level 8.0). */
     private val record702t = hex(
@@ -185,8 +184,6 @@ class OmronBodyCompositionLibTest {
  */
 class OmronWlpFrameTest {
 
-    private fun hex(s: String): ByteArray =
-        s.filterNot { it.isWhitespace() }.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 
     private fun String.asBytes() = hex(this)
 

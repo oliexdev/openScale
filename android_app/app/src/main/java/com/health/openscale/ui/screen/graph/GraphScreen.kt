@@ -21,9 +21,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -35,7 +39,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,15 +53,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.window.core.layout.WindowSizeClass
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.Trend
 import com.health.openscale.core.facade.SettingsPreferenceKeys
+import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.ValueWithDifference
 import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.navigation.Routes
@@ -78,7 +86,7 @@ fun GraphScreen(
     sharedViewModel: SharedViewModel,
     bluetoothViewModel: BluetoothViewModel,
 ) {
-    val context = LocalContext.current
+    val resources = LocalResources.current
 
     val graphState by sharedViewModel
         .screenFlow(SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT, useSmoothing = true)
@@ -116,7 +124,7 @@ fun GraphScreen(
     // it as a key would re-fire this effect every time. The title and actions are
     // stable after the first composition.
     LaunchedEffect(Unit) {
-        sharedViewModel.setTopBarTitle(context.getString(R.string.route_title_graph))
+        sharedViewModel.setTopBarTitle(resources.getString(R.string.route_title_graph))
         sharedViewModel.setTopBarActions(listOfNotNull(bluetoothAction, addMeasurementAction, timeFilterAction))
     }
 
@@ -159,65 +167,151 @@ fun GraphScreen(
         )
     }
 
-    // ── Main content ──────────────────────────────────────────────────────────
-    Column(modifier = Modifier.fillMaxSize()) {
-        when (val state = graphState) {
-            SharedViewModel.UiState.Loading -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            }
-            is SharedViewModel.UiState.Error -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(state.message ?: stringResource(R.string.error_loading_data))
-                }
-            }
-            is SharedViewModel.UiState.Success -> {
-                if (allMeasurementsWithValues.isEmpty()) {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(stringResource(R.string.no_data_available))
-                    }
-                } else {
-                    // MeasurementChart internally calls screenFlow(GRAPH_CONTEXT, useSmoothing=true)
-                    // which hits the ViewModel cache — no second pipeline is created.
-                    MeasurementChart(
-                        modifier          = Modifier.fillMaxSize(),
-                        sharedViewModel   = sharedViewModel,
-                        screenContextName = SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT,
-                        showFilterControls = true,
-                        showPeriodChart   = true,
-                        showFilterTitle   = true,
-                        onPointSelected   = { selectedTs ->
-                            val result = sharedViewModel.findClosestMeasurement(
-                                selectedTs,
-                                allMeasurementsWithValues,
-                            ) ?: return@MeasurementChart
+    val sheetMeasurement = remember(sheetMeasurementId, allMeasurementsWithValues) {
+        allMeasurementsWithValues.firstOrNull { it.measurement.id == sheetMeasurementId }
+    }
+    val useSidePane = currentWindowAdaptiveInfoV2().windowSizeClass
+        .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
 
-                            val (_, mwv) = result
-                            val id  = mwv.measurement.id
-                            val now = System.currentTimeMillis()
+    val measurementDetails: @Composable (MeasurementWithValues) -> Unit = { mwv ->
+        val dateStr = remember(mwv.measurement.timestamp) {
+            DateFormat
+                .getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.getDefault())
+                .format(Date(mwv.measurement.timestamp))
+        }
+        val visibleValues = mwv.values.filter { it.type.isEnabled }
 
-                            if (lastTapId == id && (now - lastTapAt) <= doubleTapWindowMs) {
-                                sheetMeasurementId = id
-                                lastTapId = null
-                                lastTapAt = 0L
-                            } else {
-                                lastTapId = id
-                                lastTapAt = now
-                            }
-                        },
+        Column(
+            modifier            = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Row(
+                modifier          = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text     = dateStr,
+                    style    = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                val uid = selectedUserId
+                IconButton(
+                    enabled = uid != null,
+                    onClick = {
+                        sheetMeasurementId = null
+                        if (uid != null) {
+                            navController.navigate(
+                                Routes.measurementDetail(mwv.measurement.id, uid)
+                            )
+                        }
+                    },
+                ) {
+                    Icon(
+                        imageVector        = Icons.Default.Edit,
+                        contentDescription = stringResource(R.string.action_edit_measurement_desc),
                     )
+                }
+                IconButton(
+                    enabled = uid != null,
+                    onClick = { showDeleteDialog = true },
+                ) {
+                    Icon(
+                        imageVector        = Icons.Default.Delete,
+                        contentDescription = stringResource(R.string.action_delete_measurement_desc),
+                    )
+                }
+                IconButton(onClick = { sheetMeasurementId = null }) {
+                    Icon(
+                        imageVector        = Icons.Default.Close,
+                        contentDescription = stringResource(R.string.cancel_button),
+                    )
+                }
+            }
+
+            visibleValues.forEach { v ->
+                MeasurementValueRow(
+                    sharedViewModel       = sharedViewModel,
+                    valueWithTrend        = ValueWithDifference(
+                        currentValue = v,
+                        difference   = null,
+                        trend        = Trend.NOT_APPLICABLE,
+                    ),
+                    userEvaluationContext = userEvalContext,
+                    measuredAtMillis      = mwv.measurement.timestamp,
+                )
+            }
+        }
+    }
+
+    // ── Main content ──────────────────────────────────────────────────────────
+    Row(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+            when (val state = graphState) {
+                SharedViewModel.UiState.Loading -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+                is SharedViewModel.UiState.Error -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(state.message ?: stringResource(R.string.error_loading_data))
+                    }
+                }
+                is SharedViewModel.UiState.Success -> {
+                    if (allMeasurementsWithValues.isEmpty()) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(stringResource(R.string.no_data_available))
+                        }
+                    } else {
+                        // MeasurementChart internally calls screenFlow(GRAPH_CONTEXT, useSmoothing=true)
+                        // which hits the ViewModel cache — no second pipeline is created.
+                        MeasurementChart(
+                            modifier          = Modifier.fillMaxSize(),
+                            sharedViewModel   = sharedViewModel,
+                            screenContextName = SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT,
+                            showFilterControls = true,
+                            showPeriodChart   = true,
+                            showFilterTitle   = true,
+                            onPointSelected   = { selectedTs ->
+                                val result = sharedViewModel.findClosestMeasurement(
+                                    selectedTs,
+                                    allMeasurementsWithValues,
+                                ) ?: return@MeasurementChart
+
+                                val (_, mwv) = result
+                                val id  = mwv.measurement.id
+                                val now = System.currentTimeMillis()
+
+                                if (lastTapId == id && (now - lastTapAt) <= doubleTapWindowMs) {
+                                    sheetMeasurementId = id
+                                    lastTapId = null
+                                    lastTapAt = 0L
+                                } else {
+                                    lastTapId = id
+                                    lastTapAt = now
+                                }
+                            },
+                        )
+                    }
+                }
+            }
+        }
+        if (useSidePane && sheetMeasurement != null) {
+            Surface(
+                modifier = Modifier.width(360.dp).fillMaxHeight(),
+                color    = MaterialTheme.colorScheme.surfaceContainerLow,
+            ) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    measurementDetails(sheetMeasurement)
                 }
             }
         }
     }
 
-    // ── BottomSheet ───────────────────────────────────────────────────────────
-    val sheetMeasurement = remember(sheetMeasurementId, allMeasurementsWithValues) {
-        allMeasurementsWithValues.firstOrNull { it.measurement.id == sheetMeasurementId }
-    }
-
-    if (sheetMeasurementId != null && sheetMeasurement != null) {
+    // ── Measurement details: bottom sheet, or a side pane on expanded windows ─
+    if (!useSidePane && sheetMeasurementId != null && sheetMeasurement != null) {
         LaunchedEffect(sheetMeasurementId) { sheetState.expand() }
 
         ModalBottomSheet(
@@ -226,76 +320,7 @@ fun GraphScreen(
             dragHandle       = { BottomSheetDefaults.DragHandle() },
             containerColor   = MaterialTheme.colorScheme.surfaceContainerHighest,
         ) {
-            val mwv     = sheetMeasurement
-            val dateStr = remember(mwv.measurement.timestamp) {
-                DateFormat
-                    .getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.getDefault())
-                    .format(Date(mwv.measurement.timestamp))
-            }
-            val visibleValues = mwv.values.filter { it.type.isEnabled }
-
-            Column(
-                modifier            = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Row(
-                    modifier          = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text     = dateStr,
-                        style    = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.weight(1f),
-                    )
-                    val uid = selectedUserId
-                    IconButton(
-                        enabled = uid != null,
-                        onClick = {
-                            sheetMeasurementId = null
-                            if (uid != null) {
-                                navController.navigate(
-                                    Routes.measurementDetail(mwv.measurement.id, uid)
-                                )
-                            }
-                        },
-                    ) {
-                        Icon(
-                            imageVector        = Icons.Default.Edit,
-                            contentDescription = stringResource(R.string.action_edit_measurement_desc),
-                        )
-                    }
-                    IconButton(
-                        enabled = uid != null,
-                        onClick = { showDeleteDialog = true },
-                    ) {
-                        Icon(
-                            imageVector        = Icons.Default.Delete,
-                            contentDescription = stringResource(R.string.action_delete_measurement_desc),
-                        )
-                    }
-                    IconButton(onClick = { sheetMeasurementId = null }) {
-                        Icon(
-                            imageVector        = Icons.Default.Close,
-                            contentDescription = stringResource(R.string.cancel_button),
-                        )
-                    }
-                }
-
-                visibleValues.forEach { v ->
-                    MeasurementValueRow(
-                        sharedViewModel       = sharedViewModel,
-                        valueWithTrend        = ValueWithDifference(
-                            currentValue = v,
-                            difference   = null,
-                            trend        = Trend.NOT_APPLICABLE,
-                        ),
-                        userEvaluationContext = userEvalContext,
-                        measuredAtMillis      = mwv.measurement.timestamp,
-                    )
-                }
-            }
+            measurementDetails(sheetMeasurement)
         }
     }
 }

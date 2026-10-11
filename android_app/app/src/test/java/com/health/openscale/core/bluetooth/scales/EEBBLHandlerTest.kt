@@ -20,6 +20,7 @@ package com.health.openscale.core.bluetooth.scales
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.service.ScannedDeviceInfo
 import org.junit.Test
+import com.health.openscale.core.bluetooth.ScaleCatalog.device
 
 class EEBBLHandlerTest {
 
@@ -30,12 +31,4 @@ class EEBBLHandlerTest {
         assertThat(support.capabilities).contains(DeviceCapability.BODY_COMPOSITION)
         assertThat(support.implemented).doesNotContain(DeviceCapability.BODY_COMPOSITION)
     }
-
-    private fun device(name: String) = ScannedDeviceInfo(
-        name = name,
-        address = "00:11:22:33:44:55",
-        rssi = -50,
-        serviceUuids = emptyList(),
-        manufacturerData = null,
-    )
 }

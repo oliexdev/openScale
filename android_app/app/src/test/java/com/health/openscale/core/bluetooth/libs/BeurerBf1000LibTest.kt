@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.libs
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
+import com.health.openscale.core.bluetooth.ScaleCatalog.hex
 
 /**
  * Tests for the Beurer BF1000 Super Precision private segmental decoder.
@@ -29,8 +30,6 @@ import org.junit.Test
  * StandardWeightProfileHandler.
  */
 class BeurerBf1000LibTest {
-    private fun hex(s: String): ByteArray =
-        s.filterNot { it.isWhitespace() }.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 
     @Test
     fun `decodes private segmental fat measurement`() {

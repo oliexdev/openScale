@@ -17,10 +17,13 @@
  */
 package com.health.openscale.core.usecase
 
+import android.content.Context
+import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.User
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.model.UserEvaluationContext
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -41,6 +44,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class UserUseCases @Inject constructor(
+    @param:ApplicationContext private val appContext: Context,
     private val databaseRepository: DatabaseRepository,
     private val settingsFacade: SettingsFacade,
     private val sync: SyncUseCases
@@ -130,7 +134,10 @@ class UserUseCases @Inject constructor(
         sync.triggerSyncClear(userId, "com.health.openscale.sync")
         sync.triggerSyncClear(userId, "com.health.openscale.sync.oss")
         sync.triggerSyncClear(userId, "com.health.openscale.sync.debug")
-        databaseRepository.deleteAllMeasurementsForUser(userId)
+        val images = imageFileNamesForUser(userId)
+        databaseRepository.deleteAllMeasurementsForUser(userId).also {
+            MeasurementCrudUseCases.deleteImageFiles(appContext, images)
+        }
     }
 
     /**
@@ -146,7 +153,9 @@ class UserUseCases @Inject constructor(
         reseatSelection: Boolean = true
     ): Result<Int?> = runCatching {
         val currentSelected = settingsFacade.currentUserId.first()
+        val images = imageFileNamesForUser(user.id)
         databaseRepository.deleteUser(user)
+        MeasurementCrudUseCases.deleteImageFiles(appContext, images)
 
         if (currentSelected == user.id) {
             if (reseatSelection) {
@@ -162,6 +171,12 @@ class UserUseCases @Inject constructor(
             currentSelected
         }
     }
+
+    private suspend fun imageFileNamesForUser(userId: Int): List<String> =
+        databaseRepository.getMeasurementsWithValuesForUser(userId).first()
+            .flatMap { it.values }
+            .filter { it.type.inputType == InputFieldType.IMAGE }
+            .mapNotNull { it.value.textValue }
 
     /** Observe effective app language with system fallback if unset/invalid. */
     fun observeAppLanguageCode(): Flow<String> =

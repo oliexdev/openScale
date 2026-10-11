@@ -21,6 +21,7 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import java.util.Calendar
 import java.util.TimeZone
+import com.health.openscale.core.bluetooth.ScaleCatalog.hex
 
 class HuaweiHagridWspLibTest {
 
@@ -88,6 +89,15 @@ class HuaweiHagridWspLibTest {
         assertThat(expectedResponse).hasLength(32)
         assertThat(HuaweiHagridWspLib.isValidAuthResponsePayload(expectedResponse, randA, randB, cak))
             .isTrue()
+        // Some firmwares append a status byte after the payload.
+        assertThat(
+            HuaweiHagridWspLib.isValidAuthResponsePayload(expectedResponse + 0x00, randA, randB, cak)
+        ).isTrue()
+        assertThat(
+            HuaweiHagridWspLib.isValidAuthResponsePayload(
+                expectedResponse.copyOf(expectedResponse.size - 1), randA, randB, cak
+            )
+        ).isFalse()
     }
 
     @Test
@@ -105,11 +115,11 @@ class HuaweiHagridWspLibTest {
     @Test
     fun `huawei scale 3 PoC capture decodes to the expected measurement`() {
         val rootKey = HuaweiHagridWspLib.deriveHagridRootKey(
-            hexToBytes("CA4946D061C9FE534F6044F930EBB69B"),
-            hexToBytes("FBCE6E2B4BAF80ED969BA26B4A4B9325"),
+            hex("CA4946D061C9FE534F6044F930EBB69B"),
+            hex("FBCE6E2B4BAF80ED969BA26B4A4B9325"),
             HuaweiHagridWspLib.hagridC3FromBluetoothAddress("38:1E:C7:66:08:D3")
         )
-        assertThat(rootKey).isEqualTo(hexToBytes("d680f0f3b50576a74c8815653e8b7243"))
+        assertThat(rootKey).isEqualTo(hex("d680f0f3b50576a74c8815653e8b7243"))
 
         val workKey = HuaweiHagridWspLib.decryptPayload(
             deframe(
@@ -119,7 +129,7 @@ class HuaweiHagridWspLibTest {
             ),
             rootKey
         )
-        assertThat(workKey).isEqualTo(hexToBytes("36697370363671706d64386733696b62"))
+        assertThat(workKey).isEqualTo(hex("36697370363671706d64386733696b62"))
 
         val plain = HuaweiHagridWspLib.decryptPayload(
             deframe(
@@ -136,7 +146,7 @@ class HuaweiHagridWspLibTest {
         // body composition metrics (musclePercent / waterPercent / boneMassKg / visceralFat
         // have been removed from HagridWeightMeasurement entirely).
         assertThat(plain).isEqualTo(
-            hexToBytes("b1212d01ea07080917271da0ea13000000000000000000006100")
+            hex("b1212d01ea07080917271da0ea13000000000000000000006100")
         )
 
         val measurement = HuaweiHagridWspLib.parseRealtimeMeasurement(plain)
@@ -262,16 +272,8 @@ class HuaweiHagridWspLibTest {
     }
 
     private fun framePayload(frameHex: String): ByteArray {
-        val frame = hexToBytes(frameHex)
+        val frame = hex(frameHex)
         return frame.copyOfRange(3, frame.size - 2)
-    }
-
-    private fun hexToBytes(hex: String): ByteArray {
-        require(hex.length % 2 == 0) { "Hex string must have an even length" }
-
-        return ByteArray(hex.length / 2) { index ->
-            hex.substring(index * 2, index * 2 + 2).toInt(16).toByte()
-        }
     }
 
     private fun realtimePayload(): ByteArray =

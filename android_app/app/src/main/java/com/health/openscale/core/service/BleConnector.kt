@@ -513,7 +513,7 @@ class BleConnector(
                     InputFieldType.DATE, InputFieldType.TIME -> MeasurementValue(
                         measurementId = 0, typeId = type.id, dateValue = (raw as java.util.Date).time
                     )
-                    InputFieldType.USER -> continue
+                    InputFieldType.USER, InputFieldType.IMAGE -> continue
                 }
             }
 
@@ -535,7 +535,7 @@ class BleConnector(
                     "Measurement from $deviceName for User $currentAppUserId saved (ID: $measurementId). Values: ${values.size}"
                 )
                 pendingSavedCount.incrementAndGet()
-                lastSavedArgs = listOf(measurementData[MeasurementType.WEIGHT] ?: 0f, deviceName)
+                lastSavedArgs = listOf(measurementData[MeasurementType.WEIGHT]?.value ?: 0f, deviceName)
                 savedBurstSignal.tryEmit(Unit)
             } catch (e: Exception) {
                 LogManager.e(TAG, "Error saving measurement from $deviceName.", e)

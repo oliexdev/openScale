@@ -18,14 +18,23 @@
 package com.health.openscale.core.utils
 
 import android.app.LocaleManager
+import android.icu.text.MeasureFormat
+import android.icu.util.Measure
+import android.icu.util.MeasureUnit
 import android.content.res.Configuration
 import android.content.res.Resources
+import android.text.format.DateFormat
 import android.os.Build
 import android.os.LocaleList
 import androidx.activity.ComponentActivity
 import com.health.openscale.core.data.SupportedLanguage
 import com.health.openscale.core.data.UnitType
 import java.text.NumberFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import java.time.temporal.WeekFields
 import java.util.Locale
 
@@ -153,21 +162,63 @@ object LocaleUtils {
         }
         val absVal = kotlin.math.abs(n)
 
-        return when (unit) {
-            UnitType.ST -> {
-                val (st, lb) = ConverterUtils.decimalStToStLb(absVal)
-                "$signPrefix$st st $lb lb"
-            }
-            UnitType.KG  -> "$signPrefix${formatNumber(absVal, maxFraction = 2, locale)} kg"
-            UnitType.LB  -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} lb"
-            UnitType.PERCENT -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} %"
-            UnitType.CM  -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} cm"
-            UnitType.INCH-> "$signPrefix${formatNumber(absVal, maxFraction = 2, locale)} in"
-            UnitType.KCAL-> "$signPrefix${formatNumber(absVal, maxFraction = 0, locale)} kcal"
-            UnitType.BPM -> "$signPrefix${formatNumber(absVal, maxFraction = 0, locale)} bpm"
-            UnitType.OHM -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} Ω"
-            UnitType.NONE-> signPrefix + formatNumber(absVal, maxFraction = 1, locale)
+        if (unit == UnitType.ST) {
+            val (st, lb) = ConverterUtils.decimalStToStLb(absVal)
+            return "$signPrefix$st st $lb lb"
         }
+        val number = formatNumber(absVal, maxFractionFor(unit), locale)
+        val suffix = if (unit.displayName.isEmpty()) "" else " ${unit.displayName}"
+        return "$signPrefix$number$suffix"
+    }
+
+    /**
+     * How many decimals a value of this [unit] is shown with. Single source of truth for
+     * [formatValueForDisplay] and for callers that need the bare number — a table that puts the
+     * unit in its column header still has to round the way the rest of the app rounds.
+     *
+     * [UnitType.ST] has no meaningful answer: it renders as two parts ("12 st 7 lb").
+     */
+    @JvmStatic
+    fun maxFractionFor(unit: UnitType): Int = when (unit) {
+        UnitType.KG, UnitType.INCH -> 2
+        UnitType.KCAL, UnitType.BPM -> 0
+        else -> 1
+    }
+
+    /**
+     * The value alone, rounded as [formatValueForDisplay] would round it but without the unit —
+     * for tables that name the unit once, in the row or column header.
+     *
+     * [fixedDecimals] keeps trailing zeros, so a column of numbers lines up on the decimal point:
+     * "80.61" above "78.60", not above "78.6".
+     *
+     * [UnitType.ST] keeps its suffixes, since "12 st 7 lb" cannot be written as a bare number.
+     */
+    @JvmStatic
+    fun formatValueWithoutUnit(
+        value: String,
+        unit: UnitType,
+        includeSign: Boolean = false,
+        locale: Locale = effectiveLocale(),
+        fixedDecimals: Boolean = false,
+    ): String {
+        if (unit == UnitType.ST) return formatValueForDisplay(value, unit, includeSign, locale)
+        if (value.isBlank()) return ""
+
+        val n = value.replace(',', '.').toDoubleOrNull() ?: return value
+        val signPrefix = when {
+            !includeSign -> ""
+            n > 0        -> "+"
+            n < 0        -> "−"
+            else         -> ""
+        }
+        val fractions = maxFractionFor(unit)
+        return signPrefix + formatNumber(
+            value       = kotlin.math.abs(n),
+            maxFraction = fractions,
+            locale      = locale,
+            minFraction = if (fixedDecimals) fractions else 0,
+        )
     }
 
     /**
@@ -191,14 +242,66 @@ object LocaleUtils {
     }.getOrDefault(WeekFields.ISO)
 
     /**
+     * Formats the span from [from] to [to] as weeks and days, e.g. "6 weeks, 3 days". Zero
+     * components are left out; below a week only the day count is returned.
+     *
+     * Weeks are the coarsest unit on purpose — months would have to come from [java.time.Period]
+     * to be calendar-correct, and a diet is counted in weeks anyway.
+     *
+     * Unit names, plural rules and the list separator come from [MeasureFormat] — a hand-rolled
+     * singular/plural pair is wrong in every language with more than two forms, and openScale
+     * ships Polish, Russian and Slovenian among others.
+     */
+    @JvmStatic
+    fun formatElapsed(from: LocalDate, to: LocalDate): String {
+        val totalDays = ChronoUnit.DAYS.between(from, to).coerceAtLeast(0L).toInt()
+        if (totalDays < DAYS_PER_WEEK) return formatDays(totalDays)
+
+        val parts = buildList {
+            add(Measure(totalDays / DAYS_PER_WEEK, MeasureUnit.WEEK))
+            val days = totalDays % DAYS_PER_WEEK
+            if (days > 0) add(Measure(days, MeasureUnit.DAY))
+        }
+        return measureFormat(MeasureFormat.FormatWidth.WIDE).formatMeasures(*parts.toTypedArray())
+    }
+
+    /** An epoch timestamp as the calendar date it falls on in the device's zone. */
+    @JvmStatic
+    fun toLocalDate(timestampMillis: Long): LocalDate =
+        Instant.ofEpochMilli(timestampMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+
+    /**
+     * A short localized date, e.g. "Oct 31" or "31. Okt". The year is only spelled out when the
+     * date is not in the current one, where leaving it off would be ambiguous.
+     */
+    @JvmStatic
+    fun formatCompactDate(date: LocalDate): String {
+        val locale = effectiveLocale()
+        val skeleton = if (date.year == LocalDate.now().year) "dMMM" else "dMMMy"
+        val pattern = DateFormat.getBestDateTimePattern(locale, skeleton)
+        return date.format(DateTimeFormatter.ofPattern(pattern, locale))
+    }
+
+    /** A bare localized day count, e.g. "45 days". */
+    @JvmStatic
+    fun formatDays(days: Int): String =
+        measureFormat(MeasureFormat.FormatWidth.WIDE)
+            .formatMeasures(Measure(days.coerceAtLeast(0), MeasureUnit.DAY))
+
+    private fun measureFormat(width: MeasureFormat.FormatWidth): MeasureFormat =
+        MeasureFormat.getInstance(effectiveLocale(), width)
+
+    private const val DAYS_PER_WEEK = 7
+
+    /**
      * Locale-aware number formatting with clamped fraction digits.
      * Returns the raw string if parsing fails.
      */
     @JvmStatic
-    fun formatNumber(value: Double, maxFraction: Int, locale: Locale): String {
+    fun formatNumber(value: Double, maxFraction: Int, locale: Locale, minFraction: Int = 0): String {
         val cleaned = if (kotlin.math.abs(value) < 1e-9) 0.0 else value // avoid "-0"
         return NumberFormat.getNumberInstance(locale).apply {
-            minimumFractionDigits = 0
+            minimumFractionDigits = minFraction
             maximumFractionDigits = maxFraction
             isGroupingUsed = false
         }.format(cleaned)

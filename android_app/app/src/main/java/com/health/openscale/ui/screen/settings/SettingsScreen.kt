@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -71,12 +72,16 @@ data class SettingsItem(
  * @param navController The [NavController] used for navigating to different settings screens.
  * @param sharedViewModel The [SharedViewModel] used to update shared UI elements like the top bar title.
  * @param settingsViewModel The [SettingsViewModel], passed for consistency but not directly used in this screen's primary logic.
+ * @param selectedRoute Route of the category shown in the detail pane, highlighted in the list.
+ * @param onOpenItem Opens a category in the detail pane; `null` navigates to its screen instead.
  */
 @Composable
 fun SettingsScreen(
     navController: NavController,
     sharedViewModel: SharedViewModel,
-    settingsViewModel: SettingsViewModel
+    settingsViewModel: SettingsViewModel,
+    selectedRoute: String? = null,
+    onOpenItem: ((String) -> Unit)? = null
 ) {
     // Define strings for titles and content descriptions in the Composable context
     val generalSettingsLabel = stringResource(R.string.settings_item_general)
@@ -133,9 +138,12 @@ fun SettingsScreen(
     )
 
     val settingsScreenTitle = stringResource(R.string.route_title_settings)
-    LaunchedEffect(Unit) {
-        sharedViewModel.setTopBarTitle(settingsScreenTitle)
-        sharedViewModel.setTopBarActions(emptyList())
+    // As the list beside a detail pane (a category is shown), that category owns the top bar.
+    if (selectedRoute == null) {
+        LaunchedEffect(Unit) {
+            sharedViewModel.setTopBarTitle(settingsScreenTitle)
+            sharedViewModel.setTopBarActions(emptyList())
+        }
     }
 
     Column(
@@ -150,10 +158,15 @@ fun SettingsScreen(
                     .fillMaxWidth() // Make card take full width
                     .padding(vertical = 8.dp) // Consistent vertical padding
                     .clickable {
-                        navController.navigate(item.route)
+                        if (onOpenItem != null) onOpenItem(item.route) else navController.navigate(item.route)
                     }
             ) {
                 ListItem(
+                    colors = if (item.route == selectedRoute) {
+                        ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                    } else {
+                        ListItemDefaults.colors()
+                    },
                     headlineContent = {
                         Text(
                             text = item.label,

@@ -41,6 +41,9 @@ import org.robolectric.annotation.Config
 @Config(sdk = [34])
 class UserGoalsDaoTest {
 
+    /** Any fixed start date; these tests are not about the start point. */
+    private val GOAL_START = 1_700_000_000_000L
+
     private lateinit var db: AppDatabase
     private var userId = 0
     private var typeId = 0
@@ -62,8 +65,8 @@ class UserGoalsDaoTest {
 
     @Test
     fun insert_duplicateCompositeKey_isIgnoredAndKeepsOriginal() = runBlocking {
-        val first = db.userGoalsDao().insert(UserGoals(userId, typeId, goalValue = 70f))
-        val second = db.userGoalsDao().insert(UserGoals(userId, typeId, goalValue = 99f))
+        val first = db.userGoalsDao().insert(UserGoals(userId, typeId, goalValue = 70f, startDate = GOAL_START))
+        val second = db.userGoalsDao().insert(UserGoals(userId, typeId, goalValue = 99f, startDate = GOAL_START))
 
         assertThat(first).isAtLeast(0L)
         assertThat(second).isEqualTo(-1L) // OnConflict.IGNORE
@@ -74,14 +77,14 @@ class UserGoalsDaoTest {
 
     @Test
     fun delete_removesGoalByCompositeKey() = runBlocking {
-        db.userGoalsDao().insert(UserGoals(userId, typeId, goalValue = 70f))
+        db.userGoalsDao().insert(UserGoals(userId, typeId, goalValue = 70f, startDate = GOAL_START))
         db.userGoalsDao().delete(userId, typeId)
         assertThat(db.userGoalsDao().getAllForUser(userId).first()).isEmpty()
     }
 
     @Test
     fun deleteUser_cascadesToGoals() = runBlocking {
-        db.userGoalsDao().insert(UserGoals(userId, typeId, goalValue = 70f))
+        db.userGoalsDao().insert(UserGoals(userId, typeId, goalValue = 70f, startDate = GOAL_START))
         db.userDao().delete(db.userDao().getById(userId).first()!!)
         assertThat(db.userGoalsDao().getAllForUser(userId).first()).isEmpty()
     }

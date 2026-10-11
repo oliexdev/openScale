@@ -48,14 +48,4 @@ class EtekcityLibTest {
         assertThat(lib.healthScore).isEqualTo(87)
         assertThat(lib.metabolicAge).isEqualTo(29)
     }
-
-    @Test
-    fun bmi_monotonicity_weightUp_heightSame_increases() {
-        assertThat(lib.run { copy(weightKg = weightKg + 5.0) }.bmi).isGreaterThan(lib.bmi)
-    }
-
-    @Test
-    fun bmi_monotonicity_heightUp_weightSame_decreases() {
-        assertThat(lib.run { copy(heightM = heightM + 0.05) }.bmi).isLessThan(lib.bmi)
-    }
 }

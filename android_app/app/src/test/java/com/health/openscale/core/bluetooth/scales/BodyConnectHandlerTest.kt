@@ -38,6 +38,8 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.util.Date
 import java.util.UUID
+import com.health.openscale.core.bluetooth.ScaleCatalog.uuid16
+import com.health.openscale.core.bluetooth.ScaleCatalog.device
 
 /**
  * Tests for [BodyConnectHandler].
@@ -598,16 +600,6 @@ class BodyConnectHandlerTest {
         override fun resolveString(resId: Int, vararg args: Any) = "res:$resId"
     }
 
-    private fun device(name: String, vararg services: Int) = ScannedDeviceInfo(
-        name = name,
-        address = "00:11:22:33:44:55",
-        rssi = -50,
-        serviceUuids = services.map { uuid16(it) },
-        manufacturerData = null,
-    )
-
-    private fun uuid16(short: Int): UUID =
-        UUID.fromString(String.format("0000%04x-0000-1000-8000-00805f9b34fb", short))
 
     private fun buildSlotFrame(slot: Int, name: String): ByteArray {
         val nameArray = ByteArray(16) { 0x20.toByte() }

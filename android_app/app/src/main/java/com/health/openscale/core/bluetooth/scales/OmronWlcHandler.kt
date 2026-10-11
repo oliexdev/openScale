@@ -20,6 +20,7 @@ package com.health.openscale.core.bluetooth.scales
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.OmronBodyCompositionLib
@@ -57,6 +58,16 @@ import com.health.openscale.core.data.Percent
 class OmronWlcHandler : ScaleDeviceHandler() {
 
     companion object {
+        /**
+         * Body age the scale stores alongside a record, on the models whose profile has the
+         * field. The identity stays vendor-neutral so a user switching brands keeps one
+         * continuous column.
+         */
+        val METABOLIC_AGE = MeasurementType.deviceInt(
+            "metabolic_age", R.string.measurement_type_metabolic_age,
+            icon = MeasurementTypeIcon.IC_M_TIMER, color = 0xFF795548.toInt()
+        )
+
         val SVC_OMRON_WLP: UUID = UUID.fromString("ecbe3980-c9a2-11e1-b1bd-0002a5d5c51b")
         val CHR_UNLOCK: UUID = UUID.fromString("b305b680-aee7-11e1-a730-0002a5d5c51b")
 
@@ -502,6 +513,7 @@ class OmronWlcHandler : ScaleDeviceHandler() {
         m[MeasurementType.MUSCLE] = Percent(skeletalMusclePercent ?: 0f)
         m[MeasurementType.VISCERAL_FAT] = visceralFatLevel ?: 0f
         m[MeasurementType.BMR] = Kcal(bmrKcal?.toFloat() ?: 0f)
+        bodyAgeYears?.takeIf { it in 10..99 }?.let { m[METABOLIC_AGE] = it }
     }
 
     // ---- chunked EEPROM reads ------------------------------------------------------------------

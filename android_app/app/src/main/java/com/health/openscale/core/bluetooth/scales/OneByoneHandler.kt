@@ -25,9 +25,11 @@ import com.health.openscale.core.bluetooth.libs.OneByoneLib
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.service.ScannedDeviceInfo
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.UUID
-import kotlin.math.max
 import com.health.openscale.core.data.Kg
 import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.Percent
@@ -61,10 +63,26 @@ class OneByoneHandler : ScaleDeviceHandler() {
     private var waitAckClock = false          // true after sending F1 until we receive "F1 00"
     private var historicMode = false          // true while reading history (F2 00 .. F2 00)
     private var historyCount = 0              // number of historic measurements seen
+    private var clockAckFallbackJob: Job? = null
+    private var promptedForMeasurement = false
 
-    // prevent saving measurements too close in time (ms)
-    private val DATE_TIME_THRESHOLD_MS = 3000
-    private var lastSavedAt: Long = 0L
+    // One live measurement per connection: the scale repeats its settled frame, immediately as a
+    // duplicate and again a few seconds later once its bioimpedance retry has run.
+    private var publishedLive = false
+
+    /**
+     * True while connected to the 1byone "Health Scale".
+     *
+     * The frame layout is shared across this family, but two acceptance rules are not: which byte-9
+     * values mean "settled", and whether a weigh-in without impedance is worth keeping. Both were
+     * established from the 1byone vendor app ("New iWellness 4.0") and confirmed on physical 1byone
+     * units, so they are applied to that model alone. The Eufy C1/P1/A1 keep the long-standing rule
+     * -- `b9 != 1` plus impedance required -- because nobody here has one of those to test against,
+     * and a narrowed whitelist would make every live weigh-in vanish silently if their firmware
+     * used a third status value. Resolved in [onConnected] from the peripheral name rather than in
+     * [supportFor], which the scanner also calls for devices we do not end up connecting to.
+     */
+    private var isOneByoneClassic = false
 
     // --- Capability declaration -----------------------------------------------
 
@@ -75,7 +93,7 @@ class OneByoneHandler : ScaleDeviceHandler() {
             "t9146" in name -> "Eufy C1"
             "t9147" in name -> "Eufy P1"
             "t9120" in name -> "Eufy A1"
-            "Health Scale".lowercase() in name -> "1byone (classic)"
+            isOneByoneClassicName(name) -> MODEL_1BYONE_DISPLAY
             else -> return null
         }
 
@@ -98,6 +116,19 @@ class OneByoneHandler : ScaleDeviceHandler() {
     // --- Link lifecycle --------------------------------------------------------
 
     override fun onConnected(user: ScaleUser) {
+        // Handler instances are reused for the lifetime of the app (ScaleFactory keeps a single
+        // list of them), so start every connection from a known state rather than relying on
+        // onDisconnected() having run.
+        clockAckFallbackJob?.cancel()
+        clockAckFallbackJob = null
+        historicMode = false
+        historyCount = 0
+        promptedForMeasurement = false
+        publishedLive = false
+
+        isOneByoneClassic = isOneByoneClassicName(getPeripheral()?.name.orEmpty())
+        logD("Connected to ${if (isOneByoneClassic) MODEL_1BYONE_DISPLAY else "an Eufy model"}")
+
         // 1) Subscribe to notifications on 0xFFF4
         setNotifyOn(SVC_FFF0, CHR_FFF4)
 
@@ -114,6 +145,56 @@ class OneByoneHandler : ScaleDeviceHandler() {
         readFrom(SVC_180F, CHR_2A19)
 
         // NOTE: After we receive the ACK, we will request history (F2 00) in onNotification().
+        // Not every scale in this family answers F1 (the 1byone "Health Scale" never does), so
+        // don't let the whole session hang on an ACK that may never come.
+        armClockAckFallback()
+    }
+
+    /**
+     * Prompt for a live measurement if the `F1 00` clock ACK does not arrive.
+     *
+     * Both the history request and the "step on the scale" prompt hang off that ACK, but not every
+     * scale in this family sends one -- the 1byone "Health Scale" never does, and the vendor app
+     * never even sends `F1` on that model. Without this fallback such a scale produces a fully
+     * working connection with no user-visible feedback at all, which is indistinguishable from a
+     * failed one.
+     *
+     * [waitAckClock] is deliberately left set: a late ACK should still start the history read.
+     * Only the prompt is forced, and [promptedForMeasurement] keeps it to one per connection.
+     */
+    private fun armClockAckFallback() {
+        clockAckFallbackJob?.cancel()
+        clockAckFallbackJob = scope.launch {
+            delay(CLOCK_ACK_TIMEOUT_MS)
+            if (!waitAckClock) return@launch
+
+            logI("No F1 clock ACK after ${CLOCK_ACK_TIMEOUT_MS}ms - prompting for a live measurement")
+            promptForMeasurement()
+        }
+    }
+
+    /** Show the "step on the scale" prompt at most once per connection. */
+    private fun promptForMeasurement() {
+        if (promptedForMeasurement) return
+        promptedForMeasurement = true
+        userInfo(R.string.bt_info_step_on_scale)
+    }
+
+    /** Stop the pending prompt: it is no longer useful, or never was. */
+    private fun suppressStepOnPrompt() {
+        clockAckFallbackJob?.cancel()
+        clockAckFallbackJob = null
+        promptedForMeasurement = true
+    }
+
+    override fun onDisconnected() {
+        clockAckFallbackJob?.cancel()
+        clockAckFallbackJob = null
+        waitAckClock = false
+        historicMode = false
+        historyCount = 0
+        promptedForMeasurement = false
+        publishedLive = false
     }
 
     override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
@@ -136,6 +217,7 @@ class OneByoneHandler : ScaleDeviceHandler() {
             when {
                 // Clock ACK: proceed to request history
                 waitAckClock && data[0] == 0xF1.toByte() && data[1] == 0x00.toByte() -> {
+                    clockAckFallbackJob?.cancel()
                     waitAckClock = false
                     historicMode = true
                     historyCount = 0
@@ -151,7 +233,7 @@ class OneByoneHandler : ScaleDeviceHandler() {
                             writeTo(SVC_FFF0, CHR_FFF1, byteArrayOf(0xF2.toByte(), 0x01.toByte())) // clear history
                         }
                         // Prompt user for a live measurement
-                        userInfo(R.string.bt_info_step_on_scale)
+                        promptForMeasurement()
                     }
                     return
                 }
@@ -160,6 +242,11 @@ class OneByoneHandler : ScaleDeviceHandler() {
 
         // CF ... frames carry weight/impedance (+ optional timestamp if length >= 18)
         if (data.isNotEmpty() && data[0] == 0xCF.toByte() && data.size >= 11) {
+            // A live measurement frame means the user is already standing on the scale, so the
+            // "step on the scale" fallback would arrive too late to be anything but confusing.
+            // History frames prove nothing about the here and now — the prompt after the transfer
+            // is exactly what the user needs then, so leave it armed.
+            if (!historicMode) suppressStepOnPrompt()
             if (historicMode) historyCount++
             parseMeasurementFrame(data, user, isHistoric = historicMode)
         } else {
@@ -177,14 +264,48 @@ class OneByoneHandler : ScaleDeviceHandler() {
         // Impedance is ((b2 << 8) + b1) * 0.1 Ω (note the byte order used by original driver)
         val impedanceOhm = (((bytes[2].toInt() and 0xFF) shl 8) + (bytes[1].toInt() and 0xFF)) * 0.1f
 
-        // A flag in b9 == 1 means "impedance not present" (legacy observation)
-        val impedancePresent = (bytes[9].toInt() != 1) && (impedanceOhm != 0f)
+        val impedancePresent = impedanceOhm != 0f
+        val status = bytes[9].toInt() and 0xFF
 
-        // Historic entries include timestamp (length >= 18)
-        val hasTimestamp = bytes.size >= 18
+        // Historic entries include a timestamp at bytes 11..17 (length >= 18)
+        val hasTimestamp = hasHistoryTimestamp(bytes)
 
-        // Discard unwanted frames: history without time, or anything without impedance
-        if (!impedancePresent || (isHistoric && !hasTimestamp)) return
+        // A history entry without its timestamp cannot be placed on the graph, so drop it.
+        if (isHistoric && !hasTimestamp) return
+
+        // Which frames are worth saving is the one model-dependent part of this protocol -- see
+        // [isOneByoneClassic] for why the 1byone rules are not applied to the Eufy models.
+        if (isOneByoneClassic) {
+            // Byte 9 is the lock status: 0x00 and 0x36 mean the scale has finished weighing,
+            // anything else is still in progress. Historic entries are settled by definition.
+            if (!isHistoric && !isFinalReading(bytes)) {
+                logD("Ignoring in-progress frame (status=0x%02X, %.2f kg)".format(status, weightKg))
+                return
+            }
+            // Impedance 0 means the bioimpedance run failed (socks, shoes, poor foot contact).
+            // The weight is still good, so publish it and skip only the body composition.
+        } else {
+            // Pre-existing Eufy behaviour, unchanged: b9 == 1 is the sole "not settled" marker,
+            // and a frame without impedance is discarded rather than saved as a bare weight.
+            if (status == 1) {
+                logD("Ignoring frame with the legacy status=0x01 flag (%.2f kg)".format(weightKg))
+                return
+            }
+            if (!impedancePresent) {
+                logD("Ignoring frame without impedance (%.2f kg)".format(weightKg))
+                return
+            }
+        }
+
+        // Frames with no usable weight carry nothing worth saving.
+        if (weightKg <= 0f) return
+
+        // The settled reading is sent more than once: as an immediate duplicate, and again after
+        // the scale has retried its bioimpedance measurement. Record the first one only.
+        if (!isHistoric && publishedLive) {
+            logD("Live measurement already published this session, ignoring repeat")
+            return
+        }
 
         // Timestamp (BE year + plain month/day/time), used when provided
         val whenCal = Calendar.getInstance()
@@ -206,11 +327,6 @@ class OneByoneHandler : ScaleDeviceHandler() {
             }
         }
 
-        // Rate-limit saves (avoid too-dense series)
-        val nowMs = max(System.currentTimeMillis(), whenCal.timeInMillis)
-        if (nowMs - lastSavedAt < DATE_TIME_THRESHOLD_MS) return
-        lastSavedAt = nowMs
-
         // Build composition using OneByoneLib (same as legacy)
         val (sex, peopleType) = mapUserToLibParams(user)
         val lib = OneByoneLib(sex, user.age, user.bodyHeight, peopleType)
@@ -220,24 +336,33 @@ class OneByoneHandler : ScaleDeviceHandler() {
             dateTime = if (hasTimestamp) whenCal.time else Calendar.getInstance().time
             this[MeasurementType.WEIGHT] = Kg(weightKg)
             // Store the raw impedance so body composition can be recomputed later.
-            this[MeasurementType.IMPEDANCE] = Ohm(impedanceOhm.toFloat())
+            if (impedancePresent) this[MeasurementType.IMPEDANCE] = Ohm(impedanceOhm)
         }
 
-        try {
-            // Derivations
-            val fatPct = lib.getBodyFat((m[MeasurementType.WEIGHT]?.value ?: 0f), impedanceOhm)
-            m[MeasurementType.BODY_FAT] = Percent(fatPct)
-            m[MeasurementType.WATER] = Percent(lib.getWater(fatPct))
-            m[MeasurementType.BONE] = Kg(lib.getBoneMass((m[MeasurementType.WEIGHT]?.value ?: 0f), impedanceOhm))
-            m[MeasurementType.VISCERAL_FAT] = lib.getVisceralFat((m[MeasurementType.WEIGHT]?.value ?: 0f))
-            m[MeasurementType.MUSCLE] = Percent(lib.getMuscle((m[MeasurementType.WEIGHT]?.value ?: 0f), impedanceOhm))
-            m[MeasurementType.LBM] = Kg(lib.getLBM((m[MeasurementType.WEIGHT]?.value ?: 0f), (m[MeasurementType.BODY_FAT]?.value ?: 0f)))
-
-            publish(m)
-        } catch (t: Throwable) {
-            // If library throws on impossible inputs, just log & ignore this frame
-            logW("OneByoneLib failed: ${t.message}")
+        // Body composition needs impedance. The scale reports zero when it could not run the
+        // bioimpedance measurement (socks or shoes, poor foot contact), and the weight is still
+        // perfectly good — record it rather than losing the weigh-in entirely.
+        if (impedancePresent) {
+            try {
+              val fatPct = lib.getBodyFat((m[MeasurementType.WEIGHT]?.value ?: 0f), impedanceOhm)
+              m[MeasurementType.BODY_FAT] = Percent(fatPct)
+              m[MeasurementType.WATER] = Percent(lib.getWater(fatPct))
+              m[MeasurementType.BONE] = Kg(lib.getBoneMass((m[MeasurementType.WEIGHT]?.value ?: 0f), impedanceOhm))
+              m[MeasurementType.VISCERAL_FAT] = lib.getVisceralFat((m[MeasurementType.WEIGHT]?.value ?: 0f))
+              m[MeasurementType.MUSCLE] = Percent(lib.getMuscle((m[MeasurementType.WEIGHT]?.value ?: 0f), impedanceOhm))
+              m[MeasurementType.LBM] = Kg(lib.getLBM((m[MeasurementType.WEIGHT]?.value ?: 0f), (m[MeasurementType.BODY_FAT]?.value ?: 0f)))
+            } catch (t: Throwable) {
+                // If the library throws on impossible inputs, keep the weight and drop the rest.
+                logW("OneByoneLib failed, publishing weight only: ${t.message}")
+            }
+        } else {
+            // No user-facing notice here on purpose: a snackbar emitted at this point is dismissed
+            // by BleConnector's saved-measurement snackbar ~700 ms later, so it never really shows.
+            logI("No impedance in frame - publishing weight only (%.2f kg)".format(weightKg))
         }
+
+        if (!isHistoric) publishedLive = true
+        publish(m)
     }
 
     // --- Command builders ------------------------------------------------------
@@ -277,10 +402,86 @@ class OneByoneHandler : ScaleDeviceHandler() {
 
     // --- Helpers ---------------------------------------------------------------
 
-    private fun xorChecksum(b: ByteArray, len: Int): Byte {
-        var x = 0
-        for (i in 0 until len) x = x xor (b[i].toInt() and 0xFF)
-        return (x and 0xFF).toByte()
+    companion object {
+        /**
+         * Grace period for the `F1 00` clock ACK before prompting anyway.
+         *
+         * Generous on purpose: the `F1` write itself only leaves the queue ~600 ms after connect
+         * (notify setup and the `FD 37` write are paced ahead of it), so a tight timeout would fire
+         * before a scale that does ACK had a fair chance to answer.
+         */
+        private const val CLOCK_ACK_TIMEOUT_MS = 3000L
+
+
+        /** Length of a live measurement frame: `CF …` payload plus the XOR byte at index 10. */
+        const val LIVE_FRAME_LEN = 11
+
+        /** Frame type marker for a body-fat measurement. */
+        private const val TYPE_BODY_FAT = 0xCF.toByte()
+
+        /** Advertised name of the 1byone "Health Scale", lowercased. */
+        private const val MODEL_1BYONE_NAME = "health scale"
+
+        /** Display name for that model. */
+        const val MODEL_1BYONE_DISPLAY = "1byone (classic)"
+
+        /**
+         * True when [name] is the 1byone "Health Scale" rather than one of the Eufy models.
+         *
+         * Shared by [supportFor] and [onConnected] so the acceptance rules can never end up keyed
+         * off a different match than the display name.
+         */
+        fun isOneByoneClassicName(name: String): Boolean =
+            MODEL_1BYONE_NAME in name.lowercase()
+
+        fun xorChecksum(b: ByteArray, len: Int): Byte {
+            var x = 0
+            for (i in 0 until len) x = x xor (b[i].toInt() and 0xFF)
+            return (x and 0xFF).toByte()
+        }
+
+        /**
+         * True when [bytes] begins with a complete live measurement frame, i.e. the XOR checksum
+         * at byte 10 covers bytes 0..9.
+         */
+        fun isLiveFrame(bytes: ByteArray): Boolean =
+            bytes.size >= LIVE_FRAME_LEN && bytes[10] == xorChecksum(bytes, 10)
+
+        /**
+         * True when byte 9 marks the reading as settled.
+         *
+         * The values come from the 1byone vendor app, which treats 0x00 and 0x36 as "locked" and
+         * everything else as still in progress. **1byone only** -- see [isOneByoneClassic] for why
+         * this whitelist is not applied to the Eufy models.
+         */
+        fun isFinalReading(bytes: ByteArray): Boolean {
+            if (bytes.size < LIVE_FRAME_LEN) return false
+            return when (bytes[9].toInt() and 0xFF) {
+                0x00, 0x36 -> true
+                else -> false
+            }
+        }
+
+        /**
+         * True when [bytes] carries a history timestamp in bytes 11..17.
+         *
+         * Length alone is not enough to decide this. The scale sends its final measurement twice,
+         * and the two copies can arrive coalesced into one notification -- the ATT payload caps at
+         * 20 bytes, so the buffer is a whole 11-byte frame followed by the first 9 bytes of its
+         * duplicate. That is >= 18 bytes but is not history, and reading bytes 11..17 as a
+         * timestamp yields garbage (year 53138, day 156, hour 39) that gets the reading discarded.
+         *
+         * A genuine history frame stores the year at bytes 11..12, so its byte 11 is the year's
+         * high byte (0x07 for 2026) and its byte 10 is measurement data rather than a checksum
+         * over bytes 0..9. Requiring both a valid live-frame checksum *and* a second frame marker
+         * at byte 11 separates the two cases without disturbing history reads on the Eufy models
+         * that share this handler.
+         */
+        fun hasHistoryTimestamp(bytes: ByteArray): Boolean {
+            if (bytes.size < 18) return false
+            val isCoalescedDuplicate = isLiveFrame(bytes) && bytes[11] == TYPE_BODY_FAT
+            return !isCoalescedDuplicate
+        }
     }
 
     private fun mapUserToLibParams(u: ScaleUser): Pair<Int, Int> {

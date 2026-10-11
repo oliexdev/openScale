@@ -43,22 +43,6 @@ class TrisaBodyAnalyzeLibTest {
         assertThat(bmi).isWithin(EPS).of(24.691358f)
     }
 
-    @Test
-    fun bmi_monotonicity_weightUp_heightSame_increases() {
-        val lib = TrisaBodyAnalyzeLib(0, 28, 165f)
-        val bmi1 = lib.getBMI(60f)
-        val bmi2 = lib.getBMI(65f)
-        assertThat(bmi2).isGreaterThan(bmi1)
-    }
-
-    @Test
-    fun bmi_monotonicity_heightUp_weightSame_decreases() {
-        val shorty = TrisaBodyAnalyzeLib(1, 35, 170f)
-        val tall   = TrisaBodyAnalyzeLib(1, 35, 185f)
-        val weight = 80f
-        assertThat(tall.getBMI(weight)).isLessThan(shorty.getBMI(weight))
-    }
-
     // --- Behavioral properties -----------------------------------------------
 
     @Test

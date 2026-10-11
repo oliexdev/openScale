@@ -162,7 +162,11 @@ class MeasurementTypeCrudUseCases @Inject constructor(
 
     /** Deletes a measurement type. Caller must ensure cascading semantics are OK. */
     suspend fun delete(type: MeasurementType): Result<Unit> = runCatching {
+        val images = if (type.inputType == InputFieldType.IMAGE) {
+            repository.getValuesForType(type.id).first().mapNotNull { it.textValue }
+        } else emptyList()
         repository.deleteMeasurementType(type)
+        MeasurementCrudUseCases.deleteImageFiles(appContext, images)
     }
 
     /**

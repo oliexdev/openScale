@@ -18,8 +18,10 @@
 package com.health.openscale.core.facade
 
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.model.UserEvaluationContext
+import com.health.openscale.core.usecase.GoalProgress
 import com.health.openscale.core.usecase.UserGoalsUseCases
 import com.health.openscale.core.usecase.UserUseCases
 import kotlinx.coroutines.flow.Flow
@@ -97,6 +99,11 @@ class UserFacade @Inject constructor(
 
     fun getAllGoalsForUser(userId: Int): Flow<List<UserGoals>> {
         return userGoalsUseCases.getAllGoalsForUser(userId)
+    }
+
+    /** @param types Measurement types, in the order the result should report them. */
+    fun observeProgress(userId: Int, types: List<MeasurementType>): Flow<List<GoalProgress>> {
+        return userGoalsUseCases.observeProgress(userId, types)
     }
 
     /** Persist application language code. */

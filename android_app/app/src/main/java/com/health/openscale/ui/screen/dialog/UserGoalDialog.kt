@@ -19,6 +19,8 @@ package com.health.openscale.ui.screen.dialog
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,6 +68,10 @@ import com.health.openscale.core.data.UserGoals
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.navigation.Routes
 import java.text.DateFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.Date
 import java.util.Locale
 
@@ -77,8 +83,13 @@ fun UserGoalDialog(
     allMeasurementTypes: List<MeasurementType>,
     allGoalsOfCurrentUser: List<UserGoals>,
     onDismiss: () -> Unit,
-    onConfirm: (measurementTypeId: Int, goalValueString: String, goalTargetDate: Long?) -> Unit,
-    onDelete: (userId: Int, measurementTypeId: Int) -> Unit
+    onConfirm: (
+        measurementTypeId: Int,
+        goalValue: Float,
+        goalTargetDate: Long?,
+        startDate: Long,
+    ) -> Unit,
+    onDelete: (userId: Int, measurementTypeId: Int) -> Unit,
 ) {
     val context = LocalContext.current
     val resources = LocalResources.current
@@ -110,22 +121,28 @@ fun UserGoalDialog(
     var currentGoalValueString by remember(existingUserGoal, selectedTypeState?.id) {
         mutableStateOf(
             if (isEditing && selectedTypeState != null) {
-                existingUserGoal.goalValue.toString().replace(',', '.')
+                existingUserGoal.goalValue?.toString()?.replace(',', '.') ?: ""
             } else {
                 ""
             }
         )
     }
 
+    var startDateMillis by remember(existingUserGoal) {
+        mutableStateOf(existingUserGoal?.startDate ?: todayStartOfDayMillis())
+    }
+    var showStartDatePicker by remember { mutableStateOf(false) }
+
     val initialDateMillis = existingUserGoal?.goalTargetDate
     var selectedDateMillis by remember { mutableStateOf(initialDateMillis) }
     var showGoalDatePicker by remember { mutableStateOf(false) }
 
+    val dateFormat = remember { DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault()) }
     val formattedDate = remember(selectedDateMillis) {
-        selectedDateMillis?.let {
-            DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault()).format(Date(it))
-        } ?: resources.getString(R.string.text_none)
+        selectedDateMillis?.let { dateFormat.format(Date(it)) }
+            ?: resources.getString(R.string.text_none)
     }
+    val formattedStartDate = remember(startDateMillis) { dateFormat.format(Date(startDateMillis)) }
 
     val dialogTitle = remember(isEditing, selectedTypeState) {
         val typeName = selectedTypeState?.getDisplayName(context) ?: resources.getString(R.string.measurement_type_custom_default_name)
@@ -156,6 +173,31 @@ fun UserGoalDialog(
             title = stringResource(R.string.dialog_title_delete_goal, typeName),
             text = stringResource(R.string.dialog_text_delete_goal)
         )
+    }
+
+    if (showStartDatePicker) {
+        val startPickerState = rememberDatePickerState(
+            initialSelectedDateMillis = localStartOfDayToPickerMillis(startDateMillis)
+        )
+        DatePickerDialog(
+            onDismissRequest = { showStartDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    startPickerState.selectedDateMillis
+                        ?.let { startDateMillis = pickerMillisToLocalStartOfDay(it) }
+                    showStartDatePicker = false
+                }) {
+                    Text(stringResource(R.string.dialog_ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showStartDatePicker = false }) {
+                    Text(stringResource(R.string.cancel_button))
+                }
+            }
+        ) {
+            DatePicker(state = startPickerState)
+        }
     }
 
     if (showGoalDatePicker) {
@@ -200,7 +242,10 @@ fun UserGoalDialog(
         onDismissRequest = onDismiss,
         title = { Text(dialogTitle) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -284,6 +329,29 @@ fun UserGoalDialog(
                 }
 
                 if (selectedTypeState != null && showGoalInputArea) {
+                    Box {
+                        OutlinedTextField(
+                            value = formattedStartDate,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text(stringResource(R.string.goal_start_date_label)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.DateRange,
+                                    contentDescription = stringResource(R.string.content_desc_select_date)
+                                )
+                            }
+                        )
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clickable(onClick = {
+                                    showStartDatePicker = true
+                                })
+                        )
+                    }
+
                     NumberInputField(
                         initialValue = currentGoalValueString,
                         inputType = selectedTypeState!!.inputType,
@@ -299,7 +367,14 @@ fun UserGoalDialog(
                             value = formattedDate,
                             onValueChange = {},
                             readOnly = true,
-                            label = { Text(stringResource(R.string.goal_target_date_label)) },
+                            label = {
+                                Text(
+                                    stringResource(
+                                        R.string.label_optional,
+                                        stringResource(R.string.goal_target_date_label),
+                                    )
+                                )
+                            },
                             modifier = Modifier.fillMaxWidth(),
                             trailingIcon = {
                                 Icon(
@@ -322,18 +397,29 @@ fun UserGoalDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (selectedTypeState != null) {
-                        if (currentGoalValueString.isNotBlank() || isEditing) {
-                            onConfirm(selectedTypeState!!.id, currentGoalValueString, selectedDateMillis)
-                            onDismiss()
-                        } else {
-                            Toast.makeText(context, R.string.toast_goal_value_cannot_be_empty, Toast.LENGTH_SHORT).show()
-                        }
-                    } else {
+                    val type = selectedTypeState
+                    if (type == null) {
                         Toast.makeText(context, R.string.toast_select_measurement_type, Toast.LENGTH_SHORT).show()
+                        return@TextButton
                     }
+
+                    val goalValue = currentGoalValueString.parseInputValue()
+                    if (goalValue == null) {
+                        Toast.makeText(
+                            context,
+                            resources.getString(
+                                R.string.toast_invalid_number_format_short,
+                                type.getDisplayName(context),
+                            ),
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                        return@TextButton
+                    }
+
+                    onConfirm(type.id, goalValue, selectedDateMillis, startDateMillis)
+                    onDismiss()
                 },
-                enabled = selectedTypeState != null
+                enabled = selectedTypeState != null && currentGoalValueString.isNotBlank()
             ) {
                 Text(stringResource(R.string.dialog_ok))
             }
@@ -358,3 +444,24 @@ fun UserGoalDialog(
         }
     )
 }
+
+/** Accepts both '.' and ',' as the decimal separator, like the numeric fields elsewhere. */
+private fun String.parseInputValue(): Float? =
+    takeIf { it.isNotBlank() }?.replace(',', '.')?.toFloatOrNull()
+
+private fun todayStartOfDayMillis(zone: ZoneId = ZoneId.systemDefault()): Long =
+    LocalDate.now(zone).atStartOfDay(zone).toInstant().toEpochMilli()
+
+/**
+ * The Material date picker hands back UTC midnight of the picked calendar day, but a start date is
+ * compared against measurement timestamps, which are local. Convert, so "12 March" means the local
+ * 12 March rather than a point that can land on the 11th or 13th east or west of UTC.
+ */
+private fun pickerMillisToLocalStartOfDay(pickerMillis: Long, zone: ZoneId = ZoneId.systemDefault()): Long =
+    Instant.ofEpochMilli(pickerMillis).atZone(ZoneOffset.UTC).toLocalDate()
+        .atStartOfDay(zone).toInstant().toEpochMilli()
+
+/** Inverse of [pickerMillisToLocalStartOfDay], so the picker opens on the stored day. */
+private fun localStartOfDayToPickerMillis(localMillis: Long, zone: ZoneId = ZoneId.systemDefault()): Long =
+    Instant.ofEpochMilli(localMillis).atZone(zone).toLocalDate()
+        .atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()

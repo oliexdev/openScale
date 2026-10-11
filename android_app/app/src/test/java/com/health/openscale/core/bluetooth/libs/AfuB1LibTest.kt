@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.libs
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
+import com.health.openscale.core.bluetooth.ScaleCatalog.hex
 
 /**
  * Unit tests for [AfuB1Lib] — the wire protocol of the "AFU B1" scale.
@@ -28,8 +29,6 @@ import org.junit.Test
  */
 class AfuB1LibTest {
 
-    private fun hex(s: String) = s.replace(" ", "")
-        .chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 
     /** Independent CRC reimplementation — cross-checks the lib's checksum. */
     private fun expectedCrc(raw: ByteArray): Int {

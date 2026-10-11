@@ -70,6 +70,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -102,6 +103,7 @@ fun MeasurementTypeSettingsScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+    val resources = LocalResources.current
     val measurementTypes by sharedViewModel.measurementTypes.collectAsState()
 
     var isInSelectionMode by rememberSaveable { mutableStateOf(false) }
@@ -174,9 +176,9 @@ fun MeasurementTypeSettingsScreen(
                         onClick = {
                             pendingAction = onToggleEnabled
                             val actionVerbRes = if (areAllSelectedEnabled) R.string.action_disable else R.string.action_enable
-                            val actionTitleVerb = context.getString(actionVerbRes).replaceFirstChar { it.titlecase() } // "Enable", "Disable"
-                            dialogTitle = context.getString(R.string.dialog_title_confirm_generic, actionTitleVerb)
-                            dialogText = context.getString(R.string.dialog_text_confirm_generic_verb, selectedTypeIds.size, context.getString(actionVerbRes))
+                            val actionTitleVerb = resources.getString(actionVerbRes).replaceFirstChar { it.titlecase() } // "Enable", "Disable"
+                            dialogTitle = resources.getString(R.string.dialog_title_confirm_generic, actionTitleVerb)
+                            dialogText = resources.getString(R.string.dialog_text_confirm_generic_verb, selectedTypeIds.size, resources.getString(actionVerbRes))
                         }
                     ),
                     // Pin/Unpin Action
@@ -185,9 +187,9 @@ fun MeasurementTypeSettingsScreen(
                         onClick = {
                             pendingAction = onTogglePinned
                             val actionVerbRes = if (areAllSelectedPinned) R.string.action_unpin else R.string.action_pin
-                            val actionTitleVerb = context.getString(actionVerbRes).replaceFirstChar { it.titlecase() } // "Pin", "Unpin"
-                            dialogTitle = context.getString(R.string.dialog_title_confirm_generic, actionTitleVerb)
-                            dialogText = context.getString(R.string.dialog_text_confirm_generic_verb, selectedTypeIds.size, context.getString(actionVerbRes))
+                            val actionTitleVerb = resources.getString(actionVerbRes).replaceFirstChar { it.titlecase() } // "Pin", "Unpin"
+                            dialogTitle = resources.getString(R.string.dialog_title_confirm_generic, actionTitleVerb)
+                            dialogText = resources.getString(R.string.dialog_text_confirm_generic_verb, selectedTypeIds.size, resources.getString(actionVerbRes))
                         }
                     ),
                     // Change Axis Action
@@ -196,9 +198,9 @@ fun MeasurementTypeSettingsScreen(
                         onClick = {
                             pendingAction = onToggleAxis
                             val actionVerbRes = if (areAllSelectedOnRightAxis) R.string.action_move_to_left_axis else R.string.action_move_to_right_axis
-                            val actionTitleVerb = context.getString(actionVerbRes).replaceFirstChar { it.titlecase() }
-                            dialogTitle = context.getString(R.string.dialog_title_confirm_generic, actionTitleVerb)
-                            dialogText = context.getString(R.string.dialog_text_confirm_generic_verb, selectedTypeIds.size, context.getString(actionVerbRes))
+                            val actionTitleVerb = resources.getString(actionVerbRes).replaceFirstChar { it.titlecase() }
+                            dialogTitle = resources.getString(R.string.dialog_title_confirm_generic, actionTitleVerb)
+                            dialogText = resources.getString(R.string.dialog_text_confirm_generic_verb, selectedTypeIds.size, resources.getString(actionVerbRes))
                         }
                     ),
                     // Exit Selection Mode Action

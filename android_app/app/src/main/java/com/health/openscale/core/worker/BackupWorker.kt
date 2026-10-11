@@ -26,6 +26,7 @@ import androidx.work.WorkerParameters
 import com.health.openscale.core.data.AutoBackupError
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacade
+import com.health.openscale.core.usecase.BackupRestoreUseCases
 import com.health.openscale.core.utils.LogManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -126,6 +127,7 @@ class BackupWorker @AssistedInject constructor(
                             }
                         }
                     }
+                    BackupRestoreUseCases.writeImageEntries(applicationContext, zipOutputStream)
                 }
             } ?: run {
                 LogManager.e(TAG, "Could not open output stream for ${backupDocumentFile.uri}")

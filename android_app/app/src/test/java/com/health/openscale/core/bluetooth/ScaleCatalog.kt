@@ -22,6 +22,7 @@ import com.health.openscale.core.bluetooth.scales.AAAxHandler
 import com.health.openscale.core.bluetooth.scales.HealthKeep280Handler
 import com.health.openscale.core.bluetooth.scales.AiLinkBroadcastHandler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
+import com.health.openscale.core.bluetooth.scales.AndUC352BLEHandler
 import com.health.openscale.core.bluetooth.scales.AfuB1Handler
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
@@ -58,6 +59,7 @@ import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
 import com.health.openscale.core.bluetooth.scales.OmronWlcHandler
 import com.health.openscale.core.bluetooth.scales.PicoocHandler
+import com.health.openscale.core.bluetooth.scales.PicoocBroadcastHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
 import com.health.openscale.core.bluetooth.scales.QNHandler
@@ -108,6 +110,15 @@ import java.util.UUID
  *
  * Human-written notes for the table's "Remarks" column live in
  * `src/test/resources/scale_catalog_remarks.txt`, the photo gallery in `scale_catalog_gallery.md`.
+ *
+ * Besides the catalog itself this object owns the shared building blocks every scale test needs —
+ * [uuid16], [device], [advertisement], [manufacturerData] and [hex]. Import them instead of
+ * redeclaring a private copy, so a captured frame reads the same way in every test:
+ *
+ *     import com.health.openscale.core.bluetooth.ScaleCatalog.hex
+ *
+ * The one deliberate exception is `HuaweiAhCh100HandlerTest`, whose `hex` delegates to the
+ * handler's own `hexToBytes` because that conversion is production code under test.
  */
 object ScaleCatalog {
 
@@ -131,6 +142,22 @@ object ScaleCatalog {
         manufacturerData = null,
     )
 
+    /**
+     * A captured frame written as hex, e.g. `hex("5a 0a 26 10")` or `hex("5A0A2610")`.
+     * Whitespace and an optional `0x` prefix are ignored, so a payload can be pasted verbatim
+     * from nRF Connect or a BTSnoop dump.
+     */
+    fun hex(value: String): ByteArray = value
+        .removePrefix("0x")
+        .filterNot { it.isWhitespace() }
+        .chunked(2)
+        .map { it.toInt(16).toByte() }
+        .toByteArray()
+
+    /** Manufacturer records keyed by company id, shaped the way `ScanRecord` hands them over. */
+    fun manufacturerData(vararg entries: Pair<Int, ByteArray>): SparseArray<ByteArray> =
+        SparseArray<ByteArray>().apply { entries.forEach { (id, data) -> put(id, data) } }
+
     /** A broadcast advertisement: manufacturer records keyed by company id, as `ScanRecord` has them. */
     fun advertisement(
         name: String = "",
@@ -141,9 +168,7 @@ object ScaleCatalog {
         address = "C0:FF:EE:12:34:56",
         rssi = -50,
         serviceUuids = services,
-        manufacturerData = SparseArray<ByteArray>().apply {
-            manufacturerData.forEach { (id, data) -> put(id, data) }
-        },
+        manufacturerData = manufacturerData(*manufacturerData.toTypedArray()),
     )
 
     /** Service 0xFFB0 — the LeFu-style service shared by a whole family of unrelated scales. */
@@ -180,6 +205,7 @@ object ScaleCatalog {
      */
     val fixtures: List<Fixture> = listOf(
         // --- Matched by advertised name ---
+        device("A&D_UC-352BLE_123456", uuid16(0x181D)) claimedBy AndUC352BLEHandler::class.java,
         device("HEALTHKEEP 280") claimedBy HealthKeep280Handler::class.java,
         device("AE BS-06") claimedBy ActiveEraBF06Handler::class.java,
         device("AFU-BH-TZ-B1", uuid16(0xFC50)) claimedBy AfuB1Handler::class.java,
@@ -187,6 +213,7 @@ object ScaleCatalog {
         // The S3 Lite V2.0 advertises as PICOOC-CQ; the Latin series carries no vendor prefix.
         device("PICOOC-CQ") claimedBy PicoocHandler::class.java,
         device("Latin-S") claimedBy PicoocHandler::class.java,
+        device("PICOOC-L") claimedBy PicoocBroadcastHandler::class.java,
         device("Beurer BF450") claimedBy BeurerBF450Handler::class.java,
         device("BIA SCALE", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
         device("RYFIT") claimedBy RyFitHandler::class.java,
@@ -226,6 +253,7 @@ object ScaleCatalog {
         device("EEBBL") claimedBy EEBBLHandler::class.java,
         device("FITTRACK Dara") claimedBy FitTrackDaraHandler::class.java,
         device("SSW532", SERVICE_FFB0) claimedBy DrTrustSSW532Handler::class.java,
+        device("MY_SCALE", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
         device("swan", SERVICE_FFB0) claimedBy MGBHandler::class.java,
         device("0203B1234") claimedBy MedisanaBs44xHandler::class.java,
         device("0131971234") claimedBy MedisanaBs44xHandler::class.java,
@@ -249,6 +277,8 @@ object ScaleCatalog {
         device("eufy T9148") claimedBy EufyP2Handler::class.java,
         device("ES-CS20M") claimedBy ESCS20MHandler::class.java,
         device("ES-26BB-B") claimedBy RenphoES26BBHandler::class.java,
+        device("R-A012") claimedBy RenphoES26BBHandler::class.java,
+        device("R-A020") claimedBy RenphoES26BBHandler::class.java,
         device("Mengii") claimedBy DigooDGSO38HHandler::class.java,
         device("openScale") claimedBy CustomOpenScaleHandler::class.java,
         device("BEURER BF700") claimedBy BeurerSanitasHandler::class.java,

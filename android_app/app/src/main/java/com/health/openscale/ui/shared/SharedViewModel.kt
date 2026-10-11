@@ -18,6 +18,9 @@
 package com.health.openscale.ui.shared
 
 import android.content.ContentResolver
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.compose.material3.SnackbarDuration
@@ -36,20 +39,23 @@ import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.facade.DataManagementFacade
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
-import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.core.facade.UserFacade
 import com.health.openscale.core.model.AggregatedMeasurement
 import com.health.openscale.core.model.MeasurementInsight
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.usecase.MeasurementDemoUseCase
+import com.health.openscale.core.usecase.GoalProgress
+import com.health.openscale.core.usecase.MeasurementCrudUseCases
 import com.health.openscale.core.usecase.SyncUseCases
 import com.health.openscale.core.utils.LogManager
+import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.ui.screen.components.AGGREGATION_LEVEL_SUFFIX
 import com.health.openscale.ui.screen.components.CUSTOM_END_DATE_MILLIS_SUFFIX
 import com.health.openscale.ui.screen.components.CUSTOM_START_DATE_MILLIS_SUFFIX
 import com.health.openscale.ui.screen.components.TIME_RANGE_SUFFIX
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -73,8 +79,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.time.Duration.Companion.seconds
+import java.io.File
 import java.text.DateFormat
 import java.util.Date
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
@@ -98,6 +106,7 @@ class SharedViewModel @Inject constructor(
     private val dataManagementFacade: DataManagementFacade,
     private val settingsFacade: SettingsFacade,
     private val sync: SyncUseCases,
+    @param:ApplicationContext private val appContext: Context,
 ) : ViewModel(), SettingsFacade by settingsFacade {
 
     // When openScale can't wake an installed-but-force-stopped sync app, nudge the user to open it.
@@ -116,6 +125,8 @@ class SharedViewModel @Inject constructor(
 
     companion object {
         private const val TAG = "SharedViewModel"
+        private const val MAX_IMAGE_SIDE_PX = 1600
+        private const val JPEG_QUALITY = 85
     }
 
     // -------------------------------------------------------------------------
@@ -303,17 +314,32 @@ class SharedViewModel @Inject constructor(
     // Aggregation level (persisted per screen context)
     // -------------------------------------------------------------------------
 
-    fun observeAggregationLevel(screenContextName: String): Flow<AggregationLevel> {
-        val key = "${screenContextName}${AGGREGATION_LEVEL_SUFFIX}"
-        return observeSetting(key, AggregationLevel.NONE.name)
+    /**
+     * Where the setting named by [settingSuffix] is stored for [screenContextName]: the screen's
+     * own context, or one shared context while that setting is linked across screens.
+     *
+     * The per-screen entries stay in DataStore untouched while linked, so unlinking hands each
+     * screen back exactly what it had before - no migration, no lost settings. Time range and
+     * aggregation are linked independently, so sharing one starting date across the app while the
+     * table still groups by month is possible.
+     */
+    fun filterContext(screenContextName: String, settingSuffix: String): Flow<String> =
+        linkedAcrossScreens(settingSuffix).map { linked ->
+            if (linked) SettingsPreferenceKeys.SHARED_FILTER_CONTEXT else screenContextName
+        }
+
+    fun observeAggregationLevel(screenContextName: String): Flow<AggregationLevel> =
+        filterContext(screenContextName, AGGREGATION_LEVEL_SUFFIX)
+            .flatMapLatest { context ->
+                observeSetting("${context}${AGGREGATION_LEVEL_SUFFIX}", AggregationLevel.NONE.name)
+            }
             .map { name ->
                 AggregationLevel.entries.find { it.name == name } ?: AggregationLevel.NONE
             }
-    }
 
     suspend fun saveAggregationLevel(screenContextName: String, level: AggregationLevel) {
-        val key = "${screenContextName}${AGGREGATION_LEVEL_SUFFIX}"
-        saveSetting(key, level.name)
+        val context = filterContext(screenContextName, AGGREGATION_LEVEL_SUFFIX).first()
+        saveSetting("${context}${AGGREGATION_LEVEL_SUFFIX}", level.name)
     }
 
     // -------------------------------------------------------------------------
@@ -354,20 +380,32 @@ class SharedViewModel @Inject constructor(
             buildScreenFlow(screenContextName, useSmoothing)
         }
 
+    /**
+     * The persisted time range of [screenContextName], resolved into the inclusive epoch-millisecond
+     * bounds the data layer filters on (`null` on a side = unbounded).
+     *
+     * Shared by every screen that carries the filter menu, so the range a screen shows and the range
+     * it computes on cannot drift apart.
+     */
+    private fun timeRangeBoundsFlow(screenContextName: String): Flow<Pair<Long?, Long?>> =
+        filterContext(screenContextName, TIME_RANGE_SUFFIX)
+            .flatMapLatest { context ->
+                combine(
+                    observeSetting("${context}${TIME_RANGE_SUFFIX}", TimeRangeFilter.ALL_DAYS.name),
+                    observeSetting("${context}${CUSTOM_START_DATE_MILLIS_SUFFIX}", 0L),
+                    observeSetting("${context}${CUSTOM_END_DATE_MILLIS_SUFFIX}", 0L),
+                ) { rangeName, customStart, customEnd ->
+                    val range = TimeRangeFilter.entries.find { it.name == rangeName }
+                        ?: TimeRangeFilter.ALL_DAYS
+                    range.resolveBounds(customStart, customEnd)
+                }
+            }
+
     private fun buildScreenFlow(
         screenContextName: String,
         useSmoothing: Boolean,
     ): StateFlow<UiState<List<AggregatedMeasurement>>> {
-        // Combine the three persisted settings into a single resolved time-range pair
-        val timeRangeFlow: Flow<Pair<Long?, Long?>> = combine(
-            observeSetting("${screenContextName}${TIME_RANGE_SUFFIX}", TimeRangeFilter.ALL_DAYS.name),
-            observeSetting("${screenContextName}${CUSTOM_START_DATE_MILLIS_SUFFIX}", 0L),
-            observeSetting("${screenContextName}${CUSTOM_END_DATE_MILLIS_SUFFIX}", 0L),
-        ) { rangeName, customStart, customEnd ->
-            val range = TimeRangeFilter.entries.find { it.name == rangeName }
-                ?: TimeRangeFilter.ALL_DAYS
-            resolveTimeRange(range, customStart, customEnd)
-        }
+        val timeRangeFlow: Flow<Pair<Long?, Long?>> = timeRangeBoundsFlow(screenContextName)
 
         val aggregationFlow: Flow<AggregationLevel> = observeAggregationLevel(screenContextName)
 
@@ -450,11 +488,17 @@ class SharedViewModel @Inject constructor(
     private val insightsFlowCache = mutableMapOf<Int?, StateFlow<UiState<MeasurementInsight>>>()
 
     fun insightsFlow(primaryTypeId: Int?): StateFlow<UiState<MeasurementInsight>> =
+        // The cache key stays the type alone: the flow reads the time range from settings and
+        // re-emits on its own when the filter menu changes it.
         insightsFlowCache.getOrPut(primaryTypeId) {
-            selectedUserId
-                .flatMapLatest { uid ->
+            combine(
+                selectedUserId,
+                timeRangeBoundsFlow(SettingsPreferenceKeys.INSIGHTS_SCREEN_CONTEXT),
+            ) { uid, timeRange -> uid to timeRange }
+                .flatMapLatest { (uid, timeRange) ->
                     if (uid == null) return@flatMapLatest flowOf(UiState.Loading)
-                    measurementFacade.insightsForUser(uid, primaryTypeId)
+                    val (startMs, endMs) = timeRange
+                    measurementFacade.insightsForUser(uid, primaryTypeId, startMs, endMs)
                         .map<MeasurementInsight, UiState<MeasurementInsight>> { UiState.Success(it) }
                         .onStart { emit(UiState.Loading) }
                         .catch { emit(UiState.Error(it.message)) }
@@ -503,31 +547,6 @@ class SharedViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Resolves a [TimeRangeFilter] into concrete start/end epoch-millisecond bounds.
-     * Returns `null` for an open bound (no filter applied on that side).
-     *
-     * Previously this logic was spread across rememberResolvedTimeRangeState in
-     * multiple Composables. Keeping it here makes it testable without Android instrumentation.
-     */
-    private fun resolveTimeRange(
-        filter: TimeRangeFilter,
-        customStartMillis: Long,
-        customEndMillis: Long,
-    ): Pair<Long?, Long?> {
-        val now = System.currentTimeMillis()
-        return when (filter) {
-            TimeRangeFilter.ALL_DAYS      -> null to null
-            TimeRangeFilter.LAST_7_DAYS   -> (now - 7L   * 86_400_000) to null
-            TimeRangeFilter.LAST_30_DAYS  -> (now - 30L  * 86_400_000) to null
-            TimeRangeFilter.LAST_365_DAYS -> (now - 365L * 86_400_000) to null
-            TimeRangeFilter.CUSTOM        ->
-                if (customStartMillis > 0L && customEndMillis > 0L)
-                    customStartMillis to customEndMillis
-                else
-                    null to null
-        }
-    }
 
     // -------------------------------------------------------------------------
     // Drill-down flow — raw, non-aggregated, fixed time window
@@ -552,25 +571,29 @@ class SharedViewModel @Inject constructor(
         mutableMapOf<String, StateFlow<UiState<List<AggregatedMeasurement>>>>()
 
     /**
-     * Returns a raw (non-aggregated) [StateFlow] for a fixed time window.
+     * Returns a [StateFlow] for a fixed time window, bypassing the screen filters.
      * Used by drill-down screens that show the individual measurements within a period.
      *
-     * The flow is cached per (startMillis, endMillis) pair so repeated calls from
+     * The flow is cached per (startMillis, endMillis, level) triple so repeated calls from
      * recompositions or from resolveSelectedMeasurementIds are free after the first access.
      *
-     * Each [AggregatedMeasurement] in the result has [AggregatedMeasurement.aggregatedFromCount] == 1.
+     * With the default [AggregationLevel.NONE] every [AggregatedMeasurement] in the result has
+     * [AggregatedMeasurement.aggregatedFromCount] == 1; pass another level to get the window's
+     * period averages instead, bucketed exactly as the table shows them.
      */
     fun drillDownFlow(
         startMillis: Long,
         endMillis: Long,
+        level: AggregationLevel = AggregationLevel.NONE,
     ): StateFlow<UiState<List<AggregatedMeasurement>>> =
-        drillDownFlowCache.getOrPut("$startMillis-$endMillis") {
-            buildDrillDownFlow(startMillis, endMillis)
+        drillDownFlowCache.getOrPut("$startMillis-$endMillis-${level.name}") {
+            buildDrillDownFlow(startMillis, endMillis, level)
         }
 
     private fun buildDrillDownFlow(
         startMillis: Long,
         endMillis: Long,
+        level: AggregationLevel,
     ): StateFlow<UiState<List<AggregatedMeasurement>>> =
         selectedUserId.flatMapLatest { uid ->
             if (uid == null) return@flatMapLatest flowOf(UiState.Success(emptyList()))
@@ -585,7 +608,7 @@ class SharedViewModel @Inject constructor(
                 alphaFlow            = flowOf(0.5f),
                 windowFlow           = flowOf(5),
                 maxGapDaysFlow       = flowOf(7),
-                aggregationLevelFlow = flowOf(AggregationLevel.NONE),
+                aggregationLevelFlow = flowOf(level),
             )
                 .map<List<AggregatedMeasurement>, UiState<List<AggregatedMeasurement>>> {
                     UiState.Success(it)
@@ -679,6 +702,32 @@ class SharedViewModel @Inject constructor(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     /**
+     * How far the selected user has come since the start point of each of their goals.
+     *
+     * Built from the user's full history rather than from [screenFlow]: each window is
+     * `[start, now]`, so switching the chart to "last 7 days" must not shrink it.
+     */
+    val goalProgressFlow: StateFlow<UiState<List<GoalProgress>>> =
+        selectedUserId
+            .flatMapLatest<Int?, UiState<List<GoalProgress>>> { uid ->
+                if (uid == null || uid == 0) {
+                    flowOf(UiState.Success(emptyList()))
+                } else {
+                    measurementTypes.flatMapLatest { types ->
+                        userFacade.observeProgress(
+                            userId = uid,
+                            types  = types.filter { it.isEnabled && !it.isInternal },
+                        ).map { UiState.Success(it) }
+                    }
+                }
+            }
+            .catch { e ->
+                LogManager.e(TAG, "Error computing start progress", e)
+                emit(UiState.Error(e.message))
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UiState.Loading)
+
+    /**
      * The values to pre-fill an empty add-measurement form with — produced by the same carry-over a
      * Bluetooth sync runs, so a manual entry starts out exactly where a scale sync would.
      */
@@ -719,6 +768,49 @@ class SharedViewModel @Inject constructor(
         }
     }
 
+    fun imageFile(fileName: String?): File? = MeasurementCrudUseCases.imageFile(appContext, fileName)
+
+    /** Downscales and re-encodes the picked image into app storage; returns the stored file name. */
+    suspend fun saveImage(uri: Uri): Result<String> = withContext(Dispatchers.IO) {
+        runCatching {
+            val source = ImageDecoder.createSource(appContext.contentResolver, uri)
+            val bitmap = ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
+                val longSide = maxOf(info.size.width, info.size.height)
+                if (longSide > MAX_IMAGE_SIDE_PX) {
+                    val scale = MAX_IMAGE_SIDE_PX.toFloat() / longSide
+                    decoder.setTargetSize(
+                        (info.size.width * scale).toInt(),
+                        (info.size.height * scale).toInt(),
+                    )
+                }
+                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+            }
+            val fileName = "${UUID.randomUUID()}.jpg"
+            val file = File(imageDir().apply { mkdirs() }, fileName)
+            file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, it) }
+            bitmap.recycle()
+            fileName
+        }.onFailure { LogManager.e(TAG, "Saving image failed: ${it.message}", it) }
+    }
+
+    fun deleteImages(fileNames: Collection<String>) {
+        if (fileNames.isEmpty()) return
+        viewModelScope.launch(Dispatchers.IO) {
+            MeasurementCrudUseCases.deleteImageFiles(appContext, fileNames)
+        }
+    }
+
+    private fun imageDir(): File = MeasurementCrudUseCases.imageDir(appContext)
+
+    private fun undoImageDir(): File = File(appContext.cacheDir, "undo_images")
+
+    private fun copyImages(fileNames: List<String>, from: File, to: File) {
+        fileNames.filter(MeasurementCrudUseCases::isImageFileName).forEach { name ->
+            val source = File(from, name)
+            if (source.exists()) source.copyTo(File(to, name), overwrite = true)
+        }
+    }
+
     /**
      * Fire-and-forget delete: owns its coroutine on the internal [viewModelScope] so it completes
      * even if the calling screen is disposed / navigates away immediately afterwards. The result is
@@ -729,6 +821,10 @@ class SharedViewModel @Inject constructor(
             // Capture the measurement with its values before deleting, so it can be restored via Undo
             // (the delete cascades the value rows away).
             val snapshot = getMeasurementById(measurement.id).first()
+            val undoImages = snapshot?.values.orEmpty()
+                .filter { it.type.inputType == InputFieldType.IMAGE }
+                .mapNotNull { it.value.textValue }
+            withContext(Dispatchers.IO) { copyImages(undoImages, from = imageDir(), to = undoImageDir()) }
             val result = withContext(Dispatchers.IO) { measurementFacade.deleteMeasurement(measurement) }
             if (result.isSuccess) {
                 if (_currentMeasurementId.value == measurement.id) _currentMeasurementId.value = null
@@ -743,6 +839,7 @@ class SharedViewModel @Inject constructor(
                             // Re-insert as a new measurement; raw values only (derived are recomputed).
                             viewModelScope.launch {
                                 withContext(Dispatchers.IO) {
+                                    copyImages(undoImages, from = undoImageDir(), to = imageDir())
                                     measurementFacade.saveMeasurement(
                                         snap.measurement.copy(id = 0),
                                         snap.values.filter { !it.type.isDerived }.map { it.value },
@@ -843,16 +940,20 @@ class SharedViewModel @Inject constructor(
     fun getPlausiblePercentRange(key: MeasurementType.Key<*>?) =
         measurementFacade.plausiblePercentRangeFor(key)
 
+    suspend fun hasPhotos(userId: Int, filterByMeasurementIds: List<Int>? = null): Boolean =
+        withContext(Dispatchers.IO) { dataManagementFacade.hasPhotos(userId, filterByMeasurementIds) }
+
     fun performCsvExport(
         userId: Int,
         uri: Uri,
         contentResolver: ContentResolver,
         filterByMeasurementIds: List<Int>? = null,
+        includePhotos: Boolean = false,
     ) {
         viewModelScope.launch {
             try {
                 val rows = dataManagementFacade
-                    .exportUserToCsv(userId, uri, contentResolver, filterByMeasurementIds)
+                    .exportUserToCsv(userId, uri, contentResolver, filterByMeasurementIds, includePhotos)
                     .getOrThrow()
                 if (rows > 0) showSnackbar(messageResId = R.string.export_successful)
                 else showSnackbar(messageResId = R.string.export_error_no_exportable_values)

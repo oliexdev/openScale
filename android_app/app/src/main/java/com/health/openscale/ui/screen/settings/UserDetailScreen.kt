@@ -28,6 +28,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -298,11 +300,14 @@ fun UserDetailScreen(
 
     val scrollState = rememberScrollState()
 
+    // Scrolls across the full width, but the form itself keeps a readable width on tablets.
     Column(
         modifier = Modifier
-            .padding(16.dp)
             .fillMaxSize()
-            .verticalScroll(scrollState),
+            .verticalScroll(scrollState)
+            .wrapContentWidth()
+            .widthIn(max = 640.dp)
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         UserIconPicker(
@@ -560,7 +565,6 @@ fun UserDetailScreen(
                                 UserGoalChip(
                                     userGoal = goal,
                                     measurementType = measurementType,
-                                    referenceMeasurement = null,
                                     onClick = {
                                         sharedViewModel.showUserGoalDialogWithContext(
                                             type = measurementType,
@@ -585,25 +589,16 @@ fun UserDetailScreen(
             allMeasurementTypes = allMeasurementTypes,
             allGoalsOfCurrentUser = pendingUserGoals,
             onDismiss = { sharedViewModel.dismissUserGoalDialogWithContext() },
-            onConfirm = { measurementTypeId, goalValueString, goalTargetDate ->
-                val goalValueFloat = goalValueString.replace(',', '.').toFloatOrNull()
-
-                if (goalValueFloat == null) {
-                    if (goalDialogContextData.existingGoalForDialog == null) {  return@UserGoalDialog }
-                    else {
-                        pendingUserGoals = pendingUserGoals.filterNot { it.measurementTypeId == measurementTypeId && it.userId == goalDialogContextData.existingGoalForDialog!!.userId }
-                        sharedViewModel.dismissUserGoalDialogWithContext()
-                        return@UserGoalDialog
-                    }
-                }
-
+            // Parsing and validation live in the dialog — it hands back ready values.
+            onConfirm = { measurementTypeId, goalValue, goalTargetDate, startDate ->
                 val targetUserIdForPendingGoal = if (!isEdit) -1 else user!!.id
 
                 val newOrUpdatedPendingGoal = UserGoals(
                     userId = targetUserIdForPendingGoal,
                     measurementTypeId = measurementTypeId,
-                    goalValue = goalValueFloat,
-                    goalTargetDate = goalTargetDate
+                    goalValue = goalValue,
+                    goalTargetDate = goalTargetDate,
+                    startDate = startDate
                 )
 
                 val existingIndex = pendingUserGoals.indexOfFirst { it.measurementTypeId == newOrUpdatedPendingGoal.measurementTypeId && it.userId == newOrUpdatedPendingGoal.userId }

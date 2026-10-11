@@ -590,8 +590,12 @@ object HuaweiHagridWspLib {
         randA: ByteArray,
         randB: ByteArray,
         cak: ByteArray
-    ): Boolean =
-        response.contentEquals(expectedAuthResponsePayload(randA, randB, cak))
+    ): Boolean {
+        val expected = expectedAuthResponsePayload(randA, randB, cak)
+        // Some firmwares append a status byte after the payload; compare the prefix.
+        return response.size >= expected.size &&
+            expected.contentEquals(response.copyOfRange(0, expected.size))
+    }
 
     fun hagridC3FromBluetoothAddress(address: String): ByteArray {
         val compact = address.filter { it != ':' && it != '-' }.uppercase(Locale.US)

@@ -24,7 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.ui.navigation.Routes
@@ -42,14 +42,15 @@ fun rememberAddMeasurementActionButton(
     sharedViewModel: SharedViewModel,
     navController: NavController
 ): TopBarAction {
-    val context = LocalContext.current
     val selectedUserId by sharedViewModel.selectedUserId.collectAsState()
+    val contentDescription = stringResource(R.string.action_add_measurement_desc)
+    val selectUserFirst = stringResource(R.string.toast_select_user_first)
 
     // We use remember to ensure the onClick lambda is stable as long as the inputs don't change.
-    return remember(selectedUserId, navController) {
+    return remember(selectedUserId, navController, contentDescription, selectUserFirst) {
         TopBarAction(
             icon = Icons.Default.Add,
-            contentDescription = context.getString(R.string.action_add_measurement_desc),
+            contentDescription = contentDescription,
             onClick = {
                 if (selectedUserId != null && selectedUserId != 0) {
                     navController.navigate(
@@ -61,7 +62,7 @@ fun rememberAddMeasurementActionButton(
                 } else {
                     // Show a snackbar if no user is selected
                     sharedViewModel.showSnackbar(
-                        message = context.getString(R.string.toast_select_user_first),
+                        message = selectUserFirst,
                         duration = SnackbarDuration.Short
                     )
                 }

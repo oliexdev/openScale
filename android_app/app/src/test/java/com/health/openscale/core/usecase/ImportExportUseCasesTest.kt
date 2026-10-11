@@ -45,6 +45,11 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowLog
 import java.io.File
+import java.io.FileOutputStream
+import java.util.UUID
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
+import java.util.zip.ZipOutputStream
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -72,7 +77,7 @@ class ImportExportUseCasesTest {
         repo = RoomTestSupport.repositoryFor(db)
         repo.insertAllMeasurementTypes(MeasurementType.seedRows())
         val sync = SyncUseCases(context as Application, MeasurementTypeCrudUseCases(repo, ApplicationProvider.getApplicationContext()))
-        useCases = ImportExportUseCases(repo, sync)
+        useCases = ImportExportUseCases(context, repo, sync)
 
         userId = db.userDao().insert(
             User(
@@ -427,5 +432,122 @@ class ImportExportUseCasesTest {
         // Unmatched columns used to be dropped in complete silence.
         assertThat(report.skippedColumns).containsExactly("SOMETHING_ELSE")
         assertThat(report.importedMeasurementsCount).isEqualTo(1)
+    }
+
+    @Test
+    fun csv_photoTypesAreNeitherExportedNorImported() = runBlocking {
+        val crud = MeasurementTypeCrudUseCases(repo, context)
+        val photo = crud.add(MeasurementType(name = "Photo", inputType = InputFieldType.IMAGE)).getOrThrow().toInt()
+        val mId = db.measurementDao().insert(Measurement(userId = userId, timestamp = 6_000L)).toInt()
+        db.measurementValueDao().insert(
+            MeasurementValue(measurementId = mId, typeId = photo, textValue = "0b7e1c2a-7d3f-4e61-9a55-1f2e3d4c5b6a.jpg")
+        )
+
+        val file = File(context.cacheDir, "photo-${System.nanoTime()}.csv")
+        useCases.exportUserToCsv(userId, Uri.fromFile(file), context.contentResolver).getOrThrow()
+        assertThat(file.readText()).doesNotContain("PHOTO")
+
+        val report = useCases.importUserFromCsv(
+            userId, csvUri("DATE,TIME,WEIGHT,PHOTO\n2025-04-07,08:30,72.5,x.jpg\n"), context.contentResolver
+        ).getOrThrow()
+        assertThat(report.importedMeasurementsCount).isEqualTo(1)
+        val importedTs = timestampOn(LocalDate.of(2025, 4, 7)).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val imported = repo.getMeasurementsWithValuesForUser(userId).first()
+            .first { it.measurement.timestamp == importedTs }
+        assertThat(imported.values.none { it.type.id == photo }).isTrue()
+    }
+
+    // ---- photos (ZIP export/import) ---------------------------------------------------------------
+
+    private val jpegBytes = byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 1, 2, 3)
+
+    private suspend fun photoTypeId() =
+        repo.getAllMeasurementTypes().first().first { it.key == MeasurementType.PHOTO }.id
+
+    /** Stores a photo file and a measurement at [timestamp] referencing it; returns the file name. */
+    private suspend fun insertPhotoMeasurement(timestamp: Long): String {
+        val name = "${UUID.randomUUID()}.jpg"
+        MeasurementCrudUseCases.imageDir(context).mkdirs()
+        MeasurementCrudUseCases.imageFile(context, name)!!.writeBytes(jpegBytes)
+        val mId = db.measurementDao().insert(Measurement(userId = userId, timestamp = timestamp)).toInt()
+        db.measurementValueDao().insert(MeasurementValue(measurementId = mId, typeId = photoTypeId(), textValue = name))
+        return name
+    }
+
+    private fun imageCount() = MeasurementCrudUseCases.imageDir(context).listFiles().orEmpty().size
+
+    @Test
+    fun zipExport_withPhotos_roundTripsValuesAndPhotoFiles() = runBlocking {
+        val original = insertPhotoMeasurement(6_000L)
+        val zip = File(context.cacheDir, "photos-${System.nanoTime()}.zip")
+
+        useCases.exportUserToCsv(userId, Uri.fromFile(zip), context.contentResolver, includePhotos = true).getOrThrow()
+
+        val entries = ZipFile(zip).use { z -> z.entries().toList().map { it.name } }
+        assertThat(entries).contains(ImportExportUseCases.CSV_ENTRY)
+        assertThat(entries.count { it.startsWith("${ImportExportUseCases.PHOTO_DIR}/") }).isEqualTo(1)
+
+        repo.deleteAllMeasurementsForUser(userId)
+        MeasurementCrudUseCases.imageFile(context, original)!!.delete()
+
+        val report = useCases.importUserFromCsv(userId, Uri.fromFile(zip), context.contentResolver).getOrThrow()
+        assertThat(report.importedMeasurementsCount).isEqualTo(3)
+
+        val restored = repo.getMeasurementsWithValuesForUser(userId).first()
+            .first { it.measurement.timestamp == 6_000L }
+            .values.single { it.type.key == MeasurementType.PHOTO }.value.textValue!!
+        assertThat(restored).isNotEqualTo(original)
+        assertThat(MeasurementCrudUseCases.imageFile(context, restored)!!.readBytes()).isEqualTo(jpegBytes)
+    }
+
+    @Test
+    fun zipImport_again_ignoresDuplicatesWithoutLeavingPhotoFiles() = runBlocking {
+        insertPhotoMeasurement(6_000L)
+        val zip = File(context.cacheDir, "dup-photos-${System.nanoTime()}.zip")
+        useCases.exportUserToCsv(userId, Uri.fromFile(zip), context.contentResolver, includePhotos = true).getOrThrow()
+        val before = imageCount()
+
+        val report = useCases.importUserFromCsv(userId, Uri.fromFile(zip), context.contentResolver).getOrThrow()
+
+        assertThat(report.importedMeasurementsCount).isEqualTo(0)
+        assertThat(imageCount()).isEqualTo(before)
+    }
+
+    @Test
+    fun zipImport_ignoresEscapingAndNonJpegEntries() = runBlocking {
+        val zip = File(context.cacheDir, "crafted-${System.nanoTime()}.zip")
+        ZipOutputStream(FileOutputStream(zip)).use { out ->
+            out.putNextEntry(ZipEntry(ImportExportUseCases.CSV_ENTRY))
+            out.write("DATE,TIME,WEIGHT,PHOTO\n2025-04-07,08:30,72.5,photos/../escaped.jpg\n2025-04-08,08:30,72.0,photos/fake.jpg\n".toByteArray())
+            out.closeEntry()
+            out.putNextEntry(ZipEntry("photos/../escaped.jpg"))
+            out.write(jpegBytes)
+            out.closeEntry()
+            out.putNextEntry(ZipEntry("photos/fake.jpg"))
+            out.write("not an image".toByteArray())
+            out.closeEntry()
+        }
+        val before = imageCount()
+
+        val report = useCases.importUserFromCsv(userId, Uri.fromFile(zip), context.contentResolver).getOrThrow()
+
+        assertThat(report.importedMeasurementsCount).isEqualTo(2)
+        assertThat(report.valuesSkippedParseError).isEqualTo(2)
+        assertThat(imageCount()).isEqualTo(before)
+        assertThat(File(context.cacheDir, "escaped.jpg").exists()).isFalse()
+    }
+
+    @Test
+    fun hasPhotos_reflectsTheCoveredMeasurements() = runBlocking {
+        assertThat(useCases.hasPhotos(userId)).isFalse()
+        insertPhotoMeasurement(6_000L)
+        val withPhoto = repo.getMeasurementsWithValuesForUser(userId).first()
+            .first { it.measurement.timestamp == 6_000L }.measurement.id
+        val withoutPhoto = repo.getMeasurementsWithValuesForUser(userId).first()
+            .first { it.measurement.timestamp == 1_000L }.measurement.id
+
+        assertThat(useCases.hasPhotos(userId)).isTrue()
+        assertThat(useCases.hasPhotos(userId, listOf(withPhoto))).isTrue()
+        assertThat(useCases.hasPhotos(userId, listOf(withoutPhoto))).isFalse()
     }
 }

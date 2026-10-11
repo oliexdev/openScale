@@ -19,7 +19,9 @@ package com.health.openscale.core.bluetooth.scales
 
 import android.bluetooth.le.ScanResult
 import android.util.SparseArray
+import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.OkOkV2Lib
@@ -41,6 +43,18 @@ import com.health.openscale.core.data.Percent
  * Link mode: BROADCAST_ONLY (no GATT connection).
  */
 class OkOkHandler : ScaleDeviceHandler() {
+
+    companion object {
+        /**
+         * Metabolic age from the V2 vendor model, published on the 0xC0 path where the
+         * composition is computed here. The identity stays vendor-neutral so a user switching
+         * brands keeps one continuous column.
+         */
+        val METABOLIC_AGE = MeasurementType.deviceInt(
+            "metabolic_age", R.string.measurement_type_metabolic_age,
+            icon = MeasurementTypeIcon.IC_M_TIMER, color = 0xFF795548.toInt()
+        )
+    }
 
     // Known manufacturer ids
     private val MANUF_V20 = 0x20ca
@@ -167,6 +181,7 @@ class OkOkHandler : ScaleDeviceHandler() {
                 this[MeasurementType.BMR] = Kcal(lib.getBMR(kg))
                 this[MeasurementType.PROTEIN] = Percent(lib.getProtein(kg, imp))
                 this[MeasurementType.IMPEDANCE] = Ohm(imp)
+                lib.getBodyAge(kg, imp).takeIf { it in 10..99 }?.let { this[METABOLIC_AGE] = it }
             })
             return BroadcastAction.CONSUMED_STOP
         }

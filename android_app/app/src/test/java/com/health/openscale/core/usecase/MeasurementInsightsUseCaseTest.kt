@@ -21,7 +21,10 @@ import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.TrendDirection
+import com.health.openscale.core.model.Volatility
 import com.health.openscale.testutil.Fixtures
+import java.time.LocalDate
+import java.time.ZoneId
 import org.junit.Test
 
 /**
@@ -43,6 +46,25 @@ class MeasurementInsightsUseCaseTest {
 
     private fun risingSeries(): List<MeasurementWithValues> =
         listOf(m(1, 70f), m(2, 71f), m(3, 72f), m(4, 73f), m(5, 74f), m(6, 75f))
+
+    private fun m(date: LocalDate, measurementId: Int, value: Float): MeasurementWithValues =
+        Fixtures.mwv(
+            measurementId = measurementId,
+            timestamp = date.atTime(12, 0).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+            values = listOf(Fixtures.valueWithType(weight, value, measurementId)),
+        )
+
+    private fun dailySeries(
+        start: LocalDate,
+        count: Int,
+        valueForDay: (Int) -> Float,
+    ): List<MeasurementWithValues> =
+        (0 until count).map { day ->
+            m(start.plusDays(day.toLong()), day + 1, valueForDay(day))
+        }
+
+    private fun analysisFor(measurements: List<MeasurementWithValues>) =
+        useCase.compute(measurements, primaryTypeId = weight.id).measurementAnalysis!!
 
     @Test
     fun compute_emptyInput_returnsEmptyInsight() {
@@ -94,5 +116,114 @@ class MeasurementInsightsUseCaseTest {
 
         assertThat(insight.basedOnCount).isEqualTo(series.size)
         assertThat(insight.measurementAnalysis).isNotNull()
+    }
+
+    @Test
+    fun compute_smoothStrongDownwardTrend_doesNotReportLongPlateauOrHighVolatility() {
+        val start = LocalDate.of(2025, 1, 1)
+        val measurements = dailySeries(start, count = 181) { day ->
+            100f - 22f * day / 180f
+        }
+
+        val analysis = analysisFor(measurements)
+
+        assertThat(analysis.longTermTrend).isEqualTo(TrendDirection.DOWN)
+        assertThat(analysis.plateauDays ?: 0).isLessThan(14)
+        assertThat(analysis.volatility).isEqualTo(Volatility.STABLE)
+    }
+
+    @Test
+    fun compute_smoothStrongUpwardTrend_doesNotReportHighVolatilityFromTrendSpan() {
+        val start = LocalDate.of(2025, 1, 1)
+        val measurements = dailySeries(start, count = 181) { day ->
+            78f + 22f * day / 180f
+        }
+
+        val analysis = analysisFor(measurements)
+
+        assertThat(analysis.longTermTrend).isEqualTo(TrendDirection.UP)
+        assertThat(analysis.plateauDays ?: 0).isLessThan(14)
+        assertThat(analysis.volatility).isEqualTo(Volatility.STABLE)
+    }
+
+    @Test
+    fun compute_stableSeries_stillDetectsPlateau() {
+        val start = LocalDate.of(2025, 2, 1)
+        val measurements = dailySeries(start, count = 30) { day ->
+            if (day % 2 == 0) 80f else 80.05f
+        }
+
+        val analysis = analysisFor(measurements)
+
+        assertThat(analysis.longTermTrend).isEqualTo(TrendDirection.STABLE)
+        assertThat(analysis.plateauDays).isAtLeast(28)
+        assertThat(analysis.plateauStartDate).isEqualTo(start)
+    }
+
+    @Test
+    fun compute_flatNoisySeries_reportsHighVolatility() {
+        val start = LocalDate.of(2025, 3, 1)
+        val measurements = dailySeries(start, count = 40) { day ->
+            if (day % 2 == 0) 77f else 83f
+        }
+
+        val analysis = analysisFor(measurements)
+
+        assertThat(analysis.longTermTrend).isEqualTo(TrendDirection.STABLE)
+        assertThat(analysis.volatility).isEqualTo(Volatility.HIGH)
+    }
+
+    @Test
+    fun compute_trendingNoisySeries_reportsResidualVolatilityFromScatter() {
+        val start = LocalDate.of(2025, 3, 1)
+        val measurements = dailySeries(start, count = 60) { day ->
+            100f - 0.1f * day + if (day % 2 == 0) -1.5f else 1.5f
+        }
+
+        val analysis = analysisFor(measurements)
+
+        assertThat(analysis.longTermTrend).isEqualTo(TrendDirection.DOWN)
+        assertThat(analysis.volatility).isEqualTo(Volatility.MODERATE)
+    }
+
+    @Test
+    fun compute_slowPersistentDrift_doesNotBecomeLongPlateau() {
+        val measurements = dailySeries(LocalDate.of(2025, 4, 1), count = 60) { day ->
+            80f - 0.02f * day
+        }
+
+        val analysis = analysisFor(measurements)
+
+        assertThat(analysis.longTermTrend).isEqualTo(TrendDirection.DOWN)
+        assertThat(analysis.plateauDays ?: 0).isLessThan(14)
+    }
+
+    @Test
+    fun compute_plateauWindowUsesTotalChangeThresholdBoundary() {
+        val start = LocalDate.of(2025, 5, 1)
+        val withinThreshold = dailySeries(start, count = 20) { day ->
+            if (day == 0) 100f else 100.24f
+        }
+        val outsideThreshold = dailySeries(start, count = 20) { day ->
+            if (day == 0) 99.7f else 100f
+        }
+
+        val inside = analysisFor(withinThreshold)
+        val outside = analysisFor(outsideThreshold)
+
+        assertThat(inside.plateauStartDate).isEqualTo(start)
+        assertThat(outside.plateauStartDate).isEqualTo(start.plusDays(1))
+    }
+
+    @Test
+    fun compute_shortDatasetReturnsEmptyAnalysis() {
+        val measurements = dailySeries(LocalDate.of(2025, 6, 1), count = 2) { day ->
+            80f + day
+        }
+
+        val insight = useCase.compute(measurements, primaryTypeId = weight.id)
+
+        assertThat(insight.measurementAnalysis).isNull()
+        assertThat(insight.basedOnCount).isEqualTo(2)
     }
 }

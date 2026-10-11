@@ -18,6 +18,9 @@
 package com.health.openscale.ui.shared
 
 import android.app.Application
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
@@ -25,9 +28,13 @@ import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
+import com.health.openscale.core.data.TimeRangeFilter
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.UserGoals
+import com.health.openscale.core.usecase.GoalProgress
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
+import com.health.openscale.core.usecase.MeasurementCrudUseCases
 import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
 import com.health.openscale.core.usecase.SyncUseCases
 import com.health.openscale.testutil.MainDispatcherRule
@@ -47,6 +54,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
 import java.io.File
 
 /**
@@ -83,7 +91,7 @@ class SharedViewModelTest {
         val facades = RoomTestSupport.facadesFor(app, repo, settings)
         val sync = SyncUseCases(app, MeasurementTypeCrudUseCases(repo, ApplicationProvider.getApplicationContext()))
         vm = SharedViewModel(
-            facades.userFacade, facades.measurementFacade, facades.dataManagementFacade, settings, sync,
+            facades.userFacade, facades.measurementFacade, facades.dataManagementFacade, settings, sync, app,
         )
     }
 
@@ -142,6 +150,142 @@ class SharedViewModelTest {
             }
             val data = (state as SharedViewModel.UiState.Success).data
             assertThat(data).isNotEmpty()
+        }
+    }
+
+    /**
+     * Seeds one user with weight measurements [daysAgo] days apart and a goal carrying a start
+     * point at the older of the two. Returns the user id.
+     */
+    private suspend fun seedUserWithStartPoint(
+        startValue: Float = 85.4f,
+        currentValue: Float = 82.0f,
+        elapsedDays: Long = 30,
+        goalValue: Float = 78f,
+    ): Int {
+        repo.insertAllMeasurementTypes(MeasurementType.seedRows())
+        val uid = repo.insertUser(user("Alice")).toInt()
+        val weightTypeId = repo.getAllMeasurementTypes().first()
+            .first { it.key == MeasurementType.WEIGHT }.id
+
+        val dayMillis = 24L * 60 * 60 * 1000
+        val startMillis = System.currentTimeMillis() - elapsedDays * dayMillis
+        listOf(startMillis to startValue, System.currentTimeMillis() to currentValue)
+            .forEach { (ts, value) ->
+                val id = repo.insertMeasurement(Measurement(userId = uid, timestamp = ts)).toInt()
+                repo.insertMeasurementValue(
+                    MeasurementValue(measurementId = id, typeId = weightTypeId, floatValue = value)
+                )
+            }
+
+        repo.insertUserGoal(
+            UserGoals(
+                userId = uid,
+                measurementTypeId = weightTypeId,
+                goalValue = goalValue,
+                startDate = startMillis,
+            )
+        )
+        return uid
+    }
+
+    @Test
+    fun goalProgressFlow_isEmpty_whileTheUserKeepsNoGoals() {
+        runBlocking {
+            repo.insertAllMeasurementTypes(MeasurementType.seedRows())
+            val uid = repo.insertUser(user("Alice")).toInt()
+            vm.selectUser(uid)
+
+            val state = withTimeout(5_000) {
+                vm.goalProgressFlow.first { it is SharedViewModel.UiState.Success }
+            }
+            assertThat((state as SharedViewModel.UiState.Success).data).isEmpty()
+        }
+    }
+
+    @Test
+    fun goalProgressFlow_reportsProgressForTheStartedGoal() {
+        runBlocking {
+            val uid = seedUserWithStartPoint()
+            vm.selectUser(uid)
+
+            val progress = withTimeout(5_000) { awaitProgress() }.single()
+
+            assertThat(progress.startDate).isEqualTo(progress.today.minusDays(30))
+            assertThat(progress.delta).isWithin(0.01f).of(-3.4f)
+            assertThat(progress.currentValue).isWithin(0.01f).of(82.0f)
+            assertThat(progress.goalFraction!!).isWithin(0.01f).of(3.4f / 7.4f)
+        }
+    }
+
+    /**
+     * The regression that matters: each window is [start, now] by definition, so narrowing a
+     * screen's time filter must not shrink it.
+     */
+    @Test
+    fun goalProgressFlow_isUnaffectedByTheActiveTimeRangeFilter() {
+        runBlocking {
+            val uid = seedUserWithStartPoint()
+            vm.selectUser(uid)
+
+            val before = withTimeout(5_000) { awaitProgress() }.single()
+
+            vm.saveSetting("overview_screen_time_range", TimeRangeFilter.LAST_7_DAYS.name)
+
+            val after = withTimeout(5_000) { awaitProgress() }.single()
+
+            assertThat(after.startDate).isEqualTo(before.startDate)
+            assertThat(after.delta).isWithin(0.01f).of(before.delta)
+        }
+    }
+
+    private suspend fun awaitProgress(): List<GoalProgress> =
+        vm.goalProgressFlow
+            .first { it is SharedViewModel.UiState.Success && it.data.isNotEmpty() }
+            .let { (it as SharedViewModel.UiState.Success).data }
+
+    @Test
+    @GraphicsMode(GraphicsMode.Mode.NATIVE)
+    fun saveImage_downscalesToTheLongSideLimitAndStoresUnderAValidName() {
+        runBlocking {
+            val source = File(app.cacheDir, "big-${System.nanoTime()}.png")
+            source.outputStream().use {
+                Bitmap.createBitmap(3200, 1600, Bitmap.Config.ARGB_8888).compress(Bitmap.CompressFormat.PNG, 100, it)
+            }
+
+            val name = vm.saveImage(Uri.fromFile(source)).getOrThrow()
+
+            assertThat(MeasurementCrudUseCases.isImageFileName(name)).isTrue()
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(MeasurementCrudUseCases.imageFile(app, name)!!.path, bounds)
+            assertThat(bounds.outWidth).isEqualTo(1600)
+            assertThat(bounds.outHeight).isEqualTo(800)
+        }
+    }
+
+    @Test
+    fun screenFlow_overview_keepsCommentAndPhotoValues() {
+        runBlocking {
+            repo.insertAllMeasurementTypes(MeasurementType.seedRows())
+            val uid = repo.insertUser(user("Alice")).toInt()
+            val types = repo.getAllMeasurementTypes().first()
+            val weight = types.first { it.key == MeasurementType.WEIGHT }.id
+            val comment = types.first { it.key == MeasurementType.COMMENT }.id
+            val photo = types.first { it.key == MeasurementType.PHOTO }.id
+            val mId = repo.insertMeasurement(Measurement(userId = uid, timestamp = System.currentTimeMillis())).toInt()
+            repo.insertMeasurementValue(MeasurementValue(measurementId = mId, typeId = weight, floatValue = 72.5f))
+            repo.insertMeasurementValue(MeasurementValue(measurementId = mId, typeId = comment, textValue = "hello"))
+            repo.insertMeasurementValue(
+                MeasurementValue(measurementId = mId, typeId = photo, textValue = "0b7e1c2a-7d3f-4e61-9a55-1f2e3d4c5b6a.jpg")
+            )
+
+            vm.selectUser(uid)
+            val state = withTimeout(5_000) {
+                vm.screenFlow("overview").first { it is SharedViewModel.UiState.Success && it.data.isNotEmpty() }
+            }
+            val shown = (state as SharedViewModel.UiState.Success).data.single().enriched.valuesWithTrend
+                .map { it.currentValue.type.id }
+            assertThat(shown).containsAtLeast(weight, comment, photo)
         }
     }
 }

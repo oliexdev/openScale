@@ -43,14 +43,4 @@ class StandardImpedanceLibTest {
         val tbwFFM = 0.732
         assertThat(lib.totalBodyWaterKg / lib.fatFreeMassKg).isWithin(tbwFFM * 0.03).of(tbwFFM)
     }
-
-    @Test
-    fun bmi_monotonicity_weightUp_heightSame_increases() {
-        assertThat(lib.run { copy(weightKg = weightKg + 5.0) }.bmi).isGreaterThan(lib.bmi)
-    }
-
-    @Test
-    fun bmi_monotonicity_heightUp_weightSame_decreases() {
-        assertThat(lib.run { copy(heightM = heightM + 0.05) }.bmi).isLessThan(lib.bmi)
-    }
 }

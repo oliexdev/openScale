@@ -418,7 +418,7 @@ class MeasurementTransformationUseCase @Inject constructor(
                     ?.takeIf { it != 0 }
                     ?.let { MeasurementValue(measurementId = 0, typeId = type.id, intValue = it) }
                 InputFieldType.TEXT, InputFieldType.DATE,
-                InputFieldType.TIME, InputFieldType.USER -> null
+                InputFieldType.TIME, InputFieldType.USER, InputFieldType.IMAGE -> null
             }
         }
 

@@ -4,10 +4,14 @@ name: CI
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
+  # Every push to master: test, build, publish the dev-build and the wiki page.
   push:
     branches:
       'master'
+
+  # Every pull request: test and build only. The release upload and the wiki publish are
+  # guarded below, so a contributor's PR can never overwrite the dev-build or the wiki.
+  pull_request:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -40,6 +44,7 @@ jobs:
       - name: Build APK
         run: ./gradlew assembleDebug
       - uses: "marvinpinto/action-automatic-releases@latest"
+        if: github.event_name == 'push'
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "dev-build"
@@ -53,6 +58,7 @@ jobs:
   # the remarks column and the photo gallery are edited in
   # android_app/app/src/test/resources/scale_catalog_{remarks.txt,gallery.md}.
   publish-scale-catalog:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     needs: build
     permissions:

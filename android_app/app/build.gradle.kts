@@ -29,13 +29,14 @@ android {
         applicationId = "com.health.openscale"
         minSdk = 31
         targetSdk = 37
-        versionCode = 76
-        versionName = "3.1.2"
+        versionCode = 77
+        versionName = "3.1.3"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders["appName"] = "openScale"
         manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"
         manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_round"
+
+        testInstrumentationRunner = "com.health.openscale.ScreenshotTestRunner"
     }
 
     signingConfigs {
@@ -144,6 +145,12 @@ android {
         buildConfig = true
     }
 
+    lint {
+        // Translations come from Weblate and always lag behind the English strings, so a
+        // missing or stale one must not fail the build.
+        warning += setOf("MissingTranslation", "ExtraTranslation")
+    }
+
     testOptions {
         // JVM unit tests touch android.util.Log (via LogManager); return defaults
         // instead of throwing "not mocked" so pure-logic tests can run on the JVM.
@@ -192,6 +199,12 @@ androidComponents {
 }
 
 
+// androidx.test 1.7 wants a newer concurrent-futures than the app ships; AGP forces the app's
+// version onto the test APK, and the classes come from the app APK at runtime anyway.
+configurations.matching { it.name.contains("AndroidTest") }.configureEach {
+    exclude(group = "androidx.concurrent")
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -203,6 +216,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material3.adaptive)
+    implementation(libs.androidx.material3.adaptive.layout)
     implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.worker)
@@ -252,11 +267,6 @@ dependencies {
 
     // Test dependencies
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    testImplementation(libs.junit)
     testImplementation(libs.truth)
     // JVM-runnable Android/Room tests (no emulator needed)
     testImplementation(libs.robolectric)
@@ -264,6 +274,15 @@ dependencies {
     testImplementation(libs.androidx.room.testing)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.work.testing)
+
+    // Store screenshots (./gradlew connectedDebugAndroidTest)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.runner)
+    // Compose UI test brings 3.5.0, which fails on Android 17 (InputManager.getInstance removed)
+    androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation(libs.hilt.android.testing)
+    kspAndroidTest(libs.hilt.compiler)
 }
 
 fun safeExec(vararg cmd: String): String = try {

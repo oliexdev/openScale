@@ -17,9 +17,11 @@
  */
 package com.health.openscale
 
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -61,11 +63,21 @@ class MainActivity : ComponentActivity() {
             val darkTheme = isSystemInDarkTheme()
             val useDynamicColor by settingsFacade.useDynamicColor.collectAsStateWithLifecycle(initialValue = false)
             val useHighContrast by settingsFacade.useHighContrast.collectAsStateWithLifecycle(initialValue = false)
+            val usePureBlack by settingsFacade.usePureBlack.collectAsStateWithLifecycle(initialValue = false)
+
+            // Pure black forces the dark theme regardless of the system setting, so the system bars
+            // have to be told about it — otherwise they keep dark icons on our black background.
+            LaunchedEffect(darkTheme, usePureBlack) {
+                val useDarkScheme = darkTheme || usePureBlack
+                val barStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { useDarkScheme }
+                enableEdgeToEdge(statusBarStyle = barStyle, navigationBarStyle = barStyle)
+            }
 
             OpenScaleTheme(
                 darkTheme       = darkTheme,
                 highContrast    = useHighContrast,
                 useDynamicColor = useDynamicColor,
+                pureBlack       = usePureBlack,
             ) {
                 // For APIs before Android 13 (Tiramisu), we need to manually
                 // listen for language changes and recreate the activity.

@@ -18,6 +18,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.Wla25BodyComposition
@@ -219,6 +220,15 @@ class RelaxmedicHandler : ScaleDeviceHandler() {
                 this[MeasurementType.PROTEIN] = Percent(result.protein)
                 this[MeasurementType.BMR] = Kcal(result.bmrKcal.toFloat())
                 this[MeasurementType.LBM] = Kg(result.lbmKg)
+                Wla25BodyComposition.bodyAge(
+                    age = user.age,
+                    fatPercent = result.fat.toDouble(),
+                    sex = if (user.gender.isMale()) {
+                        Wla25BodyComposition.SEX_MALE
+                    } else {
+                        Wla25BodyComposition.SEX_FEMALE
+                    },
+                ).takeIf { it in 10..99 }?.let { this[METABOLIC_AGE] = it }
             }
         } else {
             // The impedances failed the algorithm's validity gate; the weight is
@@ -347,6 +357,15 @@ class RelaxmedicHandler : ScaleDeviceHandler() {
     }
 
     companion object {
+        /**
+         * Metabolic age from [Wla25BodyComposition.bodyAge]. The identity stays vendor-neutral
+         * so a user switching brands keeps one continuous column.
+         */
+        val METABOLIC_AGE = MeasurementType.deviceInt(
+            "metabolic_age", R.string.measurement_type_metabolic_age,
+            icon = MeasurementTypeIcon.IC_M_TIMER, color = 0xFF795548.toInt()
+        )
+
         private const val FRAME_SIZE = 20
 
         private const val TYPE_ACK_IN = 0xA0

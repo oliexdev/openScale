@@ -95,6 +95,7 @@ class BackupRestoreUseCases @Inject constructor(
                         }
                     }
                 }
+                added += writeImageEntries(appContext, zip)
             }
         }
 
@@ -138,6 +139,7 @@ class BackupRestoreUseCases @Inject constructor(
                     rollbackDir = rollbackDir,
                     dbName = dbName
                 )
+                swapStagedImages(stagingDir = stagingDir, rollbackDir = rollbackDir)
             }
 
             LogManager.i(TAG, "Restore completed. Format=$format, Files=$restored")
@@ -175,6 +177,8 @@ class BackupRestoreUseCases @Inject constructor(
             val wal = File(dbDir, "$dbName-wal")
             if (wal.exists()) walDeleted = wal.delete()
 
+            MeasurementCrudUseCases.imageDir(appContext).deleteRecursively()
+
             settings.setFirstAppStartCompleted(true)
             settings.setCurrentUserId(null)
         }
@@ -195,15 +199,7 @@ class BackupRestoreUseCases @Inject constructor(
         val mainDb = File(stagingDir, dbName)
         val allowedNames = setOf(dbName, "$dbName-shm", "$dbName-wal")
         // Support both the current ZIP backup format and older single-file database exports.
-        val isZip = contentResolver.openInputStream(restoreUri)?.use { input ->
-            val header = ByteArray(4)
-            val read = input.read(header)
-            read == 4 &&
-                header[0] == 0x50.toByte() &&
-                header[1] == 0x4B.toByte() &&
-                header[2] == 0x03.toByte() &&
-                header[3] == 0x04.toByte()
-        } ?: false
+        val isZip = isZip(contentResolver, restoreUri)
 
         if (isZip) {
             contentResolver.openInputStream(restoreUri)?.use { input ->
@@ -211,9 +207,16 @@ class BackupRestoreUseCases @Inject constructor(
                     var entry = zis.nextEntry
                     while (entry != null) {
                         val entryName = entry.name
+                        val imageName = entryName.removePrefix("$IMAGE_ENTRY_DIR/")
                         when {
                             entry.isDirectory -> Unit
-                            // ZIP restores only accept the database files at the archive root.
+                            entryName.startsWith("$IMAGE_ENTRY_DIR/") &&
+                                MeasurementCrudUseCases.isImageFileName(imageName) -> {
+                                val out = File(stagingDir, "$IMAGE_ENTRY_DIR/$imageName")
+                                out.parentFile?.mkdirs()
+                                FileOutputStream(out).use { zis.copyTo(it) }
+                            }
+                            // Apart from images/, ZIP restores only accept the database files at the archive root.
                             entryName.contains('/') || entryName.contains('\\') -> {
                                 LogManager.w(TAG, "Skipping nested ZIP entry '$entryName' during restore.")
                             }
@@ -308,6 +311,21 @@ class BackupRestoreUseCases @Inject constructor(
         }
     }
 
+    private fun swapStagedImages(stagingDir: File, rollbackDir: File) {
+        val live = MeasurementCrudUseCases.imageDir(appContext)
+        val staged = File(stagingDir, IMAGE_ENTRY_DIR)
+        val rollback = File(rollbackDir, IMAGE_ENTRY_DIR)
+
+        if (live.exists()) moveReplacing(live, rollback)
+        try {
+            if (staged.exists()) moveReplacing(staged, live)
+        } catch (swapError: Exception) {
+            live.deleteRecursively()
+            if (rollback.exists()) moveReplacing(rollback, live)
+            throw swapError
+        }
+    }
+
     private fun moveReplacing(source: File, destination: File) {
         destination.parentFile?.mkdirs()
         try {
@@ -372,7 +390,9 @@ class BackupRestoreUseCases @Inject constructor(
         return header.contentEquals(SQLITE_HEADER_PREFIX)
     }
 
-    private companion object {
+    companion object {
+        private const val IMAGE_ENTRY_DIR = "images"
+
         private val CURRENT_OPEN_SCALE_TABLES = setOf(
             "User",
             "Measurement",
@@ -384,5 +404,28 @@ class BackupRestoreUseCases @Inject constructor(
             "scaleMeasurements"
         )
         private val SQLITE_HEADER_PREFIX = "SQLite format 3\u0000".toByteArray(Charsets.US_ASCII)
+
+        /** True if the file at [uri] starts with the ZIP local file header ("PK\u0003\u0004"). */
+        fun isZip(contentResolver: ContentResolver, uri: Uri): Boolean =
+            contentResolver.openInputStream(uri)?.use { input ->
+                val header = ByteArray(4)
+                val read = input.read(header)
+                read == 4 &&
+                    header[0] == 0x50.toByte() &&
+                    header[1] == 0x4B.toByte() &&
+                    header[2] == 0x03.toByte() &&
+                    header[3] == 0x04.toByte()
+            } ?: false
+
+        fun writeImageEntries(context: Context, zip: ZipOutputStream): List<String> {
+            val files = MeasurementCrudUseCases.imageDir(context).listFiles().orEmpty()
+                .filter { it.isFile && MeasurementCrudUseCases.isImageFileName(it.name) }
+            files.forEach { file ->
+                zip.putNextEntry(ZipEntry("$IMAGE_ENTRY_DIR/${file.name}"))
+                FileInputStream(file).use { it.copyTo(zip) }
+                zip.closeEntry()
+            }
+            return files.map { "$IMAGE_ENTRY_DIR/${it.name}" }
+        }
     }
 }

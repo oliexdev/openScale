@@ -194,4 +194,18 @@ class GenericValueJsonTest {
         assertThat(json).doesNotContain("\"key\"")
         assertThat(json).doesNotContain("\"typeId\"")
     }
+
+    @Test
+    fun build_leavesOutPhotoValues() {
+        val photo = MeasurementType(
+            id = 70, identity = "user.photo_front", name = "Photo front", inputType = InputFieldType.IMAGE
+        )
+        val json = GenericValueJson.build(
+            listOf(value(photo.id, text = "0b7e1c2a-7d3f-4e61-9a55-1f2e3d4c5b6a.jpg"), value(weightKg.id, float = 70f)),
+            typesById + (photo.id to photo),
+        )
+
+        assertThat(json).doesNotContain(photo.identity)
+        assertThat(GenericValueJson.parse(json, allTypes + photo).map { it.first.id }).containsExactly(weightKg.id)
+    }
 }

@@ -17,14 +17,12 @@
  */
 package com.health.openscale.core.utils
 
-import java.time.Instant
 import java.time.Period
-import java.time.ZoneId
 
 object CalculationUtils {
     fun ageOn(dateMillis: Long, birthDateMillis: Long): Int {
-        val birth = Instant.ofEpochMilli(birthDateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
-        val onDate = Instant.ofEpochMilli(dateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+        val birth = LocaleUtils.toLocalDate(birthDateMillis)
+        val onDate = LocaleUtils.toLocalDate(dateMillis)
         return Period.between(birth, onDate).years.coerceAtLeast(0)
     }
 

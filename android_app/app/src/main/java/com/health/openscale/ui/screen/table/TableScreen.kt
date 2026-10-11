@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.automirrored.filled.CompareArrows
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.SupervisorAccount
@@ -74,7 +75,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.state.ToggleableState
@@ -82,6 +85,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale as ComposeLocale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -108,6 +112,9 @@ import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
 import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.screen.components.SHOW_TYPE_FILTER_ROW_SUFFIX
+import com.health.openscale.ui.components.FullscreenImageViewer
+import com.health.openscale.ui.screen.settings.ExportPhotosDialog
+import com.health.openscale.ui.components.MeasurementImageThumbnail
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.filter
@@ -116,12 +123,14 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import java.text.DateFormat
+import java.io.File
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.Date
 import java.util.Locale
+import kotlin.math.floor
 
 data class TableCellData(
     val typeId: Int,
@@ -132,6 +141,9 @@ data class TableCellData(
     val flagged: Boolean = false,
     val unitType: UnitType? = null,
     val rawCount: Int = 1,
+    val imageFile: File? = null,
+    val imageType: MeasurementType? = null,
+    val imageTypeName: String? = null,
 )
 
 data class TableRowDataInternal(
@@ -285,27 +297,42 @@ fun TableScreen(
     var showDeleteConfirmDialog by rememberSaveable { mutableStateOf(false) }
     var showChangeUserDialog    by rememberSaveable { mutableStateOf(false) }
 
-    val exportCsvLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("text/csv"),
-        onResult = { uri: Uri? ->
-            val currentUserId = sharedViewModel.selectedUserId.value
-            if (uri != null && currentUserId != null && currentUserId != 0) {
-                scope.launch {
-                    val resolvedIds = resolveSelectedMeasurementIds()
-                    if (resolvedIds.isNotEmpty()) {
-                        sharedViewModel.performCsvExport(
-                            userId                 = currentUserId,
-                            uri                    = uri,
-                            contentResolver        = context.contentResolver,
-                            filterByMeasurementIds = resolvedIds,
-                        )
-                        isInSelectionMode = false
-                        clearKeys()
-                    }
+    var showExportPhotosDialog by rememberSaveable { mutableStateOf(false) }
+
+    fun exportSelectionTo(uri: Uri?, includePhotos: Boolean) {
+        val currentUserId = sharedViewModel.selectedUserId.value
+        if (uri != null && currentUserId != null && currentUserId != 0) {
+            scope.launch {
+                val resolvedIds = resolveSelectedMeasurementIds()
+                if (resolvedIds.isNotEmpty()) {
+                    sharedViewModel.performCsvExport(
+                        userId                 = currentUserId,
+                        uri                    = uri,
+                        contentResolver        = context.contentResolver,
+                        filterByMeasurementIds = resolvedIds,
+                        includePhotos          = includePhotos,
+                    )
+                    isInSelectionMode = false
+                    clearKeys()
                 }
             }
-        },
+        }
+    }
+
+    val exportCsvLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("text/csv"),
+        onResult = { uri: Uri? -> exportSelectionTo(uri, includePhotos = false) },
     )
+    val exportZipLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/zip"),
+        onResult = { uri: Uri? -> exportSelectionTo(uri, includePhotos = true) },
+    )
+
+    fun launchSelectionExport(includePhotos: Boolean) {
+        val ts = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date())
+        if (includePhotos) exportZipLauncher.launch("${ts}_openscale_selected_export.zip")
+        else exportCsvLauncher.launch("${ts}_openscale_selected_export.csv")
+    }
 
     fun deleteSelectedItems() {
         // Resolve the selection on the composition scope (read-only; needs screen state), then hand
@@ -321,8 +348,14 @@ fun TableScreen(
     }
 
     fun exportSelectedItems() {
-        val ts = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date())
-        exportCsvLauncher.launch("${ts}_openscale_selected_export.csv")
+        val currentUserId = sharedViewModel.selectedUserId.value ?: return
+        scope.launch {
+            if (sharedViewModel.hasPhotos(currentUserId, resolveSelectedMeasurementIds())) {
+                showExportPhotosDialog = true
+            } else {
+                launchSelectionExport(includePhotos = false)
+            }
+        }
     }
 
     fun changeUserOfSelectedItems(newUserId: Int) {
@@ -364,6 +397,16 @@ fun TableScreen(
                 sharedViewModel.showSnackbar(messageResId = R.string.snackbar_no_other_users_to_change_to)
             }
         }
+    }
+
+    if (showExportPhotosDialog) {
+        ExportPhotosDialog(
+            onDismissRequest = { showExportPhotosDialog = false },
+            onChoice = { includePhotos ->
+                showExportPhotosDialog = false
+                launchSelectionExport(includePhotos)
+            },
+        )
     }
 
     if (showDeleteConfirmDialog) {
@@ -460,6 +503,7 @@ fun TableScreen(
                             InputFieldType.INT   -> originalMeasurementValue.intValue
                                 ?.let { LocaleUtils.formatValueForDisplay(it.toString(), actualType.unit) } ?: "-"
                             InputFieldType.TEXT  -> originalMeasurementValue.textValue ?: "-"
+                            InputFieldType.IMAGE -> "-"
                             else                 -> originalMeasurementValue.textValue
                                 ?: originalMeasurementValue.floatValue?.toString()
                                 ?: originalMeasurementValue.intValue?.toString()
@@ -506,6 +550,12 @@ fun TableScreen(
                             flagged      = noAgeBand || outOfPlausibleRange,
                             unitType     = actualType.unit,
                             rawCount     = periodRawCount,
+                            imageFile    = if (actualType.inputType == InputFieldType.IMAGE)
+                                sharedViewModel.imageFile(originalMeasurementValue.textValue) else null,
+                            imageType    = actualType,
+                            imageTypeName = actualType.getDisplayName(context).takeIf {
+                                actualType.inputType == InputFieldType.IMAGE && originalMeasurementValue.textValue != null
+                            },
                         )
                     } else {
                         typeId to TableCellData(
@@ -601,13 +651,51 @@ fun TableScreen(
         screenContextName = SettingsPreferenceKeys.TABLE_SCREEN_CONTEXT,
     ) else null
 
-    LaunchedEffect(tableScreenTitle, isInSelectionMode, selectedKeys.size, aggregatedItems.size) {
+    // Keyed on selectedKeys itself, not its size: swapping which two rows are picked has to
+    // refresh the compare action's timestamps.
+    LaunchedEffect(tableScreenTitle, isInSelectionMode, selectedKeys, tableDataSnapshot, aggregatedItems.size) {
         sharedViewModel.setContextualSelectionMode(isInSelectionMode)
         if (isInSelectionMode) {
             sharedViewModel.setTopBarTitle(
                 resources.getString(R.string.items_selected_count, resolvedSelectionCount)
             )
-            sharedViewModel.setTopBarActions(listOf(
+            val selectionActions = mutableListOf<TopBarAction>()
+            // Always offered, never hidden: an action that appears only on the second tick is one
+            // nobody discovers, and an icon that comes and goes shifts the ones beside it under
+            // the user's finger. Picked the wrong number of rows, it says so instead.
+            val rowsToCompare = tableDataSnapshot
+                .filter { rowKey(it) in selectedKeys }
+                .sortedBy { it.timestamp }
+            selectionActions.add(
+                TopBarAction(
+                    icon                    = Icons.AutoMirrored.Filled.CompareArrows,
+                    contentDescriptionResId = R.string.desc_compare_selected,
+                    onClick                 = {
+                        if (rowsToCompare.size != 2) {
+                            sharedViewModel.showSnackbar(
+                                messageResId = R.string.comparison_select_two
+                            )
+                        } else {
+                            // An aggregated row stands for its whole period, a raw one for itself;
+                            // the comparison re-runs the same pipeline over the window they span.
+                            val first = rowsToCompare.first()
+                            val last = rowsToCompare.last()
+                            val windowStart = first.periodStartMillis?.takeIf { first.isAggregated }
+                                ?: first.timestamp
+                            val windowEnd = last.periodEndMillis?.takeIf { last.isAggregated }
+                                ?: last.timestamp
+                            isInSelectionMode = false
+                            clearKeys()
+                            navController.navigate(
+                                Routes.measurementComparison(
+                                    windowStart, windowEnd, effectiveAggregationLevel
+                                )
+                            )
+                        }
+                    },
+                )
+            )
+            selectionActions.addAll(listOf(
                 TopBarAction(
                     icon                    = Icons.Filled.SupervisorAccount,
                     contentDescriptionResId = R.string.desc_change_user,
@@ -635,6 +723,7 @@ fun TableScreen(
                     onClick                 = { isInSelectionMode = false; clearKeys() },
                 ),
             ))
+            sharedViewModel.setTopBarActions(selectionActions)
         } else {
             sharedViewModel.setTopBarTitle(tableScreenTitle)
             val actions = mutableListOf<TopBarAction>()
@@ -668,13 +757,39 @@ fun TableScreen(
     val colWidth     = 110.dp
     val commentWidth = 250.dp
 
+    // Columns keep their minimum width and scroll when they don't fit; with room to spare they
+    // stretch proportionally to fill the width, whichever columns are shown.
+    val density = LocalDensity.current
+    var tableWidth by remember { mutableStateOf(0.dp) }
+    // One date column width for header and all rows (the widest date seen), so columns line up.
+    var dateColWidth by remember { mutableStateOf(dateColMin) }
+    val dateColModifier = Modifier
+        .widthIn(min = dateColWidth, max = dateColMax)
+        .onSizeChanged { size ->
+            val width = with(density) { size.width.toDp() }
+            if (width > dateColWidth) dateColWidth = width
+        }
+    val tableViewportWidth = tableWidth - dateColWidth - (if (isInSelectionMode) 60.dp else 0.dp)
+    val columnScale = remember(displayedTypes, tableViewportWidth) {
+        val minTotal = displayedTypes.sumOf {
+            (if (it.key == MeasurementType.COMMENT) commentWidth else colWidth).value.toDouble()
+        }.toFloat()
+        if (minTotal > 0f) (tableViewportWidth.value / minTotal).coerceAtLeast(1f) else 1f
+    }
+    fun columnWidth(type: MeasurementType): Dp =
+        floor((if (type.key == MeasurementType.COMMENT) commentWidth else colWidth).value * columnScale).dp
+
     val noColumnsOrMeasurementsMessage = stringResource(R.string.table_message_no_columns_or_measurements)
     val noMeasurementsMessage          = stringResource(R.string.no_data_available)
     val noColumnsSelectedMessage       = stringResource(R.string.table_message_no_columns_selected)
     val noDataForSelectionMessage      = stringResource(R.string.table_message_no_data_for_selection)
     val dateColumnHeader               = stringResource(R.string.table_header_date)
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .onSizeChanged { tableWidth = with(density) { it.width.toDp() } }
+    ) {
         AnimatedVisibility(visible = !isDrillDown && showTypeFilterRow) {
             MeasurementTypeFilterRow(
                 allMeasurementTypesProvider = { allAvailableTypesFromVM },
@@ -770,22 +885,22 @@ fun TableScreen(
                     }
                     TableHeaderCellInternal(
                         text      = dateColumnHeader,
-                        modifier  = Modifier
-                            .widthIn(min = dateColMin, max = dateColMax)
-                            .padding(horizontal = 6.dp)
+                        modifier  = dateColModifier
+                            .padding(horizontal = 8.dp)
                             .fillMaxHeight(),
                         alignment = TextAlign.Start,
                     )
                     Row(Modifier.weight(1f).horizontalScroll(horizontalScrollState)) {
                         displayedTypes.forEach { type ->
-                            val width = if (type.key == MeasurementType.COMMENT) commentWidth else colWidth
+                            val width = columnWidth(type)
                             TableHeaderCellInternal(
                                 text      = type.getDisplayName(LocalContext.current),
+                                // Lines up with the cell values: end-aligned before the evaluation symbol.
                                 modifier  = Modifier
                                     .width(width)
-                                    .padding(horizontal = 6.dp)
+                                    .padding(start = 8.dp, end = 8.dp + 18.dp)
                                     .fillMaxHeight(),
-                                alignment = TextAlign.Center,
+                                alignment = TextAlign.End,
                             )
                         }
                     }
@@ -847,9 +962,7 @@ fun TableScreen(
                             TableDataCellInternal(
                                 cellData     = null,
                                 fixedText    = rowData.formattedTimestamp,
-                                modifier     = Modifier
-                                    .widthIn(min = dateColMin, max = dateColMax)
-                                    .fillMaxHeight(),
+                                modifier     = dateColModifier.fillMaxHeight(),
                                 alignment    = TextAlign.Start,
                                 isDateCell   = true,
                                 isAggregated = rowData.isAggregated,
@@ -862,7 +975,7 @@ fun TableScreen(
                             ) {
                                 displayedTypes.forEach { colType ->
                                     val cellData = rowData.values[colType.id]
-                                    val width    = if (colType.key == MeasurementType.COMMENT) commentWidth else colWidth
+                                    val width    = columnWidth(colType)
                                     TableDataCellInternal(
                                         cellData     = cellData,
                                         modifier     = Modifier.width(width).fillMaxHeight(),
@@ -955,14 +1068,32 @@ fun TableDataCellInternal(
                             modifier   = Modifier.padding(end = 2.dp),
                         )
                     }
-                    Text(
-                        text       = cellData.displayValue,
-                        style      = MaterialTheme.typography.bodyLarge,
-                        fontWeight = if (isAggregated) FontWeight.SemiBold else FontWeight.Normal,
-                        textAlign  = alignment,
-                        maxLines   = 2,
-                        overflow   = TextOverflow.Ellipsis,
-                    )
+                    if (cellData.imageTypeName != null) {
+                        var showImageViewer by remember { mutableStateOf(false) }
+                        MeasurementImageThumbnail(
+                            file               = cellData.imageFile,
+                            contentDescription = stringResource(R.string.content_desc_photo, cellData.imageTypeName),
+                            modifier           = Modifier.size(36.dp),
+                            onClick            = { showImageViewer = true },
+                        )
+                        if (showImageViewer) {
+                            FullscreenImageViewer(
+                                file      = cellData.imageFile,
+                                title     = cellData.imageTypeName,
+                                type      = cellData.imageType,
+                                onDismiss = { showImageViewer = false },
+                            )
+                        }
+                    } else {
+                        Text(
+                            text       = cellData.displayValue,
+                            style      = MaterialTheme.typography.bodyLarge,
+                            fontWeight = if (isAggregated) FontWeight.SemiBold else FontWeight.Normal,
+                            textAlign  = alignment,
+                            maxLines   = 2,
+                            overflow   = TextOverflow.Ellipsis,
+                        )
+                    }
                     if (cellData.evalState != null) {
                         val evalIcon = when {
                             cellData.flagged                            -> Icons.Filled.Warning

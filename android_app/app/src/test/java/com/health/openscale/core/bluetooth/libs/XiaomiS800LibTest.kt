@@ -24,6 +24,7 @@ import org.bouncycastle.crypto.params.AEADParameters
 import org.bouncycastle.crypto.params.KeyParameter
 import org.junit.Test
 import kotlin.math.roundToInt
+import com.health.openscale.core.bluetooth.ScaleCatalog.hex
 
 /**
  * Round-trip tests for [XiaomiS800Lib], mirroring ble-scale-sync
@@ -94,6 +95,5 @@ class XiaomiS800LibTest {
         assertThat(XiaomiS800Lib.decryptMiBeaconV5(frame, wrong, macFrame)).isNull()
     }
 
-    private fun hex(s: String) = ByteArray(s.length / 2) { s.substring(it * 2, it * 2 + 2).toInt(16).toByte() }
     private fun toHex(b: ByteArray) = b.joinToString("") { "%02x".format(it) }
 }

@@ -44,12 +44,17 @@ class MeasurementTypeIdentityTest {
         "IMPEDANCE_LOW", "PROTEIN", "CALORIES", "COMMENT", "DATE", "TIME", "USER"
     )
 
+    /** The registry in display order: the historical names plus keys added after schema 16. */
+    private val registryNames = historicalEnumNames.toMutableList().apply {
+        add(indexOf("COMMENT") + 1, "PHOTO")
+    }
+
     @Test
     fun `every predefined identity is the lowercased historical enum name`() {
         // MIGRATION_15_16 rewrites `'builtin.' || lower(key)`; this is what makes that
         // SQL land exactly on the registry.
         assertThat(MeasurementType.allKeys.map { it.identity })
-            .containsExactlyElementsIn(historicalEnumNames.map { "builtin." + it.lowercase() })
+            .containsExactlyElementsIn(registryNames.map { "builtin." + it.lowercase() })
             .inOrder()
     }
 
@@ -58,7 +63,7 @@ class MeasurementTypeIdentityTest {
         // CSV headers derive from the identity, so files written by older versions keep matching.
         val rows = MeasurementType.seedRows()
         assertThat(rows.map { MeasurementType.identityColumnKey(it.identity) })
-            .containsExactlyElementsIn(historicalEnumNames).inOrder()
+            .containsExactlyElementsIn(registryNames).inOrder()
     }
 
     @Test

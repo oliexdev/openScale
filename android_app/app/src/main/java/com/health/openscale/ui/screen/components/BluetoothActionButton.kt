@@ -36,6 +36,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -59,6 +60,7 @@ fun rememberBluetoothActionButton(
 ): TopBarAction {
     val TAG = "BluetoothActionButton"
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     // Launcher for Bluetooth permissions
     val permissionsLauncher = rememberLauncherForActivityResult(
@@ -90,12 +92,12 @@ fun rememberBluetoothActionButton(
 
     /** Keeps the action's own description and only appends the developer-mode note for screen readers. */
     fun withDeveloperNote(description: String): String =
-        if (developerMode) "$description – ${context.getString(R.string.developer_mode_active_icon_desc)}"
+        if (developerMode) "$description – ${resources.getString(R.string.developer_mode_active_icon_desc)}"
         else description
 
     return remember(connStatus, savedDevice, connectedDevice, currentUser, developerMode) {
         val savedAddr = savedDevice?.address
-        val deviceName = savedDevice?.name ?: context.getString(R.string.fallback_device_name_saved_scale)
+        val deviceName = savedDevice?.name ?: resources.getString(R.string.fallback_device_name_saved_scale)
 
         val isBusy = savedAddr != null &&
                 (connStatus == ConnectionStatus.CONNECTING || connStatus == ConnectionStatus.DISCONNECTING)
@@ -104,10 +106,10 @@ fun rememberBluetoothActionButton(
             // 1. Connection in progress
             isBusy -> TopBarAction(
                 icon = Icons.AutoMirrored.Filled.BluetoothSearching,
-                contentDescription = context.getString(R.string.bluetooth_action_connecting_disconnecting_desc),
+                contentDescription = resources.getString(R.string.bluetooth_action_connecting_disconnecting_desc),
                 onClick = {
                     sharedViewModel.showSnackbar(
-                        message = context.getString(
+                        message = resources.getString(
                             when (connStatus) {
                                 ConnectionStatus.CONNECTING    -> R.string.snackbar_bluetooth_connecting_to
                                 ConnectionStatus.DISCONNECTING -> R.string.snackbar_bluetooth_disconnecting_from
@@ -123,11 +125,11 @@ fun rememberBluetoothActionButton(
             // 2. No scale paired yet
             savedAddr == null -> TopBarAction(
                 icon = Icons.Default.Bluetooth,
-                contentDescription = context.getString(R.string.bluetooth_action_no_scale_saved_desc),
+                contentDescription = resources.getString(R.string.bluetooth_action_no_scale_saved_desc),
                 onClick = {
                     sharedViewModel.setPendingReferenceUserForBle(null)
                     sharedViewModel.showSnackbar(
-                        message = context.getString(R.string.snackbar_bluetooth_no_scale_saved),
+                        message = resources.getString(R.string.snackbar_bluetooth_no_scale_saved),
                         duration = SnackbarDuration.Short
                     )
                     navController.navigate(Routes.BLUETOOTH_SETTINGS)
@@ -139,13 +141,13 @@ fun rememberBluetoothActionButton(
                 icon = Icons.Filled.BluetoothConnected,
                 tint = developerModeTint,
                 contentDescription = withDeveloperNote(
-                    context.getString(R.string.bluetooth_action_disconnect_desc, deviceName)
+                    resources.getString(R.string.bluetooth_action_disconnect_desc, deviceName)
                 ),
                 onClick = {
                     sharedViewModel.setPendingReferenceUserForBle(null)
                     bluetoothViewModel.disconnectDevice()
                     sharedViewModel.showSnackbar(
-                        message = context.getString(R.string.snackbar_bluetooth_disconnecting_from, deviceName),
+                        message = resources.getString(R.string.snackbar_bluetooth_disconnecting_from, deviceName),
                         duration = SnackbarDuration.Short
                     )
                 }
@@ -156,7 +158,7 @@ fun rememberBluetoothActionButton(
                 icon = Icons.Filled.BluetoothDisabled,
                 tint = developerModeTint,
                 contentDescription = withDeveloperNote(
-                    context.getString(R.string.bluetooth_action_disconnect_desc, deviceName)
+                    resources.getString(R.string.bluetooth_action_disconnect_desc, deviceName)
                 ),
                 onClick = {
                     // Check for BOTH permissions (Scan and Connect)
@@ -181,7 +183,7 @@ fun rememberBluetoothActionButton(
                         sharedViewModel.setPendingAssistedWeighingUser(currentUser)
                     } else {
                         sharedViewModel.showSnackbar(
-                            message = context.getString(R.string.snackbar_bluetooth_attempting_connection, deviceName),
+                            message = resources.getString(R.string.snackbar_bluetooth_attempting_connection, deviceName),
                             duration = SnackbarDuration.Short
                         )
                         LogManager.d(TAG, "User clicked bluetooth icon connect → trying to connect to saved device $deviceName")

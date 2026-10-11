@@ -34,7 +34,6 @@ import com.health.openscale.core.data.User
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacadeImpl
-import com.health.openscale.core.service.DerivedValuesCalculator
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -49,7 +48,9 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.io.File
 import java.io.FileOutputStream
+import java.util.UUID
 import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
 @RunWith(RobolectricTestRunner::class)
@@ -73,6 +74,8 @@ class BackupRestoreUseCasesTest {
         sandboxContext = object : ContextWrapper(baseContext) {
             override fun getApplicationContext(): Context = this
 
+            override fun getFilesDir(): File = File(sandboxRoot, "files").apply { mkdirs() }
+
             override fun getDatabasePath(name: String): File {
                 return File(sandboxRoot, name).also { file ->
                     file.parentFile?.mkdirs()
@@ -82,22 +85,8 @@ class BackupRestoreUseCasesTest {
 
         database = buildDatabase(sandboxContext)
 
-        val derivedValuesCalculator = DerivedValuesCalculator(
-            userDao = database.userDao(),
-            measurementDao = database.measurementDao(),
-            measurementTypeDao = database.measurementTypeDao(),
-            measurementValueDao = database.measurementValueDao()
-        )
 
-        repository = DatabaseRepository(
-            database = database,
-            userDao = database.userDao(),
-            userGoalsDao = database.userGoalsDao(),
-            measurementDao = database.measurementDao(),
-            measurementTypeDao = database.measurementTypeDao(),
-            measurementValueDao = database.measurementValueDao(),
-            derivedValuesCalculator = derivedValuesCalculator
-        )
+        repository = RoomTestSupport.repositoryFor(database)
 
         val dataStore = PreferenceDataStoreFactory.create(
             scope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
@@ -150,20 +139,7 @@ class BackupRestoreUseCasesTest {
         val reopened = buildDatabase(sandboxContext)
 
         try {
-            val reopenedRepo = DatabaseRepository(
-                database = reopened,
-                userDao = reopened.userDao(),
-                userGoalsDao = reopened.userGoalsDao(),
-                measurementDao = reopened.measurementDao(),
-                measurementTypeDao = reopened.measurementTypeDao(),
-                measurementValueDao = reopened.measurementValueDao(),
-                derivedValuesCalculator = DerivedValuesCalculator(
-                    userDao = reopened.userDao(),
-                    measurementDao = reopened.measurementDao(),
-                    measurementTypeDao = reopened.measurementTypeDao(),
-                    measurementValueDao = reopened.measurementValueDao()
-                )
-            )
+            val reopenedRepo = RoomTestSupport.repositoryFor(reopened)
 
             assertWithMessage("the original record should still exist after a failed restore")
                 .that(reopenedRepo.getAllUsers().first()).hasSize(1)
@@ -194,20 +170,7 @@ class BackupRestoreUseCasesTest {
 
         val reopened = buildDatabase(sandboxContext)
         try {
-            val reopenedRepo = DatabaseRepository(
-                database = reopened,
-                userDao = reopened.userDao(),
-                userGoalsDao = reopened.userGoalsDao(),
-                measurementDao = reopened.measurementDao(),
-                measurementTypeDao = reopened.measurementTypeDao(),
-                measurementValueDao = reopened.measurementValueDao(),
-                derivedValuesCalculator = DerivedValuesCalculator(
-                    userDao = reopened.userDao(),
-                    measurementDao = reopened.measurementDao(),
-                    measurementTypeDao = reopened.measurementTypeDao(),
-                    measurementValueDao = reopened.measurementValueDao()
-                )
-            )
+            val reopenedRepo = RoomTestSupport.repositoryFor(reopened)
 
             assertWithMessage("the original record should still exist after rejecting an unrelated database")
                 .that(reopenedRepo.getAllUsers().first()).hasSize(1)
@@ -227,20 +190,7 @@ class BackupRestoreUseCasesTest {
 
         val reopened = buildDatabase(sandboxContext)
         try {
-            val reopenedRepo = DatabaseRepository(
-                database = reopened,
-                userDao = reopened.userDao(),
-                userGoalsDao = reopened.userGoalsDao(),
-                measurementDao = reopened.measurementDao(),
-                measurementTypeDao = reopened.measurementTypeDao(),
-                measurementValueDao = reopened.measurementValueDao(),
-                derivedValuesCalculator = DerivedValuesCalculator(
-                    userDao = reopened.userDao(),
-                    measurementDao = reopened.measurementDao(),
-                    measurementTypeDao = reopened.measurementTypeDao(),
-                    measurementValueDao = reopened.measurementValueDao()
-                )
-            )
+            val reopenedRepo = RoomTestSupport.repositoryFor(reopened)
 
             val users = reopenedRepo.getAllUsers().first()
             assertThat(users).hasSize(1)
@@ -273,20 +223,7 @@ class BackupRestoreUseCasesTest {
 
         val reopened = buildDatabase(sandboxContext)
         try {
-            val reopenedRepo = DatabaseRepository(
-                database = reopened,
-                userDao = reopened.userDao(),
-                userGoalsDao = reopened.userGoalsDao(),
-                measurementDao = reopened.measurementDao(),
-                measurementTypeDao = reopened.measurementTypeDao(),
-                measurementValueDao = reopened.measurementValueDao(),
-                derivedValuesCalculator = DerivedValuesCalculator(
-                    userDao = reopened.userDao(),
-                    measurementDao = reopened.measurementDao(),
-                    measurementTypeDao = reopened.measurementTypeDao(),
-                    measurementValueDao = reopened.measurementValueDao()
-                )
-            )
+            val reopenedRepo = RoomTestSupport.repositoryFor(reopened)
 
             val users = reopenedRepo.getAllUsers().first()
             assertThat(users).hasSize(1)
@@ -294,6 +231,56 @@ class BackupRestoreUseCasesTest {
         } finally {
             reopened.close()
         }
+    }
+
+    private fun createPhoto(bytes: ByteArray): String {
+        val name = "${UUID.randomUUID()}.jpg"
+        MeasurementCrudUseCases.imageDir(sandboxContext).mkdirs()
+        MeasurementCrudUseCases.imageFile(sandboxContext, name)!!.writeBytes(bytes)
+        return name
+    }
+
+    @Test
+    fun backupAndRestore_includesPhotosAndReplacesCurrentOnes() = runBlocking {
+        val kept = createPhoto(byteArrayOf(1, 2, 3))
+        val backupZip = File(sandboxRoot, "photo-backup.zip")
+        useCases.backupDatabase(Uri.fromFile(backupZip), baseContext.contentResolver).getOrThrow()
+
+        MeasurementCrudUseCases.imageFile(sandboxContext, kept)!!.delete()
+        val later = createPhoto(byteArrayOf(9))
+
+        useCases.restoreDatabase(Uri.fromFile(backupZip), baseContext.contentResolver).getOrThrow()
+
+        assertThat(MeasurementCrudUseCases.imageFile(sandboxContext, kept)!!.readBytes())
+            .isEqualTo(byteArrayOf(1, 2, 3))
+        assertThat(MeasurementCrudUseCases.imageFile(sandboxContext, later)!!.exists()).isFalse()
+    }
+
+    @Test
+    fun restoreDatabase_ignoresImageEntriesOutsideTheImageDirectory() = runBlocking {
+        val backupZip = File(sandboxRoot, "plain-backup.zip")
+        useCases.backupDatabase(Uri.fromFile(backupZip), baseContext.contentResolver).getOrThrow()
+
+        val craftedZip = File(sandboxRoot, "crafted-backup.zip")
+        ZipOutputStream(FileOutputStream(craftedZip)).use { out ->
+            ZipInputStream(backupZip.inputStream()).use { input ->
+                var entry = input.nextEntry
+                while (entry != null) {
+                    out.putNextEntry(ZipEntry(entry.name))
+                    input.copyTo(out)
+                    out.closeEntry()
+                    entry = input.nextEntry
+                }
+            }
+            out.putNextEntry(ZipEntry("images/../escaped.jpg"))
+            out.write(byteArrayOf(1))
+            out.closeEntry()
+        }
+
+        useCases.restoreDatabase(Uri.fromFile(craftedZip), baseContext.contentResolver).getOrThrow()
+
+        assertThat(File(sandboxContext.filesDir, "escaped.jpg").exists()).isFalse()
+        assertThat(MeasurementCrudUseCases.imageDir(sandboxContext).listFiles().orEmpty()).isEmpty()
     }
 
     private fun buildDatabase(context: Context): AppDatabase = RoomTestSupport.onDisk(context)
