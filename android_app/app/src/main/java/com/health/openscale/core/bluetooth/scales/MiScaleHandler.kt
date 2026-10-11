@@ -296,9 +296,9 @@ class MiScaleHandler : ScaleDeviceHandler() {
         val advertisedName = getPeripheral()?.name?.uppercase(Locale.ROOT).orEmpty()
         val advertisedAsV2 = advertisedName == "MIBCS" || advertisedName == "MIBFS" ||
                 advertisedName == "MI SCALE2"
-        if (advertisedAsV2 && variant == Variant.V1) {
+        val downgraded = advertisedAsV2 && variant == Variant.V1
+        if (downgraded) {
             logW("Advertised as v2 ($advertisedName) but the GATT table is v1; weight only")
-            userWarn(R.string.bt_warn_mi_scale_variant_downgraded)
         }
 
         // Choose primary/alternate by variant to avoid cross-service chatter.
@@ -348,6 +348,9 @@ class MiScaleHandler : ScaleDeviceHandler() {
         importedHistory = 0
         warnedHistoryStatusBits = false
         userInfo(R.string.bt_info_waiting_for_measurement)
+        // Must come after the "waiting" message: the GATT ops above are only queued, so both
+        // messages land within the snackbar collector's 150 ms debounce, which keeps only the last.
+        if (downgraded) userWarn(R.string.bt_warn_mi_scale_variant_downgraded)
 
         // Arm fallback in case firmware ignores the "only last" count response.
         armHistoryFallbackTimer(svcPrimary, svcAlternate)
