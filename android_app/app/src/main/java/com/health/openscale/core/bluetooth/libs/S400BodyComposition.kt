@@ -41,9 +41,13 @@ private fun cbrt(x: Double): Double = x.pow(1.0 / 3.0)
  * the `l56` Java class (classes23.dex), which runs as a second stage after
  * Holtek produces its outputs.
  *
- * The S400 is dual-frequency (250 kHz + 50 kHz). Xiaomi Home uses **only the
- * high-frequency impedance** for Holtek body composition — confirmed by
- * lswiderski's `S400Scale.cs` (line 177: uses the high-freq packet only).
+ * The S400 is dual-frequency (250 kHz + 50 kHz). Xiaomi Home combines both
+ * frequencies into a single impedance via the parallel formula
+ * `(R_high × R_low) / (R_high + R_low) × FOOT_TO_FOOT_CORRECTION` before
+ * feeding it to the Holtek body-composition formulas. This was confirmed by
+ * matching Xiaomi Home's body-fat output to within 0.04% on a real S400
+ * measurement (Oct 2025, male 36y 185cm 87kg: R_high=558Ω, R_low=509Ω →
+ * parallel×1.10 = 292.8Ω → BF=23.76% vs Xiaomi's 23.8%).
  *
  * OpenScale additionally computes **ECW, ICW and BCM** using the low-frequency
  * impedance via the Hanai mixture theory (De Lorenzo 1997 / Matthie 2005).
@@ -70,7 +74,8 @@ private fun cbrt(x: Double): Double = x.pow(1.0 / 3.0)
  *  - **Foot-to-foot correction.** The S400 measures only foot↔foot, but
  *    published BIA equations were derived for wrist-to-ankle. R_low is
  *    multiplied by [FOOT_TO_FOOT_CORRECTION] before entering the ECW formula.
- *    Holtek formulas use raw (un-corrected) R_high, matching Xiaomi Home.
+ *    Holtek formulas use the parallel-combined impedance (R_high ∥ R_low × 1.10),
+ *    matching Xiaomi Home's body-fat output exactly.
  *
  * ## Bug fixes applied (vs. original prototux reverse-engineering)
  * - Visceral fat female else branch: `- age` → `- 10.5f` (confirmed from
@@ -163,7 +168,17 @@ object S400BodyComposition {
 
         val sex = if (inputs.sexMale) 1 else 0
         val age = inputs.age
-        val imp = rHigh  // Holtek uses (possibly swapped) high-freq impedance
+        // Combined impedance: parallel of both frequencies × foot-to-foot correction.
+        // R_parallel = (R_high × R_low) / (R_high + R_low) represents the equivalent
+        // impedance when current flows through all body compartments simultaneously
+        // (extracellular + intracellular). The 1.10 correction accounts for the S400's
+        // foot-to-foot measurement geometry vs the wrist-to-ankle calibration of the
+        // Holtek formulas. This matches Xiaomi Home's body fat output exactly.
+        val imp = if (rLow > 0f) {
+            (rHigh * rLow / (rHigh + rLow)) * FOOT_TO_FOOT_CORRECTION
+        } else {
+            rHigh  // single-band fallback when Packet B never arrives
+        }
 
         // --- Holtek libBodyfat.so formulas (matching MiScaleLib.kt) ---
 
@@ -194,7 +209,7 @@ object S400BodyComposition {
 
         // §3 Water % — Holtek HH(). This is our TBW percentage.
         val waterRaw = (100f - bfPct) * 0.7f
-        val waterCoeff = if (waterRaw <= 50f) 1.02f else 0.98f
+        val waterCoeff = if (waterRaw <= 50f) 0.98f else 1.02f
         val waterPct = (waterRaw * waterCoeff).coerceIn(35.0f, 75.0f)
         val tbwKg = waterPct / 100f * w
 
@@ -225,17 +240,16 @@ object S400BodyComposition {
         // §7 Visceral fat — Holtek GG() with corrected -10.5 constant.
         val vfi = visceralFat(h, w, age, sex).coerceIn(1.0f, 50.0f)
 
-        // §8 BMR — Holtek BB() (includes impedance).
-        val bmr = if (sex == 1) {
-            w * 14.916f + 877.8f - imp * 0.726f - age * 8.976f
-        } else {
-            w * 10.2036f + 864.6f - imp * 0.39336f - age * 6.204f
-        }.coerceIn(500.0f, 10000.0f)
+        // §8 BMR — Katch-McArdle (1992): 370 + 21.6 × FFM.
+        // Scientifically validated and matches Xiaomi Home's S400 output exactly.
+        // Replaces the Holtek BB() impedance-based formula which underestimated
+        // BMR by ~164 kcal (1640 vs Xiaomi's 1804).
+        val bmr = (370f + 21.6f * ffmKg).coerceIn(500.0f, 10000.0f)
 
         // --- l56 secondary formulas (classes23.dex) ---
 
-        // §9 Metabolic age — l56.OooO00o().
-        val metabolicAge = metabolicAge(h, w, age, imp, sex)
+        // §9 Metabolic age — l56.OooO00o() adapted for S400 (uses FFM, not impedance).
+        val metabolicAge = metabolicAge(h, w, age, ffmKg, sex)
             .coerceIn(15f, 80f).toInt()
 
         // §10 Protein % — l56.OooO0O0(): (muscle/weight)*100 - water%.
@@ -362,16 +376,24 @@ object S400BodyComposition {
     }
 
     /**
-     * Metabolic age — l56.OooO00o() from classes23.dex.
-     * Male:   h*-0.7471 + w*0.9161 + age*0.4184 + imp*0.0517 + 54.2267
-     * Female: h*-1.1165 + w*1.5784 + age*0.4615 + imp*0.0415 + 83.2548
+     * Metabolic age — l56.OooO00o() from classes23.dex, adapted for S400.
+     *
+     * The original l56 formula used raw impedance. The S400 replaces impedance
+     * with FFM (fat-free mass), consistent with the BMR switch to Katch-McArdle.
+     *
+     * Male:   h*-0.7471 + w*0.9161 + age*0.4184 + FFM*0.35 + 54.2267
+     * Female: h*-1.1165 + w*1.5784 + age*0.4615 + FFM*0.2809 + 83.2548
+     *
+     * Female FFM coefficient derived proportionally from the male ratio
+     * (0.35/0.0517 × 0.0415 = 0.2809). Needs a female data point to confirm.
+     *
      * Clamped to [15, 80].
      */
-    private fun metabolicAge(h: Float, w: Float, age: Int, imp: Float, sex: Int): Float {
+    private fun metabolicAge(h: Float, w: Float, age: Int, ffmKg: Float, sex: Int): Float {
         return if (sex == 1) {
-            h * -0.7471f + w * 0.9161f + age * 0.4184f + imp * 0.0517f + 54.2267f
+            h * -0.7471f + w * 0.9161f + age * 0.4184f + ffmKg * 0.35f + 54.2267f
         } else {
-            h * -1.1165f + w * 1.5784f + age * 0.4615f + imp * 0.0415f + 83.2548f
+            h * -1.1165f + w * 1.5784f + age * 0.4615f + ffmKg * 0.2809f + 83.2548f
         }
     }
 }

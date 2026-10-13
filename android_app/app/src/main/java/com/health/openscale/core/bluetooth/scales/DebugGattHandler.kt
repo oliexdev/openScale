@@ -93,6 +93,20 @@ class DebugGattHandler : ScaleDeviceHandler() {
         setNotifySafe(uuid16(0x181D), uuid16(0x2A9D)) // Weight Scale -> Weight Measurement
         setNotifySafe(uuid16(0x181B), uuid16(0x2A9C)) // Body Comp   -> Body Composition Measurement
 
+        // --- Xiaomi MIoT BLE custom service (S400 / Mi Scale 2 / etc.) ---------------------
+        // Service: 00008000-0065-6c62-2e74-6f696d2e696d  ("mi.miot.ble")
+        //   0x8001 = WRITE_NR (send commands / auth)
+        //   0x8002 = NOTIFY   (measurement data + responses)
+        val xiaomiMiotSvc = UUID.fromString("00008000-0065-6c62-2e74-6f696d2e696d")
+        val xiaomiMiotNotify = UUID.fromString("00008002-0065-6c62-2e74-6f696d2e696d")
+        val xiaomiMiotWrite = UUID.fromString("00008001-0065-6c62-2e74-6f696d2e696d")
+        setNotifySafe(xiaomiMiotSvc, xiaomiMiotNotify)
+        // Also probe the 0xFE95 Xiaomi ecosystem service characteristics
+        val xiaomiEcoSvc = uuid16(0xFE95)
+        // Common notify chars under 0xFE95
+        setNotifySafe(xiaomiEcoSvc, UUID.fromString("00000005-0000-1000-8000-00805f9b34fb"))
+        setNotifySafe(xiaomiEcoSvc, UUID.fromString("00000010-0000-1000-8000-00805f9b34fb"))
+
         logD("Debug handler armed. Incoming NOTIFY frames will be logged; no data is stored.")
     }
 
@@ -103,9 +117,28 @@ class DebugGattHandler : ScaleDeviceHandler() {
      * - ASCII preview (non-printables as '?')
      */
     override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
-        val hex = data.toHexPreview(64)
-        val ascii = data.toAsciiPreview(64)
-        logD("NOTIFY chr=${prettyUuid(characteristic)}  $hex  ascii=$ascii")
+        val hex = data.toHexPreview(128)
+        val ascii = data.toAsciiPreview(128)
+        // Extra detail for Xiaomi MIoT BLE service (0x8002) — log full payload
+        val xiaomiMiotNotify = UUID.fromString("00008002-0065-6c62-2e74-6f696d2e696d")
+        if (characteristic == xiaomiMiotNotify) {
+            val fullHex = data.joinToString(" ") { "%02X".format(it) }
+            logD("NOTIFY [Xiaomi MIoT 0x8002] len=${data.size} full=[$fullHex]")
+            logD("NOTIFY chr=${prettyUuid(characteristic)}  $hex  ascii=$ascii")
+            // Try to interpret as S400 broadcast-style data (first 4 bytes after header)
+            if (data.size >= 13) {
+                val value = (data[5].toInt() and 0xFF) or
+                            ((data[6].toInt() and 0xFF) shl 8) or
+                            ((data[7].toInt() and 0xFF) shl 16) or
+                            ((data[8].toInt() and 0xFF) shl 24)
+                val mass = value and 0x7FF
+                val hr = (value shr 11) and 0x7F
+                val imp = (value shr 18) and 0x3FFF
+                logD("  → decoded: mass=$mass (${mass/10.0}kg), hr=${if(hr in 1..126) hr+50 else 0}, imp=$imp (${imp/10.0}Ω)")
+            }
+        } else {
+            logD("NOTIFY chr=${prettyUuid(characteristic)}  $hex  ascii=$ascii")
+        }
     }
 
     // ---------------------------------------------------------------------------------------------
