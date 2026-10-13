@@ -47,8 +47,6 @@ import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
-import com.health.openscale.core.bluetooth.libs.BmrFormula
-import com.health.openscale.core.bluetooth.libs.BoneFormula
 import com.health.openscale.core.bluetooth.libs.S400Aggregator
 import com.health.openscale.core.bluetooth.libs.S400BodyComposition
 import com.health.openscale.core.bluetooth.libs.S400Decryptor
@@ -102,11 +100,17 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
             "bcm", R.string.measurement_type_bcm,
             icon = MeasurementTypeIcon.IC_M_HIVE, color = 0xFF558B2F.toInt()
         )
+        val METABOLIC_AGE = MeasurementType.deviceInt(
+            "metabolic_age", R.string.measurement_type_metabolic_age,
+            icon = MeasurementTypeIcon.IC_M_PERSON, color = 0xFF8D6E63.toInt()
+        )
+        val IDEAL_WEIGHT = MeasurementType.deviceKg(
+            "ideal_weight", R.string.measurement_type_ideal_weight,
+            icon = MeasurementTypeIcon.IC_WEIGHT, color = 0xFF81C784.toInt()
+        )
 
         private const val SETTINGS_KEY_BIND_KEY = "s400_bind_key"
         private const val SETTINGS_KEY_MAC_ADDRESS = "s400_mac_address"
-        private const val SETTINGS_KEY_BONE_FORMULA = "s400_bone_formula"
-        private const val SETTINGS_KEY_BMR_FORMULA = "s400_bmr_formula"
 
         // Known S400 device name patterns
         // The S400 may advertise with various names depending on firmware/region
@@ -194,67 +198,6 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
                     }
                 }
             )
-
-            FormulaPicker(
-                titleRes = R.string.s400_bone_formula_label,
-                key = SETTINGS_KEY_BONE_FORMULA,
-                options = listOf(
-                    BoneFormula.MI_LEGACY.name to R.string.s400_bone_formula_mi_legacy,
-                    BoneFormula.HEYMSFIELD.name to R.string.s400_bone_formula_heymsfield,
-                ),
-                defaultValue = BoneFormula.MI_LEGACY.name,
-            )
-
-            FormulaPicker(
-                titleRes = R.string.s400_bmr_formula_label,
-                key = SETTINGS_KEY_BMR_FORMULA,
-                options = listOf(
-                    BmrFormula.CUNNINGHAM_1991.name to R.string.s400_bmr_formula_cun91,
-                    BmrFormula.CUNNINGHAM_1980.name to R.string.s400_bmr_formula_cun80,
-                ),
-                defaultValue = BmrFormula.CUNNINGHAM_1991.name,
-            )
-        }
-    }
-
-    @Composable
-    private fun FormulaPicker(
-        @androidx.annotation.StringRes titleRes: Int,
-        key: String,
-        options: List<Pair<String, Int>>,
-        defaultValue: String,
-    ) {
-        val persisted = settingsGetString(key) ?: defaultValue
-        var selected by remember(persisted) { mutableStateOf(persisted) }
-
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-                text = stringResource(titleRes),
-                style = MaterialTheme.typography.titleSmall,
-            )
-            options.forEach { (value, labelRes) ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .selectable(
-                            selected = selected == value,
-                            onClick = {
-                                selected = value
-                                settingsPutString(key, value)
-                            },
-                        ),
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                ) {
-                    RadioButton(
-                        selected = selected == value,
-                        onClick = {
-                            selected = value
-                            settingsPutString(key, value)
-                        },
-                    )
-                    Text(stringResource(labelRes))
-                }
-            }
         }
     }
 
@@ -354,9 +297,6 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
                 "hr=${finalized.heartRate}, timedOut=${finalized.timedOut}"
         )
 
-        val boneFormula = readBoneFormula()
-        val bmrFormula = readBmrFormula()
-
         val composition = S400BodyComposition.compute(
             S400Inputs(
                 age = user.age,
@@ -367,8 +307,6 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
                 // Single-band fallback when Packet B never arrives (older firmware path).
                 rLowRaw = finalized.impedanceLow ?: finalized.impedanceHigh,
             ),
-            boneFormula = boneFormula,
-            bmrFormula = bmrFormula,
         )
 
         val scaleMeasurement = ScaleMeasurement().apply {
@@ -388,9 +326,12 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
             this[MeasurementType.BMR] = Kcal(composition.bmrKcal ?: 0f)
             this[MeasurementType.PROTEIN] = Percent(composition.proteinPct ?: 0f)
 
-            // Dual-frequency BIA outputs, contributed as device values: the S400 is the
-            // only scale in the catalogue measuring at two frequencies, and a future one
-            // reuses these identities.
+            // S400-exclusive metrics from Holtek + l56 secondary calculator.
+            composition.metabolicAge?.let { this[METABOLIC_AGE] = it }
+            composition.idealWeightKg?.let { this[IDEAL_WEIGHT] = Kg(it) }
+
+            // Dual-frequency BIA outputs (OpenScale exclusive, not in Xiaomi Home).
+            // ECW/ICW via Hanai mixture theory using R_low; BCM via Kotler 1996.
             composition.ecwPct?.let { this[EXTRACELLULAR_WATER] = Percent(it) }
             composition.icwPct?.let { this[INTRACELLULAR_WATER] = Percent(it) }
             composition.bcmKg?.let { this[BODY_CELL_MASS] = Kg(it) }
@@ -400,18 +341,6 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
 
         return BroadcastAction.CONSUMED_STOP
     }
-
-    private fun readBoneFormula(): BoneFormula =
-        when (settingsGetString(SETTINGS_KEY_BONE_FORMULA)) {
-            BoneFormula.HEYMSFIELD.name -> BoneFormula.HEYMSFIELD
-            else -> BoneFormula.MI_LEGACY
-        }
-
-    private fun readBmrFormula(): BmrFormula =
-        when (settingsGetString(SETTINGS_KEY_BMR_FORMULA)) {
-            BmrFormula.CUNNINGHAM_1980.name -> BmrFormula.CUNNINGHAM_1980
-            else -> BmrFormula.CUNNINGHAM_1991
-        }
 
     /**
      * Extract service data from the BLE scan result.
