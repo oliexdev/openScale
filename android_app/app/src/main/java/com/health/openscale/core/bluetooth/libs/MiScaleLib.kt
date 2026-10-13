@@ -55,31 +55,26 @@ class MiScaleLib(
     }
 
     /**
-     * Skeletal Muscle Mass (%) derived from Janssen et al. BIA equation (kg) -> percent of body weight.
-     * If impedance is non-positive, falls back to LBM * ratio.
+     * Muscle mass (kg) derived from body composition per Holtek libBodyfat.so FF().
+     * Formula: muscle_kg = weight - fatMass - boneMass, clamped to [10, 120] kg.
+     * The caller converts to percentage for the Percent schema.
      */
     fun getMuscle(weight: Float, impedance: Float): Float {
         if (weight <= 0f) return 0f
 
-        val smmKg: Float = if (impedance > 0f) {
-            // Janssen et al.: SMM(kg) = 0.401*(H^2/R) + 3.825*sex - 0.071*age + 5.102
-            val h2OverR = (height * height) / impedance
-            0.401f * h2OverR + 3.825f * sex - 0.071f * age + 5.102f
-        } else {
-            // Fallback: approximate as fraction of LBM
-            val lbm = getLBM(weight, impedance)
-            val ratio = if (sex == 1) 0.52f else 0.46f
-            lbm * ratio
-        }
+        // Holtek libBodyfat.so FF(): muscle_kg = weight - fatMass - boneMass
+        // Derived from body composition, NOT a direct BIA formula.
+        val fatMass = (getBodyFat(weight, impedance) * 0.01f) * weight
+        val boneMass = getBoneMass(weight, impedance)
+        val muscleKg = weight - fatMass - boneMass
 
-        val percent = (smmKg / weight) * 100f
-        return percent.coerceIn(10f, 60f)
+        return muscleKg.coerceIn(10f, 120f)
     }
 
     fun getWater(weight: Float, impedance: Float): Float {
         val water = (100.0f - getBodyFat(weight, impedance)) * 0.7f
         val coeff = if (water < 50f) 1.02f else 0.98f
-        return coeff * water
+        return (coeff * water).coerceIn(35.0f, 75.0f)
     }
 
     fun getBoneMass(weight: Float, impedance: Float): Float {
@@ -88,13 +83,19 @@ class MiScaleLib(
 
         boneMass = if (boneMass > 2.2f) boneMass + 0.1f else boneMass - 0.1f
 
-        if (sex == 0 && boneMass > 5.1f) {
-            boneMass = 8.0f
-        } else if (sex == 1 && boneMass > 5.2f) {
-            boneMass = 8.0f
+        // Holtek libBodyfat.so DD(): weight-dependent clamping ranges.
+        val bounds = if (sex == 0) {
+            when {
+                weight < 45.0f -> 0.8f to 2.8f
+                weight < 60.0f -> 1.2f to 3.2f
+                weight < 75.0f -> 1.5f to 3.5f
+                else -> 0.5f to 4.2f
+            }
+        } else {
+            if (weight < 60.0f) 1.5f to 3.5f else 1.9f to 3.9f
         }
 
-        return boneMass
+        return boneMass.coerceIn(bounds.first, bounds.second)
     }
 
     fun getVisceralFat(weight: Float): Float {
@@ -106,10 +107,10 @@ class MiScaleLib(
                 visceralFat = (subcalc - 6.0f) + (age * 0.07f)
             } else {
                 val subcalc = 0.691f + (height * -0.0024f) + (height * -0.0024f)
-                visceralFat = (((height * 0.027f) - (subcalc * weight)) * -1.0f) + (age * 0.07f) - age
+                visceralFat = (((height * 0.027f) - (subcalc * weight)) * -1.0f) + (age * 0.07f) - 10.5f
             }
         } else {
-            if (height < weight * 1.6f) {
+            if (height < weight * 1.6f + 63.0f) {
                 val subcalc = ((height * 0.4f) - (height * (height * 0.0826f))) * -1.0f
                 visceralFat = ((weight * 305.0f) / (subcalc + 48.0f)) - 2.9f + (age * 0.15f)
             } else {
@@ -117,7 +118,7 @@ class MiScaleLib(
                 visceralFat = (((height * 0.143f) - (weight * subcalc)) * -1.0f) + (age * 0.15f) - 5.0f
             }
         }
-        return visceralFat
+        return visceralFat.coerceIn(1.0f, 50.0f)
     }
 
     fun getBodyFat(weight: Float, impedance: Float): Float {
@@ -146,9 +147,20 @@ class MiScaleLib(
         }
 
         var bodyFat = (1.0f - (((lbmCoeff - lbmSub) * coeff) / weight)) * 100.0f
-        if (bodyFat > 63.0f) {
-            bodyFat = 75.0f
-        }
+        bodyFat = bodyFat.coerceIn(5.0f, 75.0f)
         return bodyFat
+    }
+
+    /**
+     * Basal Metabolic Rate (kcal/day) using the Holtek libBodyfat.so BB() formula.
+     * Unlike the Schofield equation used by [BodyMiScaleLib], this includes impedance.
+     */
+    fun getBMR(weight: Float, impedance: Float): Float {
+        val bmr = if (sex == 1) {
+            weight * 14.916f + 877.8f - impedance * 0.726f - age * 8.976f
+        } else {
+            weight * 10.2036f + 864.6f - impedance * 0.39336f - age * 6.204f
+        }
+        return bmr.coerceIn(500.0f, 10000.0f)
     }
 }

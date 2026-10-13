@@ -470,9 +470,12 @@ class MiScaleHandler : ScaleDeviceHandler() {
         m[MeasurementType.WATER] = Percent(lib.getWater((m[MeasurementType.WEIGHT]?.value ?: 0f), impedance))
         m[MeasurementType.VISCERAL_FAT] = lib.getVisceralFat((m[MeasurementType.WEIGHT]?.value ?: 0f))
         m[MeasurementType.BODY_FAT] = Percent(lib.getBodyFat((m[MeasurementType.WEIGHT]?.value ?: 0f), impedance))
-        m[MeasurementType.MUSCLE] = Percent(lib.getMuscle((m[MeasurementType.WEIGHT]?.value ?: 0f), impedance))
+        // Holtek FF() returns muscle mass in kg; convert to percentage for the Percent schema.
+        val muscleKg = lib.getMuscle((m[MeasurementType.WEIGHT]?.value ?: 0f), impedance)
+        m[MeasurementType.MUSCLE] = Percent(if ((m[MeasurementType.WEIGHT]?.value ?: 0f) > 0f) muscleKg / (m[MeasurementType.WEIGHT]?.value ?: 0f) * 100f else 0f)
         m[MeasurementType.LBM] = Kg(lib.getLBM((m[MeasurementType.WEIGHT]?.value ?: 0f), impedance))
         m[MeasurementType.BONE] = Kg(lib.getBoneMass((m[MeasurementType.WEIGHT]?.value ?: 0f), impedance))
+        m[MeasurementType.BMR] = Kcal(lib.getBMR((m[MeasurementType.WEIGHT]?.value ?: 0f), impedance))
     }
 
     /**
