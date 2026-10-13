@@ -229,7 +229,7 @@ class MiScaleLibTest {
         val bf = lib.getBodyFat(weight, imp)
         val raw = (100f - bf) * 0.7f
         val coeff = if (raw < 50f) 1.02f else 0.98f
-        val expected = raw * coeff
+        val expected = (raw * coeff).coerceIn(35.0f, 75.0f)
 
         val water = lib.getWater(weight, imp)
         assertThat(water).isWithin(1e-3f).of(expected)
