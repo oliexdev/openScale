@@ -23,6 +23,10 @@ import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.bluetooth.scales.DebugGattHandler
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.testutil.RoomTestSupport
+import com.welie.blessed.BluetoothCentralManager
+import com.welie.blessed.BluetoothCentralManagerCallback
+import android.os.Handler
+import android.os.Looper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -70,8 +74,10 @@ class ScaleFactoryDeveloperModeTest {
         return ScaleFactory(app, settings, facades.measurementFacade, facades.userFacade) to settings
     }
 
-    private fun ScaleFactory.adapterFor(name: String): String? =
-        createCommunicator(ScaleCatalog.device(name))?.javaClass?.simpleName
+    private fun ScaleFactory.adapterFor(name: String): String? {
+        val central = BluetoothCentralManager(app, object : BluetoothCentralManagerCallback() {}, Handler(Looper.getMainLooper()))
+        return createCommunicator(ScaleCatalog.device(name), central)?.javaClass?.simpleName
+    }
 
     @Test
     fun `developer mode off keeps the registry in charge`() {

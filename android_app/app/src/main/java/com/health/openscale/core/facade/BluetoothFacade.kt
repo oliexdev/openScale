@@ -13,13 +13,16 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package com.health.openscale.core.facade
 
 import android.app.Application
 import android.bluetooth.BluetoothManager
+import android.bluetooth.le.ScanResult
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,22 +35,27 @@ import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.data.ConnectionStatus
 import com.health.openscale.core.data.User
 import com.health.openscale.core.utils.LogManager
+import com.health.openscale.core.service.BleConnector
+import com.health.openscale.core.service.BluetoothScannerManager
+import com.health.openscale.core.service.ScannedDeviceInfo
+import com.health.openscale.ui.shared.SnackbarEvent
+import com.welie.blessed.BluetoothCentralManager
+import com.welie.blessed.BluetoothCentralManagerCallback
+import com.welie.blessed.BluetoothPeripheral
+import com.welie.blessed.HciStatus
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
-
-import com.health.openscale.core.service.ScannedDeviceInfo
-import com.health.openscale.core.service.BluetoothScannerManager
-import com.health.openscale.core.service.BleConnector
-import com.health.openscale.ui.shared.SnackbarEvent
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Abstraction over Bluetooth orchestration consumed by [com.health.openscale.ui.screen.settings.BluetoothViewModel].
@@ -112,14 +120,47 @@ class BluetoothFacadeImpl @Inject constructor(
     private val TAG = "BluetoothFacade"
 
     private val scope = CoroutineScope(Dispatchers.Main.immediate)
+    private val mainHandler = Handler(Looper.getMainLooper())
 
-    // --- Managers ---
-    private val scanner = BluetoothScannerManager(application, scope, scaleFactory)
+    /**
+     * Composite callback that routes system Bluetooth events to the correct internal manager.
+     * Defined early to avoid NPE during centralManager initialization.
+     */
+    private val internalCentralCallback = object : BluetoothCentralManagerCallback() {
+        override fun onDiscovered(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
+            scanner.onDiscovered(peripheral, scanResult)
+            connection.onDiscovered(peripheral, scanResult)
+        }
+
+        override fun onConnected(peripheral: BluetoothPeripheral) {
+            connection.onConnected(peripheral)
+        }
+
+        override fun onConnectionFailed(peripheral: BluetoothPeripheral, status: HciStatus) {
+            connection.onConnectionFailed(peripheral, status)
+        }
+
+        override fun onDisconnected(peripheral: BluetoothPeripheral, status: HciStatus) {
+            connection.onDisconnected(peripheral, status)
+        }
+    }
+
+    /**
+     * Singleton central manager shared by the whole app. Ensures we register
+     * exactly one GATT client with Android 17 (API 37).
+     */
+    private val centralManager: BluetoothCentralManager by lazy {
+        BluetoothCentralManager(application, internalCentralCallback, mainHandler)
+    }
+
+    // --- Managers (passing the shared central manager) ---
+    private val scanner = BluetoothScannerManager(application, scope, scaleFactory, centralManager)
     private val connection = BleConnector(
         scope = scope,
         scaleFactory = scaleFactory,
         measurementFacade = measurementFacade,
-        getCurrentScaleUser = { currentBtScaleUser.value }
+        getCurrentScaleUser = { currentBtScaleUser.value },
+        centralManager = centralManager
     )
 
     override val snackbarEventsFromConnector: SharedFlow<SnackbarEvent> = connection.snackbarEvents
@@ -171,7 +212,7 @@ class BluetoothFacadeImpl @Inject constructor(
 
         device?.let { dev ->
             // Create or remember the communicator for the current saved device
-            val communicator = remember(dev) { scaleFactory.createCommunicator(dev) }
+            val communicator = remember(dev) { scaleFactory.createCommunicator(dev, centralManager) }
 
             // Render the device-specific UI directly from the communicator
             communicator?.DeviceConfigurationUi()
@@ -222,6 +263,11 @@ class BluetoothFacadeImpl @Inject constructor(
                 return@launch
             }
 
+            // Android 17 Critical: Stop all scanning first and wait for system table to clear
+            LogManager.i(TAG, "Consolidating for connection: Stopping all scanning...")
+            scanner.stopScan()
+            delay(1500.milliseconds) // Cooldown period for registration table
+
             val already = (connectionStatus.value == ConnectionStatus.CONNECTED ||
                     connectionStatus.value == ConnectionStatus.CONNECTING) &&
                     connectedDeviceAddress.value == dev.address
@@ -236,8 +282,6 @@ class BluetoothFacadeImpl @Inject constructor(
 
             // Work on a copy: `dev` is the instance the saved-device flow hands to the UI, and
             // mutating it here used to overwrite the scale's identity (issue #1478).
-            // An unsupported device is handed over as such so the connector reports it to the user
-            // instead of the tap silently doing nothing.
             val target = dev.copy(
                 isSupported = supported || developerMode,
                 determinedHandlerDisplayName = handlerName ?: dev.determinedHandlerDisplayName

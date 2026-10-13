@@ -171,6 +171,7 @@ class BluetoothViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        bt.close()
+        // BluetoothFacade is a singleton managed by Hilt — closing it here would
+        // destroy the shared BLE state for the entire app lifecycle.
     }
 }

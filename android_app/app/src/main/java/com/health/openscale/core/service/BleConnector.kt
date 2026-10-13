@@ -34,6 +34,12 @@ import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.shared.SnackbarEvent
+import com.health.openscale.core.bluetooth.scales.GattScaleAdapter
+import com.health.openscale.core.bluetooth.scales.BroadcastScaleAdapter
+import com.welie.blessed.BluetoothCentralManager
+import com.welie.blessed.BluetoothPeripheral
+import com.welie.blessed.HciStatus
+import android.bluetooth.le.ScanResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -64,6 +70,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * @param scaleFactory A factory for creating [com.health.openscale.core.bluetooth.ScaleCommunicator] instances based on device information.
  * @param measurementFacade Facade for handling measurement-related operations.
  * @param getCurrentScaleUser Callback function to retrieve the current Bluetooth scale user.
+ * @param centralManager The shared [BluetoothCentralManager] owned by [com.health.openscale.core.facade.BluetoothFacadeImpl].
  */
 @OptIn(FlowPreview::class) // debounce
 class BleConnector(
@@ -71,7 +78,8 @@ class BleConnector(
     private val scaleFactory: ScaleFactory,
     private val measurementFacade: MeasurementFacade,
     private val getCurrentScaleUser: () -> ScaleUser?,
-    ) : AutoCloseable {
+    private val centralManager: BluetoothCentralManager,
+) : AutoCloseable {
 
     private companion object {
         const val TAG = "BleConnector"
@@ -176,7 +184,7 @@ class BleConnector(
             _connectedDeviceName.value = deviceInfo.name
             _connectionError.value = null // Clear previous errors.
 
-            activeCommunicator = scaleFactory.createCommunicator(deviceInfo)
+            activeCommunicator = scaleFactory.createCommunicator(deviceInfo, centralManager)
 
             if (activeCommunicator == null) {
                 LogManager.e(TAG, "ScaleFactory could NOT create a communicator for $deviceDisplayName. Connection ABORTED.")
@@ -642,6 +650,27 @@ class BleConnector(
             // If not connected/connecting, still ensure everything is clean.
             releaseActiveCommunicator(logPrefix = "Closing manager: ")
         }
+        // DO NOT close centralManager here as it is shared!
         LogManager.i(TAG, "BluetoothConnectionManager closed.")
+    }
+
+    /**
+     * Entry point for system-level discovery events routed by [com.health.openscale.core.facade.BluetoothFacadeImpl].
+     */
+    fun onDiscovered(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
+        (activeCommunicator as? GattScaleAdapter)?.onDiscovered(peripheral, scanResult)
+        (activeCommunicator as? BroadcastScaleAdapter)?.onDiscovered(peripheral, scanResult)
+    }
+
+    fun onConnected(peripheral: BluetoothPeripheral) {
+        (activeCommunicator as? GattScaleAdapter)?.onConnected(peripheral)
+    }
+
+    fun onConnectionFailed(peripheral: BluetoothPeripheral, status: HciStatus) {
+        (activeCommunicator as? GattScaleAdapter)?.onConnectionFailed(peripheral, status)
+    }
+
+    fun onDisconnected(peripheral: BluetoothPeripheral, status: HciStatus) {
+        (activeCommunicator as? GattScaleAdapter)?.onDisconnected(peripheral, status)
     }
 }

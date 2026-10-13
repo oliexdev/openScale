@@ -184,9 +184,9 @@ fun BluetoothScreen(
     val permissionsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { map ->
-        val allGranted = map.values.all { it }
-        hasPermissions = allGranted
-        if (allGranted) {
+        val granted = map.values.all { it }
+        hasPermissions = hasBtPermissions(context)
+        if (granted) {
             if (bluetoothViewModel.isBluetoothEnabled()) {
                 if (pendingScan && !isScanning) {
                     bluetoothViewModel.clearAllErrors()
@@ -880,5 +880,7 @@ private fun hasBtPermissions(context: android.content.Context): Boolean {
     val connect = ContextCompat.checkSelfPermission(
         context, Manifest.permission.BLUETOOTH_CONNECT
     ) == PackageManager.PERMISSION_GRANTED
+    // Core connectivity depends on Scan and Connect.
+    // neverForLocation is declared in manifest, so Location is not required on API 31+.
     return scan && connect
 }
