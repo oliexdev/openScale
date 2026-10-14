@@ -18,6 +18,7 @@
 package com.health.openscale.core.bluetooth.libs
 
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -28,7 +29,7 @@ private fun cbrt(x: Double): Double = x.pow(1.0 / 3.0)
  *
  * Pure-Kotlin, no Android dependencies, deterministic, side-effect-free.
  *
- * ## Algorithm — Holtek `libBodyfat.so` + dual-frequency extension
+ * ## Algorithm — Holtek `libBodyfat.so` + server-side metabolic age
  *
  * Core body-composition metrics (body fat, water, bone, muscle, visceral fat,
  * BMR, BMI, protein) use the **Holtek `libBodyfat.so`** proprietary algorithm
@@ -37,9 +38,14 @@ private fun cbrt(x: Double): Double = x.pow(1.0 / 3.0)
  * `lib/arm64-v8a/libBodyfat.so` (18,648 bytes, ARM64) extracted from Xiaomi
  * Home APK v11.9.521.
  *
- * Secondary metrics (metabolic age, ideal weight) use formulas extracted from
- * the `l56` Java class (classes23.dex), which runs as a second stage after
- * Holtek produces its outputs.
+ * Metabolic age is an EMPIRICAL APPROXIMATION. The S400 (MJTZC01YM, built by
+ * Yunmai) does not compute it locally — its plugin uploads raw dual-frequency
+ * impedance to `POST /eco/scale/bcalc` and the Xiaomi/Yunmai cloud computes
+ * every metric with a proprietary ML model (LSTM adaptive calibration, Yunmai
+ * patent CN120610631A). That model is not a closed formula and cannot be
+ * reproduced exactly, so the previous `l56` (Holtek) metabolic-age formula —
+ * which was off by a full decade (24 vs the server's 34) — has been replaced
+ * with a body-fat-based approximation (see `metabolicAge()`).
  *
  * The S400 is dual-frequency (250 kHz + 50 kHz). Xiaomi Home combines both
  * frequencies into a single impedance via the parallel formula
@@ -85,7 +91,12 @@ private fun cbrt(x: Double): Double = x.pow(1.0 / 3.0)
  * - Body fat clamp: `if > 63 then 75` → `coerceIn(5f, 75f)`.
  * - Bone mass: fixed cap of 8.0 → weight-dependent clamping ranges.
  * - Muscle: replaced Janssen BIA formula with Holtek derived formula.
- * - BMR: replaced Cunningham (FFM-based) with Holtek (impedance-based).
+ * - BMR: replaced Holtek (impedance-based) with Katch-McArdle (FFM-based,
+ *   `370 + 21.6 × FFM`), which matches Xiaomi Home's S400 server output
+ *   (1804 kcal) exactly.
+ * - Metabolic age: replaced the l56 (Holtek) formula — wrong by a decade for
+ *   the S400 (24 vs server's 34) — with a body-fat-based empirical
+ *   approximation, since the S400's true value is server-side ML.
  * - Protein: replaced `0.20 * FFM - bone` with l56 formula.
  *
  * ## References
@@ -93,6 +104,8 @@ private fun cbrt(x: Double): Double = x.pow(1.0 / 3.0)
  * `x2b.java` JNI wrapper (classes56.dex);
  * `l56.java` secondary calculator (classes23.dex);
  * `HmPaceScalesModule.java` React Native bridge (classes73.dex);
+ * Yunmai patent CN120610631A (2025) — S400 server-side LSTM adaptive calibration;
+ * Yunmai plugin JS `main.bundle` (`calcBodyComposition` → `POST /eco/scale/bcalc`);
  * De Lorenzo 1997 *J Appl Physiol* 82:1542-1558 (ECW/Hanai);
  * Matthie 2005 *J Appl Physiol* 99:780-781 (ECW resistivity);
  * Bracco 1996 *Int J Obes* 20:1067-1073 (foot-to-foot correction);
@@ -246,10 +259,17 @@ object S400BodyComposition {
         // BMR by ~164 kcal (1640 vs Xiaomi's 1804).
         val bmr = (370f + 21.6f * ffmKg).coerceIn(500.0f, 10000.0f)
 
-        // --- l56 secondary formulas (classes23.dex) ---
+        // --- Secondary derived metrics ---
 
-        // §9 Metabolic age — l56.OooO00o() adapted for S400 (uses FFM, not impedance).
-        val metabolicAge = metabolicAge(h, w, age, ffmKg, sex)
+        // §9 Metabolic age — empirical approximation.
+        // The S400's real metabolic age is computed SERVER-SIDE by Xiaomi/Yunmai
+        // (POST /eco/scale/bcalc) using a proprietary ML model (LSTM adaptive
+        // calibration, see Yunmai patent CN120610631A). It is not reproducible
+        // with a closed formula. The l56 (Holtek) formula produced a 10-year
+        // error (24 vs the server's 34) and was removed. This approximation is
+        // calibrated against 14 real server measurements (male, 185cm/36y) plus
+        // one female reference (163cm/34y) and is accurate to ±1 year.
+        val metabolicAge = metabolicAge(age, bfPct, sex)
             .coerceIn(15f, 80f).toInt()
 
         // §10 Protein % — l56.OooO0O0(): (muscle/weight)*100 - water%.
@@ -351,49 +371,66 @@ object S400BodyComposition {
     )
 
     /**
-     * Visceral fat — Holtek GG() with corrected constants.
-     * Bug fix: female else branch uses -10.5 (not -age), confirmed from binary.
+     * Visceral fat — Holtek GG() (0x1b80) traced from libBodyfat.so.
+     *
+     * Female condition: h*0.5 - 13 >= w → ELSE branch (0x1c2c).
+     * Male condition:   w*1.6 + 63 > h → heavy branch (0x1cd0).
+     *
+     * All signs traced from fnmsub/fmadd instructions in the binary.
      */
     private fun visceralFat(h: Float, w: Float, age: Int, sex: Int): Float {
         return if (sex == 0) {
-            if (w > (13f - 0.5f * h) * -1f) {
-                val subsubcalc = (h * 1.45f) + (h * 0.1158f * h) - 120f
+            // Female
+            if (h * 0.5f - 13f < w) {
+                // THEN (0x1bc0): h*0.5-13 < w
+                val subsubcalc = h * 1.45f + h * 0.1158f * h - 120f
                 val subcalc = w * 500f / subsubcalc
-                (subcalc - 6f) + (age * 0.07f)
+                (subcalc - 6f) + age * 0.07f
             } else {
-                val subcalc = 0.691f + (h * -0.0024f) + (h * -0.0024f)
-                (((h * 0.027f) - (subcalc * w)) * -1f) + (age * 0.07f) - 10.5f
+                // ELSE (0x1c2c): h*0.5-13 >= w
+                val subcalc = 0.691f - h * 0.0024f
+                (subcalc * w - h * 0.027f) + age * 0.07f - 10.5f
             }
         } else {
-            if (h < w * 1.6f + 63f) {
-                val subcalc = ((h * 0.4f) - (h * (h * 0.0826f))) * -1f
-                ((w * 305f) / (subcalc + 48f)) - 2.9f + (age * 0.15f)
+            // Male
+            if (w * 1.6f + 63f > h) {
+                // Heavy (0x1cd0): w*1.6+63 > h
+                val denominator = h * 0.0826f * h - h * 0.4f + 48f
+                (w * 305f / denominator) - 2.9f + age * 0.15f
             } else {
-                val subcalc = 0.765f + h * -0.0015f
-                (((h * 0.143f) - (w * subcalc)) * -1f) + (age * 0.15f) - 5f
+                // Light (0x1c94): w*1.6+63 <= h
+                val subcalc = 0.765f - h * 0.0015f
+                (subcalc * w - h * 0.143f) + age * 0.15f - 5f
             }
         }
     }
 
     /**
-     * Metabolic age — l56.OooO00o() from classes23.dex, adapted for S400.
+     * Metabolic age — empirical approximation.
      *
-     * The original l56 formula used raw impedance. The S400 replaces impedance
-     * with FFM (fat-free mass), consistent with the BMR switch to Katch-McArdle.
+     * The S400's true metabolic age is computed server-side by Xiaomi/Yunmai
+     * (`POST /eco/scale/bcalc`) via a proprietary ML model (LSTM adaptive
+     * calibration, Yunmai patent CN120610631A). It is not a closed formula and
+     * cannot be reproduced exactly. The previous l56 (Holtek) formula was wrong
+     * by a full decade for the S400 (predicted 24 vs the server's 34).
      *
-     * Male:   h*-0.7471 + w*0.9161 + age*0.4184 + FFM*0.35 + 54.2267
-     * Female: h*-1.1165 + w*1.5784 + age*0.4615 + FFM*0.2809 + 83.2548
+     * This approximation models the observed behaviour — metabolic age is a few
+     * years younger than chronological age at "fitness" body-fat levels and
+     * rises as body fat climbs above that reference:
      *
-     * Female FFM coefficient derived proportionally from the male ratio
-     * (0.35/0.0517 × 0.0415 = 0.2809). Needs a female data point to confirm.
+     *   Male:   ma = age - 3 + max(0, (bfp - 22.0) * 0.8)
+     *   Female: ma = age - 2 + max(0, (bfp - 31.0) * 0.5)
      *
-     * Clamped to [15, 80].
+     * Calibrated against 14 real server measurements (male 185 cm / 36 y,
+     * bfp 22.2–23.7 % → ma 33–34) plus one female reference (163 cm / 34 y,
+     * bfp 34 % → ma 33). Accurate to ±1 year on that dataset; clamped to
+     * [15, 80] by the caller.
      */
-    private fun metabolicAge(h: Float, w: Float, age: Int, ffmKg: Float, sex: Int): Float {
+    private fun metabolicAge(age: Int, bfp: Float, sex: Int): Float {
         return if (sex == 1) {
-            h * -0.7471f + w * 0.9161f + age * 0.4184f + ffmKg * 0.35f + 54.2267f
+            age - 3f + max(0f, (bfp - 22.0f) * 0.8f)
         } else {
-            h * -1.1165f + w * 1.5784f + age * 0.4615f + ffmKg * 0.2809f + 83.2548f
+            age - 2f + max(0f, (bfp - 31.0f) * 0.5f)
         }
     }
 }
