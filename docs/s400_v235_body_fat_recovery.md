@@ -22,6 +22,54 @@ off by exactly 0.1 percentage point — a rounding-boundary artifact, not a mode
 per-case, see below). This is implemented in `S400BodyFatV235.kt` and wired into
 `MiScaleS400Handler.kt` for the `BODY_FAT` measurement field.
 
+## Physical weigh-in: profile height mismatch
+
+The installed debug APK built from commit `3b95c592` received both BLE packets and
+saved a measurement. The application log reported weight **86.2 kg**, Packet-A
+impedance **563.4 ohm**, Packet-B impedance **510.5 ohm**, heart rate **96 bpm**,
+and published body fat **23.1%**. The local OpenScale profile used **186 cm**,
+male, age 36. The user reported **23.5%** in Xiaomi Home and confirmed its profile
+used **185 cm**.
+
+Re-evaluating the shipped Kotlin estimator with the same weight, age, sex and
+Packet-A impedance gives:
+
+| Profile height | Result | Evidence |
+|---|---|---|
+| 186 cm | 23.1% | Installed application's published measurement and regression test |
+| 185 cm | 23.5% | Offline Kotlin regression test; matches user-reported Xiaomi value |
+
+This explains the discrepancy for this case. It is **not** a second on-device
+measurement with the corrected profile, nor proof of global exact parity.
+The OpenScale profile and stored measurement were not modified. Compare identical
+age, sex, height, weight and impedance inputs before evaluating algorithm parity.
+The regression test `physicalWeighInProfileHeightMismatch` preserves both results.
+No bind key, account identifier, birthday, MAC or authentication data is recorded here.
+
+## Evidence qualification (offline audit)
+
+The earlier `356` total counts labelled observations, not unique input vectors.
+Re-loading the raw numeric responses and deduplicating by the entire parameter
+object yields **329 unique inputs**, with no conflicting BFP/BMC/SMM/BWP/VFL/SLM/FFM
+values for duplicate inputs. Counts from the earlier label-based evaluation remain
+historical, but should not be interpreted as 356 independent trials.
+
+The final OLS coefficients were trained on the existing corpus. Errors of 0.1
+percentage point are **observed model residuals**; they are not established as
+floating-point artifacts merely because the outputs are quantized. Adding a
+rounding epsilon did not remove those mismatches. A random re-split of data already
+inspected is exploratory cross-validation, not a fresh independent holdout.
+Also, no recorded sample establishes the 75% upper clamp: its value remains an
+implementation hypothesis. Sampled coordinate min/max bounds are not a guarantee
+for every combination within that rectangle.
+
+`/eco/scale/bcalc` demonstrates a server calculation path. Neither a numerical
+mismatch nor that endpoint alone proves that the physical scale has no local
+composition algorithm, or that the APK library belongs exclusively to another
+model. Earlier categorical statements in this document exceed the evidence.
+For the installed model, the justified claim is bounded empirical agreement with
+the recorded responses and this one profile-controlled physical case.
+
 ## Why this matters for Xiaomi/OpenScale parity
 
 OpenScale's stated goal for the S400 is numeric parity with the Xiaomi Home app on the same

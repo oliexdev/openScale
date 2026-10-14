@@ -28,11 +28,10 @@ import kotlin.math.abs
  * pairs captured from Xiaomi's own calculation server (same fixture used by the prior
  * experimental candidate — see `docs/s400_v235_body_fat_recovery.md`).
  *
- * Tolerance is 0.1 percentage point, not exact-match: 12 of 275 rows land exactly on a
- * `x.x5` rounding boundary where IEEE-754 double arithmetic and the server's own
- * (unknown) rounding path disagree by one ULP-scale step. This is a documented, bounded
- * rounding artifact — not a model error — verified by inspecting every mismatch
- * individually (all differ by exactly 0.1, never more).
+ * This recorded fixture allows residuals of 0.1 percentage point, not exact parity.
+ * Twelve rows differ by 0.1. The cause is not established as a floating-point
+ * artifact; the coefficients were fitted to quantized outputs. This fixture is
+ * regression coverage over existing data, not a fresh independent holdout.
  */
 class S400BodyFatV235Test {
     @Test
@@ -69,6 +68,17 @@ class S400BodyFatV235Test {
     fun originalMaleReference() {
         val fat = S400BodyFatV235.estimate(185.0f, 87.0f, 36, true, 543.6f)
         assertEquals(23.7f, fat!!, 0.0001f)
+    }
+
+    @Test
+    fun physicalWeighInProfileHeightMismatch() {
+        // Observed in installed OpenScale: 186 cm profile -> 23.1%.
+        // User reported Xiaomi: 185 cm profile -> 23.5% for this weigh-in.
+        // Recalculation is a regression case, not a second on-device weigh-in.
+        assertEquals(23.1f,
+            S400BodyFatV235.estimate(186f, 86.2f, 36, true, 563.4f)!!, 0.0001f)
+        assertEquals(23.5f,
+            S400BodyFatV235.estimate(185f, 86.2f, 36, true, 563.4f)!!, 0.0001f)
     }
 
     @Test
