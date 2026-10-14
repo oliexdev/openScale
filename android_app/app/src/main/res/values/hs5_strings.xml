@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hs5_title">HS5 Wi-Fi setup</string>
+    <string name="hs5_intro">HS5 Wi-Fi setup. Pair the scale in Android Bluetooth settings, close the iHealth app, and keep the scale showing SET. Use a visible 2.4 GHz network. After setup, use Collect HS5 measurements over Wi-Fi.</string>
+    <string name="hs5_refresh">Refresh paired scales</string>
+    <string name="hs5_pair">Open Bluetooth settings</string>
+    <string name="hs5_ssid">Wi-Fi network name (SSID)</string>
+    <string name="hs5_password">Wi-Fi password</string>
+    <string name="hs5_check">Check Bluetooth connection</string>
+    <string name="hs5_send">Send Wi-Fi settings</string>
+    <string name="hs5_cancel">Cancel</string>
+    <string name="hs5_enable_bluetooth">Enable Bluetooth, then refresh paired scales.</string>
+    <string name="hs5_no_device">No paired HS5 found. Pair it in Bluetooth settings first.</string>
+    <string name="hs5_found">Found %1$d paired HS5 scale(s).</string>
+    <string name="hs5_permissions">Nearby devices permission is required to connect to your scale.</string>
+    <string name="hs5_connecting">Connecting to %1$s…</string>
+    <string name="hs5_connect_timeout">Bluetooth connection timed out. Wake the scale in SET mode and close the legacy app.</string>
+    <string name="hs5_retry_legacy">Retrying the paired scale using legacy Bluetooth compatibility mode…</string>
+    <string name="hs5_connection_error">Bluetooth connection ended: %1$s. Wi-Fi success is unconfirmed unless the scale already reported it.</string>
+    <string name="hs5_canceled">Session canceled. Settings already sent to the scale cannot be recalled.</string>
+    <string-array name="hs5_security_modes">
+        <item>WPA2 Personal</item>
+        <item>WPA/WPA2 mixed</item>
+        <item>WPA Personal</item>
+        <item>WEP (legacy)</item>
+        <item>Open network</item>
+    </string-array>
+</resources>

@@ -17,6 +17,7 @@
  */
 package com.health.openscale.ui.screen.settings
 
+import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,11 +43,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.health.openscale.R
+import com.health.openscale.hs5.Hs5SetupActivity
 import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.shared.SharedViewModel
 
@@ -83,6 +86,7 @@ fun SettingsScreen(
     selectedRoute: String? = null,
     onOpenItem: ((String) -> Unit)? = null
 ) {
+    val context = LocalContext.current
     // Define strings for titles and content descriptions in the Composable context
     val generalSettingsLabel = stringResource(R.string.settings_item_general)
     val userSettingsLabel = stringResource(R.string.settings_item_user)
@@ -93,6 +97,11 @@ fun SettingsScreen(
     val aboutLabel = stringResource(R.string.settings_item_about)
 
     val items = listOf(
+        SettingsItem(
+            label = stringResource(R.string.hs5_title),
+            icon = Icons.Filled.Bluetooth,
+            route = "hs5_wifi_setup"
+        ),
         SettingsItem(
             label = generalSettingsLabel,
             icon = Icons.Default.Tune,
@@ -158,7 +167,9 @@ fun SettingsScreen(
                     .fillMaxWidth() // Make card take full width
                     .padding(vertical = 8.dp) // Consistent vertical padding
                     .clickable {
-                        if (onOpenItem != null) onOpenItem(item.route) else navController.navigate(item.route)
+                        if (item.route == "hs5_wifi_setup") {
+                            context.startActivity(Intent(context, Hs5SetupActivity::class.java))
+                        } else if (onOpenItem != null) onOpenItem(item.route) else navController.navigate(item.route)
                     }
             ) {
                 ListItem(
