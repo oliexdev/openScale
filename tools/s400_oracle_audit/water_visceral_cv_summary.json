@@ -1,0 +1,183 @@
+{
+  "status": "EXPLORATORY_CROSS_VALIDATION_NOT_FRESH_HOLDOUT",
+  "input_sha256": "c634a88db48d347527f5a7020ce6e2cef25adac2b696e44f9d6943dd254b3ae6",
+  "unique_inputs": 329,
+  "folds": 5,
+  "grouping": "sex,height,weight,impedance pair; all age variants together",
+  "results": [
+    {
+      "sex": 0,
+      "metric": "bwp",
+      "kind": "poly2",
+      "terms": 15,
+      "n": 164,
+      "exact": 3,
+      "mae": 1.1841463414634146,
+      "max_error": 15.7,
+      "within_one_display_step": 10
+    },
+    {
+      "sex": 0,
+      "metric": "bwp",
+      "kind": "poly3",
+      "terms": 35,
+      "n": 164,
+      "exact": 7,
+      "mae": 1.454878048780489,
+      "max_error": 24.5,
+      "within_one_display_step": 22
+    },
+    {
+      "sex": 0,
+      "metric": "bwp",
+      "kind": "rational",
+      "terms": 15,
+      "n": 164,
+      "exact": 5,
+      "mae": 1.0871951219512186,
+      "max_error": 22.599999999999998,
+      "within_one_display_step": 16
+    },
+    {
+      "sex": 0,
+      "metric": "vfl",
+      "kind": "poly2",
+      "terms": 15,
+      "n": 164,
+      "exact": 118,
+      "mae": 0.4634146341463415,
+      "max_error": 7.0,
+      "within_one_display_step": 147
+    },
+    {
+      "sex": 0,
+      "metric": "vfl",
+      "kind": "poly3",
+      "terms": 35,
+      "n": 164,
+      "exact": 109,
+      "mae": 0.6829268292682927,
+      "max_error": 7.0,
+      "within_one_display_step": 143
+    },
+    {
+      "sex": 0,
+      "metric": "vfl",
+      "kind": "rational",
+      "terms": 15,
+      "n": 164,
+      "exact": 112,
+      "mae": 0.3719512195121951,
+      "max_error": 4.0,
+      "within_one_display_step": 158
+    },
+    {
+      "sex": 1,
+      "metric": "bwp",
+      "kind": "poly2",
+      "terms": 15,
+      "n": 165,
+      "exact": 3,
+      "mae": 1.2709090909090914,
+      "max_error": 19.400000000000006,
+      "within_one_display_step": 13
+    },
+    {
+      "sex": 1,
+      "metric": "bwp",
+      "kind": "poly3",
+      "terms": 35,
+      "n": 165,
+      "exact": 12,
+      "mae": 0.9569696969696975,
+      "max_error": 19.800000000000004,
+      "within_one_display_step": 71
+    },
+    {
+      "sex": 1,
+      "metric": "bwp",
+      "kind": "rational",
+      "terms": 15,
+      "n": 165,
+      "exact": 60,
+      "mae": 0.8636363636363636,
+      "max_error": 19.0,
+      "within_one_display_step": 69
+    },
+    {
+      "sex": 1,
+      "metric": "vfl",
+      "kind": "poly2",
+      "terms": 15,
+      "n": 165,
+      "exact": 96,
+      "mae": 0.7454545454545455,
+      "max_error": 8.0,
+      "within_one_display_step": 137
+    },
+    {
+      "sex": 1,
+      "metric": "vfl",
+      "kind": "poly3",
+      "terms": 35,
+      "n": 165,
+      "exact": 77,
+      "mae": 0.6727272727272727,
+      "max_error": 8.0,
+      "within_one_display_step": 151
+    },
+    {
+      "sex": 1,
+      "metric": "vfl",
+      "kind": "rational",
+      "terms": 15,
+      "n": 165,
+      "exact": 98,
+      "mae": 0.6303030303030303,
+      "max_error": 12.0,
+      "within_one_display_step": 145
+    }
+  ],
+  "conditional_checks": {
+    "water_percent_from_reported_mass": {
+      "n": 329,
+      "exact": 328,
+      "mae": 0.00030395136778113774,
+      "max_error": 0.09999999999999432,
+      "within_one_display_step": 329
+    },
+    "water_mass_from_reported_percent": {
+      "n": 329,
+      "exact": 329,
+      "mae": 0.0,
+      "max_error": 0.0,
+      "within_one_display_step": 329
+    },
+    "water_percent_70pct_of_fatfree_percent": {
+      "n": 329,
+      "exact": 2,
+      "mae": 4.977507598784194,
+      "max_error": 17.099999999999994,
+      "within_one_display_step": 3
+    },
+    "protein_mass_from_reported_percent": {
+      "n": 329,
+      "exact": 329,
+      "mae": 0.0,
+      "max_error": 0.0,
+      "within_one_display_step": 329
+    }
+  },
+  "caveats": [
+    "All existing data previously inspected; no fresh independent validation.",
+    "Latent water fit uses recorded bwp*weight/100, not recovered original latent mass.",
+    "Finite samples cannot identify complete clamps or the original algorithm.",
+    "No OpenScale production changes and no network queries."
+  ],
+  "r1_effect_groups": {
+    "bmc": 2,
+    "smm": 2,
+    "bwp": 2,
+    "vfl": 2
+  }
+}

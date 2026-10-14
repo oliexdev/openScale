@@ -1,0 +1,101 @@
+# S400 component audit: raw oracle data, offline exploration
+
+## Scope
+
+No inherited coefficients or prior model performance claims are used as evidence.
+Reloaded raw numeric oracle responses, deduplicated by the complete parameter object:
+556 loaded rows collapse to **329 unique inputs** (164 female, 165 male), with no
+conflicting values in duplicate BFP/BMC/SMM/BWP/VFL/SLM/FFM responses.
+No new Xiaomi requests or device writes were issued. Production formulas are unchanged.
+
+Numeric corpus SHA256:
+`c634a88db48d347527f5a7020ce6e2cef25adac2b696e44f9d6943dd254b3ae6`.
+
+## Method
+
+Exploratory five-fold cross-validation groups inputs by sex, height, weight and
+both impedance readings. All age variants of the same physical inputs remain in
+the same fold. Data were already inspected; this is **not fresh independent
+validation**. Polynomial and rational regressions are hypotheses, not recovered
+vendor source. No per-case offsets or lookups are used.
+
+Water is fitted as latent mass from recorded BWP * weight / 100 and transformed
+back to percentage before evaluation. VFL is quantized to integers with an
+observed lower bound of 1. No upper bound is inferred. All reported exact counts
+compare rounded predictions; tolerances are not called exact matches.
+
+## Water and visceral fat: initial results
+
+| Metric | Sex | Candidate | Exact | MAE | Maximum error |
+|---|---|---|---|---|---|
+| BWP | Female | Rational, 15 terms | 5/164 | 1.087 pp | 22.6 pp |
+| BWP | Male | Rational, 15 terms | 60/165 | 0.864 pp | 19.0 pp |
+| VFL | Female | Rational, 15 terms | 112/164 | 0.372 levels | 4 levels |
+| VFL | Male | Rational, 15 terms | 98/165 | 0.630 levels | 12 levels |
+
+These candidates **fail parity**. Quadratic/cubic candidates were also evaluated
+and did not solve parity. Increasing basis size is not evidence of the correct
+algorithm. They must not be installed in OpenScale as Xiaomi-equivalent formulas.
+
+Controlled second-impedance sweeps change BMC, SMM, BWP and VFL while other inputs
+are fixed. Both bands matter for these metrics. Observed water percentages range
+from 29.6 to 85.0%; a universal 35..75% output clamp contradicts these data.
+Bone and VFL do not change in the eight repeated-age input groups observed;
+this supports testing age-independent hypotheses, not a universal proof.
+Some SMM/water changes coincide with age-dependent SLM changes at a muscle bound.
+
+## Bone and skeletal muscle: grouped cross-validation
+
+The same five grouped folds were used to fit fresh coefficients; no inherited model
+was loaded. Bone output is rounded to tenths with a nonnegative floor. For SMM,
+training excludes cases close to the observed ratio bounds, and evaluation clamps
+the latent prediction to `0.45 * SLM .. 0.70 * SLM` using **recorded oracle SLM**.
+The interior is rounded to tenths; exact bound products are not rounded again.
+This SMM result is therefore **conditional**, not end-to-end parity from raw inputs.
+
+| Metric | Sex | Candidate | Exact | MAE kg | Maximum error kg |
+|---|---|---|---|---|---|
+| BMC | Female | Rational, 15 terms | 147/164 | 0.01463 | 0.6 |
+| BMC | Male | Rational, 15 terms | 150/165 | 0.00909 | 0.1 |
+| SMM (oracle SLM supplied) | Female | Rational, 15 terms | 128/164 | 0.02537 | 0.3 |
+| SMM (oracle SLM supplied) | Male | Rational, 15 terms | 139/165 | 0.01645 | 0.2 |
+
+In the SMM interior alone, exact matches are 88/123 (female) and 100/126 (male).
+Thus the total exact count benefits from already-known bound values; it does not
+mean the latent muscle formula has been fully recovered. All these candidates
+still fail exact parity and were **not integrated into OpenScale**.
+
+The largest BMC error is a female fixed-profile R0=300 ohm, R1=525 ohm case:
+prediction 1.3 kg vs observed 0.7 kg. A more flexible model fitting this point
+alone would not establish correctness elsewhere. Age variants must stay grouped.
+
+Observed `SMM/SLM` ratios are within 0.45..0.70: 37 unique inputs are exactly at
+the lower ratio and 43 at the upper ratio. The remaining 249 are interior.
+`SLM = round1(displayed FFM - displayed BMC)` matches **329/329** inputs;
+`SMM = SLM` matches **0/329**. Preserve this distinction in OpenScale's muscle field.
+
+## Conditional arithmetic checks
+
+These use recorded upstream metrics. They validate arithmetic, not a full BIA
+input-to-output model:
+
+- `water_kg = round1(weight_kg * BWP / 100)` matches **329/329**.
+- Inverting displayed water kg back into BWP matches **328/329**; do not reverse
+  the rounding order in OpenScale.
+- `protein_kg = round1(weight_kg * PP / 100)` matches **329/329**.
+- `BWP = round1(0.7 * (100 - BFP))` matches only **2/329**, maximum error 17.1 pp.
+
+## Reproducible artifacts
+
+Versioned reproducible bundle: `tools/s400_oracle_audit/`.
+
+- `raw_numeric.json`: numeric-only, deduplicated responses, no account data.
+- `bone_muscle_cv.py`, `water_visceral_cv.py`: offline analyses requiring NumPy.
+- `*_cv_summary.json`: recorded aggregate results.
+- Running each script generates `*_cv_report.json` with per-input predictions.
+- See the bundle README for execution and limitations.
+
+No BLE keys, auth data, MAC addresses or personal profile identifiers are included.
+All four metric investigations have been executed locally; two attempted delegated
+analyses failed with a provider HTTP 401 before doing any analysis. Their summaries
+were not used. No claims of recovered complete formulas are made here.

@@ -1,0 +1,252 @@
+{
+  "status": "EXPLORATORY_NOT_COMPLETE_PARITY",
+  "unique_inputs": 329,
+  "input_sha256": "c634a88db48d347527f5a7020ce6e2cef25adac2b696e44f9d6943dd254b3ae6",
+  "split": "5 grouped folds; same physical inputs across ages share a fold",
+  "results": [
+    {
+      "sex": 0,
+      "metric": "bmc",
+      "kind": "poly2",
+      "terms": 15,
+      "n": 164,
+      "exact": 128,
+      "within_0_1kg": 158,
+      "mae_kg": 0.031097560975609752,
+      "max_error_kg": 0.8,
+      "unbounded": {
+        "n": 164,
+        "exact": 127,
+        "within_0_1kg": 157,
+        "mae_kg": 0.036585365853658534,
+        "max_error_kg": 0.9
+      }
+    },
+    {
+      "sex": 0,
+      "metric": "bmc",
+      "kind": "poly3",
+      "terms": 35,
+      "n": 164,
+      "exact": 109,
+      "within_0_1kg": 152,
+      "mae_kg": 0.04390243902439026,
+      "max_error_kg": 0.5999999999999999,
+      "unbounded": {
+        "n": 164,
+        "exact": 108,
+        "within_0_1kg": 151,
+        "mae_kg": 0.045731707317073184,
+        "max_error_kg": 0.5999999999999999
+      }
+    },
+    {
+      "sex": 0,
+      "metric": "bmc",
+      "kind": "rational",
+      "terms": 15,
+      "n": 164,
+      "exact": 147,
+      "within_0_1kg": 161,
+      "mae_kg": 0.014634146341463414,
+      "max_error_kg": 0.6000000000000001,
+      "unbounded": {
+        "n": 164,
+        "exact": 146,
+        "within_0_1kg": 160,
+        "mae_kg": 0.01768292682926829,
+        "max_error_kg": 0.6000000000000001
+      }
+    },
+    {
+      "sex": 0,
+      "metric": "smm",
+      "kind": "poly2",
+      "terms": 15,
+      "n": 164,
+      "exact": 138,
+      "within_0_1kg": 155,
+      "mae_kg": 0.030487804878049193,
+      "max_error_kg": 0.5999999999999979,
+      "unbounded": {
+        "n": 164,
+        "exact": 97,
+        "within_0_1kg": 114,
+        "mae_kg": 0.8503658536585367,
+        "max_error_kg": 23.514999999999997
+      }
+    },
+    {
+      "sex": 0,
+      "metric": "smm",
+      "kind": "poly3",
+      "terms": 35,
+      "n": 164,
+      "exact": 133,
+      "within_0_1kg": 157,
+      "mae_kg": 0.05820121951219548,
+      "max_error_kg": 2.264999999999997,
+      "unbounded": {
+        "n": 164,
+        "exact": 94,
+        "within_0_1kg": 119,
+        "mae_kg": 0.9135975609756096,
+        "max_error_kg": 27.214999999999996
+      }
+    },
+    {
+      "sex": 0,
+      "metric": "smm",
+      "kind": "rational",
+      "terms": 15,
+      "n": 164,
+      "exact": 128,
+      "within_0_1kg": 159,
+      "mae_kg": 0.025365853658537062,
+      "max_error_kg": 0.3000000000000007,
+      "unbounded": {
+        "n": 164,
+        "exact": 88,
+        "within_0_1kg": 119,
+        "mae_kg": 0.9268292682926831,
+        "max_error_kg": 32.415
+      }
+    },
+    {
+      "sex": 1,
+      "metric": "bmc",
+      "kind": "poly2",
+      "terms": 15,
+      "n": 165,
+      "exact": 132,
+      "within_0_1kg": 161,
+      "mae_kg": 0.02666666666666667,
+      "max_error_kg": 0.5999999999999999,
+      "unbounded": {
+        "n": 165,
+        "exact": 132,
+        "within_0_1kg": 161,
+        "mae_kg": 0.02666666666666667,
+        "max_error_kg": 0.5999999999999999
+      }
+    },
+    {
+      "sex": 1,
+      "metric": "bmc",
+      "kind": "poly3",
+      "terms": 35,
+      "n": 165,
+      "exact": 139,
+      "within_0_1kg": 162,
+      "mae_kg": 0.017575757575757568,
+      "max_error_kg": 0.20000000000000018,
+      "unbounded": {
+        "n": 165,
+        "exact": 139,
+        "within_0_1kg": 162,
+        "mae_kg": 0.017575757575757568,
+        "max_error_kg": 0.20000000000000018
+      }
+    },
+    {
+      "sex": 1,
+      "metric": "bmc",
+      "kind": "rational",
+      "terms": 15,
+      "n": 165,
+      "exact": 150,
+      "within_0_1kg": 165,
+      "mae_kg": 0.00909090909090908,
+      "max_error_kg": 0.10000000000000009,
+      "unbounded": {
+        "n": 165,
+        "exact": 150,
+        "within_0_1kg": 165,
+        "mae_kg": 0.00909090909090908,
+        "max_error_kg": 0.10000000000000009
+      }
+    },
+    {
+      "sex": 1,
+      "metric": "smm",
+      "kind": "poly2",
+      "terms": 15,
+      "n": 165,
+      "exact": 116,
+      "within_0_1kg": 148,
+      "mae_kg": 0.06069696969696998,
+      "max_error_kg": 1.6000000000000014,
+      "unbounded": {
+        "n": 165,
+        "exact": 77,
+        "within_0_1kg": 109,
+        "mae_kg": 0.9954545454545456,
+        "max_error_kg": 21.720000000000006
+      }
+    },
+    {
+      "sex": 1,
+      "metric": "smm",
+      "kind": "poly3",
+      "terms": 35,
+      "n": 165,
+      "exact": 124,
+      "within_0_1kg": 143,
+      "mae_kg": 0.051000000000000274,
+      "max_error_kg": 0.7000000000000028,
+      "unbounded": {
+        "n": 165,
+        "exact": 86,
+        "within_0_1kg": 104,
+        "mae_kg": 1.0075757575757576,
+        "max_error_kg": 23.92000000000001
+      }
+    },
+    {
+      "sex": 1,
+      "metric": "smm",
+      "kind": "rational",
+      "terms": 15,
+      "n": 165,
+      "exact": 139,
+      "within_0_1kg": 163,
+      "mae_kg": 0.01645454545454567,
+      "max_error_kg": 0.20000000000000284,
+      "unbounded": {
+        "n": 165,
+        "exact": 101,
+        "within_0_1kg": 124,
+        "mae_kg": 0.9148484848484851,
+        "max_error_kg": 21.92000000000001
+      }
+    }
+  ],
+  "conditional_arithmetic": {
+    "slm_from_displayed_ffm_minus_bmc": {
+      "n": 329,
+      "exact": 329,
+      "within_0_1kg": 329,
+      "mae_kg": 0.0,
+      "max_error_kg": 0.0
+    },
+    "smm_is_slm": {
+      "n": 329,
+      "exact": 0,
+      "within_0_1kg": 0,
+      "mae_kg": 22.197173252279637,
+      "max_error_kg": 37.3
+    }
+  },
+  "caveats": [
+    "Corpus already inspected: grouped crossvalidation is not a fresh independent holdout.",
+    "SMM clamps below use observed oracle SLM. This is conditional validation, not a deployable full pipeline.",
+    "SMM training excludes observed bound cases; classification is based on labels.",
+    "No prior coefficients, no network queries, no production edits."
+  ],
+  "observed_smm_bounds": {
+    "min": 0.44999999999999996,
+    "max": 0.7000000000000001,
+    "at_045": 37,
+    "at_070": 43
+  }
+}
