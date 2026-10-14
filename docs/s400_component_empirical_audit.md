@@ -115,6 +115,54 @@ Scripts and coefficients are preserved under `tools/s400_oracle_audit/bmc_sqrt_*
 No BMC implementation, app installation, new Xiaomi request or per-case correction
 was applied in this investigation.
 
+## Fresh prospective BMC validation: batch15
+
+After the prior 320-query ledger was exhausted, an earlier explicit user approval
+for 40–80 further synthetic calculation-only requests was located in the session
+history. The ledger was raised to a conservative **360 total**, not 400. Sixteen
+new, unseen physical-input variants and five model predictions were frozen before
+any request (`batch14_frozen_predictions.json`, SHA256
+`e22f3f43c38161e58f9213b6d9fa85fcbb8549489bc12d462208434751d2b43c`).
+An initial Frida Java-bridge crash occurred **before any `issued` event**, with
+zero responses. The batch was closed as `failed_before_issue`, its 16 reserved
+slots released, and it was never replayed. A request-free Frida Java health
+check passed; a new batch name, batch15, then returned **16 issued / 16 valid
+responses**. The old batch name is intentionally retired.
+
+Scores on the 16 prospective, frozen predictions (BMC exact after tenth-kg
+rounding):
+
+| Candidate | Exact | MAE, kg | Max displayed error, kg |
+| --- | ---: | ---: | ---: |
+| Delegated centered-square-root candidate | 5/16 | 0.06875 | 0.1 |
+| Fresh seven-term square-root OLS | 9/16 | 0.04375 | 0.1 |
+| Seven-term OLS + R1² | 12/16 | 0.025 | 0.1 |
+| Seven-term OLS + 1/R1 | 12/16 | 0.025 | 0.1 |
+| Seven-term OLS + R0·R1 | 12/16 | 0.025 | 0.1 |
+
+All variants were exploratory choices based on inspected old data, then evaluated
+prospectively on the same new batch. The best forms still fail four inputs; do
+**not** fit those 16 cases and rebrand the result as independent validation.
+Representative discriminators: R0=501.0 ohm (male 185cm/87kg) gave 3.6kg,
+while the centered candidate predicted 3.5kg; R0=999.0 gave 0.7kg versus
+0.8kg; R1=301.0 gave 5.0kg versus 5.1kg; a male 100.1kg case gave 3.9kg
+versus 3.8kg. These are incompatible with dismissing every mismatch as an
+unavoidable output-rounding effect. A post-hoc intermediate-rounding mechanism
+has not been established.
+
+On the same fresh responses, the observed arithmetic identities
+`round1(weight_kg * bmcp / 100) == bmc` and `ffm - slm == bmc` hold **16/16**;
+they allow derived output checks if `bmcp` or `slm` is already available, but
+neither independently recovers bone mass from raw scale inputs. The safe app
+status is unchanged: **do not replace the bone estimator with these models or
+claim Xiaomi parity**. The ledger now records 336/360 reserved, with 24
+remaining under that grant. Preserve the remaining allowance for a genuinely
+discriminating hypothesis; no more requests were made in this pass.
+
+Reproducible numeric-only fixtures and frozen prediction scores:
+`tools/s400_oracle_audit/bmc_fresh_batch15_fixture.json` and
+`tools/s400_oracle_audit/bmc_fresh_batch15_scores.json`.
+
 ## Conditional arithmetic checks
 
 These use recorded upstream metrics. They validate arithmetic, not a full BIA

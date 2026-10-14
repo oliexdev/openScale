@@ -1,0 +1,535 @@
+{
+  "source": "batch15: prospective predictions frozen before 16 fresh responses",
+  "manifest_sha256": "6c7b74c9347cafb58f66881540389945f9c1f5490b9983786e2ab8c8ddb44df3",
+  "frozen_predictions_sha256": "e22f3f43c38161e58f9213b6d9fa85fcbb8549489bc12d462208434751d2b43c",
+  "scores": {
+    "child_sqrt7": {
+      "exact": 5,
+      "total": 16,
+      "max": 0.1,
+      "mae": 0.06875000000000003
+    },
+    "sqrt7": {
+      "exact": 9,
+      "total": 16,
+      "max": 0.1,
+      "mae": 0.04375000000000001
+    },
+    "sqrt7_R1_sq": {
+      "exact": 12,
+      "total": 16,
+      "max": 0.1,
+      "mae": 0.025000000000000022
+    },
+    "sqrt7_R1_inv": {
+      "exact": 12,
+      "total": 16,
+      "max": 0.1,
+      "mae": 0.025000000000000022
+    },
+    "sqrt7_cross": {
+      "exact": 12,
+      "total": 16,
+      "max": 0.1,
+      "mae": 0.024999999999999994
+    }
+  },
+  "cases": [
+    {
+      "label": "male_R0_501",
+      "observed_bmc": 3.6,
+      "predictions": {
+        "child_sqrt7": {
+          "rounded": 3.5,
+          "raw": 3.549421642120087,
+          "error": -0.1
+        },
+        "sqrt7": {
+          "rounded": 3.6,
+          "raw": 3.5564697851180256,
+          "error": 0.0
+        },
+        "sqrt7_R1_sq": {
+          "rounded": 3.6,
+          "raw": 3.556767479869319,
+          "error": 0.0
+        },
+        "sqrt7_R1_inv": {
+          "rounded": 3.6,
+          "raw": 3.556053186469065,
+          "error": 0.0
+        },
+        "sqrt7_cross": {
+          "rounded": 3.6,
+          "raw": 3.5579864886646426,
+          "error": 0.0
+        }
+      }
+    },
+    {
+      "label": "male_R0_799",
+      "observed_bmc": 2.6,
+      "predictions": {
+        "child_sqrt7": {
+          "rounded": 2.7,
+          "raw": 2.6875765557106854,
+          "error": 0.1
+        },
+        "sqrt7": {
+          "rounded": 2.6,
+          "raw": 2.648754720480653,
+          "error": 0.0
+        },
+        "sqrt7_R1_sq": {
+          "rounded": 2.7,
+          "raw": 2.653047177850273,
+          "error": 0.1
+        },
+        "sqrt7_R1_inv": {
+          "rounded": 2.7,
+          "raw": 2.651790144486036,
+          "error": 0.1
+        },
+        "sqrt7_cross": {
+          "rounded": 2.6,
+          "raw": 2.641934846996416,
+          "error": 0.0
+        }
+      }
+    },
+    {
+      "label": "male_R0_999",
+      "observed_bmc": 0.7,
+      "predictions": {
+        "child_sqrt7": {
+          "rounded": 0.8,
+          "raw": 0.8262643135430623,
+          "error": 0.1
+        },
+        "sqrt7": {
+          "rounded": 0.7,
+          "raw": 0.7241069732863394,
+          "error": 0.0
+        },
+        "sqrt7_R1_sq": {
+          "rounded": 0.7,
+          "raw": 0.7276180464206421,
+          "error": 0.0
+        },
+        "sqrt7_R1_inv": {
+          "rounded": 0.7,
+          "raw": 0.7260070983111224,
+          "error": 0.0
+        },
+        "sqrt7_cross": {
+          "rounded": 0.7,
+          "raw": 0.7080276020249892,
+          "error": 0.0
+        }
+      }
+    },
+    {
+      "label": "female_R0_899",
+      "observed_bmc": 0.7,
+      "predictions": {
+        "child_sqrt7": {
+          "rounded": 0.8,
+          "raw": 0.767006113487185,
+          "error": 0.1
+        },
+        "sqrt7": {
+          "rounded": 0.7,
+          "raw": 0.6987449797152223,
+          "error": 0.0
+        },
+        "sqrt7_R1_sq": {
+          "rounded": 0.7,
+          "raw": 0.6966335751261878,
+          "error": 0.0
+        },
+        "sqrt7_R1_inv": {
+          "rounded": 0.7,
+          "raw": 0.6949189754549003,
+          "error": 0.0
+        },
+        "sqrt7_cross": {
+          "rounded": 0.7,
+          "raw": 0.705022409391703,
+          "error": 0.0
+        }
+      }
+    },
+    {
+      "label": "male_R1_429",
+      "observed_bmc": 3.9,
+      "predictions": {
+        "child_sqrt7": {
+          "rounded": 3.9,
+          "raw": 3.8504849549281506,
+          "error": 0.0
+        },
+        "sqrt7": {
+          "rounded": 3.9,
+          "raw": 3.8513242030967803,
+          "error": 0.0
+        },
+        "sqrt7_R1_sq": {
+          "rounded": 3.9,
+          "raw": 3.860116819447426,
+          "error": 0.0
+        },
+        "sqrt7_R1_inv": {
+          "rounded": 3.9,
+          "raw": 3.8617218492004888,
+          "error": 0.0
+        },
+        "sqrt7_cross": {
+          "rounded": 3.9,
+          "raw": 3.8561041511221044,
+          "error": 0.0
+        }
+      }
+    },
+    {
+      "label": "male_R1_301",
+      "observed_bmc": 5.0,
+      "predictions": {
+        "child_sqrt7": {
+          "rounded": 5.1,
+          "raw": 5.1074456813941005,
+          "error": 0.1
+        },
+        "sqrt7": {
+          "rounded": 5.1,
+          "raw": 5.114975292372733,
+          "error": 0.1
+        },
+        "sqrt7_R1_sq": {
+          "rounded": 5.0,
+          "raw": 5.049582363717044,
+          "error": 0.0
+        },
+        "sqrt7_R1_inv": {
+          "rounded": 5.0,
+          "raw": 5.030938150726683,
+          "error": 0.0
+        },
+        "sqrt7_cross": {
+          "rounded": 5.1,
+          "raw": 5.071913139872188,
+          "error": 0.1
+        }
+      }
+    },
+    {
+      "label": "female_R1_503",
+      "observed_bmc": 2.5,
+      "predictions": {
+        "child_sqrt7": {
+          "rounded": 2.6,
+          "raw": 2.5542488627558053,
+          "error": 0.1
+        },
+        "sqrt7": {
+          "rounded": 2.6,
+          "raw": 2.554518198099089,
+          "error": 0.1
+        },
+        "sqrt7_R1_sq": {
+          "rounded": 2.6,
+          "raw": 2.553752510310815,
+          "error": 0.1
+        },
+        "sqrt7_R1_inv": {
+          "rounded": 2.6,
+          "raw": 2.552401500744058,
+          "error": 0.1
+        },
+        "sqrt7_cross": {
+          "rounded": 2.6,
+          "raw": 2.5521364569730722,
+          "error": 0.1
+        }
+      }
+    },
+    {
+      "label": "female_R1_526",
+      "observed_bmc": 2.5,
+      "predictions": {
+        "child_sqrt7": {
+          "rounded": 2.5,
+          "raw": 2.5330884327062297,
+          "error": 0.0
+        },
+        "sqrt7": {
+          "rounded": 2.5,
+          "raw": 2.536074047587711,
+          "error": 0.0
+        },
+        "sqrt7_R1_sq": {
+          "rounded": 2.5,
+          "raw": 2.5316573862144374,
+          "error": 0.0
+        },
+        "sqrt7_R1_inv": {
+          "rounded": 2.5,
+          "raw": 2.5305504474965037,
+          "error": 0.0
+        },
+        "sqrt7_cross": {
+          "rounded": 2.5,
+          "raw": 2.5298628217323396,
+          "error": 0.0
+        }
+      }
+    },
+    {
+      "label": "male_W_100p1",
+      "observed_bmc": 3.9,
+      "predictions": {
+        "child_sqrt7": {
+          "rounded": 3.8,
+          "raw": 3.8418473533749897,
+          "error": -0.1
+        },
+        "sqrt7": {
+          "rounded": 3.8,
+          "raw": 3.8477255986764263,
+          "error": -0.1
+        },
+        "sqrt7_R1_sq": {
+          "rounded": 3.8,
+          "raw": 3.848799147020263,
+          "error": -0.1
+        },
+        "sqrt7_R1_inv": {
+          "rounded": 3.8,
+          "raw": 3.8480206130243535,
+          "error": -0.1
+        },
+        "sqrt7_cross": {
+          "rounded": 3.8,
+          "raw": 3.8484901411875843,
+          "error": -0.1
+        }
+      }
+    },
+    {
+      "label": "male_W_40p1",
+      "observed_bmc": 2.9,
+      "predictions": {
+        "child_sqrt7": {
+          "rounded": 2.8,
+          "raw": 2.8184271202149622,
+          "error": -0.1
+        },
+        "sqrt7": {
+          "rounded": 2.8,
+          "raw": 2.821964014398503,
+          "error": -0.1
+        },
+        "sqrt7_R1_sq": {
+          "rounded": 2.8,
+          "raw": 2.8244752530259563,
+          "error": -0.1
+        },
+        "sqrt7_R1_inv": {
+          "rounded": 2.8,
+          "raw": 2.823628498878357,
+          "error": -0.1
+        },
+        "sqrt7_cross": {
+          "rounded": 2.8,
+          "raw": 2.8232295132635787,
+          "error": -0.1
+        }
+      }
+    },
+    {
+      "label": "female_W_67p6",
+      "observed_bmc": 2.5,
+      "predictions": {
+        "child_sqrt7": {
+          "rounded": 2.6,
+          "raw": 2.5505743967461076,
+          "error": 0.1
+        },
+        "sqrt7": {
+          "rounded": 2.6,
+          "raw": 2.5534715349714645,
+          "error": 0.1
+        },
+        "sqrt7_R1_sq": {
+          "rounded": 2.5,
+          "raw": 2.549178525827208,
+          "error": 0.0
+        },
+        "sqrt7_R1_inv": {
+          "rounded": 2.5,
+          "raw": 2.548053082100129,
+          "error": 0.0
+        },
+        "sqrt7_cross": {
+          "rounded": 2.5,
+          "raw": 2.5474521511575645,
+          "error": 0.0
+        }
+      }
+    },
+    {
+      "label": "male_H_185p5",
+      "observed_bmc": 3.6,
+      "predictions": {
+        "child_sqrt7": {
+          "rounded": 3.6,
+          "raw": 3.635496037521191,
+          "error": 0.0
+        },
+        "sqrt7": {
+          "rounded": 3.6,
+          "raw": 3.6409327954472417,
+          "error": 0.0
+        },
+        "sqrt7_R1_sq": {
+          "rounded": 3.6,
+          "raw": 3.6423674417111984,
+          "error": 0.0
+        },
+        "sqrt7_R1_inv": {
+          "rounded": 3.6,
+          "raw": 3.6415850255247126,
+          "error": 0.0
+        },
+        "sqrt7_cross": {
+          "rounded": 3.6,
+          "raw": 3.6418535343125615,
+          "error": 0.0
+        }
+      }
+    },
+    {
+      "label": "female_H_163p5",
+      "observed_bmc": 2.5,
+      "predictions": {
+        "child_sqrt7": {
+          "rounded": 2.5,
+          "raw": 2.548582600808128,
+          "error": 0.0
+        },
+        "sqrt7": {
+          "rounded": 2.6,
+          "raw": 2.5515021457658733,
+          "error": 0.1
+        },
+        "sqrt7_R1_sq": {
+          "rounded": 2.5,
+          "raw": 2.547274694674182,
+          "error": 0.0
+        },
+        "sqrt7_R1_inv": {
+          "rounded": 2.5,
+          "raw": 2.546157818654809,
+          "error": 0.0
+        },
+        "sqrt7_cross": {
+          "rounded": 2.5,
+          "raw": 2.545532371733252,
+          "error": 0.0
+        }
+      }
+    },
+    {
+      "label": "male_R0_501_highR1",
+      "observed_bmc": 3.6,
+      "predictions": {
+        "child_sqrt7": {
+          "rounded": 3.5,
+          "raw": 3.5476281113502344,
+          "error": -0.1
+        },
+        "sqrt7": {
+          "rounded": 3.6,
+          "raw": 3.5547776322959876,
+          "error": 0.0
+        },
+        "sqrt7_R1_sq": {
+          "rounded": 3.6,
+          "raw": 3.5549093769484967,
+          "error": 0.0
+        },
+        "sqrt7_R1_inv": {
+          "rounded": 3.6,
+          "raw": 3.5541884955030283,
+          "error": 0.0
+        },
+        "sqrt7_cross": {
+          "rounded": 3.6,
+          "raw": 3.556013668850019,
+          "error": 0.0
+        }
+      }
+    },
+    {
+      "label": "female_R1_506",
+      "observed_bmc": 2.5,
+      "predictions": {
+        "child_sqrt7": {
+          "rounded": 2.6,
+          "raw": 2.550124631053479,
+          "error": 0.1
+        },
+        "sqrt7": {
+          "rounded": 2.6,
+          "raw": 2.5507221500622848,
+          "error": 0.1
+        },
+        "sqrt7_R1_sq": {
+          "rounded": 2.5,
+          "raw": 2.549459869173263,
+          "error": 0.0
+        },
+        "sqrt7_R1_inv": {
+          "rounded": 2.5,
+          "raw": 2.548114439788664,
+          "error": 0.0
+        },
+        "sqrt7_cross": {
+          "rounded": 2.5,
+          "raw": 2.547934508270267,
+          "error": 0.0
+        }
+      }
+    },
+    {
+      "label": "male_H_192p9",
+      "observed_bmc": 3.3,
+      "predictions": {
+        "child_sqrt7": {
+          "rounded": 3.3,
+          "raw": 3.2512430635059486,
+          "error": 0.0
+        },
+        "sqrt7": {
+          "rounded": 3.3,
+          "raw": 3.2591361438713236,
+          "error": 0.0
+        },
+        "sqrt7_R1_sq": {
+          "rounded": 3.3,
+          "raw": 3.2554768745740277,
+          "error": 0.0
+        },
+        "sqrt7_R1_inv": {
+          "rounded": 3.3,
+          "raw": 3.25548330808427,
+          "error": 0.0
+        },
+        "sqrt7_cross": {
+          "rounded": 3.3,
+          "raw": 3.2524376679277234,
+          "error": 0.0
+        }
+      }
+    }
+  ]
+}
