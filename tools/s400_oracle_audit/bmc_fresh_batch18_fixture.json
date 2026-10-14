@@ -1,0 +1,95 @@
+{
+  "source": "Xiaomi Home 235, synthetic; cap validation",
+  "manifest_sha256": "d8dff1535311d84d1a43457450eb7c0a8777db3e0161c081469588da422e70d6",
+  "frozen_predictions_sha256": "e47f7a13cbe1d361a21e43984ae00b1f08b93f5db27ebc1928106d6c79a4fdcc",
+  "cases": [
+    {
+      "label": "male_110_r300",
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 1100,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          3000
+        ]
+      },
+      "metrics": {
+        "bmc": 5,
+        "bmcp": 4.5,
+        "ffm": 75.1,
+        "slm": 70.1
+      }
+    },
+    {
+      "label": "male_110_r350",
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 1100,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          3500
+        ]
+      },
+      "metrics": {
+        "bmc": 4.9,
+        "bmcp": 4.5,
+        "ffm": 75.1,
+        "slm": 70.2
+      }
+    },
+    {
+      "label": "male_120_r300",
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 1200,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          3000
+        ]
+      },
+      "metrics": {
+        "bmc": 5,
+        "bmcp": 4.2,
+        "ffm": 79,
+        "slm": 74
+      }
+    },
+    {
+      "label": "male_120_r350",
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 1200,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          3500
+        ]
+      },
+      "metrics": {
+        "bmc": 5,
+        "bmcp": 4.2,
+        "ffm": 79,
+        "slm": 74
+      }
+    }
+  ]
+}

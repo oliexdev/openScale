@@ -163,6 +163,54 @@ Reproducible numeric-only fixtures and frozen prediction scores:
 `tools/s400_oracle_audit/bmc_fresh_batch15_fixture.json` and
 `tools/s400_oracle_audit/bmc_fresh_batch15_scores.json`.
 
+## Follow-up: channel shape, cap, and arithmetic order
+
+All original numeric rows plus batches 15–18 yield **363 loaded rows, 243
+unique physical inputs** (same height/weight/R0/R1 deduplicated). New queries
+were calculation-only, with frozen input vectors and predictions before each
+batch. Scripts and numeric-only responses live under `tools/s400_oracle_audit/`.
+
+1. **No fixed R1 cap at 510 Ω.** The old flat observed plateau does not mean
+   Xiaomi clips R1 itself. On eight prospective high-R1 probes, the fixed
+   510 Ω cap candidate matched 2/8 (up to 0.5 kg wrong), versus 7/8 for
+   both an uncapped square-root candidate and a hinge candidate. Male
+   185 cm/87 kg/R0=543.6 Ω rose from BMC 3.6 kg at R1=540 Ω to
+   4.1 kg at R1=700 Ω; female 163 cm/66.6 kg/R0=572.5 Ω rose
+   from 2.5 at R1=560 Ω to 3.1 at R1=700 Ω. The hinge and
+   uncapped shapes were not distinguished by this test. Frozen predictions:
+   `batch16_frozen_predictions.json`, SHA256
+   `28b4e829e1c904c4b8c0c3060cc5b94250b5835df147718bfb0c9e1d3b9d5491`.
+2. **BMC saturation at 5.0 kg is strongly supported, not vendor-source
+   confirmed.** Four prospective high-bone probes had BMC [5.0, 4.9,
+   5.0, 5.0]; the frozen uncapped smooth model matched 2/4 and the same
+   model capped at 5.0 matched 4/4. Derived `bmcp` matched 4/4 after
+   rounding `100 * observed BMC / weight`. Old+new data contain ten
+   distinct physical inputs reporting exactly 5.0 kg, and none higher.
+   These results do not establish whether Xiaomi clamps latent BMC before
+   or after tenths rounding. Frozen predictions:
+   `batch18_frozen_predictions.json`, SHA256
+   `e47f7a13cbe1d361a21e43984ae00b1f08b93f5db27ebc1928106d6c79a4fdcc`.
+3. **Observed arithmetic is consistent with BMC → BMCP and BMC → SLM.**
+   Recompute with decimal round-half-up: `bmcp = round1(100*BMC/weight)`
+   holds 243/243 physical inputs; `FFM-SLM = BMC` holds 243/243.
+   The opposite `BMC = round1(weight*bmcp/100)` holds only **239/243**.
+   Three failures have displayed BMC 5.0 at weight 101 kg, for which
+   inverse reconstruction gives 5.1; a fourth counterexample has BMC
+   **4.9** at 110 kg, for which the inverse is 5.0. Thus a cap alone does
+   not explain all one-way failures. These identities constrain the
+   order of displayed outputs; they are **not proof of internal code order**.
+   Reproduce via `python3 tools/s400_oracle_audit/bmc_order_checks.py`.
+
+Batch17 included six prospective order-discriminating inputs; its predicted
+A/B values were conditional on an approximate latent formula, which failed
+at the high-bone boundary. Do not award its result to either full raw-input
+pipeline. The **model-free** reverse/forward identity checks above remain
+valid independently of that approximation. No interpolation, decimal tweak,
+or per-case exception has recovered the remaining BMC formula. **Do not
+integrate BMC as Xiaomi-equivalent.** Ledger: 354/360 issued/reserved,
+6 remain for a genuinely new discriminating hypothesis; none were used
+in fitting after batch18.
+
 ## Conditional arithmetic checks
 
 These use recorded upstream metrics. They validate arithmetic, not a full BIA

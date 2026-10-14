@@ -1,0 +1,183 @@
+{
+  "source": "Xiaomi Home version 235, synthetic; high-R1 plateau discriminator",
+  "manifest_sha256": "2485a531de1f8ef71ca66d5e3a58faa4b08cb737aa35cd9430fec03b8a94db7e",
+  "frozen_predictions_sha256": "28b4e829e1c904c4b8c0c3060cc5b94250b5835df147718bfb0c9e1d3b9d5491",
+  "cases": [
+    {
+      "label": "male_R1_540",
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 870,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          5400
+        ]
+      },
+      "metrics": {
+        "bmc": 3.6,
+        "bmcp": 4.1,
+        "ffm": 66.4,
+        "slm": 62.8
+      }
+    },
+    {
+      "label": "male_R1_600",
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 870,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          6000
+        ]
+      },
+      "metrics": {
+        "bmc": 3.7,
+        "bmcp": 4.3,
+        "ffm": 66.4,
+        "slm": 62.7
+      }
+    },
+    {
+      "label": "male_R1_650",
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 870,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          6500
+        ]
+      },
+      "metrics": {
+        "bmc": 3.9,
+        "bmcp": 4.5,
+        "ffm": 66.4,
+        "slm": 62.5
+      }
+    },
+    {
+      "label": "male_R1_700",
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 870,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          7000
+        ]
+      },
+      "metrics": {
+        "bmc": 4.1,
+        "bmcp": 4.7,
+        "ffm": 66.4,
+        "slm": 62.3
+      }
+    },
+    {
+      "label": "female_R1_560",
+      "params": {
+        "version": "235",
+        "age": 34,
+        "sex": 0,
+        "height": 1630,
+        "weight": 666,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5725,
+          5600
+        ]
+      },
+      "metrics": {
+        "bmc": 2.5,
+        "bmcp": 3.8,
+        "ffm": 43.4,
+        "slm": 40.9
+      }
+    },
+    {
+      "label": "female_R1_600",
+      "params": {
+        "version": "235",
+        "age": 34,
+        "sex": 0,
+        "height": 1630,
+        "weight": 666,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5725,
+          6000
+        ]
+      },
+      "metrics": {
+        "bmc": 2.6,
+        "bmcp": 3.9,
+        "ffm": 43.4,
+        "slm": 40.8
+      }
+    },
+    {
+      "label": "female_R1_650",
+      "params": {
+        "version": "235",
+        "age": 34,
+        "sex": 0,
+        "height": 1630,
+        "weight": 666,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5725,
+          6500
+        ]
+      },
+      "metrics": {
+        "bmc": 2.8,
+        "bmcp": 4.2,
+        "ffm": 43.4,
+        "slm": 40.6
+      }
+    },
+    {
+      "label": "female_R1_700",
+      "params": {
+        "version": "235",
+        "age": 34,
+        "sex": 0,
+        "height": 1630,
+        "weight": 666,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5725,
+          7000
+        ]
+      },
+      "metrics": {
+        "bmc": 3.1,
+        "bmcp": 4.7,
+        "ffm": 43.4,
+        "slm": 40.3
+      }
+    }
+  ]
+}

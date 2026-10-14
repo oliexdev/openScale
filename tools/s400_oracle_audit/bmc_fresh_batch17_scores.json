@@ -1,0 +1,150 @@
+{
+  "manifest_sha256": "71336f184184c2f77450982120d102817be3251550d6f67b82c325a2f5418b2e",
+  "frozen_predictions_sha256": "8705057ddd8559217e0a85584f7a3ce776792f066c9fa72af570dc566fd90bd2",
+  "cases": [
+    {
+      "label": "order_w101_r301",
+      "observed": {
+        "bmc": 5,
+        "bmcp": 5,
+        "slm": 66.7,
+        "ffm": 71.7
+      },
+      "checks": {
+        "forward": false,
+        "reverse": true,
+        "ffm_minus_slm": true
+      },
+      "frozen": {
+        "A_bone_first": {
+          "bmc": 5.3,
+          "bmcp": 5.2
+        },
+        "B_percent_first": {
+          "bmcp": 5.3,
+          "bmc": 5.4
+        }
+      }
+    },
+    {
+      "label": "order_w101_r323",
+      "observed": {
+        "bmc": 5,
+        "bmcp": 5,
+        "slm": 66.7,
+        "ffm": 71.7
+      },
+      "checks": {
+        "forward": false,
+        "reverse": true,
+        "ffm_minus_slm": true
+      },
+      "frozen": {
+        "A_bone_first": {
+          "bmc": 5.0,
+          "bmcp": 5.0
+        },
+        "B_percent_first": {
+          "bmcp": 5.0,
+          "bmc": 5.1
+        }
+      }
+    },
+    {
+      "label": "order_w101_r334",
+      "observed": {
+        "bmc": 5,
+        "bmcp": 5,
+        "slm": 66.7,
+        "ffm": 71.7
+      },
+      "checks": {
+        "forward": false,
+        "reverse": true,
+        "ffm_minus_slm": true
+      },
+      "frozen": {
+        "A_bone_first": {
+          "bmc": 4.9,
+          "bmcp": 4.9
+        },
+        "B_percent_first": {
+          "bmcp": 4.8,
+          "bmc": 4.8
+        }
+      }
+    },
+    {
+      "label": "order_w101_r344",
+      "observed": {
+        "bmc": 4.8,
+        "bmcp": 4.8,
+        "slm": 66.9,
+        "ffm": 71.7
+      },
+      "checks": {
+        "forward": true,
+        "reverse": true,
+        "ffm_minus_slm": true
+      },
+      "frozen": {
+        "A_bone_first": {
+          "bmc": 4.8,
+          "bmcp": 4.8
+        },
+        "B_percent_first": {
+          "bmcp": 4.7,
+          "bmc": 4.7
+        }
+      }
+    },
+    {
+      "label": "control_w100_r323",
+      "observed": {
+        "bmc": 5,
+        "bmcp": 5,
+        "slm": 66.3,
+        "ffm": 71.3
+      },
+      "checks": {
+        "forward": true,
+        "reverse": true,
+        "ffm_minus_slm": true
+      },
+      "frozen": {
+        "A_bone_first": {
+          "bmc": 5.0,
+          "bmcp": 5.0
+        },
+        "B_percent_first": {
+          "bmcp": 5.0,
+          "bmc": 5.0
+        }
+      }
+    },
+    {
+      "label": "order_w101p5_r315",
+      "observed": {
+        "bmc": 5,
+        "bmcp": 4.9,
+        "slm": 66.9,
+        "ffm": 71.9
+      },
+      "checks": {
+        "forward": true,
+        "reverse": true,
+        "ffm_minus_slm": true
+      },
+      "frozen": {
+        "A_bone_first": {
+          "bmc": 5.1,
+          "bmcp": 5.0
+        },
+        "B_percent_first": {
+          "bmcp": 5.1,
+          "bmc": 5.2
+        }
+      }
+    }
+  ]
+}

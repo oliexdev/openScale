@@ -1,0 +1,139 @@
+{
+  "source": "Xiaomi Home 235 synthetic; arithmetic-order candidates only conditional on approximate latent model",
+  "manifest_sha256": "71336f184184c2f77450982120d102817be3251550d6f67b82c325a2f5418b2e",
+  "frozen_predictions_sha256": "8705057ddd8559217e0a85584f7a3ce776792f066c9fa72af570dc566fd90bd2",
+  "cases": [
+    {
+      "label": "order_w101_r301",
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 1010,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          3010
+        ]
+      },
+      "metrics": {
+        "bmc": 5,
+        "bmcp": 5,
+        "slm": 66.7,
+        "ffm": 71.7
+      }
+    },
+    {
+      "label": "order_w101_r323",
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 1010,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          3230
+        ]
+      },
+      "metrics": {
+        "bmc": 5,
+        "bmcp": 5,
+        "slm": 66.7,
+        "ffm": 71.7
+      }
+    },
+    {
+      "label": "order_w101_r334",
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 1010,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          3340
+        ]
+      },
+      "metrics": {
+        "bmc": 5,
+        "bmcp": 5,
+        "slm": 66.7,
+        "ffm": 71.7
+      }
+    },
+    {
+      "label": "order_w101_r344",
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 1010,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          3440
+        ]
+      },
+      "metrics": {
+        "bmc": 4.8,
+        "bmcp": 4.8,
+        "slm": 66.9,
+        "ffm": 71.7
+      }
+    },
+    {
+      "label": "control_w100_r323",
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 1000,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          3230
+        ]
+      },
+      "metrics": {
+        "bmc": 5,
+        "bmcp": 5,
+        "slm": 66.3,
+        "ffm": 71.3
+      }
+    },
+    {
+      "label": "order_w101p5_r315",
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 1015,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          3150
+        ]
+      },
+      "metrics": {
+        "bmc": 5,
+        "bmcp": 4.9,
+        "slm": 66.9,
+        "ffm": 71.9
+      }
+    }
+  ]
+}

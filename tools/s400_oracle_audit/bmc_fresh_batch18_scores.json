@@ -1,0 +1,75 @@
+{
+  "manifest_sha256": "d8dff1535311d84d1a43457450eb7c0a8777db3e0161c081469588da422e70d6",
+  "frozen_predictions_sha256": "e47f7a13cbe1d361a21e43984ae00b1f08b93f5db27ebc1928106d6c79a4fdcc",
+  "scores": {
+    "uncapped": 2,
+    "capped_at_5": 4,
+    "bmcp_from_capped": 4
+  },
+  "cases": [
+    {
+      "label": "male_110_r300",
+      "observed": {
+        "bmc": 5,
+        "bmcp": 4.5,
+        "ffm": 75.1,
+        "slm": 70.1
+      },
+      "frozen": {
+        "label": "male_110_r300",
+        "latent_model": 5.504272381977039,
+        "uncapped": 5.5,
+        "capped_at_5": 5.0,
+        "bmcp_from_capped": 4.5
+      }
+    },
+    {
+      "label": "male_110_r350",
+      "observed": {
+        "bmc": 4.9,
+        "bmcp": 4.5,
+        "ffm": 75.1,
+        "slm": 70.2
+      },
+      "frozen": {
+        "label": "male_110_r350",
+        "latent_model": 4.860105783216618,
+        "uncapped": 4.9,
+        "capped_at_5": 4.9,
+        "bmcp_from_capped": 4.5
+      }
+    },
+    {
+      "label": "male_120_r300",
+      "observed": {
+        "bmc": 5,
+        "bmcp": 4.2,
+        "ffm": 79,
+        "slm": 74
+      },
+      "frozen": {
+        "label": "male_120_r300",
+        "latent_model": 5.675027167841037,
+        "uncapped": 5.7,
+        "capped_at_5": 5.0,
+        "bmcp_from_capped": 4.2
+      }
+    },
+    {
+      "label": "male_120_r350",
+      "observed": {
+        "bmc": 5,
+        "bmcp": 4.2,
+        "ffm": 79,
+        "slm": 74
+      },
+      "frozen": {
+        "label": "male_120_r350",
+        "latent_model": 5.030860569080623,
+        "uncapped": 5.0,
+        "capped_at_5": 5.0,
+        "bmcp_from_capped": 4.2
+      }
+    }
+  ]
+}
