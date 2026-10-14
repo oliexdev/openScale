@@ -1,0 +1,450 @@
+{
+  "selected_models": {
+    "phase3_bfp_strict_frozen": "4b7a12f89219ef513f07183e80bcfaf2300f0fc04ed047bc79cbdf3bf46436bf",
+    "phase3_ma_frozen": "e3df70f82a229916ade9da2047a46062590b1a8df349513dc979f0807ed354ed"
+  },
+  "holdout_manifest_sha256": "432753c3a1ed0c93882aea9ffe28a2de32ff129f8e522a98aa2b3177d2966352",
+  "predictions": [
+    {
+      "label": "phase3_new_holdout_0_0",
+      "params": {
+        "version": "235",
+        "age": 30,
+        "sex": 0,
+        "height": 1616,
+        "weight": 1028,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          6420,
+          5265
+        ]
+      },
+      "predicted": {
+        "bfp": 49.9,
+        "ffm": 51.5,
+        "bmr": 1482,
+        "ma": 37
+      }
+    },
+    {
+      "label": "phase3_new_holdout_1_1",
+      "params": {
+        "version": "235",
+        "age": 38,
+        "sex": 1,
+        "height": 1568,
+        "weight": 1015,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          7218,
+          6161
+        ]
+      },
+      "predicted": {
+        "bfp": 39.9,
+        "ffm": 61.0,
+        "bmr": 1688,
+        "ma": 39
+      }
+    },
+    {
+      "label": "phase3_new_holdout_0_2",
+      "params": {
+        "version": "235",
+        "age": 56,
+        "sex": 0,
+        "height": 1543,
+        "weight": 684,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          6490,
+          6090
+        ]
+      },
+      "predicted": {
+        "bfp": 41.6,
+        "ffm": 39.9,
+        "bmr": 1232,
+        "ma": 56
+      }
+    },
+    {
+      "label": "phase3_new_holdout_1_3",
+      "params": {
+        "version": "235",
+        "age": 48,
+        "sex": 1,
+        "height": 1671,
+        "weight": 937,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5894,
+          5269
+        ]
+      },
+      "predicted": {
+        "bfp": 33.4,
+        "ffm": 62.4,
+        "bmr": 1718,
+        "ma": 47
+      }
+    },
+    {
+      "label": "phase3_new_holdout_0_4",
+      "params": {
+        "version": "235",
+        "age": 29,
+        "sex": 0,
+        "height": 1927,
+        "weight": 978,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5052,
+          4353
+        ]
+      },
+      "predicted": {
+        "bfp": 37.0,
+        "ffm": 61.6,
+        "bmr": 1701,
+        "ma": 31
+      }
+    },
+    {
+      "label": "phase3_new_holdout_1_5",
+      "params": {
+        "version": "235",
+        "age": 45,
+        "sex": 1,
+        "height": 1613,
+        "weight": 532,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5368,
+          4565
+        ]
+      },
+      "predicted": {
+        "bfp": 14.2,
+        "ffm": 45.6,
+        "bmr": 1355,
+        "ma": 42
+      }
+    },
+    {
+      "label": "phase3_new_holdout_0_6",
+      "params": {
+        "version": "235",
+        "age": 37,
+        "sex": 0,
+        "height": 1564,
+        "weight": 826,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5017,
+          4672
+        ]
+      },
+      "predicted": {
+        "bfp": 44.8,
+        "ffm": 45.6,
+        "bmr": 1355,
+        "ma": 39
+      }
+    },
+    {
+      "label": "phase3_new_holdout_1_7",
+      "params": {
+        "version": "235",
+        "age": 40,
+        "sex": 1,
+        "height": 1834,
+        "weight": 603,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          7179,
+          5974
+        ]
+      },
+      "predicted": {
+        "bfp": 10.1,
+        "ffm": 54.2,
+        "bmr": 1541,
+        "ma": 38
+      }
+    },
+    {
+      "label": "phase3_new_holdout_0_8",
+      "params": {
+        "version": "235",
+        "age": 49,
+        "sex": 0,
+        "height": 1888,
+        "weight": 912,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          6512,
+          5905
+        ]
+      },
+      "predicted": {
+        "bfp": 37.2,
+        "ffm": 57.3,
+        "bmr": 1608,
+        "ma": 51
+      }
+    },
+    {
+      "label": "phase3_new_holdout_1_9",
+      "params": {
+        "version": "235",
+        "age": 41,
+        "sex": 1,
+        "height": 1933,
+        "weight": 862,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          7079,
+          5748
+        ]
+      },
+      "predicted": {
+        "bfp": 21.8,
+        "ffm": 67.4,
+        "bmr": 1826,
+        "ma": 40
+      }
+    },
+    {
+      "label": "phase3_new_holdout_0_10",
+      "params": {
+        "version": "235",
+        "age": 41,
+        "sex": 0,
+        "height": 1777,
+        "weight": 869,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          6572,
+          5535
+        ]
+      },
+      "predicted": {
+        "bfp": 39.5,
+        "ffm": 52.6,
+        "bmr": 1506,
+        "ma": 43
+      }
+    },
+    {
+      "label": "phase3_new_holdout_1_11",
+      "params": {
+        "version": "235",
+        "age": 32,
+        "sex": 1,
+        "height": 1749,
+        "weight": 667,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5685,
+          5302
+        ]
+      },
+      "predicted": {
+        "bfp": 17.2,
+        "ffm": 55.2,
+        "bmr": 1562,
+        "ma": 29
+      }
+    },
+    {
+      "label": "phase3_new_holdout_0_12",
+      "params": {
+        "version": "235",
+        "age": 59,
+        "sex": 0,
+        "height": 1588,
+        "weight": 663,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5369,
+          4441
+        ]
+      },
+      "predicted": {
+        "bfp": 37.1,
+        "ffm": 41.7,
+        "bmr": 1271,
+        "ma": 58
+      }
+    },
+    {
+      "label": "phase3_new_holdout_1_13",
+      "params": {
+        "version": "235",
+        "age": 57,
+        "sex": 1,
+        "height": 1749,
+        "weight": 920,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          6218,
+          5647
+        ]
+      },
+      "predicted": {
+        "bfp": 30.5,
+        "ffm": 63.9,
+        "bmr": 1750,
+        "ma": 56
+      }
+    },
+    {
+      "label": "phase3_new_holdout_0_14",
+      "params": {
+        "version": "235",
+        "age": 23,
+        "sex": 0,
+        "height": 1533,
+        "weight": 934,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5336,
+          4271
+        ]
+      },
+      "predicted": {
+        "bfp": 49.3,
+        "ffm": 47.4,
+        "bmr": 1394,
+        "ma": 28
+      }
+    },
+    {
+      "label": "phase3_new_holdout_1_15",
+      "params": {
+        "version": "235",
+        "age": 51,
+        "sex": 1,
+        "height": 1682,
+        "weight": 827,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          6844,
+          6168
+        ]
+      },
+      "predicted": {
+        "bfp": 30.2,
+        "ffm": 57.7,
+        "bmr": 1616,
+        "ma": 49
+      }
+    },
+    {
+      "label": "phase3_new_holdout_0_16",
+      "params": {
+        "version": "235",
+        "age": 49,
+        "sex": 0,
+        "height": 1785,
+        "weight": 737,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5985,
+          5577
+        ]
+      },
+      "predicted": {
+        "bfp": 32.4,
+        "ffm": 49.8,
+        "bmr": 1446,
+        "ma": 48
+      }
+    },
+    {
+      "label": "phase3_new_holdout_1_17",
+      "params": {
+        "version": "235",
+        "age": 24,
+        "sex": 1,
+        "height": 1553,
+        "weight": 747,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5741,
+          4635
+        ]
+      },
+      "predicted": {
+        "bfp": 30.6,
+        "ffm": 51.8,
+        "bmr": 1489,
+        "ma": 21
+      }
+    },
+    {
+      "label": "phase3_new_holdout_0_18",
+      "params": {
+        "version": "235",
+        "age": 59,
+        "sex": 0,
+        "height": 1781,
+        "weight": 887,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5878,
+          4885
+        ]
+      },
+      "predicted": {
+        "bfp": 39.9,
+        "ffm": 53.3,
+        "bmr": 1521,
+        "ma": 61
+      }
+    },
+    {
+      "label": "phase3_new_holdout_1_19",
+      "params": {
+        "version": "235",
+        "age": 26,
+        "sex": 1,
+        "height": 1924,
+        "weight": 516,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5845,
+          5456
+        ]
+      },
+      "predicted": {
+        "bfp": 3.0,
+        "ffm": 50.1,
+        "bmr": 1452,
+        "ma": 25
+      }
+    }
+  ],
+  "rule": "Predictions frozen before issuing any batch13 request; do not refit against these responses."
+}

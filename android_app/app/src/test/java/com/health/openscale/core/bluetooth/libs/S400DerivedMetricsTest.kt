@@ -9,7 +9,7 @@ class S400DerivedMetricsTest {
     fun recordedCalculationResponses() {
         val resource = checkNotNull(javaClass.getResourceAsStream("/s400/derived-v235.tsv"))
         val checked = resource.bufferedReader().useLines { verifyS400DerivedMetricsFixture(it) }
-        assertEquals(276, checked)
+        assertEquals(356, checked)
     }
 
     @Test

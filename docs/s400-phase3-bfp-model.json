@@ -1,0 +1,38 @@
+{
+  "algorithm_version": "235",
+  "status": "EMPIRICAL_INTERVAL_CANDIDATE_NOT_EXTRACTED",
+  "formula": "BFP=round1(clamp(100*(1-(c0+cH*Hcm+cW*Wkg+cA*age+cR*R50ohm)/Wkg),3,75))",
+  "sex_models": {
+    "0": {
+      "coefficients": [
+        -22.67718678495718,
+        0.33311762205634016,
+        0.24897609312775784,
+        -0.019640451233465635,
+        -0.007226968447909854
+      ],
+      "iterations": 801,
+      "converged": true,
+      "last_checked_max_interval_violation_kg": 6.260734153329395e-10,
+      "training_n": 154,
+      "training_exact": 154
+    },
+    "1": {
+      "coefficients": [
+        -22.580964955199917,
+        0.33157834224954785,
+        0.3784006288616245,
+        -0.018418507506048017,
+        -0.008473211081849586
+      ],
+      "iterations": 101,
+      "converged": true,
+      "last_checked_max_interval_violation_kg": 9.244160992238903e-11,
+      "training_n": 155,
+      "training_exact": 155
+    }
+  },
+  "training_unique": 309,
+  "holdout_manifest_sha256": "432753c3a1ed0c93882aea9ffe28a2de32ff129f8e522a98aa2b3177d2966352",
+  "note": "R50-only affine hypothesis. Holdout responses were not read. Passing sampled cases does not prove exact algorithm recovery."
+}
