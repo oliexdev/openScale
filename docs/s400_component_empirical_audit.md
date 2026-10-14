@@ -74,6 +74,47 @@ the lower ratio and 43 at the upper ratio. The remaining 249 are interior.
 `SLM = round1(displayed FFM - displayed BMC)` matches **329/329** inputs;
 `SMM = SLM` matches **0/329**. Preserve this distinction in OpenScale's muscle field.
 
+## Subsequent BMC square-root hypothesis: independently checked
+
+A delegated investigation proposed an additive model:
+
+```
+raw = c0 + cH * height_cm^2 + cW * weight_kg
+      + g0 * (sqrt(R0_ohm) - m0)^2
+      + g1 * (sqrt(R1_ohm) - m1)^2
+BMC = round1(max(0, raw))
+```
+
+The parent independently evaluated the delivered fixed coefficients against all
+329 numeric input vectors: **316/329 exact**, MAE 0.003951 kg, maximum displayed
+error 0.1 kg. There are 13 mismatches; this is an in-sample result, not fresh
+validation. Centres m0/m1 are fitted parameters, not recovered hardware constants.
+
+A fresh seven-term representation `[1,h^2,w,R0,sqrt(R0),R1,sqrt(R1)]` was then
+fit using quantized intervals. Collapse both age and sex replicates when they
+share height/weight/impedances: there are **209 physical input groups**. All 12
+exact sex-paired cases have equal BMC, as do all eight repeated-age groups. These
+observations justify testing a shared model, not asserting universal independence.
+
+For an observed zero, latent raw values below zero may map to the nonnegative
+output floor; its interval is one-sided, with upper bound 0.05, not `[0,0.05)`
+for the pre-floor raw value. The interval solver did **not** converge after
+12000 passes. It matched 191/209 groups on training. Exploratory five-fold grouped
+CV matched **188/209**, MAE 0.010526 kg, max displayed error 0.2 kg. Nonconvergence
+alone is not proof that the basis is mathematically infeasible.
+
+The child's proposed "quantization ceiling" near 92% is rejected: quantized
+outputs can in principle be predicted exactly by the correct formula. A small
+residual is not proof of rounding artifacts. The child's centres were selected
+using the full corpus before its local CV search, so that CV does not fully isolate
+model-selection leakage. Parent grouped folds do not split identical physical
+inputs by sex or age; nevertheless all this data was previously inspected.
+
+The square-root form is a promising simpler hypothesis, **not production parity**.
+Scripts and coefficients are preserved under `tools/s400_oracle_audit/bmc_sqrt_*`.
+No BMC implementation, app installation, new Xiaomi request or per-case correction
+was applied in this investigation.
+
 ## Conditional arithmetic checks
 
 These use recorded upstream metrics. They validate arithmetic, not a full BIA

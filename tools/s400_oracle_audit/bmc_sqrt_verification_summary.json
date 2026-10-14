@@ -1,0 +1,472 @@
+{
+  "status": "EXPLORATORY_NOT_VALIDATED_FOR_PRODUCTION",
+  "source_sha256": "c634a88db48d347527f5a7020ce6e2cef25adac2b696e44f9d6943dd254b3ae6",
+  "features": [
+    "1",
+    "h_cm_squared",
+    "weight_kg",
+    "R0_ohm",
+    "sqrt_R0",
+    "R1_ohm",
+    "sqrt_R1"
+  ],
+  "raw_unique_inputs": 329,
+  "physical_groups_without_age_sex": 209,
+  "child_fixed_model": {
+    "n": 329,
+    "exact": 316,
+    "mae_kg": 0.003951367781155015,
+    "max_error_kg": 0.10000000000000009
+  },
+  "caveats": [
+    "No quantization ceiling is established. Exact quantized parity can in principle be 100%.",
+    "Child centres were searched over the full corpus; reported child CV is not fully nested model-selection validation.",
+    "Removing sex/age dependence is supported by paired cases only, not proved globally.",
+    "Zero floor observation imposes a one-sided raw upper bound, not a positive raw lower bound.",
+    "All existing responses already inspected. This is exploratory CV, not fresh oracle validation."
+  ],
+  "shared_full_interval_fit": {
+    "iterations": 12000,
+    "maximum_slab_violation_kg": 0.04092921653713333,
+    "converged": false,
+    "n": 209,
+    "exact": 191,
+    "mae_kg": 0.00861244019138756,
+    "max_error_kg": 0.10000000000000053,
+    "coefficients": [
+      -1.8919027306256109,
+      9.260448895254311e-05,
+      0.016922137645320984,
+      -0.04533084643498173,
+      2.14053423351651,
+      0.046097261193045476,
+      -2.1219448709191786
+    ]
+  },
+  "shared_grouped_cv": {
+    "n": 209,
+    "exact": 188,
+    "mae_kg": 0.010526315789473687,
+    "max_error_kg": 0.20000000000000018,
+    "folds": [
+      {
+        "fold": 0,
+        "iterations": 3000,
+        "maximum_slab_violation_kg": 0.047054068059054543,
+        "converged": false,
+        "n": 39,
+        "exact": 35,
+        "mae_kg": 0.010256410256410265,
+        "max_error_kg": 0.10000000000000009
+      },
+      {
+        "fold": 1,
+        "iterations": 3000,
+        "maximum_slab_violation_kg": 0.04824882667347197,
+        "converged": false,
+        "n": 46,
+        "exact": 40,
+        "mae_kg": 0.013043478260869568,
+        "max_error_kg": 0.10000000000000009
+      },
+      {
+        "fold": 2,
+        "iterations": 3000,
+        "maximum_slab_violation_kg": 0.02265984582701197,
+        "converged": false,
+        "n": 38,
+        "exact": 36,
+        "mae_kg": 0.007894736842105258,
+        "max_error_kg": 0.20000000000000018
+      },
+      {
+        "fold": 3,
+        "iterations": 3000,
+        "maximum_slab_violation_kg": 0.02689722243454895,
+        "converged": false,
+        "n": 50,
+        "exact": 45,
+        "mae_kg": 0.010000000000000009,
+        "max_error_kg": 0.10000000000000053
+      },
+      {
+        "fold": 4,
+        "iterations": 3000,
+        "maximum_slab_violation_kg": 0.04220431381229517,
+        "converged": false,
+        "n": 36,
+        "exact": 32,
+        "mae_kg": 0.011111111111111108,
+        "max_error_kg": 0.10000000000000009
+      }
+    ]
+  },
+  "cv_mismatches": [
+    {
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1800,
+        "weight": 870,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          4951
+        ]
+      },
+      "predicted": 3.5,
+      "observed": 3.4
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 1000,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          4951
+        ]
+      },
+      "predicted": 3.8,
+      "observed": 3.9
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 870,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          3000
+        ]
+      },
+      "predicted": 5.2,
+      "observed": 5.0
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 870,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          3500
+        ]
+      },
+      "predicted": 4.4,
+      "observed": 4.5
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 34,
+        "sex": 0,
+        "height": 1630,
+        "weight": 666,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          4000,
+          5250
+        ]
+      },
+      "predicted": 2.0,
+      "observed": 1.9
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 34,
+        "sex": 0,
+        "height": 1850,
+        "weight": 666,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5725,
+          5250
+        ]
+      },
+      "predicted": 3.3,
+      "observed": 3.2
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 400,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          4951
+        ]
+      },
+      "predicted": 2.8,
+      "observed": 2.9
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 650,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          4951
+        ]
+      },
+      "predicted": 3.3,
+      "observed": 3.2
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 34,
+        "sex": 0,
+        "height": 1630,
+        "weight": 666,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          3000,
+          5250
+        ]
+      },
+      "predicted": 0.8,
+      "observed": 0.7
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 870,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          3600
+        ]
+      },
+      "predicted": 4.3,
+      "observed": 4.4
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 870,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          4100
+        ]
+      },
+      "predicted": 3.9,
+      "observed": 4.0
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 36,
+        "sex": 1,
+        "height": 1850,
+        "weight": 870,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5436,
+          4300
+        ]
+      },
+      "predicted": 3.8,
+      "observed": 3.9
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 34,
+        "sex": 0,
+        "height": 1630,
+        "weight": 666,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5725,
+          5040
+        ]
+      },
+      "predicted": 2.6,
+      "observed": 2.5
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 34,
+        "sex": 0,
+        "height": 1630,
+        "weight": 666,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5725,
+          5120
+        ]
+      },
+      "predicted": 2.6,
+      "observed": 2.5
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 34,
+        "sex": 0,
+        "height": 1630,
+        "weight": 666,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5725,
+          5360
+        ]
+      },
+      "predicted": 2.6,
+      "observed": 2.5
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 34,
+        "sex": 0,
+        "height": 1630,
+        "weight": 666,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5725,
+          5520
+        ]
+      },
+      "predicted": 2.6,
+      "observed": 2.5
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 37,
+        "sex": 1,
+        "height": 1680,
+        "weight": 960,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5030,
+          4006
+        ]
+      },
+      "predicted": 3.5,
+      "observed": 3.6
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 42,
+        "sex": 0,
+        "height": 1520,
+        "weight": 730,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5050,
+          3945
+        ]
+      },
+      "predicted": 2.7,
+      "observed": 2.8
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 37,
+        "sex": 1,
+        "height": 1880,
+        "weight": 730,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5950,
+          5016
+        ]
+      },
+      "predicted": 3.5,
+      "observed": 3.4
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 47,
+        "sex": 0,
+        "height": 1930,
+        "weight": 860,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          6210,
+          5817
+        ]
+      },
+      "predicted": 3.9,
+      "observed": 3.8
+    },
+    {
+      "params": {
+        "version": "235",
+        "age": 37,
+        "sex": 0,
+        "height": 1564,
+        "weight": 826,
+        "electrodes_number": 4,
+        "res_mapping_switch": 0,
+        "current_impedance": [
+          5017,
+          4672
+        ]
+      },
+      "predicted": 2.7,
+      "observed": 2.6
+    }
+  ],
+  "sex_pair_check": {
+    "n": 12,
+    "equal": 12,
+    "caveat": "Sampled paired equality does not prove absence of sex dependence globally."
+  },
+  "age_group_check": {
+    "n": 8,
+    "constant_bmc": 8
+  }
+}
