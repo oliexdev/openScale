@@ -141,10 +141,10 @@ coeff = 1.0
 if sex == FEMALE:
     if weight < 50:
         coeff = 1.02
-        if height > 160: coeff *= 1.03
-    elif weight > 60:
+    if weight > 60:
         coeff = 0.96
-        if height > 160: coeff *= 1.03
+    if height > 160:
+        coeff *= 1.03
 elif sex == MALE:
     if weight < 61:
         coeff = 0.98
@@ -152,6 +152,12 @@ elif sex == MALE:
 bodyFat = (1.0 - ((lbmCoeff - lbmSub) * coeff) / weight) * 100.0
 bodyFat = clamp(bodyFat, 5.0, 75.0)    # Holtek: clamp 5-75
 ```
+
+> **⚠️ CORRECCIÓN MAYOR (2026-10-14):** ver nota equivalente en la sección de Grasa Visceral
+> más abajo — este binario completo no corresponde al algoritmo real del S400 (validado contra
+> 356 pares reales del oráculo; ver `docs/s400_v235_body_fat_recovery.md`). El punto específico
+> de anidamiento de altura señalado originalmente aquí puede seguir siendo real *para este
+> binario*, pero es irrelevante para efectos de paridad con el S400.
 
 > **Discrepancia con OpenScale**:
 > - OpenScale: `if bodyFat > 63: bodyFat = 75` (cap en 63, sin mínimo)
@@ -265,6 +271,21 @@ elif sex == MALE:
 
 vfal = clamp(vfal, 10, 15)
 ```
+
+> **⚠️ CORRECCIÓN MAYOR (2026-10-14):** validación cruzada contra los 356 pares input→output
+> reales capturados por el oráculo en vivo (`s400_parity_v2/`) demuestra que **este binario
+> `libBodyfat.so` NO es el algoritmo que usa el S400 real**. Prueba decisiva: la fórmula BMR
+> de este documento (Holtek `BB()`, con impedancia) da 0/356 coincidencias exactas contra el
+> oráculo; el BMR real del S400 es Katch-McArdle puro (`370 + 21.6×FFM`, sin impedancia),
+> 356/356 exacto. El esquema de parámetros del oráculo real (`current_impedance:[r1,r2]`,
+> `electrodes_number`, `res_mapping_switch`) tampoco coincide con la firma `HTBodyfat.NN`
+> de impedancia única. Conclusión: el algoritmo real "versión 235" del S400 se calcula
+> server-side (`/eco/scale/bcalc` es una llamada de red, no JNI local); este documento
+> describe correctamente un binario real pero de un dispositivo Xiaomi distinto (probablemente
+> Mi Body Composition Scale 2), no del S400. Ver `docs/s400_v235_body_fat_recovery.md` en este
+> mismo repo para el método de verificación completo, la fórmula de grasa corporal recuperada
+> empíricamente, y su integración en `S400BodyFatV235.kt`. La nota de clamp (10,15) de abajo
+> puede seguir siendo correcta *para este binario* — no se tocó esa observación.
 
 > **⚠️ BUG CRÍTICO en OpenScale MiScaleLib.kt**:
 > - `MiScaleLib.kt` rama else femenina: `vfal = ... + age * 0.07 - age` ← **BUG**

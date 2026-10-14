@@ -49,6 +49,7 @@ import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.S400Aggregator
 import com.health.openscale.core.bluetooth.libs.S400BodyComposition
+import com.health.openscale.core.bluetooth.libs.S400BodyFatV235
 import com.health.openscale.core.bluetooth.libs.S400Decryptor
 import com.health.openscale.core.bluetooth.libs.S400Inputs
 import com.health.openscale.core.data.GenderType
@@ -309,6 +310,27 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
             ),
         )
 
+        // Body fat: use the server-verified v235 model (339/356 exact against real
+        // Xiaomi /eco/scale/bcalc responses — see docs/s400_v235_body_fat_recovery.md).
+        // Falls back to the Holtek-derived S400BodyComposition estimate only when the
+        // user's profile falls outside the verified input domain (returns null there),
+        // so a result is still shown rather than nothing.
+        //
+        // KNOWN INCONSISTENCY: bone/muscle/FFM below still derive internally from
+        // S400BodyComposition's own (unverified, Holtek-sourced) body fat % — they are
+        // NOT recomputed from verifiedBodyFatPct. Until those are independently verified
+        // against the oracle too, the displayed BODY_FAT may not arithmetically match
+        // BONE + MUSCLE + fat mass. Do not "fix" this by feeding verifiedBodyFatPct into
+        // S400BodyComposition without first validating bone/muscle/water/visceral fat
+        // the same way body fat was validated here.
+        val verifiedBodyFatPct = S400BodyFatV235.estimate(
+            heightCm = user.bodyHeight,
+            weightKg = finalized.weightKg,
+            ageYears = user.age,
+            sexMale = user.gender == GenderType.MALE,
+            impedanceHighOhm = finalized.impedanceHigh,
+        )
+
         val scaleMeasurement = ScaleMeasurement().apply {
             dateTime = Date()
             userId = user.id
@@ -317,7 +339,7 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
             this[MeasurementType.IMPEDANCE] = Ohm(finalized.impedanceHigh.toFloat())
             finalized.impedanceLow?.let { this[MeasurementType.IMPEDANCE_LOW] = Ohm(it.toFloat()) }
 
-            this[MeasurementType.BODY_FAT] = Percent(composition.bfPct ?: 0f)
+            this[MeasurementType.BODY_FAT] = Percent(verifiedBodyFatPct ?: composition.bfPct ?: 0f)
             this[MeasurementType.WATER] = Percent(composition.tbwPct ?: 0f)
             this[MeasurementType.MUSCLE] = Percent(composition.smmPct ?: 0f)
             this[MeasurementType.BONE] = Kg(composition.boneKg ?: 0f)
