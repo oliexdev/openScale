@@ -69,6 +69,7 @@ import com.health.openscale.core.bluetooth.scales.OneByoneHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
 import com.health.openscale.core.bluetooth.scales.QNHandler
 import com.health.openscale.core.bluetooth.scales.QNHandlerBroadcast
+import com.health.openscale.core.bluetooth.scales.QardioBaseHandler
 import com.health.openscale.core.bluetooth.scales.RealmeSmartScaleHandler
 import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
 import com.health.openscale.core.bluetooth.scales.RenphoHandler
@@ -190,6 +191,7 @@ class ScaleFactory @Inject constructor(
             ExingtechY1Handler(),
             EbelterBodyFatB2Handler(),
             HumeDara2Handler(),
+            QardioBaseHandler(),
             ExcelvanCF36xHandler(),
             EtekcityESF551Handler(),
             EtekcityFit8SHandler(),
