@@ -442,6 +442,17 @@
     <string name="huawei_hagrid_secret_invalid">Expected 32 hex characters</string>
     <string name="huawei_hagrid_secret_saved">Saved</string>
 
+    <!-- Silvergear / Tuya BLE Scale Configuration -->
+    <string name="tuya_ble_config_description">This Tuya-based scale needs its device_id, uuid and local_key (from the Tuya cloud, e.g. exported with tinytuya). Values stay in per-driver app settings.</string>
+    <string name="tuya_ble_device_id_label">Device ID</string>
+    <string name="tuya_ble_uuid_label">UUID</string>
+    <string name="tuya_ble_local_key_label">Local Key</string>
+    <string name="tuya_ble_sec_key_label">Security Key (optional)</string>
+    <string name="tuya_ble_field_too_short">At least %1$d characters</string>
+    <string name="tuya_ble_config_missing">Device ID, UUID and Local Key are not configured. Open the scale\'s driver settings and enter the Tuya credentials first.</string>
+    <string name="tuya_ble_config_invalid">Invalid Tuya credentials: %1$s</string>
+    <string name="tuya_ble_handshake_failed">Handshake with the scale failed: %1$s</string>
+
     <!-- Bluetooth Connector -->
     <string name="bluetooth_connector_connected_to">Connected to %1$s</string>
     <string name="bluetooth_connector_connection_failed">Connection to %1$s failed: %2$s</string>

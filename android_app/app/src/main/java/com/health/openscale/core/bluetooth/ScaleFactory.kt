@@ -79,6 +79,7 @@ import com.health.openscale.core.bluetooth.scales.RunstarR6Handler
 import com.health.openscale.core.bluetooth.scales.RyFitHandler
 import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler
 import com.health.openscale.core.bluetooth.scales.SenssunHandler
+import com.health.openscale.core.bluetooth.scales.SilvergearTuyaHandler
 import com.health.openscale.core.bluetooth.scales.SinocareHandler
 import com.health.openscale.core.bluetooth.scales.SoehnleHandler
 import com.health.openscale.core.bluetooth.scales.SppScaleAdapter
@@ -127,7 +128,9 @@ class ScaleFactory @Inject constructor(
          * Builds the list of modern Kotlin-based device handlers.
          *
          * Order matters: [createCommunicator] returns the FIRST handler whose [ScaleDeviceHandler.supportFor]
-         * is non-null. TaylorBIAHandler, FitTrackDaraHandler, RelaxmedicHandler, RobiS9Handler and
+         * is non-null. SilvergearTuyaHandler claims the exact Tuya default name "TY" and must stay first:
+         * generic manufacturer-data matchers earlier in the list claimed the scale's advertisement before
+         * the name check ever ran. TaylorBIAHandler, FitTrackDaraHandler, RelaxmedicHandler, RobiS9Handler and
          * DrTrustSSW532Handler must stay ahead of MGBHandler — all live on service 0xFFB0, which
          * MGBHandler matches on its own, so a later position would let MGB wrongly claim them.
          *
@@ -136,6 +139,8 @@ class ScaleFactory @Inject constructor(
          */
         @VisibleForTesting
         internal fun createHandlers(): List<ScaleDeviceHandler> = listOf(
+            // Exact "TY" name match; beats generic advertisement-based handlers below.
+            SilvergearTuyaHandler(),
             AndUC352BLEHandler(),
             HealthKeep280Handler(),
             PicoocHandler(),
