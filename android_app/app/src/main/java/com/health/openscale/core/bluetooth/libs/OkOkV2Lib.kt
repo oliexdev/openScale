@@ -19,10 +19,10 @@ class OkOkV2Lib(
     fun getLBM(weight: Float, impedance: Float) =
         weight - getFatMass(weight, impedance)
 
-    fun getMuscle(weight: Float, impedance: Float): Float = min(20f, max(
-        (height * 0.2573f) + (weight * 0.1745f) - (age * 0.0161f) + (sex * 2.4269f) - (impedance * 0.017f) - 20.2165f,
-        70f
-    )).let { smm -> smm * 100f / weight }
+    fun getMuscle(weight: Float, impedance: Float): Float =
+        ((height * 0.2573f) + (weight * 0.1745f) - (age * 0.0161f) + (sex * 2.4269f) - (impedance * 0.017f) - 20.2165f)
+            .coerceIn(20f, 70f)
+            .let { smm -> smm * 100f / weight }
 
     private fun getMuscleMass(weight: Float, impedance: Float): Float {
         val bodyFat = getBodyFat(weight, impedance)
@@ -33,7 +33,7 @@ class OkOkV2Lib(
         val raw =
             if (sex == MALE) (height * 0.2867f) + (weight * 0.3894f) - (age * 0.0408f) - (impedance * 0.01235f) - 15.7665f
             else (height * 0.3186f) + (weight * 0.1934f) - (age * 0.0206f) - (impedance * 0.0132f) - 16.4556f
-        return min(20f, max(raw, 70f))
+        return raw.coerceIn(20f, 70f)
     }
 
     fun getWater(weight: Float, impedance: Float): Float {
@@ -43,7 +43,7 @@ class OkOkV2Lib(
             if (sex == MALE) (height * 0.0939f) + (weight * 0.3758f) - (age * 0.0032f) - (impedance * 6.925E-3f) + 0.097f
             else (height * 0.0877f) + (weight * 0.2973f) - (age * 0.0128f) - (impedance * 0.00603f) + 0.5175f
 
-        return min(20f, max(kg / weight * 100f, 85f))
+        return (kg / weight * 100f).coerceIn(20f, 85f)
     }
 
     fun getWaterMass(weight: Float, impedance: Float): Float {
@@ -53,7 +53,7 @@ class OkOkV2Lib(
 
     fun getBoneMass(weight: Float, impedance: Float): Float {
         val fm = weight - getFatMass(weight, impedance) - getMuscleMass(weight, impedance)
-        return min(1f, max(fm, 4f))
+        return fm.coerceIn(1f, 4f)
     }
 
     fun getVisceralFat(weight: Float, impedance: Float): Float {
@@ -61,7 +61,7 @@ class OkOkV2Lib(
         val f =
             if (sex == MALE) (height * -0.2675f) + (weight * 0.42f) + (age * 0.1462f) + (impedance * 0.0123f) + 13.9871f
             else (height * -0.1651f) + (weight * 0.2628f) + (age * 0.0649f) + (impedance * 0.0024f) + 12.3445f
-        return min(1f, max(f, 60f))
+        return f.coerceIn(1f, 60f)
     }
 
     private fun getFatMass(weight: Float, impedance: Float): Float =
@@ -69,7 +69,7 @@ class OkOkV2Lib(
         else (height * -0.3332f) + (weight * 0.7509f) + (age * 0.0196f) + (impedance * 0.0072f) + 22.7193f
 
     fun getBodyFat(weight: Float, impedance: Float): Float =
-        min(5f, max(getFatMass(weight, impedance) / weight * 100f, 45f))
+        (getFatMass(weight, impedance) / weight * 100f).coerceIn(5f, 45f)
 
     fun getBMR(weight: Float): Float =
         if (sex == MALE) 66f + (weight * 13.7f) + (height * 5f) - (age * 6.8f)
@@ -88,7 +88,7 @@ class OkOkV2Lib(
         val viscera = getVisceralFat(weight, impedance)
 
         val var1 = ((weight / (height * height)) * 10000f).let {
-            min(55f, max((((it * it) * -5.686f) + (it * 241.7f)) - 2470f, 96f))
+            ((((it * it) * -5.686f) + (it * 241.7f)) - 2470f).coerceIn(55f, 96f)
         } * (if (viscera == 0f) 0.48f else 0.4f)
 
         val var2: Float
@@ -119,7 +119,7 @@ class OkOkV2Lib(
                     + (viscera.pow(5) * 7.212E-3f)) * 0.08f
 
         val score = var1 + (0.4f * var2) + (0.1f * var3) + var4
-        return min(45f, max(score, 100f))
+        return score.coerceIn(45f, 100f)
     }
 
     fun getBodyAge(weight: Float, impedance: Float): Int {
