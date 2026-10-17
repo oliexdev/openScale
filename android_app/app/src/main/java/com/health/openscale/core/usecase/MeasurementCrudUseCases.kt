@@ -87,9 +87,13 @@ class MeasurementCrudUseCases @Inject constructor(
                 databaseRepository.insertMeasurementValue(v.copy(measurementId = newId))
             }
 
-            sync.triggerSyncInsert(measurementWithId, finalValues,"com.health.openscale.sync")
-            sync.triggerSyncInsert(measurementWithId, finalValues,"com.health.openscale.sync.oss")
-            sync.triggerSyncInsert(measurementWithId, finalValues,"com.health.openscale.sync.debug")
+            // Sync what was stored, not finalValues: the derived values (BMI, BMR, …) only exist
+            // after the recalculation each value insert runs, and the sync app must see the same
+            // measurement here as through the ContentProvider.
+            val syncValues = databaseRepository.getValuesForMeasurement(newId).first()
+            sync.triggerSyncInsert(measurementWithId, syncValues,"com.health.openscale.sync")
+            sync.triggerSyncInsert(measurementWithId, syncValues,"com.health.openscale.sync.oss")
+            sync.triggerSyncInsert(measurementWithId, syncValues,"com.health.openscale.sync.debug")
 
             MeasurementWidget.refreshAll(appContext)
 
@@ -140,9 +144,11 @@ class MeasurementCrudUseCases @Inject constructor(
 
             deleteImageFiles(appContext, previousImages - imageFileNames(finalValues))
 
-            sync.triggerSyncUpdate(measurement, finalValues, "com.health.openscale.sync")
-            sync.triggerSyncUpdate(measurement, finalValues,"com.health.openscale.sync.oss")
-            sync.triggerSyncUpdate(measurement, finalValues,"com.health.openscale.sync.debug")
+            // Stored state incl. the recalculated derived values, as for the insert above.
+            val syncValues = databaseRepository.getValuesForMeasurement(measurement.id).first()
+            sync.triggerSyncUpdate(measurement, syncValues, "com.health.openscale.sync")
+            sync.triggerSyncUpdate(measurement, syncValues,"com.health.openscale.sync.oss")
+            sync.triggerSyncUpdate(measurement, syncValues,"com.health.openscale.sync.debug")
 
             MeasurementWidget.refreshAll(appContext)
 

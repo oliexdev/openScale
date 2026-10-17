@@ -18,6 +18,7 @@
 package com.health.openscale.core.usecase
 
 import android.app.Application
+import android.content.pm.PackageInfo
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
@@ -40,6 +41,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import java.io.File
 import java.util.UUID
@@ -171,6 +173,42 @@ class MeasurementCrudUseCasesTest {
         assertThat(bmiAfter.floatValue!!).isWithin(0.1f).of(26.12f) // 80 / 1.75^2
         // Derived row updated in place, not deleted+recreated.
         assertThat(bmiAfter.id).isEqualTo(bmiBefore.id)
+    }
+
+    /** Installs a stand-in sync app, so SyncUseCases actually fires its intents. */
+    private fun installSyncApp() {
+        Shadows.shadowOf(app.packageManager).installPackage(
+            PackageInfo().apply { packageName = "com.health.openscale.sync" }
+        )
+    }
+
+    /** The "values" extra of the next sync intent of [mode] sent to the sync app. */
+    private fun nextSyncValues(mode: String): String {
+        val shadowApp = Shadows.shadowOf(app)
+        while (true) {
+            val intent = shadowApp.nextStartedService ?: error("no $mode sync intent was sent")
+            if (intent.getStringExtra("mode") == mode) return intent.getStringExtra("values").orEmpty()
+        }
+    }
+
+    @Test
+    fun saveMeasurement_syncIntents_carryTheDerivedValues() = runBlocking {
+        // The sync app must see the stored measurement, derived values included — the same thing
+        // it reads through the ContentProvider. The edit dialog never passes derived values in.
+        installSyncApp()
+
+        val id = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 4_000L),
+            listOf(MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 70f)),
+        ).getOrThrow()
+        assertThat(nextSyncValues("insert")).contains("\"identity\":\"builtin.bmi\"")
+
+        val weightValueId = repo.getValuesForMeasurement(id).first().first { it.typeId == weightId }.id
+        crud.saveMeasurement(
+            Measurement(id = id, userId = userId, timestamp = 4_000L),
+            listOf(MeasurementValue(id = weightValueId, measurementId = id, typeId = weightId, floatValue = 80f)),
+        ).getOrThrow()
+        assertThat(nextSyncValues("update")).contains("\"identity\":\"builtin.bmi\"")
     }
 
     @Test
