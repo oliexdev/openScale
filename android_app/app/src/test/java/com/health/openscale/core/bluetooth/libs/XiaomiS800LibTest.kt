@@ -95,5 +95,42 @@ class XiaomiS800LibTest {
         assertThat(XiaomiS800Lib.decryptMiBeaconV5(frame, wrong, macFrame)).isNull()
     }
 
+    /**
+     * S200 measurement frame as the scale sends it: FC 0x5948 (encrypted, object, no MAC),
+     * so the nonce MAC has to come from the device address. Object layout as in xiaomi-ble's
+     * `obj4e16`: profile | weight u32 LE / 100 | timestamp u32 LE.
+     */
+    private fun buildS200Frame(kg: Double, timestamp: Long, address: String, cnt: Int = 0x01): ByteArray {
+        val raw = (kg * 100).roundToInt()
+        val obj = byteArrayOf(0x16, 0x4e, 0x09, 0x01) + le32(raw.toLong()) + le32(timestamp)
+        val pid = byteArrayOf(0x04, 0x4c)
+        val ext = byteArrayOf(0x01, 0, 0)
+        val mac = XiaomiS800Lib.macFrameOrderFromAddress(address)!!
+        val ccm = CCMBlockCipher.newInstance(AESEngine.newInstance())
+        ccm.init(true, AEADParameters(KeyParameter(dummyKey), 32, mac + pid + byteArrayOf(cnt.toByte()) + ext, byteArrayOf(0x11)))
+        val out = ByteArray(ccm.getOutputSize(obj.size))
+        ccm.doFinal(out, ccm.processBytes(obj, 0, obj.size, out, 0))
+        return byteArrayOf(0x48, 0x59) + pid + byteArrayOf(cnt.toByte()) +
+            out.copyOfRange(0, out.size - 4) + ext + out.copyOfRange(out.size - 4, out.size)
+    }
+
+    private fun le32(v: Long) = ByteArray(4) { ((v shr (8 * it)) and 0xff).toByte() }
+
+    @Test
+    fun `decrypts an S200 frame with the device address as nonce MAC`() {
+        val address = "C0:FF:EE:12:34:56"
+        val frame = buildS200Frame(62.25, 1762728842L, address)
+
+        assertThat(XiaomiS800Lib.macFrameOrderFromFrame(frame)).isNull()
+        val dec = XiaomiS800Lib.decryptMiBeaconV5(frame, dummyKey, XiaomiS800Lib.macFrameOrderFromAddress(address)!!)!!
+
+        assertThat(XiaomiS800Lib.parseWeightKg(dec, 0x4c04)!!).isWithin(1e-3f).of(62.25f)
+        assertThat(XiaomiS800Lib.parseS200TimestampSec(dec)).isEqualTo(1762728842L)
+        // Read with the S800 layout, the same object lands on the timestamp and is rejected.
+        assertThat(XiaomiS800Lib.parseWeightKg(dec)).isNull()
+        // A wrong address breaks the nonce.
+        assertThat(XiaomiS800Lib.decryptMiBeaconV5(frame, dummyKey, XiaomiS800Lib.macFrameOrderFromAddress("C0:FF:EE:12:34:57")!!)).isNull()
+    }
+
     private fun toHex(b: ByteArray) = b.joinToString("") { "%02x".format(it) }
 }

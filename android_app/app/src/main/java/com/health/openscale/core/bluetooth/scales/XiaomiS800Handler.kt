@@ -57,13 +57,15 @@ import java.util.Locale
 import com.health.openscale.core.data.Kg
 
 /**
- * Xiaomi Mijia 8-electrode Body Composition Scale S800 (xiaomi.scales.ms116).
+ * Xiaomi Mijia 8-electrode Body Composition Scale S800 (xiaomi.scales.ms116) and Xiaomi Smart
+ * Scale S200 (MJTZC02YM).
  *
- * Broadcast-only: the scale advertises AES-128-CCM encrypted MiBeacon v5 frames in service
+ * Broadcast-only: the scales advertise AES-128-CCM encrypted MiBeacon v5 frames in service
  * data 0xFE95. The weigh-in object 0x4e16 carries the weight; the per-device bind key from the
  * Mi cloud is required to decrypt it (configure it in the device settings, same as the S400).
  * Segmental body composition lives only behind the encrypted Mi-auth GATT path (out of scope),
- * so this handler publishes weight; openScale derives BMI from the user profile.
+ * so this handler publishes weight; openScale derives BMI from the user profile. The S200 has
+ * no electrodes and reports weight only.
  *
  * Decode logic and the round-trip test live in
  * [com.health.openscale.core.bluetooth.libs.XiaomiS800Lib].
@@ -72,8 +74,10 @@ class XiaomiS800Handler : ScaleDeviceHandler() {
 
     companion object {
         private const val SETTINGS_KEY_BIND_KEY = "s800_bind_key"
+        private const val SETTINGS_KEY_S200_LAST_STAMP = "s200_last_stamp"
 
         private val KNOWN_NAME_PATTERNS = listOf("MIJIA SCALE S800", "MS116")
+        private val S200_NAME_PATTERNS = listOf("SCALE S200", "MJTZC02YM")
 
         private val SERVICE_UUID_FE95 =
             ParcelUuid.fromString("0000fe95-0000-1000-8000-00805f9b34fb")
@@ -85,14 +89,29 @@ class XiaomiS800Handler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.uppercase(Locale.ROOT)
+        // Some S200 units advertise no name at all; their product id is in the FE95 service data.
+        val fe95 = device.serviceData[SERVICE_UUID_FE95.uuid]
+        val productId = fe95?.takeIf { it.size >= 4 }
+            ?.let { (it[2].toInt() and 0xFF) or ((it[3].toInt() and 0xFF) shl 8) }
+        if (S200_NAME_PATTERNS.any { name.contains(it) } || productId in XiaomiS800Lib.S200_PIDS) {
+            // Only the final weight is broadcast, so not even a live weight stream.
+            return DeviceSupport(
+                displayName = "Xiaomi Smart Scale S200",
+                capabilities = emptySet(),
+                implemented = emptySet(),
+                tuningProfile = TuningProfile.Conservative,
+                linkMode = LinkMode.BROADCAST_ONLY
+            )
+        }
         val isS800 = KNOWN_NAME_PATTERNS.any { name.contains(it) }
         if (!isS800) return null
 
-        val caps = setOf(DeviceCapability.LIVE_WEIGHT_STREAM)
         return DeviceSupport(
             displayName = "Xiaomi Body Composition Scale S800",
-            capabilities = caps,
-            implemented = caps,
+            // Body composition only travels over the encrypted Mi-auth GATT path (see class doc);
+            // the broadcast carries the final weight only.
+            capabilities = setOf(DeviceCapability.BODY_COMPOSITION),
+            implemented = emptySet(),
             tuningProfile = TuningProfile.Conservative,
             linkMode = LinkMode.BROADCAST_ONLY
         )
@@ -111,17 +130,30 @@ class XiaomiS800Handler : ScaleDeviceHandler() {
         val bindKey = hexToBytes(bindKeyHex)
 
         val frame = extractServiceData(result) ?: return BroadcastAction.IGNORED
+        val productId = (frame[2].toInt() and 0xFF) or ((frame[3].toInt() and 0xFF) shl 8)
 
         // Cache the real MAC from any MAC-included frame so MAC-omitted rich frames can build
-        // the AES-CCM nonce.
+        // the AES-CCM nonce; the S200 never includes it in measurement frames.
         val frameMac = XiaomiS800Lib.macFrameOrderFromFrame(frame)
         if (frameMac != null) cachedMac = frameMac
-        val mac = frameMac ?: cachedMac ?: return BroadcastAction.CONSUMED_KEEP_SCANNING
+        val mac = frameMac ?: cachedMac
+            ?: XiaomiS800Lib.macFrameOrderFromAddress(result.device.address)
+            ?: return BroadcastAction.CONSUMED_KEEP_SCANNING
 
         val decrypted = XiaomiS800Lib.decryptMiBeaconV5(frame, bindKey, mac)
             ?: return BroadcastAction.CONSUMED_KEEP_SCANNING
-        val weightKg = XiaomiS800Lib.parseWeightKg(decrypted)
+        val weightKg = XiaomiS800Lib.parseWeightKg(decrypted, productId)
             ?: return BroadcastAction.CONSUMED_KEEP_SCANNING
+
+        // The S200 keeps re-broadcasting its last reading for a while, so the next scan can
+        // start with an old weigh-in; its own timestamp tells them apart.
+        if (productId in XiaomiS800Lib.S200_PIDS) {
+            val stamp = XiaomiS800Lib.parseS200TimestampSec(decrypted)?.toString()
+            if (stamp != null && stamp == settingsGetString(SETTINGS_KEY_S200_LAST_STAMP)) {
+                return BroadcastAction.CONSUMED_KEEP_SCANNING
+            }
+            stamp?.let { settingsPutString(SETTINGS_KEY_S200_LAST_STAMP, it) }
+        }
 
         val m = ScaleMeasurement().apply {
             dateTime = Date()
@@ -135,12 +167,9 @@ class XiaomiS800Handler : ScaleDeviceHandler() {
     /** FE95 service data value (Android already strips the 16-bit UUID prefix). */
     private fun extractServiceData(result: ScanResult): ByteArray? {
         val data = result.scanRecord?.serviceData?.get(SERVICE_UUID_FE95) ?: return null
-        // Only the S800 product id at bytes [2..3] LE.
-        if (data.size >= 4) {
-            val pid = (data[2].toInt() and 0xFF) or ((data[3].toInt() and 0xFF) shl 8)
-            if (pid != XiaomiS800Lib.S800_PID) return null
-        }
-        return data
+        if (data.size < 4) return null
+        val pid = (data[2].toInt() and 0xFF) or ((data[3].toInt() and 0xFF) shl 8)
+        return data.takeIf { pid == XiaomiS800Lib.S800_PID || pid in XiaomiS800Lib.S200_PIDS }
     }
 
     private fun hexToBytes(hex: String): ByteArray =
