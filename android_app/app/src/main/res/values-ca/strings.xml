@@ -880,4 +880,7 @@
     <string name="dialog_message_export_photos">Voleu exportar només el CSV, o un fitxer ZIP amb el CSV i totes les fotos? El ZIP es pot tornar a importat, incloent-hi les fotos.</string>
     <string name="action_export_csv_only">Només el CSV</string>
     <string name="action_export_zip_with_photos">ZIP amb les fotos</string>
+    <string name="measurement_type_hydration_shift">Canvi d’hidratació</string>
+    <string name="bt_error_mi_scale_service_missing">Aquest dispositiu no exposa un servei Mi Scale admès.</string>
+    <string name="bt_warn_mi_scale_variant_downgraded">Aquesta bàscula s’anuncia com a model v2, però només informa del pes. La composició corporal no està disponible en aquest dispositiu.</string>
 </resources>
