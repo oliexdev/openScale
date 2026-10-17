@@ -1,20 +1,26 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- App & General -->
+    <string name="app_name" translatable="false">openScale</string>
+    <string name="sync_app_unreachable_hint">Последнее изменение не было синхронизировано. Пожалуйста, откройте OpenScale-sync и запустите синхронизацию вручную.</string>
+    <string name="sync_app_open_action">Открыть</string>
+    <string name="app_logo_content_description">Логотип приложения</string>
+    <string name="text_none">Пусто</string>
     <string name="not_available">Недоступно</string>
+    <string name="placeholder_empty_value">-</string>
     <string name="theme_light">Светлая</string>
     <string name="theme_dark">Тёмная</string>
-    <string name="enable_button">Применить</string>
+
+    <!-- Generic UI Elements & Actions -->
+    <string name="enable_button">Включить</string>
     <string name="cancel_button">Отмена</string>
     <string name="clear_button">Очистить</string>
     <string name="confirm_button">Подтвердить</string>
     <string name="dialog_ok">ОК</string>
+    <string name="saved">Сохранено</string>
     <string name="switch_on">Включить</string>
     <string name="switch_off">Выключить</string>
     <string name="open_link_content_description">Открыть ссылку</string>
     <string name="content_desc_warning_icon">Символ предупреждения</string>
-    <string name="placeholder_empty_value">-</string>
-    <string name="app_logo_content_description">Логотип приложения</string>
-    <string name="text_none">Пусто</string>
     <string name="content_desc_restore_icon">Значок восстановления</string>
     <string name="content_desc_information">Информация</string>
     <string name="content_desc_open_menu">Открыть меню</string>
@@ -22,17 +28,26 @@
     <string name="content_desc_selected">Выбрано</string>
     <string name="derived_backfill_start">Расчёт полученных значений …</string>
     <string name="derived_backfill_done">Значения успешно рассчитаны.</string>
+
+    <!-- Generic error messages -->
     <string name="error_generic">Произошла ошибка.</string>
     <string name="error_loading_data">Не удалось загрузить данные.</string>
     <string name="error_try_again">Повторите попытку.</string>
+
+    <!-- No data available messages -->
     <string name="no_data_available">Нет данных.</string>
     <string name="no_measurements_found">Измерения не найдены.</string>
     <string name="no_entries_found">Нет доступных записей.</string>
+
+    <!-- Route & Screen Titles -->
     <string name="route_title_overview">Обзор</string>
     <string name="route_title_graph">График</string>
     <string name="route_title_table">Таблица</string>
     <string name="route_title_statistics">Статистика</string>
+    <string name="route_title_insights">Аналитика</string>
     <string name="route_title_settings">Настройки</string>
+    <string name="route_title_table_drilldown">Подробнее</string>
+    <string name="calendar_week_abbrev">Календарная неделя</string>
     <string name="title_new_measurement">Новое измерение</string>
     <string name="title_edit_measurement">Редактировать измерение</string>
     <string name="about_screen_title">О приложении</string>
@@ -42,6 +57,8 @@
     <string name="user_detail_edit_user_title">Редактировать пользователя</string>
     <string name="user_detail_add_user_title">Добавить пользователя</string>
     <string name="user_settings_title">Пользователи</string>
+
+    <!-- User Management & Details -->
     <string name="manage_users">Управление пользователями</string>
     <string name="content_desc_switch_user">Изменить пользователя. Текущий: %1$s</string>
     <string name="content_desc_selected_user_indicator">Выбранный пользователем показатель</string>
@@ -54,6 +71,7 @@
     <string name="user_deleted_successfully">Пользователь %1$s успешно удалён.</string>
     <string name="user_deleted_error">Не удалось удалить пользователя %1$s.</string>
     <string name="user_updated_successfully">Данные пользователя %1$s успешно обновлены.</string>
+    <string name="user_added_successfully">Пользователь %1$s успешно добавлен.</string>
     <string name="user_updated_error">Не удалось отредактировать пользователя %1$s.</string>
     <string name="user_detail_label_name">Имя</string>
     <string name="user_detail_label_height">Рост</string>
@@ -61,12 +79,12 @@
     <string name="gender_male">Мужчина</string>
     <string name="gender_female">Женщина</string>
     <string name="amputation_correction_label">Ампутации</string>
-    <string name="amputation_none">Нет ампутированных конечностей</string>
+    <string name="amputation_none">Нет ампутаций</string>
     <string name="amputation_hand">Ладонь</string>
     <string name="amputation_forearm">Предплечье</string>
     <string name="amputation_full_arm">Вся рука</string>
     <string name="amputation_foot">Стопа</string>
-    <string name="amputation_lower_leg">Голень (Нижняя часть ноги)</string>
+    <string name="amputation_lower_leg">Голень</string>
     <string name="amputation_full_leg">Вся нога</string>
     <string name="amputation_dialog_description">Выберите ампутированные конечности и укажите уровень для каждой из них.</string>
     <string name="amputation_left_arm">Левая рука</string>
@@ -74,6 +92,7 @@
     <string name="amputation_left_leg">Левая нога</string>
     <string name="amputation_right_leg">Правая нога</string>
     <string name="user_detail_label_activity_level">Уровень активности</string>
+    <string name="user_detail_label_assisted_weighting">Вспомогательное взвешивание</string>
     <string name="dialog_title_select_reference_user_for">Выберите вспомогательного пользователя для %1$s</string>
     <string name="error_no_reference_users_available">Нет подходящего вспомогательного пользователя. Пожалуйста, сначала создайте пользователя без параметра \"Вспомогательное измерение\".</string>
     <string name="error_assisted_weighing_reference_user_missing">Для вспомогательного измерения необходимо выбрать содействующего пользователя.</string>
@@ -85,25 +104,39 @@
     <string name="user_settings_content_description_delete">Удалить пользователя</string>
     <string name="user_settings_content_description_add_user">Добавить</string>
     <string name="user_detail_content_description_change_unit">Изменить единицу измерения</string>
-    <string name="success_measurement_updated">Измерение успешно обновлено (%1$s)</string>
-    <string name="success_measurement_saved">Измерение успешно сохранено (%1$s)</string>
+
+    <!-- Measurement CRUD & Operations -->
+    <string name="success_measurement_updated">Измерение успешно обновлено (%1$s)</string> <!-- %1$s is date/time -->
+    <string name="success_measurement_saved">Измерение успешно сохранено (%1$s)</string> <!-- %1$s is date/time -->
     <string name="error_saving_measurement">Не удалось сохранить измерение. Повторите попытку.</string>
-    <string name="success_measurement_deleted">Измерение успешно удалено (%1$s)</string>
+    <string name="error_duplicate_timestamp">Не сохранено. Измерение уже существует в %1$s.</string> <!-- %1$s is date/time -->
+    <string name="success_measurement_deleted">Измерение успешно удалено (%1$s)</string> <!-- %1$s is date/time -->
     <string name="error_deleting_measurement">Не удалось удалить измерение. Повторите попытку.</string>
+    <string name="action_undo">Откатить</string>
+    <string name="cd_chart_handle_resize">Перетаскивайте, чтобы изменить размер диаграммы, или нажмите, чтобы свернуть ее</string>
+    <string name="cd_chart_handle_show">Нажмите, чтобы отобразить график</string>
+    <string name="dialog_title_discard_changes">Отказаться от изменений?</string>
+    <string name="dialog_message_discard_changes">Внесенные вами изменения не были сохранены и будут потеряны.</string>
+    <string name="action_discard">Отказаться</string>
+    <string name="action_keep_editing">Продолжить редактирование</string>
     <string name="action_save_measurement">Сохранить измерение</string>
     <string name="action_add_measurement">Добавить измерение</string>
     <string name="action_add_measurement_desc">Добавить новое измерение</string>
-    <string name="action_edit_measurement_desc">Отредактировать измерение для %1$s</string>
-    <string name="action_delete_measurement_desc">Удалить измерение для %1$s</string>
+    <string name="action_edit_measurement_desc">Отредактировать измерение для %1$s</string> <!-- %1$s is date -->
+    <string name="action_delete_measurement_desc">Удалить измерение для %1$s</string> <!-- %1$s is date -->
     <string name="toast_duplicate_timestamp">В это время уже существует измерение. Пожалуйста, укажите другое.</string>
     <string name="no_measurements_title">Измерений пока нет</string>
     <string name="no_measurements_message">Добавьте первое измерение для начала отслеживания прогресса.</string>
     <string name="no_active_values_for_measurement">В этой записи нет измерений.</string>
+
+    <!-- Measurement Input & Validation Toasts -->
     <string name="toast_invalid_number_format">Некорректное значение для %1$s: \'%2$s\'</string>
     <string name="toast_invalid_integer_format">Недопустимое значение для %1$s: \'%2$s\' (должно быть целым числом)</string>
     <string name="toast_invalid_number_format_short">Неверный номер для %1$s</string>
     <string name="toast_invalid_integer_format_short">Недопустимое значение %1$s (должно быть целым числом)</string>
     <string name="toast_enter_valid_data">Пожалуйста укажите корректные данные.</string>
+
+    <!-- Dialogs (General & Measurement Edit) -->
     <string name="dialog_title_edit_value">Изменить %1$s</string>
     <string name="dialog_title_change_value">Заменить %1$s</string>
     <string name="dialog_title_select_color">Выбор цвета</string>
@@ -112,8 +145,11 @@
     <string name="dialog_title_input_text">Ввод текста</string>
     <string name="dialog_title_hour">Час</string>
     <string name="dialog_title_minute">Минута</string>
+
     <string name="label_date">Дата</string>
     <string name="label_time">Время</string>
+
+    <!-- Content Descriptions for Editing & Trends -->
     <string name="content_desc_increase_value">Повышение %1$s</string>
     <string name="content_desc_decrease_value">Уменьшение %1$s</string>
     <string name="content_desc_edit_value">Изменение %1$s</string>
@@ -122,33 +158,76 @@
     <string name="trend_increased_desc">Значение повышено</string>
     <string name="trend_decreased_desc">Значение понижено</string>
     <string name="trend_stable_desc">Значение без изменений</string>
+
+    <!-- Measurement Types -->
     <string name="measurement_type_icon_desc">Значок для %1$s</string>
     <string name="measurement_type_icon_unknown_desc">Значок для неизвестного типа измерения: %1$s</string>
     <string name="content_desc_unknown_type">Неизвестный тип: %1$s</string>
     <string name="measurement_type_weight">Вес</string>
     <string name="measurement_type_bmi">ИМТ</string>
-    <string name="measurement_type_body_fat">Подкожный жир</string>
-    <string name="measurement_type_water">Вода</string>
-    <string name="measurement_type_muscle">Мышцы</string>
-    <string name="measurement_type_lbm">Мышечная масса</string>
-    <string name="measurement_type_bone">Скелет</string>
+    <string name="measurement_type_body_fat">Содержание жира</string>
+    <string name="measurement_type_water">Вода в организме</string>
+    <string name="measurement_type_muscle">Мышечная масса</string>
+    <string name="measurement_type_lbm">Безжировая масса</string>
+    <string name="measurement_type_bone">Костная масса</string>
     <string name="measurement_type_waist">Талия</string>
-    <string name="measurement_type_whr">СТБ (Соотношение талии и бёдер)</string>
-    <string name="measurement_type_whtr">Индекс отношения окружности талии к росту</string>
-    <string name="measurement_type_hips">Бёдра</string>
+    <string name="measurement_type_whr">Талия/бёдра</string>
+    <string name="measurement_type_whtr">Талия/рост</string>
+    <string name="measurement_type_hips">Обхват бёдер</string>
     <string name="measurement_type_visceral_fat">Висцеральный жир</string>
-    <string name="measurement_type_chest">Грудная клетка</string>
-    <string name="measurement_type_thigh">Нижняя часть бёдер</string>
-    <string name="measurement_type_biceps">Бицепс</string>
-    <string name="measurement_type_neck">Шея</string>
-    <string name="measurement_type_bmr">Базовый метаболизм</string>
+    <string name="measurement_type_chest">Обхват груди</string>
+    <string name="measurement_type_thigh">Обхват бедра</string>
+    <string name="measurement_type_biceps">Обхват бицепса</string>
+    <string name="measurement_type_neck">Обхват шеи</string>
+    <string name="measurement_type_caliper1">Кожная складка 1</string>
+    <string name="measurement_type_caliper2">Кожная складка 2</string>
+    <string name="measurement_type_caliper3">Кожная складка 3</string>
+    <string name="measurement_type_fat_caliper">% жира по складкам</string>
+    <string name="measurement_type_bmr">Основной обмен</string>
+    <string name="measurement_type_heart_rate">Пульс</string>
+    <string name="measurement_type_impedance">Импеданс (высокая частота)</string>
+    <string name="measurement_type_impedance_low">Импеданс (низкая частота)</string>
+    <string name="measurement_type_ecw">Внеклеточная вода</string>
+    <string name="measurement_type_icw">Внутриклеточная вода</string>
+    <string name="measurement_type_protein">Белок</string>
+    <string name="measurement_type_total_muscle">Общая мышечная масса</string>
+    <string name="measurement_type_metabolic_age">Метаболический возраст</string>
+    <string name="picooc_calibration_description">PICOOC определяет стабильную опорную точку состава тела на основе четырёх близких по времени измерений биоимпеданса.</string>
+    <string name="picooc_calibration_no_measurements">Калибровка ещё не началась.</string>
+    <string name="picooc_calibration_learning">%1$s: обучение — %2$d из 4, предварительное значение beta %3$d, опорное значение %4$d кг</string>
+    <string name="picooc_calibration_fixed">%1$s: откалибровано, beta %2$d, опорное значение %3$d кг</string>
+    <string name="picooc_calibration_reset">Сбросить калибровку для %1$s</string>
+    <string name="picooc_calibration_reset_generic">Сбросить калибровку PICOOC</string>
+    <string name="measurement_type_bcm">Клеточная масса тела</string>
+    <string name="measurement_type_from_scale">Добавлено весами</string>
+    <string name="measurement_type_label_csv_column">Столбец CSV</string>
+    <string name="measurement_type_csv_column_taken">Этот столбец CSV уже используется.</string>
+    <string name="measurement_type_segmental_fat_left_arm">Жир (левая рука)</string>
+    <string name="measurement_type_segmental_fat_right_arm">Жир (правая рука)</string>
+    <string name="measurement_type_segmental_fat_torso">Жир (туловище)</string>
+    <string name="measurement_type_segmental_fat_left_leg">Жир (левая нога)</string>
+    <string name="measurement_type_segmental_fat_right_leg">Жир (правая нога)</string>
+    <string name="measurement_type_segmental_muscle_left_arm">Мышцы (левая рука)</string>
+    <string name="measurement_type_segmental_muscle_right_arm">Мышцы (правая рука)</string>
+    <string name="measurement_type_segmental_muscle_torso">Мышцы (туловище)</string>
+    <string name="measurement_type_segmental_muscle_left_leg">Мышцы (левая нога)</string>
+    <string name="measurement_type_segmental_muscle_right_leg">Мышцы (правая нога)</string>
+    <string name="s400_bone_formula_label">Формула костной ткани</string>
+    <string name="s400_bone_formula_mi_legacy">Регрессия на основе импеданса (устаревшая версия)</string>
+    <string name="s400_bone_formula_heymsfield">Формула Стивена Хеймсфилда (антропометрическая)</string>
+    <string name="s400_bmr_formula_label">Формула основного обмена (BMR)</string>
+    <string name="s400_bmr_formula_cun91">Формула Каннингема, 1991</string>
+    <string name="s400_bmr_formula_cun80">Формула Каннингема, 1980</string>
     <string name="measurement_type_tdee">Суточный расход энергии</string>
     <string name="measurement_type_calories">Калории</string>
     <string name="measurement_type_comment">Комментарий</string>
+    <string name="measurement_type_photo">Фото</string>
     <string name="measurement_type_date">Дата</string>
     <string name="measurement_type_time">Время</string>
     <string name="measurement_type_user">Пользователь</string>
     <string name="measurement_type_custom_default_name">Пользовательский тип</string>
+
+    <!-- Measurement Type Settings -->
     <string name="measurement_type_label_enabled">Используется</string>
     <string name="measurement_type_label_name">Наименование</string>
     <string name="measurement_type_label_color">Цвет</string>
@@ -156,6 +235,8 @@
     <string name="measurement_type_label_unit">Единица измерения</string>
     <string name="measurement_type_label_goal">Цель</string>
     <string name="goal_target_date_label">Дата достижения цели</string>
+    <string name="goal_start_date_label">Дата начала</string>
+    <string name="label_optional">%1$s (необязательно)</string> <!-- %1$s is a field label -->
     <string name="content_desc_select_date">Выбор даты</string>
     <string name="my_goals_label">Мои достижения</string>
     <string name="user_detail_goals">Достижения %d</string>
@@ -166,7 +247,6 @@
     <string name="info_no_targetable_types">Нет типов для постановки цели.</string>
     <string name="placeholder_select_type">Выбор типа</string>
     <string name="measurement_type_label_goal_value_for">Целевое значение для %1$s</string>
-    <string name="toast_goal_value_cannot_be_empty">Значение достижения не может быть пустым для новой цели.</string>
     <string name="toast_select_measurement_type">Пожалуйста, сначала выберите тип измерения.</string>
     <string name="toast_goal_deleted">Цель удалена</string>
     <string name="measurement_type_label_input_type">Тип входного значения</string>
@@ -187,15 +267,28 @@
     <string name="measurement_type_updated_unit_changed_no_values_converted">Тип \'%1$s\' обновлен. Единица измерения изменена, существующие значения не требуют обновления.</string>
     <string name="measurement_type_dialog_confirm_unit_change_title">Подтвердите изменение единицы измерения</string>
     <string name="measurement_type_dialog_confirm_unit_change_message">Изменение единицы измерения для \'%1$s\' с %2$s на %3$s преобразует существующие данные. Это действие может занять некоторое время и не может быть легко изменено обратно. Желаете продолжить?</string>
-    <string name="formula_label_body_fat">Формула жировой массы</string>
+
+    <string name="formula_label_body_fat">Формула\nсодержания жира</string>
     <string name="formula_label_body_water">Формула содержания воды</string>
     <string name="formula_label_lbm">Формула мышечной массы тела</string>
     <string name="formula_warning_title">Расчёт по формулам</string>
     <string name="formula_warning_message">Эта метрика доступна только для чтения и рассчитывается автоматически. Она обновляется при изменении базовых значений. Применяется к новым или измененным метрикам; существующие остаются без изменений.</string>
+
     <string name="formula_off">Не использовать</string>
     <string name="formula_bf_deurenberg_1991">Формула Деуренберга (1991)</string>
     <string name="formula_bf_deurenberg_1992">Формула Деуренберга (1992)</string>
+    <string name="formula_bf_eddy_1976">Формула Eddy et al. (1976)</string>
+    <string name="formula_bf_gallagher_2000_non_asian">Gallagher (неазиатский)</string>
+    <string name="formula_bf_gallagher_2000_asian">Gallagher (2000) – Азиатский</string>
+    <string name="formula_bw_behnke_1963">Формула Behnke et al. (1963)</string>
+    <string name="formula_bw_delwaide_crenier_1973">Формула Delwaide &amp; Crenier (1973)</string>
+    <string name="formula_bw_hume_weyers_1971">Формула Hume &amp; Weyers (1971)</string>
+    <string name="formula_bw_lee_song_kim_2001">Формула Lee, Song &amp; Kim (2001)</string>
+    <string name="formula_lbm_boer_1984">Формула Boer (1984)</string>
+    <string name="formula_lbm_hume_1966">Формула Hume (1966)</string>
     <string name="formula_lbm_weight_minus_body_fat">Разница между массами тела и жира</string>
+    <string name="formula_bf_us_navy">Формула U.S. Navy</string>
+
     <string name="formula_desc_off_short">Нет автоматического расчёта</string>
     <string name="formula_desc_off_long">Этот показатель автоматически не рассчитывается. Вы можете ввести значения вручную.</string>
     <string name="bf_deurenberg_1991_short">Возрастная регрессия</string>
@@ -204,18 +297,30 @@
     <string name="bf_deurenberg_1992_long">Вариант, адаптированный для более молодых пользователей. Оценка общего назначения; спортивное или нетипичное телосложение может отличаться.</string>
     <string name="bf_eddy_1976_short">Начальная модель, зависящая от пола</string>
     <string name="bf_eddy_1976_long">Более ранняя регрессия с отдельными коэффициентами для мужчин и женщин. Простая и быстрая, но не адаптированная к конкретным группам населения.</string>
+    <string name="bf_gallagher_2000_non_asian_short">Gallagher (Неазиатский)</string>
     <string name="bf_gallagher_2000_non_asian_long">Эталонная модель 2000 года для неазиатского населения. Полезная основа; точность варьируется в зависимости от типа телосложения.</string>
+    <string name="bf_gallagher_2000_asian_short">Gallagher (Азиатский)</string>
     <string name="bf_gallagher_2000_asian_long">Сопутствующая модель, адаптированная для азиатского населения. Используйте, когда это лучше соответствует опыту пользователя.</string>
+    <string name="bw_behnke_1963_short">Оценка содержания жидкости в теле по Behnke</string>
     <string name="bw_behnke_1963_long">Классическая оценка общего содержания воды в организме. Простой подход, не индивидуализированный для спортсменов или людей с ограниченными возможностями.</string>
+    <string name="bw_delwaide_crenier_1973_short">Delwaide и Crenier</string>
     <string name="bw_delwaide_crenier_1973_long">Формула объема воды в теле, акцентирующаяся на массе тела. Разумная общая оценка; точность зависит от телосложения.</string>
+    <string name="bw_hume_weyers_1971_short">Hume–Weyers формула общего количества воды в организме</string>
     <string name="bw_hume_weyers_1971_long">Обычная модель массы воды в теле, использующая рост и вес с коэффициентами, зависящими от пола.</string>
+    <string name="bw_lee_song_kim_2001_short">Формула Lee–Song–Kim</string>
     <string name="bw_lee_song_kim_2001_long">Более поздняя оценка массы воды в теле, была откалибрована на корейских группах. Проверьте, подходит ли это соответствие целевой аудитории.</string>
+    <string name="lbm_boer_1984_short">Boer LBM (клиническая)</string>
     <string name="lbm_boer_1984_long">Оценка мышечной массы тела, популярная в клинических условиях. Регрессия роста и веса в зависимости от пола.</string>
+    <string name="lbm_hume_1966_short">Hume LBM</string>
     <string name="lbm_hume_1966_long">Ранняя модель сухой массы тела (общая масса тела за вычетом массы жировой ткани). Простая и широко используемая; не рассчитана на очень спортивное телосложение.</string>
     <string name="lbm_weight_minus_bf_short">Разница между общей массой и массой жира</string>
     <string name="lbm_weight_minus_bf_long">Сухая масса тела рассчитывается как общий вес за вычетом массы жира, исходя из выбранной формулы соотношения жировых отложений. Точность зависит от оценки массы тела.</string>
+    <string name="bf_us_navy_short">Метод ВМФ США</string>
+    <string name="bf_us_navy_long">Рассчитывает процентное содержание жира в организме на основе окружности талии, шеи и (для женщин) бедер в соответствии со стандартом ВМС США.</string>
+
     <string name="batch_update_status_report">%1$d: %2$s</string>
     <string name="dialog_title_confirm_generic">Подтвердить %1$s?</string>
+    <string name="dialog_text_confirm_generic_verb">Вы уверены, что хотите %2$s%1$d элементов?</string>
     <string name="action_pin">закрепить</string>
     <string name="action_unpin">открепить</string>
     <string name="action_enable">включить</string>
@@ -228,6 +333,8 @@
     <string name="status_disabled">Не используется</string>
     <string name="status_axis_right">Перемещено к правой оси</string>
     <string name="status_axis_left">Перемещено к левой оси</string>
+
+    <!-- Bluetooth -->
     <string name="info_bluetooth_connection_error_scale_offline">Не удалось подключиться к весам, пожалуйста, убедитесь, что они включены.</string>
     <string name="fallback_device_name_saved_scale">весы сохранены</string>
     <string name="bluetooth_action_connecting_disconnecting_desc">Соединение через Bluetooth</string>
@@ -264,13 +371,19 @@
     <string name="supported_label">Поддерживается</string>
     <string name="not_supported_label">Не поддерживается</string>
     <string name="rssi_format">%1$d dBm</string>
-    <string name="menu_save_as_preferred">Сохранить как предпочитаемое устройство</string>
+    <string name="menu_save_as_preferred">Сохранить как предпочтительное устройство</string>
     <string name="menu_save_as_developer">Сохранить устройство для режима разработки</string>
     <string name="snackbar_saved_device_removed">Сохранённое устройство удалено.</string>
     <string name="snackbar_developer_enable_logs">Включен режим разработчика. Пожалуйста, включите файл журнала: Настройки → Общие → Активировать параметр \"Журналирование\".</string>
     <string name="snackbar_developer_for_device_enable_logs">Для этого устройства включен режим разработчика. Пожалуйста, включите файл журнала: Настройки → Общие → Активировать параметр \"Журналирование\".</string>
     <string name="developer_banner_active">Активен режим разработчика — измерения не сохраняются.</string>
     <string name="developer_banner_enable_logs_hint">Пожалуйста включите файл журнала: Настройки → Общие → Активировать параметр \"Журналирование\".</string>
+    <string name="developer_mode_dialog_title">Включить режим разработчика?</string>
+    <string name="developer_mode_dialog_message">openScale будет записывать только Bluetooth-трафик %1$s для диагностики. Пока режим разработчика включён, измерения не сохраняются. Его можно отключить на экране Bluetooth или в настройках устройства.</string>
+    <string name="developer_mode_dialog_replaces">%1$s станет сохранёнными весами и заменит %2$s.</string>
+    <string name="developer_mode_dialog_confirm_button">Включить</string>
+    <string name="developer_mode_disable_action">Отключить</string>
+    <string name="developer_mode_active_icon_desc">Режим разработчика включён</string>
     <string name="capabilities_header">Возможности</string>
     <string name="cap_body_composition">Состав тела</string>
     <string name="cap_time_sync">Синхронизация времени</string>
@@ -282,6 +395,9 @@
     <string name="cap_state_implemented">Реализовано: %1$s</string>
     <string name="cap_state_supported_only">Поддерживается (не реализовано): %1$s</string>
     <string name="more_options_cd">Больше функций</string>
+
+
+    <!-- Bluetooth Detail Screen -->
     <string name="title_device_settings_for">Настройка %1$s</string>
     <string name="bluetooth_tuning_title">Управление Bluetooth</string>
     <string name="tuning_profile_label">Управление Профилем</string>
@@ -301,6 +417,32 @@
     <string name="tolerance_desc">Максимальное отклонение веса, автоматически назначаемое пользователю.</string>
     <string name="developer_section_title">Разработчик</string>
     <string name="danger_zone_title">Опасная зона</string>
+    <string name="auto_connect_on_startup_title">Автоматическое соединение при запуске</string>
+
+    <!-- Scale Configuration (generic, shown when a handler declares config fields) -->
+    <string name="scale_configuration_title">Конфигурация весов</string>
+    <string name="no_special_configuration_available">Для данного устройства не предусмотрено никакой дополнительной специальной конфигурации.</string>
+
+    <!-- Mi Scale body-composition algorithm -->
+    <string name="mi_body_comp_algorithm_label">Алгоритм состава тела</string>
+    <string name="mi_algorithm_xiaomi">Xiaomi (оригинальное приложение)</string>
+    <string name="mi_algorithm_bodymiscale_science">Научный</string>
+    <string name="mi_algorithm_description">Выберите способ расчёта состава тела по импедансу. «Xiaomi» воспроизводит расчёты оригинального приложения Mi Fit / Zepp Life. «Научный» использует опубликованные научные формулы (Siri, Pace, Wang, Schofield), а также рассчитывает белок и основной обмен (BMR). Применяется к новым измерениям с этих весов.</string>
+
+    <!-- S400 Scale Configuration -->
+    <string name="s400_bind_key_label">Ключ привязки BLE</string>
+    <string name="s400_bind_key_placeholder">32-х символьный шестнадцатеричный ключ</string>
+    <string name="s400_bind_key_description">Для расшифровки весов Xiaomi S400 требуется ключ привязки BLE. Извлеките этот ключ из Xiaomi Cloud с помощью инструмента Xiaomi Cloud Tokens Extractor.</string>
+    <string name="s400_bind_key_error">Ключ привязки должен содержать ровно 32 шестнадцатеричных символа</string>
+    <string name="bt_s400_missing_bind_key">S400: Ключ привязки не настроен. Перейдите в настройки Bluetooth, чтобы ввести свой ключ BLE.</string>
+
+    <!-- Huawei Hagrid Scale Configuration -->
+    <string name="huawei_hagrid_secrets_title">Секреты Huawei Hagrid WSP</string>
+    <string name="huawei_hagrid_secrets_description">Укажите CAK, C1 и C2 — по 32 шестнадцатеричных символа каждый. Значения хранятся в настройках приложения для этого драйвера.</string>
+    <string name="huawei_hagrid_secret_invalid">Ожидается 32 шестнадцатеричных символа</string>
+    <string name="huawei_hagrid_secret_saved">Сохранено</string>
+
+    <!-- Bluetooth Connector -->
     <string name="bluetooth_connector_connected_to">Подключено к %1$s</string>
     <string name="bluetooth_connector_connection_failed">Не удалось подключиться к %1$s: %2$s</string>
     <string name="bluetooth_connector_device_error">Ошибка %1$s: %2$s</string>
@@ -314,6 +456,8 @@
     <string name="bluetooth_connector_device_message">%1$s: %2$s</string>
     <string name="bluetooth_connector_listening_for_device">Ожидание данных от %1$s…</string>
     <string name="bluetooth_connector_broadcast_complete">Измерения получены от %1$s.</string>
+
+    <!-- Bluetooth Permissions & Enable Cards -->
     <string name="permissions_required_icon_desc">Значок запроса разрешений</string>
     <string name="permissions_required_title">Необходимы разрешения</string>
     <string name="permissions_required_message_bluetooth">Для поиска весов приложению необходим доступ к Bluetooth.</string>
@@ -327,35 +471,39 @@
     <string name="bluetooth_compatibility_disclaimer">openScale это проект с открытым исходным кодом, разработчик не является владельцем всех весов в мире. Пожалуйста, обратите внимание, что совместимость не может быть гарантирована во всех случаях, поскольку протоколы Bluetooth могут изменяться или быть недокументированными.\n\nПоскольку это проект с открытым исходным кодом, приветствуются запросы на доработку и любой вклад в расширение списка поддерживаемых устройств!</string>
     <string name="compatibility_dialog_confirm_button">Принимаю, сохранить</string>
     <string name="go_to_project_website_button">Перейти на сайт проекта</string>
-    <string name="legacy_adapter_event_initializing">Инициализация...</string>
-    <string name="legacy_adapter_event_connection_lost">Соединение потеряно</string>
-    <string name="legacy_adapter_event_connection_disconnected">Отключено</string>
-    <string name="legacy_adapter_event_device_not_found">Устройство не найдено. %s</string>
-    <string name="legacy_adapter_event_unexpected_error">Непредвиденная ошибка: %s</string>
-    <string name="legacy_adapter_event_unexpected_data">Получен неожиданный тип данных: %s</string>
-    <string name="legacy_adapter_event_scale_message_fallback">Сообщение от устройства (Идентификатор: %1$d, Значение: %2$s)</string>
-    <string name="legacy_adapter_event_user_selection_required">Требуется выбрать пользователя</string>
-    <string name="legacy_adapter_event_user_details">Пользователь #%1$d (Возраст: %2$d, Рост: %3$d)</string>
-    <string name="legacy_adapter_event_user_consent_required">Требуется согласие пользователя %1$d (Идентификатор %2$d).</string>
-    <string name="legacy_adapter_event_unknown_status">Неизвестный статус или сообщение от драйвера: %s</string>
-    <string name="legacy_adapter_connect_busy">Контроллер уже занят другим устройством (%s).</string>
-    <string name="legacy_adapter_connect_exception">Не удалось начать подключение к %1$s: %2$s</string>
-    <string name="legacy_adapter_request_measurement_not_connected">Нет подключения для запроса измерения.</string>
-    <string name="legacy_adapter_request_measurement_auto">Измерение должно начаться автоматически (устаревший драйвер).</string>
-    <string name="legacy_adapter_event_missing_user_data">Ошибка: Отсутствуют пользовательские данные для выбора.</string>
-    <string name="legacy_adapter_event_invalid_interaction_payload">Ошибка: Получены неверные данные в результате взаимодействия с пользователем.</string>
+
+    <!-- LegacyScaleAdapter (Bluetooth Driver) -->
+
+    <!-- Charts (LineChart) -->
     <string name="content_description_time_range_icon">Значок временного диапазона</string>
     <string name="content_description_filter_chart_data">Данные фильтра графика</string>
-    <string name="content_description_time_range_selected">%s выбрано</string>
+    <string name="content_description_time_range_selected">%s выбрано</string> <!-- Example: "Last 7 days selected" -->
     <string name="content_description_measurement_filter_visible">Фильтр измерения виден</string>
     <string name="content_description_measurement_filter_hidden">Фильтр измерения спрятан</string>
-    <string name="line_chart_filter_title_template">%1$s (%2$d записей)</string>
+    <string name="line_chart_filter_title_template">%1$s (%2$d записей)</string> <!-- Example: "Last 30 days (15 entries)" -->
     <string name="time_range_all_days">Все дни</string>
     <string name="time_range_last_7_days">Последние 7 дней</string>
     <string name="time_range_last_30_days">Последние 30 дней</string>
     <string name="time_range_last_365_days">Последние 365 дней</string>
     <string name="time_range_custom">Указать дни</string>
     <string name="time_range_custom_from_to">С %1$s по %2$s</string>
+    <string name="time_range_custom_since">С %1$s</string>
+    <string name="time_range_custom_dialog_title">Выберите диапазон дат</string>
+    <string name="time_range_custom_hint_open_end">Без даты окончания — всегда по сегодняшний день.</string>
+    <string name="time_range_custom_hint_fixed_end">Очистите дату окончания, чтобы всегда включать сегодняшний день.</string>
+    <string name="time_range_custom_clear_end">Очистить дату окончания</string>
+    <string name="filter_section_time_range">Временной диапазон</string>
+    <string name="filter_section_aggregation">Объединение</string>
+    <string name="content_description_time_range_linked">Диапазон дат применяется ко всем экранам</string>
+    <string name="content_description_time_range_unlinked">Диапазон дат применяется только к этому экрану</string>
+    <string name="content_description_aggregation_linked">Агрегация применяется ко всем экранам</string>
+    <string name="content_description_aggregation_unlinked">Агрегация применяется только к этому экрану</string>
+    <string name="content_description_aggregation_selected">%1$s выбрано</string>
+    <string name="aggregation_level_none">Не объединять</string>
+    <string name="aggregation_level_day">Дни</string>
+    <string name="aggregation_level_week">Недели</string>
+    <string name="aggregation_level_month">Месяцы</string>
+    <string name="aggregation_level_year">Годы</string>
     <string name="line_chart_no_plottable_types">Нет доступных типов графика для построения.</string>
     <string name="line_chart_no_data_to_display">Нет данных для отображения.</string>
     <string name="line_chart_no_data_for_type_in_range">Нет данных для %1$s в выбранном диапазоне.</string>
@@ -364,6 +512,8 @@
     <string name="line_chart_no_data_or_types_to_select">Нет данных для отображения или типов для выбора.</string>
     <string name="line_chart_no_data_for_selected_types">Данные по выбранным типам отсутствуют.</string>
     <string name="menu_item_measurement_filter">Показать/Скрыть фильтр измерений</string>
+
+    <!-- Table Screen -->
     <string name="table_header_date">Дата</string>
     <string name="table_message_no_columns_or_measurements">Нет выбранных столбцов или нет доступных измерений.</string>
     <string name="table_message_no_columns_selected">Не выбраны столбцы для отображения.</string>
@@ -388,9 +538,76 @@
     <string name="dialog_title_delete_type">Удалить тип?</string>
     <string name="dialog_text_delete_type">Вы уверены, что хотите удалить пользовательский тип данных \"%1$s\"? Все сопутствующие измерения так же будут безвозвратно удалены. Это действие необратимо.</string>
     <string name="snackbar_items_deleted_successfully">%1$d элементов успешно удалены</string>
+    <string name="snackbar_items_delete_partial_failure">Не удалось удалить %1$d из %2$d измерений.</string>
     <string name="dialog_title_select_user_for_assignment">Для присвоения выберите пользователя</string>
     <string name="snackbar_no_other_users_to_change_to">Нет пользователей, на которых можно было бы перейти.</string>
     <string name="snackbar_items_user_changed_successfully">%1$d измерений перемещены</string>
+    <string name="snackbar_items_move_partial_failure">Не удалось переместить измерения %1$d из %2$d (уже существующие для этого пользователя).</string>
+
+    <!-- Insights Screen -->
+    <string name="insights_confidence_low">Ограниченные данные</string>
+    <string name="insights_section_measurement_analysis">Анализ ваших измерений: %1$s</string>
+    <string name="insights_label_recomposition">Рекомпозиция</string>
+    <string name="insights_label_bulking">Набор массы</string>
+    <string name="insights_label_mixed_loss">Смешанная потеря</string>
+    <string name="insights_label_fat_gain">Набор жира</string>
+    <string name="insights_placeholder_measurement_analysis">Для анализа изменений тела со временем нужно как минимум %1$d измерений.</string>
+    <string name="insights_placeholder_weekday">Для выявления закономерностей по дням недели нужно как минимум %1$d измерений на каждый день недели.</string>
+    <string name="insights_placeholder_seasonal">Для выявления сезонных закономерностей нужно как минимум %1$d года данных.</string>
+    <string name="insights_placeholder_anomalies">Для выявления необычных значений нужно как минимум %1$d измерений.</string>
+    <string name="insights_best_period_label">Лучший месяц</string>
+    <string name="insights_trend_up">Рост</string>
+    <string name="insights_trend_down">Снижение</string>
+    <string name="insights_trend_stable">Стабильно</string>
+    <string name="insights_rate_per_month">Темп в месяц</string>
+    <string name="insights_volatility">Изменчивость</string>
+    <string name="insights_volatility_stable">Низкая</string>
+    <string name="insights_volatility_moderate">Умеренная</string>
+    <string name="insights_volatility_high">Высокая</string>
+    <string name="insights_plateau_label">Стабильный период</string>
+    <string name="insights_plateau_days">%1$d дней</string>
+    <string name="insights_section_weekday">Ваши привычки по дням недели</string>
+    <string name="insights_weekday_summary_high">Обычно самые высокие значения бывают %1$s, а самые низкие — %2$s</string>
+    <string name="insights_weekday_summary_low">Предварительная закономерность — измеряйтесь регулярнее для надёжных результатов</string>
+    <string name="insights_section_seasonal">Ваш год в обзоре</string>
+    <string name="insights_seasonal_summary_high">Ваши значения обычно достигают максимума в %1$s и минимума в %2$s</string>
+    <string name="insights_seasonal_summary_low">Есть данные только за один год — продолжайте измерения, чтобы выявить сезонные закономерности</string>
+    <string name="insights_section_anomalies">Необычные измерения</string>
+    <string name="insights_anomalies_none">Необычных измерений не обнаружено.</string>
+    <string name="insights_anomaly_deviation">%1$s от ожидаемого значения %2$s</string>
+    <string name="insights_anomaly_comment">«%1$s»</string>
+    <string name="insights_summary_plateau">Значимых изменений нет уже %1$d дней — возможно, организм адаптируется.</string>
+    <string name="insights_summary_trend_change_down">Недавняя тенденция к снижению — положительная динамика по сравнению с долгосрочным направлением.</string>
+    <string name="insights_summary_trend_change_up">Недавняя тенденция к росту — следите за долгосрочным направлением.</string>
+    <string name="insights_summary_volatility_high">Обнаружены сильные колебания — это распространённое явление и может отражать естественные изменения, например задержку воды.</string>
+    <string name="insights_summary_volatility_stable">Ваши значения очень стабильны — данные надёжны для анализа.</string>
+    <string name="insights_section_body_pattern">Состав вашего тела</string>
+    <string name="insights_placeholder_body_pattern">Для анализа нужно как минимум %1$d измерений за последние %2$d дней, каждое из которых содержит четыре показателя: вес, жир, мышцы и воду.</string>
+    <string name="insights_pattern_summary_fat_loss">Вес и жир снижаются, а мышечная масса сохраняется или даже немного растёт — в основном вы теряете жировую массу.</string>
+    <string name="insights_pattern_summary_recomposition">Состав тела эффективно меняется: вы одновременно теряете жир и заметно наращиваете мышечную массу.</string>
+    <string name="insights_pattern_summary_muscle_gain">Вы набираете мышечную массу, а доля жира остаётся стабильной или снижается — это положительная динамика состава тела.</string>
+    <string name="insights_pattern_summary_weight_loss_mixed">Внимание: вес снижается, но одновременно уменьшается и мышечная масса.</string>
+    <string name="insights_pattern_summary_fat_gain">Жировая масса увеличивается. Если это не запланированный набор массы, стоит пересмотреть уровень активности.</string>
+    <string name="insights_pattern_summary_fat_gain_with_muscle">Увеличиваются и жир, и мышцы — это похоже на фазу набора массы. Если ваша цель — рост мышц, оцените, соответствует ли увеличение жира целевому диапазону.</string>
+    <string name="insights_pattern_summary_stable">Все показатели стабильны — вы находитесь в фазе поддержания.</string>
+    <string name="insights_pattern_summary_undefined">Чёткой закономерности пока нет — нужно больше измерений веса, жира, мышц и воды.</string>
+    <string name="insights_pattern_summary_undefined_with_data">Смешанная картина в %1$s — тенденции веса, жира и мышц пока не складываются в чёткую закономерность.</string>
+    <string name="insights_zone_tooltip_recomposition">Жир снижается, а мышцы растут — наилучший возможный результат.</string>
+    <string name="insights_zone_tooltip_bulking">Увеличиваются и жир, и мышцы.</string>
+    <string name="insights_zone_tooltip_mixed_loss">Снижаются и жир, и мышцы. Вес уменьшается, но теряется и мышечная масса.</string>
+    <string name="insights_zone_tooltip_fat_gain">Жир растёт, а мышцы уменьшаются или остаются стабильными — наименее благоприятный результат.</string>
+    <string name="insights_stat_start">Начало</string>
+    <string name="insights_stat_now">Сейчас</string>
+    <string name="insights_stat_rate_month">Темп в месяц</string>
+    <string name="insights_stat_on_average">в среднем</string>
+    <string name="insights_chip_volatility_stable">стабильно</string>
+    <string name="insights_chip_volatility_moderate">умеренно</string>
+    <string name="insights_chip_volatility_high">изменчиво</string>
+    <string name="insights_chip_plateau_days">плато %1$d дней</string>
+    <string name="insights_short_term_trend">краткосрочная</string>
+    <string name="insights_long_term_trend">долгосрочная</string>
+
+    <!-- Statistics Screen -->
     <string name="statistics_no_relevant_types">Соответствующие типы измерений для статистики недоступны или не настроены.</string>
     <string name="statistics_label_min">Мин</string>
     <string name="statistics_label_max">Макс</string>
@@ -398,7 +615,8 @@
     <string name="statistics_content_desc_increase">Увеличить</string>
     <string name="statistics_content_desc_decrease">Уменьшить</string>
     <string name="statistics_content_desc_no_change">Без изменений</string>
-    <string name="user_detail_label_assisted_weighting">Вспомогательное взвешивание</string>
+
+    <!-- Settings Screen & Sub-screens -->
     <string name="settings_item_general">Общие</string>
     <string name="settings_item_user">Пользователи</string>
     <string name="settings_item_measurement_types">Типы измерений</string>
@@ -406,6 +624,8 @@
     <string name="settings_item_chart">Графики</string>
     <string name="settings_item_data_management">Управление данными</string>
     <string name="settings_item_about">О приложении</string>
+
+    <!-- General Settings Screen -->
     <string name="settings_general_title">Общие настройки</string>
     <string name="settings_language_label">Язык</string>
     <string name="settings_reminder_title">Напоминание</string>
@@ -420,6 +640,11 @@
     <string name="reminder_notification_title">openScale</string>
     <string name="settings_reminder_days_label">Дни</string>
     <string name="permission_denied">Нет разрешения на отправку уведомлений</string>
+    <string name="settings_appearance_title">Оформление</string>
+    <string name="settings_dynamic_color_label">Динамический цвет</string>
+    <string name="settings_high_contrast_label">Высокая контрастность</string>
+    <string name="settings_pure_black_label">Чистый чёрный</string>
+
     <string name="monday_short">Пн</string>
     <string name="tuesday_short">Вт</string>
     <string name="wednesday_short">Ср</string>
@@ -428,10 +653,14 @@
     <string name="saturday_short">Сб</string>
     <string name="sunday_short">Вс</string>
     <string name="all">Все</string>
+
     <string name="settings_feedback_title">Реакция устройства</string>
     <string name="settings_haptics_label">Вибрация при новом измерении</string>
     <string name="settings_haptics_enabled_snackbar">Вибрация при измерениях включена</string>
     <string name="settings_haptics_disabled_snackbar">Вибрация при измерениях отключена</string>
+
+    <!-- Chart Settings Screen -->
+    <string name="setting_show_chart_points">Показывать точки данных</string>
     <string name="setting_show_chart_goal_lines">Отображать линию достижения</string>
     <string name="setting_smoothing_algorithm">Алгоритм сглаживания</string>
     <string name="setting_smoothing_alpha">Альфа</string>
@@ -447,6 +676,8 @@
     <string name="poly_degree_linear">Линейная</string>
     <string name="poly_degree_quadratic">Квадратичная</string>
     <string name="poly_degree_cubic">Кубическая</string>
+
+    <!-- About Screen & Diagnostics -->
     <string name="version_info">Версия: %1$s (%2$s)</string>
     <string name="project_information_title">Информация о проекте</string>
     <string name="maintainer_label">Сопровождающий</string>
@@ -471,6 +702,37 @@
     <string name="log_export_cancelled">Экспорт отменён.</string>
     <string name="log_export_no_app_error">Не найдено подходящего приложения для экспорта файла.</string>
     <string name="export_log_file_button">Экспорт файла журнала</string>
+    <!-- Developer Tools (Debug only, not translatable) -->
+    <string name="dev_tools_title" translatable="false">Инструменты разработчика</string>
+    <string name="dev_tools_scenario_label" translatable="false">Сценарий</string>
+    <string name="dev_tools_time_range_label" translatable="false">Диапазон времени</string>
+    <string name="dev_tools_wipe_data_label" translatable="false">Удалить существующие данные</string>
+    <string name="dev_tools_generate_button" translatable="false">Создать демонстрационные данные</string>
+    <string name="dev_tools_range_30_days" translatable="false">Последние 30 дней</string>
+    <string name="dev_tools_range_6_months" translatable="false">Последние 6 месяцев</string>
+    <string name="dev_tools_range_2_years" translatable="false">Последние 2 года</string>
+    <string name="dev_tools_range_4_years" translatable="false">Последние 4 года</string>
+    <string name="dev_tools_dialog_title" translatable="false">Необратимое действие</string>
+    <string name="dev_tools_dialog_wipe_warning" translatable="false">Все измерения текущего пользователя будут УДАЛЕНЫ и заменены демонстрационными данными. Это действие нельзя отменить!</string>
+    <string name="dev_tools_dialog_add_warning" translatable="false">В профиль текущего пользователя будет добавлено много тестовых измерений.</string>
+    <string name="dev_tools_dialog_confirm" translatable="false">Подтвердить и создать</string>
+    <string name="dev_tools_toast_generating" translatable="false">Создание %1$d измерений для %2$s…</string>
+    <string name="dev_tools_toast_success" translatable="false">Создано измерений: %1$d для %2$s</string>
+    <string name="dev_tools_scenario_recomposition" translatable="false">Рекомпозиция</string>
+    <string name="dev_tools_scenario_stable" translatable="false">Стабильность (плато)</string>
+    <string name="dev_tools_scenario_trend" translatable="false">Прогресс по тренду</string>
+    <string name="dev_tools_scenario_muscle_gain" translatable="false">Набор мышц (жир стабилен)</string>
+    <string name="dev_tools_scenario_bulk" translatable="false">Набор массы (жир + мышцы растут)</string>
+    <string name="dev_tools_scenario_fat_loss" translatable="false">Потеря жира (мышцы стабильны)</string>
+    <string name="dev_tools_scenario_fat_gain" translatable="false">Набор жира (мышцы стабильны)</string>
+    <string name="dev_tools_scenario_mixed_loss" translatable="false">Смешанная потеря (жир + мышцы снижаются)</string>
+    <string name="dev_tools_scenario_with_anomalies" translatable="false">С аномалиями (всплески z-оценки)</string>
+    <string name="dev_tools_scenario_seasonal" translatable="false">Сезонная закономерность (2+ года)</string>
+    <string name="dev_tools_scenario_weekday_habits" translatable="false">Привычки по дням недели (ежедневные измерения)</string>
+    <string name="dev_tools_scenario_sparse_metrics" translatable="false">Мало показателей (только вес)</string>
+    <string name="dev_tools_scenario_with_gaps" translatable="false">С пропусками (перерывы 30+ дней)</string>
+
+    <!-- Data Management (Export, Import, Backup, Restore, Delete) -->
     <string name="settings_export_measurements_csv">Экспорт измерений (CSV)</string>
     <string name="settings_import_measurements_csv">Импорт измерений (CSV)</string>
     <string name="settings_backup_database">Резервная копия базы данных</string>
@@ -513,22 +775,34 @@
     <string name="settings_backup_location_selection_cancelled">Отмена выбора каталога. Автоматическое резервное копирование не включено.</string>
     <string name="settings_last_backup_status_successful">Последняя резервная копия: %1$s</string>
     <string name="settings_last_backup_status_never">Последняя резервная копия: Не создавалось</string>
+    <string name="settings_last_backup_status_failed">Последняя резервная копия не создана %1$s: %2$s</string>
+    <string name="settings_next_backup_scheduled">Следующая резервная копия: %1$s</string>
+    <string name="settings_next_backup_not_scheduled">Следующая резервная копия: не запланирована</string>
+    <string name="settings_backup_error_location_inaccessible">Папка для резервных копий больше недоступна. Выберите её снова.</string>
+    <string name="settings_backup_error_file_creation_failed">Не удалось создать файл резервной копии в выбранной папке.</string>
+    <string name="settings_backup_error_write_failed">Не удалось записать базу данных в файл резервной копии.</string>
     <string name="interval_daily">Ежедневно</string>
     <string name="interval_weekly">Еженедельно</string>
     <string name="interval_monthly">Ежемесячно</string>
+
+    <!-- Data Management Dialog Titles -->
     <string name="dialog_title_export_select_user">Экспорт: Выбор пользователя</string>
     <string name="dialog_title_import_select_user">Импорт: Выбор пользователя</string>
     <string name="dialog_title_delete_select_user">Удаление: Выбор пользователя</string>
     <string name="dialog_title_delete_user_data_confirmation">Удалить навсегда?</string>
     <string name="dialog_title_delete_entire_database_confirmation">ВНИМАНИЕ! Удалить всю базу данных?</string>
     <string name="dialog_title_restore_database_confirmation">Восстановить базу данных?</string>
-    <string name="delete_db_confirmation_title">Подтверждение удаления базы данных</string>
+    <string name="delete_db_confirmation_title">Подтверждение удаления базы данных</string> <!-- Similar to above, could be consolidated -->
+
+    <!-- Data Management Dialog Messages & Buttons -->
     <string name="dialog_message_delete_user_data_confirmation">Вы уверены, что хотите безвозвратно удалить ВСЕ данные измерений для пользователя \"%1$s\"? Это действие необратимо.</string>
     <string name="button_yes_delete_all">ДА, УДАЛИТЬ ВСЁ</string>
     <string name="dialog_message_delete_entire_database_confirmation">Это приведет к необратимому удалению всех данных для этого приложения, включая всех пользователей, настройки и данные измерений. Это действие НЕВОЗМОЖНО отменить. Вы абсолютно уверены?\n\nПосле этого действия потребуется перезапустить приложение.</string>
     <string name="dialog_message_restore_database_confirmation">Вы уверены, что хотите перезаписать текущую базу данных с помощью резервной копии? Все текущие несохраненные данные будут потеряны. Возможно, после восстановления потребуется перезапустить приложение.</string>
     <string name="button_yes_restore">ДА, ВОССТАНОВИТЬ</string>
-    <string name="delete_db_confirmation_message">Вы уверены, что хотите удалить всю базу данных? Это приведет к удалению ВСЕХ пользователей и ВСЕХ данных, это действие необратимо.</string>
+    <string name="delete_db_confirmation_message">Вы уверены, что хотите удалить всю базу данных? Это приведет к удалению ВСЕХ пользователей и ВСЕХ данных, это действие необратимо.</string> <!-- Similar to above -->
+
+    <!-- Data Export Messages -->
     <string name="export_successful">Данные успешно экспортированы.</string>
     <string name="export_error_no_specific_fields">Экспорт невозможен: для экспорта не определены конкретные таблицы данных.</string>
     <string name="export_error_no_measurements">Этому пользователю недоступны измерения для экспорта.</string>
@@ -536,47 +810,67 @@
     <string name="export_error_cannot_create_file">Не удалось создать файл для экспорта.</string>
     <string name="export_error_generic">Ошибка в процессе экспорта: %1$s</string>
     <string name="export_no_users_available">Нет пользователей, доступных для экспорта.</string>
+
+    <!-- Data Import Messages -->
     <string name="import_successful_records">%1$d записей измерений успешно импортированы.</string>
-    <string name="import_successful_records_with_details">%1$d записей успешно импортированы %2$s.</string>
-    <string name="import_summary_details_base">%1$d записей об измерении успешно импортированы.</string>
+    <string name="import_successful_records_with_details">%1$d записей успешно импортированы %2$s.</string> <!-- %2$s for detailed summary -->
+    <string name="import_summary_details_base">%1$d записей об измерении успешно импортированы.</string> <!-- Base for constructing summary -->
     <string name="import_summary_ignored_duplicated_timestamp">%1$d строк проигнорировано (дублирование временной метки).</string>
     <string name="import_summary_skipped_missing_dates">%1$d строк пропущено из-за отсутствия дат.</string>
     <string name="import_summary_skipped_date_parse_errors">%1$d строк пропущено из-за ошибки в преобразовании данных.</string>
     <string name="import_summary_values_skipped_parse_errors">%1$d отдельных значений не удалось проанализировать.</string>
+    <string name="import_summary_skipped_unknown_columns">%1$d столбцов не соответствовали ни одному показателю и были пропущены.</string>
     <string name="import_error_no_valid_data">В CSV-файле не найдено корректных данных или все строки содержат ошибки.</string>
     <string name="import_error_missing_date_column">Ошибка импорта: в заголовке CSV отсутствует обязательная дата в столбце.</string>
     <string name="import_error_cannot_read_file">Ошибка импорта: не удалось прочитать файл.</string>
     <string name="import_error_generic">Ошибка в процессе импорта: %1$s</string>
     <string name="import_no_users_available">Нет пользователей, доступных для импорта.</string>
+
+    <!-- Data Deletion Messages (User Specific) -->
     <string name="delete_data_no_users_available">Нет доступных данных пользователя для удаления.</string>
     <string name="delete_data_user_successful">Все данные измерений для %1$s были удалены.</string>
     <string name="delete_data_user_no_data_found">Для %1$s не найдено данных измерений.</string>
     <string name="delete_data_user_error">Не удалось удалить данные для %1$s.</string>
     <string name="delete_data_error_no_user_selected">Не удалось начать процесс удаления: Не выбран пользователь.</string>
+
+    <!-- Database Backup Messages -->
     <string name="backup_error_db_name_not_retrieved">Ошибка: Не удалось получить имя базы данных.</string>
     <string name="backup_error_main_db_not_found">Ошибка: Основной файл базы данных \'%1$s\' не найден.</string>
     <string name="backup_error_no_output_stream">Ошибка резервного копирования: Не удалось создать файл резервной копии в выбранном месте.</string>
     <string name="backup_error_generic">Ошибка в процессе резервного копирования: %1$s</string>
     <string name="backup_successful">Резервная копия базы данных успешно создана.</string>
+
+    <!-- Database Restore Messages -->
     <string name="restore_error_no_input_stream">Ошибка восстановления: Не удалось прочесть файл резервной копии.</string>
     <string name="restore_error_zip_format">Ошибка восстановления: Файл резервной копии не является ZIP архивом или он повреждён.</string>
     <string name="restore_error_db_files_missing">Ошибка восстановления: В резервной копии не найдены основные файлы базы данных.</string>
     <string name="restore_error_generic">Ошибка в процессе восстановления базы данных: %1$s</string>
     <string name="restore_successful">База данных успешно восстановлена. Перезапустите приложение.</string>
+
+    <!-- Entire Database Deletion Messages -->
     <string name="delete_db_successful">База данных полностью удалена.</string>
     <string name="delete_db_error">Не удалось удалить всю базу данных.</string>
+
+    <!-- Evaluation Messages -->
     <string name="eval_no_age_band">Оценка невозможна: на момент измерения не было соответствующего возрастного диапазона.</string>
     <string name="eval_out_of_plausible_range_percent">Необычное значение: За пределами допустимого диапазона (%1$.0f–%2$.0f%%).</string>
+
+    <!-- Bluetooth Scales Messages -->
     <string name="bluetooth_scale_trisa_message_not_paired_instruction">Эти весы не были сопряжены!\n\nУдерживая нажатой кнопку в нижней части весов, переключите их в режим сопряжения, а затем повторно подключите для получения пароля устройства.</string>
     <string name="bluetooth_scale_trisa_success_pairing">Сопряжение выполнено успешно!\n\nПовторите подключение для получения данных измерений.</string>
+    <string name="bluetooth_scale_weightgurus_slot_empty">пусто</string>
+    <string name="bluetooth_scale_weightgurus_slot">Пользователь %1$d — %2$s</string>
+    <string name="bluetooth_scale_weightgurus_slot_match">Пользователь %1$d — %2$s (совпадает с вашим именем)</string>
     <string name="bluetooth_scale_info_create_user_instruction">Создать нового пользователя на весах.</string>
     <string name="bluetooth_scale_warning_low_battery">Низкий уровень заряда батареи (%d%%), пожалуйста, зарядите или замените элементы питания весов</string>
     <string name="bluetooth_scale_info_step_on_for_reference">Пожалуйста, встаньте босиком на весы для проведения контрольных измерений</string>
     <string name="bluetooth_scale_info_measuring_weight">Измеряемый вес: %.2f</string>
     <string name="bluetooth_scale_error_max_users_reached">Достигнуто максимальное количество одновременных пользователей весов</string>
+
     <string name="permission_read_write_data_description">чтение/запись данных OpenScale, включая информацию о пользователе и все сохраненные измерения</string>
     <string name="permission_read_write_data_label">Чтение и запись данных OpenScale</string>
-    <string name="dialog_bt_interaction_title_choose_user">Выберете пользователя на весах</string>
+
+    <string name="dialog_bt_interaction_title_choose_user">Выберите пользователя на весах</string>
     <string name="dialog_bt_interaction_desc_choose_user_default">Выберите своего пользователя из списка или создайте нового.</string>
     <string name="dialog_bt_icon_desc_choose_user">Выбор пользователя</string>
     <string name="dialog_bt_interaction_title_enter_consent">Введите код подтверждения</string>
@@ -587,35 +881,66 @@
     <string name="dialog_bt_error_loading_user_list_format">Ошибка: не удалось правильно загрузить пользовательские данные.</string>
     <string name="dialog_bt_select_user_prompt">Пожалуйста, выберите пользователя.</string>
     <string name="dialog_bt_enter_valid_code_prompt">Пожалуйста введите корректный код.</string>
+
     <string name="saved_measurements_message">%1$d измерений сохранено</string>
+
+    <!-- General info -->
     <string name="bt_info_step_on_scale">Пожалуйста, встаньте босиком на весы</string>
-    <string name="bt_info_read_only_mode_no_consent">Код согласия недоступен. Результаты измерений можно прочитать, но изменить пользовательские настройки невозможно.</string>
-    <string name="bt_info_consent_needed">Пожалуйста введите код согласия для слота %1$d.</string>
+
+    <!-- Mapping / consent flows -->
     <string name="bt_info_using_existing_mapping">Используется существующее сопоставление: Пользователь в приложении %1$d ↔ Слот на весах %2$d.</string>
+    <string name="bt_info_consent_needed">Пожалуйста введите код согласия для слота %1$d.</string>
+    <string name="bt_info_read_only_mode_no_consent">Код согласия недоступен. Результаты измерений можно прочитать, но изменить пользовательские настройки невозможно.</string>
     <string name="bt_info_suggest_create_new_user">Для получения полного функционала создайте нового пользователя на весах.</string>
     <string name="bt_info_register_new_user_started">Создание нового пользователя на весах…</string>
     <string name="bt_info_no_mapping_creating_user">Сопоставление пользователей не найдено; создание нового пользователя на весах…</string>
     <string name="bt_info_waiting_for_measurements">Ожидание результатов измерений с помощью уведомлений.</string>
     <string name="bt_info_linked_app_user_to_slot">Пользователь приложения %1$d привязан к слоту %2$d на весах.</string>
+
+    <!-- Omron WLC scales (HBF-702T family) -->
+    <string name="bt_info_omron_pairing_mode_required">Удерживайте кнопку Bluetooth на весах, пока не появится мигающий индикатор сопряжения.</string>
+    <string name="bt_info_omron_paired">Весы сопряжены с openScale.</string>
+    <string name="bt_info_omron_measurements_read">С весов получено новых измерений: %1$d.</string>
+    <string name="bt_info_omron_no_new_measurements">На весах нет новых сохранённых измерений.</string>
+    <string name="bt_omron_slot_with_measurement">Пользователь весов %1$d — %2$.1f кг, %3$s</string>
+    <string name="bt_omron_slot_empty">Пользователь весов %1$d — измерений нет</string>
+    <string name="bt_error_omron_unknown_model">Модель Omron «%1$s» не поддерживается; невозможно расшифровать записи измерений.</string>
+    <string name="bt_error_omron_service_missing">Это устройство не предоставляет службу передачи данных Omron.</string>
+    <string name="bt_error_omron_pairing_mode_required">Весы не находятся в режиме сопряжения. Удерживайте кнопку Bluetooth, пока не начнёт мигать индикатор сопряжения, затем повторите попытку.</string>
+    <string name="bt_error_omron_pairing_failed">Не удалось сохранить ключ сопряжения на весах.</string>
+    <string name="bt_error_omron_session_failed">Весы отказались начать передачу данных.</string>
+    <string name="bt_error_omron_read_failed">Не удалось прочитать сохранённые измерения с весов.</string>
+    <string name="bt_error_omron_timeout">Весы перестали отвечать; передача отменена.</string>
+
+    <!-- Warnings -->
     <string name="bt_warn_low_battery">Низкий заряд батареи весов (%1$d%%).</string>
+    <!-- Used by scales that only signal that the battery is low, without reporting a level. -->
+    <string name="bt_warn_low_battery_unknown">Низкий заряд батареи весов.</string>
     <string name="bt_warn_register_failed_with_code">Не удалось создать пользователя на весах (Код %1$d).</string>
     <string name="bt_warn_slots_full">На весах нет свободных мест для пользователей. Удалите пользователя на устройстве и повторите попытку.</string>
     <string name="bt_warn_notify_failed">Не удалось включить уведомления для %1$s.</string>
     <string name="bt_warn_write_failed">Ошибка записи в %1$s.</string>
     <string name="bt_warn_notify_state_failed">Не удалось изменить состояние уведомления для %1$s.</string>
     <string name="bt_warn_consent_wrong_retry">Код согласия не был принят. Пожалуйста, проверьте и повторите попытку.</string>
+
+    <!-- Errors -->
     <string name="bt_error_ucp_not_authorized">Код согласия не принят. Пожалуйста, проверьте и повторите попытку.</string>
     <string name="bt_error_delivery_user_feedback">Не удалось отправить отзыв: %1$s</string>
     <string name="bt_info_reconnecting_try">Переподключение... (Попытка %1$d/%2$d)</string>
     <string name="bt_info_waiting_for_measurement">Ожидание результатов измерений с помощью уведомлений.</string>
+
+    <!-- Adapter: warnings/errors -->
     <string name="bt_warn_no_peripheral_for_setnotify">Нет периферийного устройства для setNotifyOn(%1$s)</string>
     <string name="bt_warn_characteristic_not_found">Характеристика %1$s не найдена</string>
     <string name="bt_warn_no_peripheral_for_write">Нет периферийного устройства для записи (%1$s)</string>
     <string name="bt_warn_no_peripheral_for_read">Нет периферийного устройства для чтения (%1$s)</string>
     <string name="bt_warn_write_failed_status">Запись в %1$s завершилась ошибкой: %2$s</string>
     <string name="bt_warn_notify_state_failed_status">Не удалось уведомить о состоянии для %1$s: %2$s</string>
+
+    <!-- Adapter: generic errors -->
     <string name="bt_error_no_user_selected">Нет выбранного пользователя</string>
     <string name="bt_error_generic">Ошибка</string>
+
     <string name="bt_error_handler_connect_failed">Ошибка обработчика при подключении: %1$s</string>
     <string name="bt_error_handler_parse_error">Ошибка синтаксического анализа обработчика для %1$s: %2$s</string>
     <string name="bt_error_no_bluetooth_adapter">На этом устройстве не обнаружен адаптер Bluetooth.</string>
@@ -626,87 +951,58 @@
     <string name="bt_error_uds_consent_failed">Не удалось подтвердить пользователя на весах. Ошибка: %1$s</string>
     <string name="bt_error_uds_list_users_failed">Не удалось получить список пользователей из весов. Ошибка: %1$s</string>
     <string name="bt_error_user_setup_failed_no_list">Ошибка настройки пользователя. Не удалось получить список пользователей из весов.</string>
+
     <string name="bluetooth_scale_info_create_user_instruction_uds">Создать нового пользователя на весах (выделенный UDS слот)</string>
-    <string name="bt_uds_choice_slot_current_user">Слот %1$d: %2$s (Текущий пользователь приложеня)</string>
+    <string name="bt_uds_choice_slot_current_user">Слот %1$d: %2$s (Текущий пользователь приложения)</string>
     <string name="bt_uds_choice_slot_other_user">Слот %1$d: Используется %2$s (Хотите занять его?)</string>
     <string name="bt_uds_choice_slot_occupied_unmapped">Слот %1$d: Занят (Не привязан)</string>
+
+    <!-- SBF72 Specific (can be in a general BT strings section or specific if needed later) -->
+    <!-- These were requested for SanitasSbf72Handler, ensure they are distinct if used by both -->
     <string name="bt_sbf72_choice_slot_current_user">%1$d: %2$s (Текущий)</string>
     <string name="bt_sbf72_choice_slot_other_user">%1$d: Используется %2$s (Занять?)</string>
     <string name="bt_sbf72_choice_slot_occupied_unmapped">%1$d: Занято (не связано)</string>
     <string name="bt_sbf72_choice_slot_create_new">%1$d: Создан \'%2$s\' здесь</string>
-    <string name="measurement_type_caliper1">Обхват 1</string>
-    <string name="measurement_type_caliper2">Обхват 2</string>
-    <string name="measurement_type_caliper3">Обхват 3</string>
-    <string name="measurement_type_fat_caliper">Обхват жира</string>
-    <string name="formula_bf_eddy_1976">Формула Eddy et al. (1976)</string>
-    <string name="formula_bf_gallagher_2000_non_asian">Gallagher (2000) – Неазиатский</string>
-    <string name="formula_bf_gallagher_2000_asian">Gallagher (2000) – Азиатский</string>
-    <string name="formula_bw_behnke_1963">Формула Behnke et al. (1963)</string>
-    <string name="formula_bw_delwaide_crenier_1973">Формула Delwaide &amp; Crenier (1973)</string>
-    <string name="formula_bw_hume_weyers_1971">Формула Hume &amp; Weyers (1971)</string>
-    <string name="formula_bw_lee_song_kim_2001">Формула Lee, Song &amp; Kim (2001)</string>
-    <string name="formula_lbm_boer_1984">Формула Boer (1984)</string>
-    <string name="formula_lbm_hume_1966">Формула Hume (1966)</string>
-    <string name="bf_gallagher_2000_non_asian_short">Gallagher (Неазиатский)</string>
-    <string name="bf_gallagher_2000_asian_short">Gallagher (Азиатский)</string>
-    <string name="bw_behnke_1963_short">Оценка содержания жидкости в теле по Behnke</string>
-    <string name="bw_delwaide_crenier_1973_short">Delwaide и Crenier</string>
-    <string name="bw_hume_weyers_1971_short">Hume–Weyers формула общего количества воды в организме</string>
-    <string name="bw_lee_song_kim_2001_short">Формула Lee–Song–Kim</string>
-    <string name="lbm_boer_1984_short">Boer LBM (клиническая)</string>
-    <string name="lbm_hume_1966_short">Hume формула LBM (для расчёта массы безжировой части тела)</string>
-    <string name="dialog_text_confirm_generic_verb">Вы уверены, что хотите %2$s%1$d элементов?</string>
-    <string name="legacy_adapter_event_invalid_consent_data">Ошибка: Получены неверные данные для согласия.</string>
-    <string name="legacy_adapter_event_missing_consent_data">Ошибка: Отсутствуют данные, необходимые для получения согласия.</string>
-    <string name="setting_show_chart_points">Показывать точки на данных</string>
-    <string name="saved">Сохранено</string>
-    <string name="measurement_type_heart_rate">ЧСС</string>
-    <string name="formula_bf_us_navy">Формула U.S. Navy</string>
-    <string name="bf_us_navy_short">Метод ВМФ США</string>
-    <string name="bf_us_navy_long">Рассчитывает процентное содержание жира в организме на основе окружности талии, шеи и (для женщин) бедер в соответствии со стандартом ВМС США.</string>
-    <string name="scale_configuration_title">Конфигурация весов (общая, отображается, когда обработчик объявляет конфигурационные поля)</string>
-    <string name="no_special_configuration_available">Для данного устройства не предусмотрено никакой дополнительной специальной конфигурации.</string>
-    <string name="s400_bind_key_label">Ключ привязки BLE</string>
-    <string name="s400_bind_key_placeholder">32-х символьный шестнадцатеричный ключ</string>
-    <string name="s400_bind_key_description">Для расшифровки весов Xiaomi S400 требуется ключ привязки BLE. Извлеките этот ключ из Xiaomi Cloud с помощью инструмента Xiaomi Cloud Tokens Extractor.</string>
-    <string name="s400_bind_key_error">Ключ привязки должен содержать ровно 32 шестнадцатеричных символа</string>
-    <string name="bt_s400_missing_bind_key">S400: Ключ привязки не настроен. Перейдите в настройки Bluetooth, чтобы ввести свой ключ BLE.</string>
-    <string name="sync_app_unreachable_hint">Последнее изменение не было синхронизировано. Пожалуйста, откройте OpenScale-sync и запустите синхронизацию вручную.</string>
-    <string name="sync_app_open_action">Открыть</string>
-    <string name="route_title_insights">База знаний</string>
-    <string name="route_title_table_drilldown">Подробнее</string>
-    <string name="calendar_week_abbrev">Календарная неделя</string>
-    <string name="user_added_successfully">Пользователь %1$s успешно добавлен.</string>
-    <string name="error_duplicate_timestamp">Не сохранено. Измерение уже существует в %1$s.</string>
-    <string name="action_undo">Откатить</string>
-    <string name="cd_chart_handle_resize">Перетаскивайте, чтобы изменить размер диаграммы, или нажмите, чтобы свернуть ее</string>
-    <string name="cd_chart_handle_show">Нажмите, чтобы отобразить график</string>
-    <string name="dialog_title_discard_changes">Отказаться от изменений?</string>
-    <string name="dialog_message_discard_changes">Внесенные вами изменения не были сохранены и будут потеряны.</string>
-    <string name="action_discard">Отказаться</string>
-    <string name="action_keep_editing">Продолжить редактирование</string>
-    <string name="measurement_type_impedance">Импеданс (высокий)</string>
-    <string name="measurement_type_impedance_low">Импеданс (низкий)</string>
-    <string name="measurement_type_ecw">Внеклеточная вода</string>
-    <string name="measurement_type_icw">Внутриклеточная вода</string>
-    <string name="measurement_type_protein">Белок</string>
-    <string name="measurement_type_bcm">Клеточная масса тела</string>
-    <string name="s400_bone_formula_label">Формула костной ткани</string>
-    <string name="s400_bone_formula_mi_legacy">Регрессия на основе импеданса (устаревшая версия)</string>
-    <string name="s400_bone_formula_heymsfield">Формула Стивена Хеймсфилда (антропометрический)</string>
-    <string name="s400_bmr_formula_label">Формула ИМТ</string>
-    <string name="s400_bmr_formula_cun91">Формула Каннингема, 1991</string>
-    <string name="s400_bmr_formula_cun80">Формула Каннингема, 1980</string>
-    <string name="auto_connect_on_startup_title">Автоматическое соединение при запуске</string>
-    <string name="filter_section_time_range">Временной диапазон</string>
-    <string name="filter_section_aggregation">Объединение</string>
-    <string name="content_description_aggregation_selected">%1$s выбрано</string>
-    <string name="aggregation_level_none">Не объединять</string>
-    <string name="aggregation_level_day">Дни</string>
-    <string name="aggregation_level_week">Недели</string>
-    <string name="aggregation_level_month">Месяца</string>
-    <string name="aggregation_level_year">Годы</string>
-    <string name="snackbar_items_delete_partial_failure">Не удалось удалить %1$d из %2$d измерений.</string>
-    <string name="snackbar_items_move_partial_failure">Не удалось переместить измерения %1$d из %2$d (уже существующие для этого пользователя).</string>
-    <string name="insights_confidence_low">Ограниченные данные</string>
+
+    <!-- Progress since the start point recorded on a goal -->
+    <string name="content_description_goal_progress">Прогресс цели: %1$d процентов</string>
+    <string name="progress_goal_reached">Цель достигнута</string>
+    <string name="progress_held_for">в течение %1$s</string> <!-- how long the goal has been held; follows "2.13 kg below goal"; %1$s is a duration -->
+    <string name="progress_remaining_to_go">Осталось %1$s</string> <!-- distance still missing to the goal -->
+    <string name="progress_time_left">От %1$s до %2$s</string> <!-- %1$s is a day count, %2$s the target date without the year -->
+    <string name="progress_since_date">С %1$s</string> <!-- the goal's start date -->
+    <string name="progress_until_date">До %1$s</string> <!-- the goal's target date -->
+    <string name="progress_elapsed_in">Через %1$s</string> <!-- time the change took, counted from the start point; %1$s is a duration -->
+    <string name="progress_below_goal">%1$s ниже цели</string> <!-- overshot a goal downwards -->
+    <string name="progress_above_goal">%1$s выше цели</string> <!-- overshot a goal upwards -->
+
+    <!-- Measurement comparison -->
+    <string name="route_title_measurement_comparison">Сравнение измерений</string>
+    <string name="desc_compare_selected">Сравнить два выбранных измерения</string>
+    <string name="comparison_select_two">Выберите ровно два измерения для сравнения.</string>
+    <string name="comparison_days_apart">Разница: %1$d дней</string>
+    <string name="comparison_same_day">В один день</string>
+    <string name="comparison_no_common_metrics">В этих двух измерениях нет общих показателей.</string>
+    <string name="comparison_only_in_one">Есть только в одном из двух измерений</string>
+    <string name="comparison_mode_absolute">Абсолютное</string>
+    <string name="comparison_mode_percent">Процентное</string>
+    <string name="comparison_mode_per_week">В неделю</string>
+    <string name="comparison_column_delta">Δ</string>
+    <string name="comparison_column_delta_percent">Δ %</string>
+    <string name="comparison_column_delta_per_week">Δ / нед.</string>
+
+    <!-- Measurement photos -->
+    <string name="image_take_photo">Сделать фото</string>
+    <string name="image_choose_from_gallery">Выбрать из галереи</string>
+    <string name="image_remove_photo">Удалить фото</string>
+    <string name="content_desc_photo">Фото: %1$s</string>
+    <string name="content_desc_close_photo">Закрыть фото</string>
+    <string name="content_desc_export_photo">Экспортировать фото</string>
+    <string name="success_photo_exported">Фото экспортировано.</string>
+    <string name="error_saving_image">Не удалось сохранить фото.</string>
+    <string name="error_exporting_image">Не удалось экспортировать фото.</string>
+    <string name="dialog_title_export_photos">Этот экспорт CSV содержит фотографии</string>
+    <string name="dialog_message_export_photos">Экспортировать только CSV или ZIP-файл с CSV и всеми фотографиями? ZIP можно импортировать обратно вместе с фотографиями.</string>
+    <string name="action_export_csv_only">Только CSV</string>
+    <string name="action_export_zip_with_photos">ZIP с фотографиями</string>
 </resources>
