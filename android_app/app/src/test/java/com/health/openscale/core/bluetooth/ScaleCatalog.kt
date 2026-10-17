@@ -285,6 +285,13 @@ object ScaleCatalog {
         device("BEURER BF710") claimedBy BeurerSanitasHandler::class.java,
         device("SANITAS SBF70") claimedBy BeurerSanitasHandler::class.java,
         device("AAA002") claimedBy AAAxHandler::class.java,
+        // AAAx board under a newer name that also advertises 0xFFB0; recognised by its frame
+        // (MAC echo of C0:FF:EE:12:34:56 + checksummed weight payload), not by MGBHandler.
+        advertisement(
+            name = "AAA07A",
+            services = listOf(SERVICE_FFB0),
+            manufacturerData = listOf(0xA0AC to hex("563412EEFFC0 20CD84580DB6")),
+        ) claimedBy AAAxHandler::class.java,
         device("1BODY CONNECT") claimedBy BodyConnectHandler::class.java,
         device("1X-LINE") claimedBy BodyConnectHandler::class.java,
         device("10376BAA") claimedBy WeightGurusA3Handler::class.java,
