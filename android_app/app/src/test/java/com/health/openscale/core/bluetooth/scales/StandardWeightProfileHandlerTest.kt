@@ -185,6 +185,9 @@ class StandardWeightProfileHandlerTest {
         // Real weigh-in from #1034
         Capture("BF500", "0E A8 3E E9 07 08 18 0B 10 33 01 EA 00 3A 07", "98 03 AD 00 53 1D 9D 01 24 31 6C 25 F8 20", listOf(2025, 8, 24, 11, 16, 51),
             weight = 80.200f, bodyFat = 17.30f, muscle = 41.30f, water = 59.73f, lbm = 66.33f, bone = 3.43f, impedance = 844.00f),
+        // Real reading stored while offline (#1553), delivered during consent; no foot contact
+        Capture("BF500", "0E EC 36 EA 07 0A 11 0F 0A 1C 01 EB 00 C2 06", "98 03 00 00 CE 1A 00 00 00 00 00 00 00 00", listOf(2026, 10, 17, 15, 10, 28),
+            weight = 70.300f),
         // Real weigh-in from #550
         Capture("SBF76", "0E 3A 3F E4 07 02 0F 10 1B 3B 01 05 01 E0 06", "98 03 CD 00 60 1C 9C 01 AC 2F F6 22 5E 10", listOf(2020, 2, 15, 16, 27, 59),
             weight = 80.930f, bodyFat = 20.50f, muscle = 41.20f, water = 55.29f, lbm = 64.34f, bone = 3.32f, impedance = 419.00f),
@@ -501,6 +504,15 @@ class StandardWeightProfileHandlerTest {
     // --- Packet decoding edge cases -------------------------------------------------
 
     private val bf500Weight = "0E EC 36 EA 07 0A 11 0F 0A 1C 01 EB 00 C2 06"
+
+    @Test
+    fun `only the BF500 advertises stored-reading sync`() {
+        val bf500 = StandardBeurerSanitasHandler().supportFor(device("BF500", uuid16(0x181D)))!!
+        val bf105 = StandardBeurerSanitasHandler().supportFor(device("BF105", uuid16(0x181D)))!!
+
+        assertThat(bf500.implemented).contains(DeviceCapability.HISTORY_READ)
+        assertThat(bf105.capabilities).doesNotContain(DeviceCapability.HISTORY_READ)
+    }
 
     @Test
     fun `imperial masses are converted from pounds to kilograms`() {

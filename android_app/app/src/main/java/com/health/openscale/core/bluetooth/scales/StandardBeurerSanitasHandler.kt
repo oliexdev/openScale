@@ -145,7 +145,12 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             DeviceCapability.USER_SYNC,
             DeviceCapability.BATTERY_LEVEL,
             DeviceCapability.LIVE_WEIGHT_STREAM
-        )
+        ) + if (model == Model.BEURER_BF500) {
+            // Readings taken offline arrive as normal 2A9D/2A9C indications during consent.
+            setOf(DeviceCapability.HISTORY_READ)
+        } else {
+            emptySet()
+        }
         return DeviceSupport(
             displayName = driverName(),
             capabilities = caps,
