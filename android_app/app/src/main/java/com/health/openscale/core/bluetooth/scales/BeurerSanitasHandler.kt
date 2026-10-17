@@ -371,7 +371,8 @@ class BeurerSanitasHandler : ScaleDeviceHandler() {
             cal.time = local.birthday
             val year = cal.get(Calendar.YEAR)
             for (ru in remoteUsers) {
-                if (localName.startsWith(ru.name) && year == ru.year) {
+                // The vendor app may store the scale's user names in lowercase.
+                if (localName.startsWith(ru.name, ignoreCase = true) && year == ru.year) {
                     ru.localUserId = local.id
                     logD("Remote ${ru.name} (0x${ru.remoteUserId.toString(16)}) → local ${local.userName} (${ru.localUserId})")
                     break

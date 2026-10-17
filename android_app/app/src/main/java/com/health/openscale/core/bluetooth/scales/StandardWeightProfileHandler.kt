@@ -476,9 +476,10 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
 
         if (multiPacket) logW("Body Composition: multi-packet measurement not supported")
 
-        // Derive LBM & bone if we have soft-lean and weight
+        // Derive LBM & bone only from a real analysis; without foot contact fat and soft lean are 0.
         val w2 = (m[MeasurementType.WEIGHT]?.value ?: 0f)
-        if (w2 > 0f && softLeanPresent) {
+        val fatPct = m[MeasurementType.BODY_FAT]?.value ?: 0f
+        if (w2 > 0f && fatPct > 0f && softLean > 0f) {
             val fatMass = w2 * ((m[MeasurementType.BODY_FAT]?.value ?: 0f) / 100f)
             val leanBodyMass = w2 - fatMass
             val boneMass = leanBodyMass - softLean

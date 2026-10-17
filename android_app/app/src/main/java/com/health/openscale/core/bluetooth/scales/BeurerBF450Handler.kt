@@ -282,6 +282,10 @@ class BeurerBF450Handler : StandardWeightProfileHandler() {
     override fun transformBeforePublish(m: ScaleMeasurement): ScaleMeasurement {
         val transformed = super.transformBeforePublish(m)
 
+        // The BF450's 2A9C layout is not the standard one, so the base's soft-lean derivation is meaningless.
+        transformed.values.remove(MeasurementType.LBM)
+        transformed.values.remove(MeasurementType.BONE)
+
         if (pendingBodyComposition) {
             transformed[MeasurementType.BODY_FAT] = Percent(lastFatPct)
             transformed[MeasurementType.MUSCLE] = Percent(lastMusclePct)
