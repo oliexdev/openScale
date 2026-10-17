@@ -74,6 +74,78 @@ class RunstarR6HandlerTest {
     }
 
     @Test
+    fun `decodes the frame captured from a Hoffen HO-36`() {
+        // Verbatim from a weigh-in of a bucket of water standing on the electrodes; Fitdays
+        // read 9.45 kg (the bucket hid the scale's display). The 558 Ω is presumably
+        // measured through the water. The HO-36 sets 0x68 in the weight's top byte, so the
+        // raw u24 68 24 ea would read as 6825.194 kg.
+        val result = RunstarR6Handler.decodeFinalResult(
+            hex("36 08 00 a3 00 68 24 ea 00 02 2e 00 00 00 00 00 00 00 00 09")
+        )
+
+        assertThat(result).isNotNull()
+        assertThat(result!!.status).isEqualTo(0x00)
+        assertThat(result.grams).isEqualTo(9450)
+        assertThat(result.heartRate).isEqualTo(0)
+        assertThat(result.impedanceOhm).isEqualTo(558)
+    }
+
+    @Test
+    fun `clears the HO-36 flag bits in live weights`() {
+        // Live A2 frames captured from the HO-36: empty scale (68 00 00 = 0 g) and the
+        // 9.45 kg object (68 24 ea).
+        val empty = hex("1a 07 00 a2 01 00 68 00 00 00 00 00 00 00 00 00 00 00 00 0b")
+        val loaded = hex("ba 07 00 a2 02 00 68 24 ea 00 00 00 00 00 00 00 00 00 00 1a")
+        assertThat(RunstarR6Handler.isChecksumValid(empty)).isTrue()
+        assertThat(RunstarR6Handler.isChecksumValid(loaded)).isTrue()
+
+        assertThat(RunstarR6Handler.weightGrams(empty, 6)).isEqualTo(0)
+        assertThat(RunstarR6Handler.weightGrams(loaded, 6)).isEqualTo(9450)
+    }
+
+    @Test
+    fun `clears the HO-36 flag bits in history weights`() {
+        // A4 layout: timestamp at 4..7, weight at 9..11 (same flag byte as A2/A3).
+        val history = frame(0xA4, "6a c1 76 bd 00 68 24 ea")
+        assertThat(RunstarR6Handler.weightGrams(history, 9)).isEqualTo(9450)
+    }
+
+    @Test
+    fun `weight mask leaves a plain R6 weight unchanged`() {
+        // The largest weight the mask keeps: bits 0..18.
+        val f = frame(0xA3, "00 07 ff ff 00 00 00")
+        assertThat(RunstarR6Handler.decodeFinalResult(f)!!.grams).isEqualTo(0x07FFFF)
+    }
+
+    @Test
+    fun `encodes the HO-36 user frame Fitdays sends for a female profile`() {
+        // Verbatim from an HCI snoop of Fitdays with a made-up guest profile:
+        // female, born 1995-01-01 (31 at capture time), 165 cm.
+        val captured = hex("02 10 00 ba 6a c1 75 16 01 4a 00 00 00 00 a5 00 00 1f 2f 0e")
+
+        val payload = RunstarR6Handler.encodeHoffenUserInfo(
+            epochSeconds = 0x6AC17516L, heightCm = 165, age = 31, isMale = false
+        )
+
+        assertThat(payload).isEqualTo(captured.copyOfRange(4, 19))
+        assertThat(RunstarR6Handler.isChecksumValid(captured)).isTrue()
+    }
+
+    @Test
+    fun `encodes the HO-36 user frame Fitdays sends for a male profile`() {
+        // Same capture session, made-up guest profile: male, born 1960-01-01 (66), 190 cm.
+        // Only time, height and the sex/age byte differ from the female frame.
+        val captured = hex("02 10 00 ba 6a c1 75 ea 01 4a 00 00 00 00 be 00 00 c2 2f 1e")
+
+        val payload = RunstarR6Handler.encodeHoffenUserInfo(
+            epochSeconds = 0x6AC175EAL, heightCm = 190, age = 66, isMale = true
+        )
+
+        assertThat(payload).isEqualTo(captured.copyOfRange(4, 19))
+        assertThat(RunstarR6Handler.isChecksumValid(captured)).isTrue()
+    }
+
+    @Test
     fun `surfaces a non-zero status instead of hiding it`() {
         // The status byte is reported, not used to reject the frame: its non-zero values
         // have never been observed, so discarding a weigh-in on it would be a guess.

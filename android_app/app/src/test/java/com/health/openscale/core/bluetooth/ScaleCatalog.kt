@@ -246,6 +246,7 @@ object ScaleCatalog {
         device("MI_SCALE") claimedBy MiScaleHandler::class.java,
         device("MIBFS") claimedBy MiScaleHandler::class.java,
         device("runstar-r6") claimedBy RunstarR6Handler::class.java,
+        device("HOFFEN", SERVICE_FFB0, uuid16(0x1530)) claimedBy RunstarR6Handler::class.java,
         device("RUNSTAR-R5") claimedBy RunstarR5Handler::class.java,
         device("relaxmedic") claimedBy RelaxmedicHandler::class.java,
         device("robi") claimedBy RobiS9Handler::class.java,
