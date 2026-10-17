@@ -63,10 +63,8 @@ class SinocareHandler : ScaleDeviceHandler() {
     private var repeatCount: Int = 0
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        // Recognize by advertised name and/or manufacturer data presence
-        val hasMsd = device.manufacturerData?.get(MANUFACTURER_DATA_ID) != null
-        val nameOk = device.name.equals("Weight Scale", ignoreCase = true)
-        if (!hasMsd && !nameOk) return null
+        // Name only: other scales (e.g. Eufy P2 Pro) also advertise manufacturer id 0xFF64.
+        if (!device.name.equals("Weight Scale", ignoreCase = true)) return null
 
         return DeviceSupport(
             displayName = "Sinocare",

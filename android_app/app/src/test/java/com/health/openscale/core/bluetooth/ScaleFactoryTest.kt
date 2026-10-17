@@ -372,8 +372,8 @@ class ScaleFactoryTest {
     @Test
     fun `manufacturer-data broadcasts stay with their own handler`() {
         val expectations: List<Pair<ScannedDeviceInfo, Class<out ScaleDeviceHandler>>> = listOf(
-            // Sinocare — company id 0xFF64
-            advertisement(manufacturerData = listOf(0xFF64 to ByteArray(12)))
+            // Sinocare — company id 0xFF64, recognised by its name
+            advertisement(name = "Weight Scale", manufacturerData = listOf(0xFF64 to ByteArray(12)))
                     to SinocareHandler::class.java,
             // QN broadcast variant — company id 0xFFFF with the AABB magic header
             advertisement(
