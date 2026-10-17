@@ -130,6 +130,11 @@ class AAAxHandler : ScaleDeviceHandler() {
         return BroadcastAction.IGNORED
     }
 
+    // The handler instance is reused across sessions.
+    override fun onDisconnected() {
+        publishedOnce = false
+    }
+
     companion object {
         private val KNOWN_NAMES = setOf("AAA002", "AAA007", "AAA013", "AAA07A")
 
