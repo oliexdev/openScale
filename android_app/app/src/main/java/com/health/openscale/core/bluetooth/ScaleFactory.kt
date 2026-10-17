@@ -127,8 +127,8 @@ class ScaleFactory @Inject constructor(
          * Builds the list of modern Kotlin-based device handlers.
          *
          * Order matters: [createCommunicator] returns the FIRST handler whose [ScaleDeviceHandler.supportFor]
-         * is non-null. TaylorBIAHandler, FitTrackDaraHandler, RelaxmedicHandler, RobiS9Handler and
-         * DrTrustSSW532Handler must stay ahead of MGBHandler — all live on service 0xFFB0, which
+         * is non-null. TaylorBIAHandler, FitTrackDaraHandler, RelaxmedicHandler,
+         * RobiS9Handler and DrTrustSSW532Handler must stay ahead of MGBHandler — all live on service 0xFFB0, which
          * MGBHandler matches on its own, so a later position would let MGB wrongly claim them.
          *
          * Exposed so the registry (order, device claims, duplicates) can be asserted in unit tests

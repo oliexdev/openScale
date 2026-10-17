@@ -43,6 +43,8 @@ import kotlin.coroutines.EmptyCoroutineContext
  *  - **ALPHA Smart Scale PRO 3** — frames captured with the vendor's FitDays app (2026-09-20).
  *    Its last weigh-in reads 88 970 g and 469 Ohm; FitDays showed 88.95 kg, i.e. rounded to the
  *    scale's 0.05 kg display resolution.
+ *  - **Meditive Smart Scale UIP-50** — frames captured with nRF Connect (2026-10-02). Its settled
+ *    live frame reads 102 182 g and its final frame carries 532 Ohm without repeating the weight.
  */
 class TaylorBIAHandlerTest {
 
@@ -64,6 +66,10 @@ class TaylorBIAHandlerTest {
     private val alphaFinalNoImpedance = hex("AC 27 01 00 00 00 01 80 69 5C 98 00 00 00 00 00 00 24 D6 19")
     private val alphaStored = hex("AC 27 00 6A B0 4E E1 80 68 18 F6 00 00 00 01 00 00 24 D8 1C")
 
+    // --- Meditive UIP-50 frames (nRF Connect capture) ---
+    private val meditiveLiveLocked = hex("AC 27 80 6D 8F A6 00 00 00 00 00 00 00 00 00 00 00 03 D5 1A")
+    private val meditiveFinal = hex("AC 27 01 00 02 14 00 00 00 00 00 00 00 00 00 00 00 03 D6 10")
+
     // --- Matching --------------------------------------------------------------
 
     @Test
@@ -77,14 +83,21 @@ class TaylorBIAHandlerTest {
 
         assertThat(handler.supportFor(device("my_scale", serviceFfb0))!!.displayName)
             .isEqualTo("ALPHA Smart Scale PRO 3")
+        assertThat(handler.supportFor(device("meditive", serviceFfb0))!!.displayName)
+            .isEqualTo("Meditive Smart Scale UIP-50")
         assertThat(handler.supportFor(device("MY_SCALE"))).isNull()
+        assertThat(handler.supportFor(device("meditive"))).isNull()
     }
 
     @Test
     fun `both models implement body composition, computed from the impedance`() {
         val handler = TaylorBIAHandler()
 
-        listOf(device("BIA SCALE", serviceFfb0), device("MY_SCALE", serviceFfb0)).forEach { scale ->
+        listOf(
+            device("BIA SCALE", serviceFfb0),
+            device("MY_SCALE", serviceFfb0),
+            device("meditive", serviceFfb0),
+        ).forEach { scale ->
             val support = handler.supportFor(scale)!!
             assertThat(support.linkMode).isEqualTo(LinkMode.CONNECT_GATT)
             assertThat(support.implemented).contains(DeviceCapability.BODY_COMPOSITION)
@@ -219,6 +232,14 @@ class TaylorBIAHandlerTest {
     fun `decodes timestamp and weight from a stored record`() {
         assertThat(TaylorBIAHandler.parse(alphaStored))
             .isEqualTo(ScaleFrame.StoredRecord(timestampEpochSeconds = 1_789_939_425L, weightGrams = 6_390))
+    }
+
+    @Test
+    fun `decodes the Meditive locked weight and impedance-only final frame`() {
+        assertThat(TaylorBIAHandler.parse(meditiveLiveLocked))
+            .isEqualTo(ScaleFrame.LiveWeight(weightGrams = 102_182, locked = true))
+        assertThat(TaylorBIAHandler.parse(meditiveFinal))
+            .isEqualTo(ScaleFrame.FinalResult(weightGrams = 0, impedanceOhms = 532, locked = false))
     }
 
     // --- Frame builders (phone -> scale) ---------------------------------------
@@ -404,6 +425,21 @@ class TaylorBIAHandlerTest {
     }
 
     @Test
+    fun `Meditive final result uses the settled live weight and derives body composition`() {
+        val setup = connected(Model.MEDITIVE_UIP50)
+
+        setup.handler.handleNotification(charData, meditiveLiveLocked)
+        setup.handler.handleNotification(charData, meditiveFinal)
+
+        val measurement = setup.callbacks.published.single()
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(1e-4f).of(102.182f)
+        assertThat(measurement[MeasurementType.IMPEDANCE]?.value).isWithin(1e-4f).of(532f)
+        assertThat(measurement[MeasurementType.BODY_FAT]?.value).isGreaterThan(0f)
+        assertThat(setup.transport.writes.last().payload)
+            .isEqualTo(hex("AC 27 04 D6 00 00 00 00 00 00 00 00 00 00 00 00 00 00 DF B9"))
+    }
+
+    @Test
     fun `a final result without impedance publishes the weight only`() {
         val setup = connected(Model.ALPHA_PRO3)
 
@@ -483,7 +519,11 @@ class TaylorBIAHandlerTest {
     /** Builds a handler that has already matched [model]'s advertisement, as ScaleFactory does. */
     private fun attached(model: Model, user: ScaleUser): Setup {
         val handler = TaylorBIAHandler()
-        val name = if (model == Model.ALPHA_PRO3) "MY_SCALE" else "BIA SCALE"
+        val name = when (model) {
+            Model.ALPHA_PRO3 -> "MY_SCALE"
+            Model.MEDITIVE_UIP50 -> "meditive"
+            Model.TAYLOR_BIA -> "BIA SCALE"
+        }
         assertThat(handler.supportFor(device(name, serviceFfb0))).isNotNull()
 
         val transport = CapturingTransport()
