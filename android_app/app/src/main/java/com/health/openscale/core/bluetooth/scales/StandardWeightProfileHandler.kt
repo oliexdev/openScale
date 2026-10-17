@@ -342,23 +342,13 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         val userPresent = (flags and 0x04) != 0
         val bmiHeight   = (flags and 0x08) != 0
 
-        val multiplier = if (isKg) 0.005f else 0.01f
         val weightRaw = u16le(value, offset); offset += 2
 
         val m = ScaleMeasurement()
-        m[MeasurementType.WEIGHT] = Kg(weightRaw * multiplier)
+        m[MeasurementType.WEIGHT] = Kg(massKg(weightRaw, isKg))
 
         if (tsPresent) {
-            val cal = Calendar.getInstance()
-            val year = u16le(value, offset); offset += 2
-            val month = u8(value, offset); offset += 1
-            val day = u8(value, offset); offset += 1
-            val hour = u8(value, offset); offset += 1
-            val minute = u8(value, offset); offset += 1
-            val second = u8(value, offset); offset += 1
-            cal.set(year, (month - 1).coerceAtLeast(0), day, hour, minute, second)
-            cal.set(Calendar.MILLISECOND, 0)
-            m.dateTime = cal.time
+            m.dateTime = dateTime(value, offset); offset += 7
         }
 
         if (userPresent) {
@@ -396,24 +386,13 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         val heightPresent     = (flags and 0x0800) != 0
         val multiPacket       = (flags and 0x1000) != 0
 
-        val massMultiplier = if (isKg) 0.005f else 0.01f
-
         val m = ScaleMeasurement()
 
         val bodyFatPct = u16le(value, offset) * 0.1f; offset += 2
         m[MeasurementType.BODY_FAT] = Percent(bodyFatPct)
 
         if (tsPresent) {
-            val cal = Calendar.getInstance()
-            val year = u16le(value, offset); offset += 2
-            val month = u8(value, offset); offset += 1
-            val day = u8(value, offset); offset += 1
-            val hour = u8(value, offset); offset += 1
-            val minute = u8(value, offset); offset += 1
-            val second = u8(value, offset); offset += 1
-            cal.set(year, (month - 1).coerceAtLeast(0), day, hour, minute, second)
-            cal.set(Calendar.MILLISECOND, 0)
-            m.dateTime = cal.time
+            m.dateTime = dateTime(value, offset); offset += 7
         }
 
         if (userPresent) {
@@ -436,22 +415,22 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
 
         var softLean = 0.0f
         if (muscleMassPresent) {
-            val muscleMass = u16le(value, offset) * massMultiplier; offset += 2
+            val muscleMass = massKg(u16le(value, offset), isKg); offset += 2
             logD("Muscle mass=$muscleMass kg")
         }
 
         if (fatFreeMassPresent) {
-            val ffm = u16le(value, offset) * massMultiplier; offset += 2
+            val ffm = massKg(u16le(value, offset), isKg); offset += 2
             logD("Fat-free mass=$ffm kg")
         }
 
         if (softLeanPresent) {
-            softLean = u16le(value, offset) * massMultiplier; offset += 2
+            softLean = massKg(u16le(value, offset), isKg); offset += 2
             logD("Soft lean mass=$softLean kg")
         }
 
         if (waterMassPresent) {
-            val bodyWaterMass = u16le(value, offset) * massMultiplier; offset += 2
+            val bodyWaterMass = massKg(u16le(value, offset), isKg); offset += 2
             m[MeasurementType.WATER] = Percent(bodyWaterMass)
         }
 
@@ -463,7 +442,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         }
 
         if (weightPresent) {
-            val w = u16le(value, offset) * massMultiplier; offset += 2
+            val w = massKg(u16le(value, offset), isKg); offset += 2
             m[MeasurementType.WEIGHT] = Kg(w)
         } else {
             pendingMeasurement?.get(MeasurementType.WEIGHT)?.value?.takeIf { it > 0f }?.let { m[MeasurementType.WEIGHT] = Kg(it) }
@@ -834,6 +813,35 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
     }
 
     private fun u8(b: ByteArray, off: Int): Int = b[off].toInt() and 0xFF
+
+    /** Standard mass fields: 0.005 kg resolution, or 0.01 lb when the imperial flag is set. */
+    private fun massKg(raw: Int, isKg: Boolean): Float =
+        if (isKg) raw * 0.005f else Kg.fromLb(raw * 0.01f).value
+
+    /**
+     * Bluetooth Date Time (7 bytes). Year, month or day 0 means "not known", and an impossible
+     * date is not rolled over into a different one; both leave the reading without a timestamp.
+     */
+    private fun dateTime(b: ByteArray, off: Int): Date? {
+        val year = u16le(b, off)
+        val month = u8(b, off + 2)
+        val day = u8(b, off + 3)
+        val hour = u8(b, off + 4)
+        val minute = u8(b, off + 5)
+        val second = u8(b, off + 6)
+        if (year == 0 || month == 0 || day == 0) return null
+        return try {
+            Calendar.getInstance().apply {
+                clear()
+                isLenient = false
+                set(year, month - 1, day, hour, minute, second)
+            }.time
+        } catch (_: IllegalArgumentException) {
+            logW("Invalid timestamp $year-$month-$day $hour:$minute:$second, ignored")
+            null
+        }
+    }
+
     private fun u16le(b: ByteArray, off: Int): Int =
         (b[off].toInt() and 0xFF) or ((b[off + 1].toInt() and 0xFF) shl 8)
 

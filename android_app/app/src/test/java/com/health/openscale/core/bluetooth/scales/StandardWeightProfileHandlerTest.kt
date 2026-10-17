@@ -498,6 +498,44 @@ class StandardWeightProfileHandlerTest {
         }
     }
 
+    // --- Packet decoding edge cases -------------------------------------------------
+
+    private val bf500Weight = "0E EC 36 EA 07 0A 11 0F 0A 1C 01 EB 00 C2 06"
+
+    @Test
+    fun `imperial masses are converted from pounds to kilograms`() {
+        val callbacks = CapturingCallbacks()
+        val handler = attachedHandler(StandardBeurerSanitasHandler(), "BF500", callbacks)
+
+        // 150.00 lb; then 20.0 % fat with 50.00 lb water mass.
+        handler.handleNotification(chrWeight, hex("01 98 3A"))
+        handler.handleNotification(chrBodyComposition, hex("01 01 C8 00 88 13"))
+        handler.handleDisconnected()
+
+        val m = callbacks.published.single()
+        assertThat(m[MeasurementType.WEIGHT]?.value).isWithin(0.001f).of(68.039f)
+        assertThat(m[MeasurementType.WATER]?.value).isWithin(0.01f).of(33.33f)
+    }
+
+    @Test
+    fun `unknown or impossible timestamps leave the reading without a date`() {
+        val stamps = listOf(
+            "00 00 00 00 0F 0A 1C", // year, month and day "not known"
+            "EA 07 0D 11 0F 0A 1C", // month 13 would otherwise roll into the next year
+        )
+        for (stamp in stamps) {
+            val callbacks = CapturingCallbacks()
+            val handler = attachedHandler(StandardBeurerSanitasHandler(), "BF500", callbacks)
+
+            handler.handleNotification(chrWeight, hex("06 EC 36 $stamp 01"))
+            handler.handleDisconnected()
+
+            val m = callbacks.published.single()
+            assertWithMessage(stamp).that(m.dateTime).isNull()
+            assertWithMessage(stamp).that(m[MeasurementType.WEIGHT]?.value).isWithin(0.001f).of(70.3f)
+        }
+    }
+
     /** Standard Weight Scale 2A9D: flags 0x00 (kg, nothing optional) + 72.5 kg / 0.005. */
     private fun bareWeightPacket(): ByteArray {
         val raw = (72.5f / 0.005f).toInt()
