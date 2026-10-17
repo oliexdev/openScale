@@ -81,6 +81,15 @@ class TaylorBIAHandlerTest {
     }
 
     @Test
+    fun `leaves MY_SCALE with service 0x1530 to RunstarR6Handler`() {
+        // The Fitdays FG2202WB: same name and 0xFFB0 as the ALPHA, plus 0x1530.
+        val fg2202wb = device("MY_SCALE", serviceFfb0, uuid16(0x1530))
+
+        assertThat(TaylorBIAHandler().supportFor(fg2202wb)).isNull()
+        assertThat(RunstarR6Handler().supportFor(fg2202wb)!!.displayName).isEqualTo("Fitdays FG2202WB")
+    }
+
+    @Test
     fun `both models implement body composition, computed from the impedance`() {
         val handler = TaylorBIAHandler()
 

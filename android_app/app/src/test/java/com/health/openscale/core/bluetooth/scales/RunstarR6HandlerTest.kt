@@ -18,13 +18,22 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.google.common.truth.Truth.assertThat
+import com.health.openscale.core.bluetooth.ScaleCatalog.uuid16
+import com.health.openscale.core.bluetooth.data.ScaleMeasurement
+import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.data.MeasurementType
+import kotlinx.coroutines.CoroutineScope
 import org.junit.Test
+import java.util.Calendar
+import java.util.UUID
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
- * Unit tests for [RunstarR6Handler] frame parsing.
+ * Unit tests for [RunstarR6Handler]: frame parsing, and which values a final result publishes.
  *
- * Frame parsing only — the body-composition math is StandardImpedanceLib's and is pinned
- * with exact expected values in StandardImpedanceLibTest.
+ * The body-composition math is StandardImpedanceLib's and is pinned with exact expected
+ * values in StandardImpedanceLibTest.
  */
 class RunstarR6HandlerTest {
 
@@ -146,6 +155,63 @@ class RunstarR6HandlerTest {
     }
 
     @Test
+    fun `decodes the frame captured from a Fitdays FG2202WB`() {
+        // Verbatim from a weigh-in of a 10.3 kg object (the display read 10.3). The FG2202WB
+        // sends 0x25 where the R6 sends status 00, and a 0x1A length: the frame is the first
+        // of two parts, the second is not decoded. The object conducts nothing, so the
+        // impedance field holds a meaningless 50 Ω.
+        val result = RunstarR6Handler.decodeFinalResult(
+            hex("05 1a 00 a3 25 00 28 64 00 00 32 00 0a 00 00 00 0a 00 00 1a")
+        )
+
+        assertThat(result).isNotNull()
+        assertThat(result!!.status).isEqualTo(0x25)
+        assertThat(result.grams).isEqualTo(10340)
+        assertThat(result.heartRate).isEqualTo(0)
+        assertThat(result.impedanceOhm).isEqualTo(50)
+    }
+
+    @Test
+    fun `publishes the FG2202WB weight without its 50 ohm placeholder impedance`() {
+        val (handler, callbacks) = connected()
+
+        handler.handleNotification(CHAR_RESULT, hex("05 1a 00 a3 25 00 28 64 00 00 32 00 0a 00 00 00 0a 00 00 1a"))
+
+        val measurement = callbacks.published.single()
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(1e-3f).of(10.34f)
+        assertThat(measurement[MeasurementType.IMPEDANCE]).isNull()
+        assertThat(measurement[MeasurementType.BODY_FAT]).isNull()
+    }
+
+    @Test
+    fun `publishes an impedance inside the plausible range`() {
+        val (handler, callbacks) = connected()
+
+        // The physical R6 capture above: 66.35 kg, 75 bpm, 581 Ω.
+        handler.handleNotification(CHAR_RESULT, hex("f3 08 00 a3 00 01 03 2e 4b 02 45 00 00 00 00 00 00 00 00 07"))
+
+        val measurement = callbacks.published.single()
+        assertThat(measurement[MeasurementType.IMPEDANCE]?.value).isWithin(1e-4f).of(581f)
+        assertThat(measurement[MeasurementType.BODY_FAT]).isNotNull()
+    }
+
+    @Test
+    fun `drops an impedance just outside the plausible range`() {
+        listOf(RunstarR6Handler.IMPEDANCE_MIN - 1, RunstarR6Handler.IMPEDANCE_MAX + 1).forEach { ohm ->
+            val (handler, callbacks) = connected()
+
+            handler.handleNotification(
+                CHAR_RESULT,
+                frame(0xA3, "00 01 4c 08 4a %02x %02x".format(ohm shr 8, ohm and 0xFF))
+            )
+
+            val measurement = callbacks.published.single()
+            assertThat(measurement[MeasurementType.WEIGHT]).isNotNull()
+            assertThat(measurement[MeasurementType.IMPEDANCE]).isNull()
+        }
+    }
+
+    @Test
     fun `surfaces a non-zero status instead of hiding it`() {
         // The status byte is reported, not used to reject the frame: its non-zero values
         // have never been observed, so discarding a weigh-in on it would be a guess.
@@ -209,5 +275,61 @@ class RunstarR6HandlerTest {
         assertThat(RunstarR6Handler.computeChecksum(f)).isEqualTo(expected)
         assertThat(RunstarR6Handler.computeChecksum(f)).isAtMost(0x1F)
         assertThat(RunstarR6Handler.isChecksumValid(f)).isTrue()
+    }
+
+    // --- Harness ---------------------------------------------------------------
+
+    private val CHAR_RESULT: UUID = uuid16(0xFFB3)
+
+    /** A connected handler and what it publishes; writes (acks) are discarded. */
+    private fun connected(): Pair<RunstarR6Handler, CapturingCallbacks> {
+        val user = ScaleUser(
+            id = 7,
+            birthday = Calendar.getInstance().apply { add(Calendar.YEAR, -31); add(Calendar.DAY_OF_YEAR, -1) }.time,
+            bodyHeight = 165f,
+            gender = GenderType.FEMALE,
+        )
+        val handler = RunstarR6Handler()
+        val callbacks = CapturingCallbacks()
+        handler.attach(
+            transport = NullTransport(),
+            callbacks = callbacks,
+            settings = InMemorySettings(),
+            data = FixedDataProvider(user),
+            scope = CoroutineScope(EmptyCoroutineContext),
+        )
+        handler.handleConnected(user)
+        return handler to callbacks
+    }
+
+    private class NullTransport : ScaleDeviceHandler.Transport {
+        override fun setNotifyOn(service: UUID, characteristic: UUID) = Unit
+        override fun write(service: UUID, characteristic: UUID, payload: ByteArray, withResponse: Boolean) = Unit
+        override fun read(service: UUID, characteristic: UUID) = Unit
+        override fun disconnect() = Unit
+        override fun hasCharacteristic(service: UUID, characteristic: UUID) = true
+    }
+
+    private class CapturingCallbacks : ScaleDeviceHandler.Callbacks {
+        val published = mutableListOf<ScaleMeasurement>()
+
+        override fun onPublish(measurement: ScaleMeasurement) {
+            published += measurement.snapshot()
+        }
+        override fun resolveString(resId: Int, vararg args: Any): String = "res:$resId"
+    }
+
+    private class InMemorySettings : ScaleDeviceHandler.DriverSettings {
+        override fun getInt(key: String, default: Int): Int = default
+        override fun putInt(key: String, value: Int) = Unit
+        override fun getString(key: String, default: String?): String? = default
+        override fun putString(key: String, value: String) = Unit
+        override fun remove(key: String) = Unit
+    }
+
+    private class FixedDataProvider(private val user: ScaleUser) : ScaleDeviceHandler.DataProvider {
+        override fun currentUser(): ScaleUser = user
+        override fun usersForDevice(): List<ScaleUser> = listOf(user)
+        override fun lastMeasurementFor(userId: Int): ScaleMeasurement? = null
     }
 }
