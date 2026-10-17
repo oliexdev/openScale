@@ -76,6 +76,7 @@ import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler
 import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
 import com.health.openscale.core.bluetooth.scales.ScaleupHandler
 import com.health.openscale.core.bluetooth.scales.SenssunHandler
+import com.health.openscale.core.bluetooth.scales.SilvergearTuyaHandler
 import com.health.openscale.core.bluetooth.scales.SinocareHandler
 import com.health.openscale.core.bluetooth.scales.SoehnleHandler
 import com.health.openscale.core.bluetooth.scales.StandardBeurerSanitasHandler
@@ -332,6 +333,11 @@ object ScaleCatalog {
             services = listOf(uuid16(0xF0A0)),
             manufacturerData = listOf(AILINK_COMPANY_ID to AILINK_RECORD),
         ) claimedBy AiLinkBroadcastHandler::class.java,
+        // Silvergear Smart Scale 2023: Tuya BLE service 0xFD50, default Tuya name "TY".
+        advertisement(
+            name = "TY",
+            services = listOf(uuid16(0xFD50)),
+        ) claimedBy SilvergearTuyaHandler::class.java,
     )
 
     // --- Registry queries -------------------------------------------------------------------
