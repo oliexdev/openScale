@@ -30,14 +30,16 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /**
- * Raw measurement data from S400 scale after decryption.
- */
-/**
  * Decoded payload from a single S400 advertisement.
  *
  * The S400 emits two packet types per weighing session:
- *  - Packet A: non-zero weight + heart rate + high-frequency impedance.
- *  - Packet B: zero weight + low-frequency impedance.
+ *  - Packet A: non-zero weight + heart rate + low-frequency impedance.
+ *  - Packet B: zero weight + high-frequency impedance.
+ *
+ * Resistance falls monotonically with frequency across the beta dispersion, so
+ * the band a packet carries can be read off its magnitude. In every captured
+ * advertisement the packet carrying weight also carries the larger resistance,
+ * which makes it the ~50 kHz band.
  *
  * Each call to [S400Decryptor.decrypt] returns one of these. The caller
  * is responsible for aggregating Packet A and Packet B into a finalized
@@ -136,9 +138,9 @@ object S400Decryptor {
      *  - bits 11..17 : heart rate raw (+50 bpm offset)
      *  - bits 18..31 : impedance raw (×10 Ω)
      *
-     * The same impedance bits carry either the high-frequency or low-frequency
-     * value, disambiguated by whether weight is present in this packet:
-     * `weight != 0` → high-frequency band, `weight == 0` → low-frequency band.
+     * The same impedance bits carry either band, disambiguated by whether
+     * weight is present in this packet: `weight != 0` → ~50 kHz (low-frequency)
+     * band, `weight == 0` → ~250 kHz (high-frequency) band.
      */
     private fun parseDecryptedData(decrypted: ByteArray): S400Measurement? {
         if (decrypted.size < 12) return null
@@ -161,16 +163,16 @@ object S400Decryptor {
         val heartRate = if (heartRateRaw in 1..126) heartRateRaw + 50 else null
 
         // Disambiguate impedance frequency by weight presence in this packet.
-        val impedanceHigh = if (weightRaw != 0 && impedanceRaw != 0) {
+        val impedanceLow = if (weightRaw != 0 && impedanceRaw != 0) {
             impedanceRaw / 10.0f
         } else null
-        val impedanceLow = if (weightRaw == 0 && impedanceRaw != 0) {
+        val impedanceHigh = if (weightRaw == 0 && impedanceRaw != 0) {
             impedanceRaw / 10.0f
         } else null
 
-        // Accept the packet if it carries either weight or a low-freq impedance.
+        // Accept the packet if it carries either weight or an impedance value.
         // Without one of those there is nothing useful to report.
-        return if (weightRaw != 0 || impedanceLow != null) {
+        return if (weightRaw != 0 || impedanceHigh != null) {
             S400Measurement(weightKg, impedanceHigh, impedanceLow, heartRate)
         } else null
     }

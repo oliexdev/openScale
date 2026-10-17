@@ -24,11 +24,11 @@ class S400AggregatorTest {
 
     private val mac = "8C:D0:B2:F6:BE:EF"
 
-    private fun packetA(weight: Float = 69.9f, hi: Float = 543.2f, hr: Int? = 92) =
-        S400Measurement(weight, impedanceHigh = hi, impedanceLow = null, heartRate = hr)
+    private fun packetA(weight: Float = 69.9f, lo: Float = 543.2f, hr: Int? = 92) =
+        S400Measurement(weight, impedanceHigh = null, impedanceLow = lo, heartRate = hr)
 
-    private fun packetB(lo: Float = 497.6f) =
-        S400Measurement(0f, impedanceHigh = null, impedanceLow = lo, heartRate = null)
+    private fun packetB(hi: Float = 497.6f) =
+        S400Measurement(0f, impedanceHigh = hi, impedanceLow = null, heartRate = null)
 
     @Test
     fun pendingUntilBothPacketsArrive_thenFinalizes() {
@@ -39,8 +39,8 @@ class S400AggregatorTest {
 
         val second = agg.ingest(mac, packetB(), nowMs = 1_200) as S400Aggregator.Outcome.Finalized
         assertThat(second.weightKg).isWithin(0.01f).of(69.9f)
-        assertThat(second.impedanceHigh).isWithin(0.01f).of(543.2f)
-        assertThat(second.impedanceLow!!).isWithin(0.01f).of(497.6f)
+        assertThat(second.impedanceLow).isWithin(0.01f).of(543.2f)
+        assertThat(second.impedanceHigh!!).isWithin(0.01f).of(497.6f)
         assertThat(second.heartRate).isEqualTo(92)
         assertThat(second.timedOut).isFalse()
     }
@@ -53,8 +53,8 @@ class S400AggregatorTest {
         assertThat(first).isInstanceOf(S400Aggregator.Outcome.Pending::class.java)
 
         val second = agg.ingest(mac, packetA(), nowMs = 1_100) as S400Aggregator.Outcome.Finalized
-        assertThat(second.impedanceLow!!).isWithin(0.01f).of(497.6f)
-        assertThat(second.impedanceHigh).isWithin(0.01f).of(543.2f)
+        assertThat(second.impedanceHigh!!).isWithin(0.01f).of(497.6f)
+        assertThat(second.impedanceLow).isWithin(0.01f).of(543.2f)
         assertThat(second.timedOut).isFalse()
     }
 
@@ -72,8 +72,8 @@ class S400AggregatorTest {
             nowMs = 1_000 + S400Aggregator.DEFAULT_SESSION_TIMEOUT_MS
         ) as S400Aggregator.Outcome.Finalized
 
-        assertThat(late.impedanceHigh).isWithin(0.01f).of(543.2f)
-        assertThat(late.impedanceLow).isNull()
+        assertThat(late.impedanceLow).isWithin(0.01f).of(543.2f)
+        assertThat(late.impedanceHigh).isNull()
         assertThat(late.timedOut).isTrue()
     }
 
@@ -95,13 +95,13 @@ class S400AggregatorTest {
     fun allowsSecondMeasurementAfterDedupWindow() {
         val agg = S400Aggregator()
 
-        agg.ingest(mac, packetA(weight = 69.9f, hi = 543.2f), nowMs = 1_000)
-        agg.ingest(mac, packetB(lo = 497.6f), nowMs = 1_100)
+        agg.ingest(mac, packetA(weight = 69.9f, lo = 543.2f), nowMs = 1_000)
+        agg.ingest(mac, packetB(hi = 497.6f), nowMs = 1_100)
 
         // Different weighing well past the dedup window.
         val laterStart = 1_100L + S400Aggregator.DEFAULT_SESSION_TIMEOUT_MS + 1
-        agg.ingest(mac, packetA(weight = 70.1f, hi = 540.0f), nowMs = laterStart)
-        val laterFinalized = agg.ingest(mac, packetB(lo = 495.0f), nowMs = laterStart + 100)
+        agg.ingest(mac, packetA(weight = 70.1f, lo = 540.0f), nowMs = laterStart)
+        val laterFinalized = agg.ingest(mac, packetB(hi = 495.0f), nowMs = laterStart + 100)
             as S400Aggregator.Outcome.Finalized
 
         assertThat(laterFinalized.weightKg).isWithin(0.01f).of(70.1f)

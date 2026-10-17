@@ -20,13 +20,15 @@ package com.health.openscale.core.bluetooth.libs
 import kotlin.math.abs
 
 /**
- * Aggregates the two advertisement packets the S400 emits per weighing
- * session — Packet A (weight + heart rate + high-frequency impedance) and
- * Packet B (low-frequency impedance) — into a single finalized result.
+ * Aggregates the two advertisement packets the S400 emits per weighing session,
+ * Packet A (weight + heart rate + low-frequency impedance) and Packet B
+ * (high-frequency impedance), into a single finalized result.
  *
- * A timeout exit lets older firmware that only emits Packet A still produce a
- * measurement. A short dedup window prevents the same weighing from being
- * published twice when the scale re-broadcasts the final reading.
+ * Packet A carries the weight, so a session cannot finalize without it. Packet
+ * B is optional: a timeout exit lets firmware that only emits Packet A still
+ * produce a measurement, at the cost of the compartment split. A short dedup
+ * window prevents the same weighing from being published twice when the scale
+ * re-broadcasts the final reading.
  */
 class S400Aggregator(
     private val sessionTimeoutMs: Long = DEFAULT_SESSION_TIMEOUT_MS,
@@ -46,8 +48,8 @@ class S400Aggregator(
         /** Both packets received (or timeout fired); ready to publish. */
         data class Finalized(
             val weightKg: Float,
-            val impedanceHigh: Float,
-            val impedanceLow: Float?,
+            val impedanceLow: Float,
+            val impedanceHigh: Float?,
             val heartRate: Int?,
             val timedOut: Boolean,
         ) : Outcome()
@@ -62,7 +64,7 @@ class S400Aggregator(
         var heartRate: Int? = null,
         var firstSeenAt: Long = 0L,
     )
-    private data class Recent(val weight: Float, val impedanceHigh: Float, val timeMs: Long)
+    private data class Recent(val weight: Float, val impedanceLow: Float, val timeMs: Long)
 
     private val sessions = mutableMapOf<String, Session>()
     private val recent = mutableMapOf<String, Recent>()
@@ -75,14 +77,14 @@ class S400Aggregator(
         packet.heartRate?.let { session.heartRate = it }
 
         val weight = session.weightKg
-        val impHigh = session.impedanceHigh
         val impLow = session.impedanceLow
+        val impHigh = session.impedanceHigh
 
-        if (weight == null || impHigh == null) {
+        if (weight == null || impLow == null) {
             return Outcome.Pending
         }
 
-        val haveBoth = impLow != null
+        val haveBoth = impHigh != null
         val sessionAge = nowMs - session.firstSeenAt
         val timedOut = !haveBoth && sessionAge >= sessionTimeoutMs
         if (!haveBoth && !timedOut) {
@@ -91,19 +93,19 @@ class S400Aggregator(
 
         recent[deviceMac]?.let { previous ->
             val weightClose = abs(previous.weight - weight) < dedupWeightToleranceKg
-            val impClose = abs(previous.impedanceHigh - impHigh) < dedupImpedanceToleranceOhm
+            val impClose = abs(previous.impedanceLow - impLow) < dedupImpedanceToleranceOhm
             if (weightClose && impClose && (nowMs - previous.timeMs) < sessionTimeoutMs) {
                 sessions.remove(deviceMac)
                 return Outcome.Duplicate
             }
         }
-        recent[deviceMac] = Recent(weight, impHigh, nowMs)
+        recent[deviceMac] = Recent(weight, impLow, nowMs)
         sessions.remove(deviceMac)
 
         return Outcome.Finalized(
             weightKg = weight,
-            impedanceHigh = impHigh,
             impedanceLow = impLow,
+            impedanceHigh = impHigh,
             heartRate = session.heartRate,
             timedOut = timedOut,
         )
