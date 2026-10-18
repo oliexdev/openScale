@@ -18,11 +18,13 @@
 package com.health.openscale.core.bluetooth.scales
 
 import com.google.common.truth.Truth.assertThat
+import com.health.openscale.core.bluetooth.ScaleCatalog
 import com.health.openscale.core.bluetooth.ScaleCatalog.uuid16
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.WeightUnit
 import kotlinx.coroutines.CoroutineScope
 import org.junit.Test
 import java.util.Calendar
@@ -275,6 +277,75 @@ class RunstarR6HandlerTest {
         assertThat(RunstarR6Handler.computeChecksum(f)).isEqualTo(expected)
         assertThat(RunstarR6Handler.computeChecksum(f)).isAtMost(0x1F)
         assertThat(RunstarR6Handler.isChecksumValid(f)).isTrue()
+    }
+
+    @Test
+    fun `claims the Lescale F4P by name`() {
+        val support = RunstarR6Handler().supportFor(ScaleCatalog.device("Lescale F4P"))
+        assertThat(support).isNotNull()
+        assertThat(support!!.displayName).isEqualTo("Lescale F4P")
+    }
+
+    @Test
+    fun `decodes the frame captured from a Lescale F4P`() {
+        // Verbatim from a barefoot weigh-in with the scale displaying pounds (trailer flag
+        // 0x20): 73.55 kg, 71 bpm, 493 Ω.
+        val captured = hex("19 08 00 a3 00 01 1f 4e 47 01 ed 00 00 00 00 00 00 00 00 26")
+        val result = RunstarR6Handler.decodeFinalResult(captured)
+
+        assertThat(result).isNotNull()
+        assertThat(result!!.status).isEqualTo(0x00)
+        assertThat(result.grams).isEqualTo(73550)
+        assertThat(result.heartRate).isEqualTo(71)
+        assertThat(result.impedanceOhm).isEqualTo(493)
+    }
+
+    @Test
+    fun `accepts the Lescale F4P unit flag in the trailer`() {
+        // Captured F4P frames in pounds: live A2 (73.55 kg, measuring), device info A1 and
+        // a history A4. Each trailer is 0x20 | checksum.
+        listOf(
+            "ff 07 00 a2 01 00 01 1f 4e 00 00 00 00 00 00 00 00 00 00 31",
+            "01 08 00 a1 80 71 1e 5a 00 07 05 00 00 00 00 00 00 00 00 36",
+            "11 0c 00 a4 6a d5 3c 69 00 01 1f 4e 00 00 00 00 00 00 00 36",
+        ).map(::hex).forEach { f ->
+            assertThat(f[19].toInt() and RunstarR6Handler.FLAG_UNIT_LB)
+                .isEqualTo(RunstarR6Handler.FLAG_UNIT_LB)
+            assertThat(RunstarR6Handler.isChecksumValid(f)).isTrue()
+        }
+        // The same A3 in kg, captured after a user frame without the flag switched the unit.
+        assertThat(
+            RunstarR6Handler.isChecksumValid(hex("06 08 00 a3 00 01 1f 80 00 00 00 00 00 00 00 00 00 00 00 03"))
+        ).isTrue()
+    }
+
+    @Test
+    fun `still rejects a flagged trailer whose checksum bits are wrong`() {
+        val f = hex("19 08 00 a3 00 01 1f 4e 47 01 ed 00 00 00 00 00 00 00 00 26")
+        f[19] = (0x20 or ((f[19].toInt() + 1) and 0x1F)).toByte()
+        assertThat(RunstarR6Handler.decodeFinalResult(f)).isNull()
+    }
+
+    @Test
+    fun `builds the user frame the Lescale F4P accepted in pounds`() {
+        // Written to a real F4P, which answered 0xA0 01 and kept displaying pounds:
+        // male, 25, 178 cm. Without the 0x20 flag the same frame switched it to kg.
+        val sent = hex("01 10 00 ba 6a d5 3a 8a 01 4a 00 00 00 00 b2 00 00 99 2f 22")
+
+        val payload = RunstarR6Handler.encodeHoffenUserInfo(
+            epochSeconds = 0x6AD53A8AL, heightCm = 178, age = 25, isMale = true
+        )
+
+        assertThat(payload).isEqualTo(sent.copyOfRange(4, 19))
+        assertThat(RunstarR6Handler.computeChecksum(sent) or RunstarR6Handler.unitFlags(WeightUnit.LB))
+            .isEqualTo(sent[19].toInt() and 0xFF)
+    }
+
+    @Test
+    fun `only pounds set the F4P unit flag`() {
+        assertThat(RunstarR6Handler.unitFlags(WeightUnit.LB)).isEqualTo(0x20)
+        assertThat(RunstarR6Handler.unitFlags(WeightUnit.KG)).isEqualTo(0x00)
+        assertThat(RunstarR6Handler.unitFlags(WeightUnit.ST)).isEqualTo(0x00)
     }
 
     // --- Harness ---------------------------------------------------------------
