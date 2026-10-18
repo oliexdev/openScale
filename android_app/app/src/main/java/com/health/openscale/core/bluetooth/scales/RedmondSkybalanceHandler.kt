@@ -22,11 +22,17 @@ class RedmondSkybalanceHandler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val model = MODEL_NAMES[device.name.trim().uppercase(Locale.US)] ?: return null
-        val capabilities = setOf(DeviceCapability.LIVE_WEIGHT_STREAM)
         return DeviceSupport(
             displayName = "REDMOND " + model,
-            capabilities = capabilities,
-            implemented = capabilities,
+            // TIME_SYNC and HISTORY_READ are potential capabilities, not implemented features.
+            // TIME_SYNC was experimentally verified; HISTORY_READ remains a reverse-engineering lead.
+            // The models have no body-composition sensors, so BODY_COMPOSITION is not applicable.
+            capabilities = setOf(
+                DeviceCapability.LIVE_WEIGHT_STREAM,
+                DeviceCapability.TIME_SYNC,
+                DeviceCapability.HISTORY_READ
+            ),
+            implemented = setOf(DeviceCapability.LIVE_WEIGHT_STREAM),
             linkMode = LinkMode.CONNECT_GATT
         )
     }
@@ -35,9 +41,6 @@ class RedmondSkybalanceHandler : ScaleDeviceHandler() {
         finalPublishedForSession = false
         lastPreviewWeightKg = Float.NaN
         setNotifyOn(SVC_WEIGHT_SCALE, CHR_WEIGHT_MEASUREMENT)
-        if (hasCharacteristic(SVC_WEIGHT_SCALE, CHR_WEIGHT_SCALE_FEATURE)) {
-            readFrom(SVC_WEIGHT_SCALE, CHR_WEIGHT_SCALE_FEATURE)
-        }
     }
 
     override fun onNotification(
@@ -47,6 +50,10 @@ class RedmondSkybalanceHandler : ScaleDeviceHandler() {
     ) {
         when (characteristic) {
             CHR_WEIGHT_MEASUREMENT -> {
+                // A zero-weight frame is sent when the user steps off the scale. It is an empty
+                // reading, not a malformed packet, so ignore it without logging a warning.
+                if (data.size >= 3 && u16le(data, 1) == 0) return
+
                 val parsed = parseWeightMeasurement(data) ?: run {
                     logW("REDMOND: invalid Weight Measurement payload ${data.toHexPreview(24)}")
                     return
@@ -87,10 +94,6 @@ class RedmondSkybalanceHandler : ScaleDeviceHandler() {
                         "${parsed.weightKg} kg at ${parsed.measurement.dateTime}"
                 )
                 publish(parsed.measurement)
-            }
-
-            CHR_WEIGHT_SCALE_FEATURE -> {
-                logD("REDMOND Weight Scale Feature: ${data.toHexPreview(16)}")
             }
 
             else -> {
@@ -180,11 +183,10 @@ class RedmondSkybalanceHandler : ScaleDeviceHandler() {
     private var finalPublishedForSession = false
     private var lastPreviewWeightKg = Float.NaN
 
-    private companion object {
-        private val SVC_WEIGHT_SCALE = uuid16Static(0x181D)
-        private val CHR_WEIGHT_MEASUREMENT = uuid16Static(0x2A9D)
-        private val CHR_WEIGHT_SCALE_FEATURE = uuid16Static(0x2A9E)
+    private val SVC_WEIGHT_SCALE = uuid16(0x181D)
+    private val CHR_WEIGHT_MEASUREMENT = uuid16(0x2A9D)
 
+    private companion object {
         private val MODEL_NAMES = mapOf(
             "RS-73S" to "RS-73S",
             "RS-744S" to "RS-744S",
@@ -195,14 +197,5 @@ class RedmondSkybalanceHandler : ScaleDeviceHandler() {
 
         private const val LB_TO_KG = 0.45359237f
         private const val LIVE_PREVIEW_STEP_KG = 0.05f
-
-        private fun uuid16Static(short: Int): UUID =
-            UUID.fromString(
-                String.format(
-                    Locale.US,
-                    "0000%04x-0000-1000-8000-00805f9b34fb",
-                    short
-                )
-            )
     }
 }
