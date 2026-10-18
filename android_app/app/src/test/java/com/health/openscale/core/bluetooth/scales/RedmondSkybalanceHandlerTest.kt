@@ -23,7 +23,15 @@ class RedmondSkybalanceHandlerTest {
     @Test
     fun recognizesOnlySupportedSkyBalanceModels() {
         listOf("RS-73S", "RS-744S", "RS-745S", "RS-762S", "RS-773S").forEach { name ->
-            assertThat(handler.supportFor(ScaleCatalog.device(name))).isNotNull()
+            val support = handler.supportFor(ScaleCatalog.device(name))
+            assertThat(support).isNotNull()
+            assertThat(support!!.capabilities).containsExactly(
+                DeviceCapability.LIVE_WEIGHT_STREAM,
+                DeviceCapability.TIME_SYNC,
+                DeviceCapability.HISTORY_READ
+            )
+            assertThat(support.implemented).containsExactly(DeviceCapability.LIVE_WEIGHT_STREAM)
+            assertThat(support.capabilities).doesNotContain(DeviceCapability.BODY_COMPOSITION)
         }
 
         assertThat(handler.supportFor(ScaleCatalog.device("RS-740S"))).isNull()
