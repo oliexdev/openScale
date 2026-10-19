@@ -880,4 +880,7 @@
     <string name="dialog_message_export_photos">Exportar apenas o CSV ou um arquivo ZIP com o CSV e todas as fotos? O ZIP pode ser importado novamente, incluindo as fotos.</string>
     <string name="action_export_csv_only">Somente CSV</string>
     <string name="action_export_zip_with_photos">ZIP com fotos</string>
+    <string name="measurement_type_hydration_shift">Variação da hidratação</string>
+    <string name="bt_error_mi_scale_service_missing">Este dispositivo não disponibiliza um serviço Mi Scale compatível.</string>
+    <string name="bt_warn_mi_scale_variant_downgraded">Esta balança se identifica como um modelo v2, mas informa apenas o peso. A composição corporal não está disponível neste dispositivo.</string>
 </resources>
