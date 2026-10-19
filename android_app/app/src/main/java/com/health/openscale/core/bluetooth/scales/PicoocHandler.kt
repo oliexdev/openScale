@@ -485,6 +485,10 @@ class PicoocHandler : ScaleDeviceHandler() {
          */
         const val SETTLE_WAIT_MS = 8000L
 
+        /** Length of the PICOOC-CC live frame, which stops after the impedance field. */
+        private const val SHORT_LIVE_FRAME_SIZE = 10
+        private const val KG_TO_LB = 2.20462f
+
         private const val MIN_WEIGHT_KG = 2.0f
         private const val MAX_WEIGHT_KG = 250.0f
         private const val MIN_IMPEDANCE = 100.0
@@ -562,8 +566,27 @@ class PicoocHandler : ScaleDeviceHandler() {
          * `86 2C`, and 0x862C/10 = 3434.8 is nonsense while (0x862C & 0x7FFF)/10 = 158.0 lb
          * matches 71.7 kg exactly. The top bit is therefore a separate flag, not part of the
          * value. It is decoded into [LiveFrame.poundFlag] and logged pending an explanation.
+         *
+         * PICOOC-CC sends a short 10-byte variant instead: `[op][len][ts BE 4B][weight/20]
+         * [impedance/10]`, with no pound, unit, phase or flag fields. It arrives once, after the
+         * profile exchange, with the settled reading, so it is treated as complete.
          */
         fun parseLiveFrame(data: ByteArray): LiveFrame? {
+            // Keyed on the length byte, so a truncated long frame is still rejected below.
+            if (data.size >= SHORT_LIVE_FRAME_SIZE && u8(data, 1) == SHORT_LIVE_FRAME_SIZE) {
+                val weightKg = u16be(data, 6) / 20.0f
+                return LiveFrame(
+                    timestamp = ((u8(data, 2).toLong() shl 24) or (u8(data, 3).toLong() shl 16) or
+                        (u8(data, 4).toLong() shl 8) or u8(data, 5).toLong()),
+                    weightKg = weightKg,
+                    impedance = u16be(data, 8) / 10.0,
+                    weightLb = weightKg * KG_TO_LB,
+                    unit = 0,
+                    phaseAngle = 0f,
+                    complete = true,
+                    poundFlag = false,
+                )
+            }
             if (data.size < 16) return null
             return LiveFrame(
                 timestamp = ((u8(data, 2).toLong() shl 24) or (u8(data, 3).toLong() shl 16) or
