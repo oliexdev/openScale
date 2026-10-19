@@ -30,7 +30,9 @@ import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.scales.DeviceSupport
 import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.data.ConnectionStatus
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.utils.LogManager
 import dagger.Binds
 import dagger.Module
@@ -188,22 +190,28 @@ class BluetoothFacadeImpl @Inject constructor(
 
     private fun observeCurrentUser() {
         scope.launch {
-            userFacade.observeSelectedUser()
-                .collect { user ->
+            // The weight unit is not on the user but on the Weight measurement type, so a unit
+            // change there must refresh the ScaleUser as well.
+            combine(
+                userFacade.observeSelectedUser(),
+                measurementFacade.getAllMeasurementTypes().map { scaleUnitFor(it) }.distinctUntilChanged(),
+            ) { user, unit -> user to unit }
+                .collect { (user, unit) ->
                     currentAppUser.value = user
-                    currentBtScaleUser.value = user?.let { toScaleUser(it) }
-                    LogManager.i(TAG, "User context updated -> ${user?.name ?: "none"}")
+                    currentBtScaleUser.value = user?.let { toScaleUser(it, unit) }
+                    LogManager.i(TAG, "User context updated -> ${user?.name ?: "none"} (scale unit $unit)")
                 }
         }
     }
 
-    private fun toScaleUser(u: User): ScaleUser =
+    private fun toScaleUser(u: User, unit: WeightUnit): ScaleUser =
         ScaleUser().apply {
             id = u.id
             userName = u.name
             birthday = Date(u.birthDate)
             bodyHeight = u.heightCm
             gender = u.gender
+            scaleUnit = unit
         }
 
     // --- API: Scanning & Connection ---
@@ -301,3 +309,13 @@ interface BluetoothFacadeBindsModule {
     @Singleton
     fun bindBluetoothFacade(impl: BluetoothFacadeImpl): BluetoothFacade
 }
+
+/**
+ * The weight unit scale handlers should use: the unit of the Weight measurement type, which is
+ * where the app keeps the user's choice. Falls back to KG while the types are not loaded.
+ */
+internal fun scaleUnitFor(types: List<MeasurementType>): WeightUnit =
+    types.firstOrNull { it.key == MeasurementType.WEIGHT }?.unit
+        ?.takeIf { it.isWeightUnit() }
+        ?.toWeightUnit()
+        ?: WeightUnit.KG
