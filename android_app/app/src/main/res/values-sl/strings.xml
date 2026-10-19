@@ -880,4 +880,7 @@
     <string name="dialog_message_export_photos">Želiš izvoziti samo CSV ali ZIP datoteko s CSV in vsemi fotografijami? ZIP datoteko je mogoče ponovno uvoziti, vključno s fotografijami.</string>
     <string name="action_export_csv_only">Samo CSV</string>
     <string name="action_export_zip_with_photos">ZIP s fotografijami</string>
+    <string name="measurement_type_hydration_shift">Sprememba hidracije</string>
+    <string name="bt_error_mi_scale_service_missing">Ta naprava ne ponuja podprte storitve Mi Scale.</string>
+    <string name="bt_warn_mi_scale_variant_downgraded">Ta tehtnica je predstavljena kot model v2, vendar prikazuje le težo. Na tej napravi ni na voljo merjenje telesne sestave.</string>
 </resources>
