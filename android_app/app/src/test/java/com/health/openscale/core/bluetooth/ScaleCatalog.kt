@@ -49,6 +49,8 @@ import com.health.openscale.core.bluetooth.scales.HuaweiCH100SHandler
 import com.health.openscale.core.bluetooth.scales.HuaweiHagridWspHandler
 import com.health.openscale.core.bluetooth.scales.HumeDara2Handler
 import com.health.openscale.core.bluetooth.scales.IHealthHS3Handler
+import com.health.openscale.core.bluetooth.scales.IHealthHs2sHandler
+import com.health.openscale.core.bluetooth.libs.IHealthHs2sLib
 import com.health.openscale.core.bluetooth.scales.InlifeHandler
 import com.health.openscale.core.bluetooth.scales.KeepS3Handler
 import com.health.openscale.core.bluetooth.scales.LinkMode
@@ -270,6 +272,10 @@ object ScaleCatalog {
         device("0131971234") claimedBy MedisanaBs44xHandler::class.java,
         device("000fatscale01") claimedBy InlifeHandler::class.java,
         device("IHEALTH HS3") claimedBy IHealthHS3Handler::class.java,
+        device("WHSCL1") claimedBy IHealthHs2sHandler::class.java,
+        device("WHSCL1", IHealthHs2sLib.Variant.WYZE_WHSCL1.service) claimedBy IHealthHs2sHandler::class.java,
+        device("HS2S PRO", IHealthHs2sLib.Variant.HS2S_PRO.service) claimedBy IHealthHs2sHandler::class.java,
+        device("HS2S", IHealthHs2sLib.Variant.HS2S.service) claimedBy IHealthHs2sHandler::class.java,
         device("HUAWEI AH100") claimedBy HuaweiAhCh100Handler::class.java,
         device("HUAWEI CH100") claimedBy HuaweiAhCh100Handler::class.java,
         device("CH100S") claimedBy HuaweiCH100SHandler::class.java,

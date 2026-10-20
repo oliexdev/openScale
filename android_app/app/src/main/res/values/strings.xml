@@ -436,6 +436,12 @@
     <string name="s400_bind_key_description">The Xiaomi S400 scale requires a BLE bind key for decryption. Extract this key from Xiaomi Cloud using the Xiaomi Cloud Tokens Extractor tool.</string>
     <string name="s400_bind_key_error">Bind key must be exactly 32 hex characters</string>
     <string name="bt_s400_missing_bind_key">S400: Bind key not configured. Go to Bluetooth settings to enter your BLE key.</string>
+    <string name="hs2s_device_key_label">Device key</string>
+    <string name="hs2s_device_key_description">Only needed for the original Wyze Scale (WHSCL1). Each one has its own 32-character key; fetch it once from Wyze\'s cloud with wyze-scale-key (github.com/HerbFargus/wyze-scale-key). iHealth HS2S and HS2S Pro scales need no key.</string>
+    <string name="hs2s_device_key_error">Device key must be exactly 32 hex characters</string>
+    <string name="bt_hs2s_missing_device_key">Wyze Scale: device key not configured. Go to Bluetooth settings to enter it.</string>
+    <string name="bt_hs2s_wrong_device_key">Scale authentication failed: the device key doesn\'t match this scale.</string>
+    <string name="bt_hs2s_auth_failed">The scale rejected authentication.</string>
 
     <!-- Huawei Hagrid Scale Configuration -->
     <string name="huawei_hagrid_secrets_title">Huawei Hagrid WSP secrets</string>
