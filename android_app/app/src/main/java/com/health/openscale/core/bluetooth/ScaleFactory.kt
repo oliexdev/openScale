@@ -89,6 +89,7 @@ import com.health.openscale.core.bluetooth.scales.StandardBeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.TrisaBodyAnalyzeHandler
 import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.bluetooth.scales.VitafitVT701Handler
+import com.health.openscale.core.bluetooth.scales.TerraillonWebCoachHandler
 import com.health.openscale.core.bluetooth.scales.WeightGurusA3Handler
 import com.health.openscale.core.bluetooth.scales.YunmaiHandler
 import com.health.openscale.core.bluetooth.scales.YunmaiXHandler
@@ -202,6 +203,7 @@ class ScaleFactory @Inject constructor(
             BeurerSanitasHandler(),
             ScaleupHandler(),
             BodyConnectHandler(),
+            TerraillonWebCoachHandler(),
             WeightGurusA3Handler(),
         )
     }
