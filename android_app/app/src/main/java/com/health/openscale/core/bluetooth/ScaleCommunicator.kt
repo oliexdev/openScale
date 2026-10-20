@@ -46,8 +46,18 @@ sealed class BluetoothEvent {
     /** Emitted when a GATT connection has been established. */
     data class Connected(val deviceName: String, val deviceAddress: String) : BluetoothEvent()
 
-    /** Emitted when an existing GATT connection has been disconnected. */
-    data class Disconnected(val deviceAddress: String, val reason: String? = null) : BluetoothEvent()
+    /**
+     * Emitted when an existing GATT connection has been disconnected.
+     *
+     * [requested] is true when the app or the device handler asked for the disconnect (for example
+     * after a finished weigh-in) and false when the link dropped on its own. Only the latter is a
+     * candidate for an automatic reconnect.
+     */
+    data class Disconnected(
+        val deviceAddress: String,
+        val reason: String? = null,
+        val requested: Boolean = false
+    ) : BluetoothEvent()
 
     /** Emitted when a connection attempt to a device failed. */
     data class ConnectionFailed(val deviceAddress: String, val error: String) : BluetoothEvent()

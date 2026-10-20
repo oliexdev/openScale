@@ -81,6 +81,9 @@ class GattScaleAdapter(
 
     private var connectAttempts = 0
 
+    /** Set when the app or a handler ends the link, so the resulting disconnect is not mistaken for a drop. */
+    @Volatile private var disconnectRequested = false
+
     init {
         // Worker coroutine processes queued BLE operations sequentially
         scope.launch {
@@ -165,7 +168,7 @@ class GattScaleAdapter(
                 runCatching { handler.detach() }
                 lastDisconnectAtMs = SystemClock.elapsedRealtime()
                 if (peripheral.address == targetAddress) {
-                    _events.tryEmit(BluetoothEvent.Disconnected(peripheral.address, status.toString()))
+                    _events.tryEmit(BluetoothEvent.Disconnected(peripheral.address, status.toString(), requested = disconnectRequested))
                     cleanup()
                 }
             }
@@ -366,6 +369,7 @@ class GattScaleAdapter(
         }
 
         override fun disconnect() {
+            disconnectRequested = true
             currentPeripheral?.let { central.cancelConnection(it) }
         }
 
@@ -389,6 +393,7 @@ class GattScaleAdapter(
         val waitMs = (tuning.common.reconnectCooldownMs - sinceLastDisconnect).coerceAtLeast(0)
 
         connectAttempts = 0
+        disconnectRequested = false
         _isConnected.value = false
         _isConnecting.value = true
 
@@ -412,6 +417,7 @@ class GattScaleAdapter(
     }
 
     override fun doDisconnect() {
+        disconnectRequested = true
         runCatching { if (::central.isInitialized) central.stopScan() }
         currentPeripheral?.let { runCatching { central.cancelConnection(it) } }
         currentPeripheral = null

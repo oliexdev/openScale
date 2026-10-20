@@ -78,6 +78,18 @@ class BleConnector(
         const val DISCONNECT_TIMEOUT_MS = 3000L // Timeout for forceful disconnect if no event received.
     }
 
+    /**
+     * When true, a link that drops on its own is re-established by scanning for the same scale again,
+     * so the app keeps listening for weigh-ins without the user tapping connect. A disconnect that the
+     * user or a device handler asked for never triggers this. Turning it off while waiting to
+     * reconnect cancels that wait.
+     */
+    var autoReconnect: Boolean = false
+        set(value) {
+            field = value
+            if (!value && reconnecting) disconnect()
+        }
+
     private val _snackbarEvents = MutableSharedFlow<SnackbarEvent>(replay = 0, extraBufferCapacity = 1)
     val snackbarEvents: SharedFlow<SnackbarEvent> = _snackbarEvents.asSharedFlow()
 
@@ -102,6 +114,10 @@ class BleConnector(
     private var activeCommunicator: ScaleCommunicator? = null
     private var communicatorJob: Job? = null // Job for observing events from the activeCommunicator.
     private var disconnectTimeoutJob: Job? = null // Job for handling disconnect timeouts.
+    private var reconnectJob: Job? = null // Pending automatic reconnect attempt.
+    private var reconnecting = false // True from a scheduled reconnect until it connects, fails or is cancelled.
+    private var reconnectTarget: ScannedDeviceInfo? = null // Device of the last connection we started.
+    private val reconnectPolicy = ReconnectPolicy()
 
     private val savedBurstSignal = MutableSharedFlow<Unit>(replay = 0, extraBufferCapacity = 64)
     private val pendingSavedCount = AtomicInteger(0)
@@ -145,10 +161,20 @@ class BleConnector(
      * @param deviceInfo Information about the scanned device to connect to.
      */
     @SuppressLint("MissingPermission") // Permissions are expected to be checked by the caller.
-    fun connectToDevice(deviceInfo: ScannedDeviceInfo) {
+    fun connectToDevice(deviceInfo: ScannedDeviceInfo) = connectToDevice(deviceInfo, isReconnect = false)
+
+    private fun connectToDevice(deviceInfo: ScannedDeviceInfo, isReconnect: Boolean) {
         scope.launch {
             val deviceDisplayName = deviceInfo.name
             LogManager.i(TAG, "Attempting to connect to $deviceDisplayName")
+
+            if (!isReconnect) {
+                // A connection started by hand supersedes any pending automatic one.
+                reconnectJob?.cancel()
+                reconnecting = false
+                reconnectPolicy.reset()
+            }
+            reconnectTarget = deviceInfo
 
             // Some legacy or specific openScale handlers might require a valid user.
             val needsUserCheck = deviceInfo.determinedHandlerDisplayName?.contains("legacy", ignoreCase = true) == true ||
@@ -301,6 +327,8 @@ class BleConnector(
             is BluetoothEvent.Connected -> {
                 LogManager.i(TAG, "Event: Connected to ${event.deviceName} (${event.deviceAddress})")
                 disconnectTimeoutJob?.cancel()
+                reconnectPolicy.onConnected()
+                reconnecting = false
                 if (_connectionStatus.value != ConnectionStatus.CONNECTED) {
                     _connectionStatus.value = ConnectionStatus.CONNECTED
                     _connectedDeviceAddress.value = event.deviceAddress
@@ -320,10 +348,12 @@ class BleConnector(
                 disconnectTimeoutJob?.cancel()
                 if (_connectedDeviceAddress.value == event.deviceAddress ||
                     _connectionStatus.value == ConnectionStatus.DISCONNECTING) {
+                    val dropped = !event.requested && _connectionStatus.value == ConnectionStatus.CONNECTED
                     _connectionStatus.value = ConnectionStatus.DISCONNECTED
                     _connectedDeviceAddress.value = null
                     _connectedDeviceName.value = null
                     releaseActiveCommunicator(logPrefix = "Disconnected event: ")
+                    if (dropped) scheduleReconnect()
                 } else {
                     LogManager.w(TAG, "Disconnected event for unexpected address ${event.deviceAddress} or status ${_connectionStatus.value}")
                 }
@@ -332,6 +362,7 @@ class BleConnector(
             is BluetoothEvent.ConnectionFailed -> {
                 LogManager.w(TAG, "Event: Connection failed for ${event.deviceAddress}. Reason: ${event.error}")
                 disconnectTimeoutJob?.cancel()
+                reconnecting = false
                 if (_connectedDeviceAddress.value == event.deviceAddress ||
                     _connectionStatus.value == ConnectionStatus.CONNECTING) {
                     _snackbarEvents.tryEmit(
@@ -551,6 +582,29 @@ class BleConnector(
 
 
     /**
+     * Schedules a new connection attempt to [reconnectTarget] after the backoff chosen by
+     * [reconnectPolicy]. The attempt itself scans until the scale advertises again, so a scale that
+     * has gone to sleep is picked up as soon as it wakes.
+     */
+    private fun scheduleReconnect() {
+        val target = reconnectTarget ?: return
+        if (!autoReconnect) return
+
+        val delayMs = reconnectPolicy.onDropped()
+        LogManager.i(TAG, "Link to ${target.name} dropped unexpectedly. Reconnecting in $delayMs ms.")
+        reconnecting = true
+        reconnectJob?.cancel()
+        reconnectJob = scope.launch {
+            delay(delayMs.milliseconds)
+            if (autoReconnect && _connectionStatus.value == ConnectionStatus.DISCONNECTED) {
+                connectToDevice(target, isReconnect = true)
+            } else {
+                reconnecting = false
+            }
+        }
+    }
+
+    /**
      * Disconnects from the currently connected device, if any.
      * This method initiates the disconnection process and starts a timeout
      * to forcefully update the status if the communicator doesn't report disconnection promptly.
@@ -558,6 +612,11 @@ class BleConnector(
     fun disconnect() {
         val deviceDisplayName = _connectedDeviceName.value ?: _connectedDeviceAddress.value ?: "current device"
         LogManager.i(TAG, "disconnect() called for $deviceDisplayName. Active communicator: ${activeCommunicator != null}, Status: ${_connectionStatus.value}")
+
+        // An explicit disconnect also ends any automatic reconnecting.
+        reconnectJob?.cancel()
+        reconnectJob = null
+        reconnecting = false
 
         if (activeCommunicator == null && _connectionStatus.value != ConnectionStatus.CONNECTED && _connectionStatus.value != ConnectionStatus.CONNECTING) {
             LogManager.w(TAG, "No active communicator or active connection to disconnect.")

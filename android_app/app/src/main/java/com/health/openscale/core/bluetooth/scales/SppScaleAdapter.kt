@@ -200,7 +200,8 @@ class SppScaleAdapter(
                             withContext(Dispatchers.Main) {
                                 val da = safeDeviceAddress(device)
                                 LogManager.i(TAG, "Reader loop finished, emitting disconnect")
-                                _events.tryEmit(BluetoothEvent.Disconnected(da, "SPP stream closed"))
+                                // A closed SPP stream is how a session normally ends, so it is not a drop to recover from.
+                                _events.tryEmit(BluetoothEvent.Disconnected(da, "SPP stream closed", requested = true))
                                 lastDisconnectAtMs = SystemClock.elapsedRealtime()
                                 cleanup()
                                 doDisconnect()

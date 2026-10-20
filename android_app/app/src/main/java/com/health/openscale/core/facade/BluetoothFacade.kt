@@ -184,6 +184,14 @@ class BluetoothFacadeImpl @Inject constructor(
 
     init {
         observeCurrentUser()
+        observeAutoReconnect()
+    }
+
+    /** The "auto-connect" setting also keeps the link alive: a dropped connection is re-established. */
+    private fun observeAutoReconnect() {
+        scope.launch {
+            settingsFacade.autoConnectOnStartup.collect { connection.autoReconnect = it }
+        }
     }
 
     private fun observeCurrentUser() {
