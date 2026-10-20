@@ -165,3 +165,4 @@ openScale is licensed under the GPL v3, see LICENSE file for full notice.
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
+
