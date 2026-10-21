@@ -72,6 +72,7 @@ import com.health.openscale.core.bluetooth.scales.RobiS9Handler
 import com.health.openscale.core.bluetooth.scales.RunstarR5Handler
 import com.health.openscale.core.bluetooth.scales.RunstarR6Handler
 import com.health.openscale.core.bluetooth.scales.RyFitHandler
+import com.health.openscale.core.bluetooth.scales.SamsungSmartScaleHandler
 import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler
 import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
 import com.health.openscale.core.bluetooth.scales.ScaleupHandler
@@ -280,6 +281,7 @@ object ScaleCatalog {
         device("PC-PW 3008 BT") claimedBy HoffenBbs8107Handler::class.java,
         device("yunchen") claimedBy HesleyHandler::class.java,
         device("vscale") claimedBy ExingtechY1Handler::class.java,
+        device("LEFU_SCALE CF376", uuid16(0x181D), uuid16(0x181C)) claimedBy SamsungSmartScaleHandler::class.java,
         device("Body Fat-B2") claimedBy EbelterBodyFatB2Handler::class.java,
         device("Electronic Scale") claimedBy ExcelvanCF36xHandler::class.java,
         device("Dara 2.0") claimedBy HumeDara2Handler::class.java,
