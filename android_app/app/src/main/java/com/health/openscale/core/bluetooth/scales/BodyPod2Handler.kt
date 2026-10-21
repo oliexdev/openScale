@@ -14,6 +14,7 @@ import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.Kg
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -43,7 +44,6 @@ class BodyPod2Handler : ScaleDeviceHandler() {
                 DeviceCapability.USER_SYNC,
             ),
             implemented = setOf(
-                DeviceCapability.BODY_COMPOSITION,
                 DeviceCapability.LIVE_WEIGHT_STREAM,
                 DeviceCapability.USER_SYNC,
             ),
@@ -98,6 +98,7 @@ class BodyPod2Handler : ScaleDeviceHandler() {
     private fun publishIfComplete(user: ScaleUser) {
         if (published || weightKg <= 0f || lowFrequency == null || highFrequency == null) return
         val low = lowFrequency ?: return
+        val high = highFrequency ?: return
         // Segment order: right arm, left arm, trunk, right leg, left leg.
         val rightPath = low[0] + low[2] + low[3]
         val leftPath = low[1] + low[2] + low[4]
@@ -107,6 +108,8 @@ class BodyPod2Handler : ScaleDeviceHandler() {
         val measurement = ScaleMeasurement().apply {
             this[MeasurementType.WEIGHT] = Kg(weightKg)
             this[MeasurementType.IMPEDANCE] = Ohm(wholeBodyImpedance.toFloat())
+            LOW_SEGMENT_KEYS.forEachIndexed { index, key -> this[key] = Ohm(low[index].toFloat()) }
+            HIGH_SEGMENT_KEYS.forEachIndexed { index, key -> this[key] = Ohm(high[index].toFloat()) }
         }
         published = true
         publish(measurement)
@@ -135,6 +138,34 @@ class BodyPod2Handler : ScaleDeviceHandler() {
 
         internal fun uint16le(packet: ByteArray, offset: Int): Int =
             (packet[offset].toInt() and 0xFF) or ((packet[offset + 1].toInt() and 0xFF) shl 8)
+
+        private val LOW_SEGMENT_KEYS = listOf(
+            segment("low", "right_arm", R.string.measurement_type_segmental_impedance_low_right_arm, MeasurementTypeIcon.IC_BICEPS),
+            segment("low", "left_arm", R.string.measurement_type_segmental_impedance_low_left_arm, MeasurementTypeIcon.IC_BICEPS),
+            segment("low", "torso", R.string.measurement_type_segmental_impedance_low_torso, MeasurementTypeIcon.IC_CHEST),
+            segment("low", "right_leg", R.string.measurement_type_segmental_impedance_low_right_leg, MeasurementTypeIcon.IC_THIGH),
+            segment("low", "left_leg", R.string.measurement_type_segmental_impedance_low_left_leg, MeasurementTypeIcon.IC_THIGH),
+        )
+
+        private val HIGH_SEGMENT_KEYS = listOf(
+            segment("high", "right_arm", R.string.measurement_type_segmental_impedance_high_right_arm, MeasurementTypeIcon.IC_BICEPS),
+            segment("high", "left_arm", R.string.measurement_type_segmental_impedance_high_left_arm, MeasurementTypeIcon.IC_BICEPS),
+            segment("high", "torso", R.string.measurement_type_segmental_impedance_high_torso, MeasurementTypeIcon.IC_CHEST),
+            segment("high", "right_leg", R.string.measurement_type_segmental_impedance_high_right_leg, MeasurementTypeIcon.IC_THIGH),
+            segment("high", "left_leg", R.string.measurement_type_segmental_impedance_high_left_leg, MeasurementTypeIcon.IC_THIGH),
+        )
+
+        private fun segment(
+            frequency: String,
+            part: String,
+            nameResId: Int,
+            icon: MeasurementTypeIcon,
+        ) = MeasurementType.deviceOhm(
+            path = "segmental.impedance.$frequency.$part",
+            nameResId = nameResId,
+            icon = icon,
+            enabled = false,
+        )
 
         private fun xor(packet: ByteArray, start: Int, endExclusive: Int): Byte {
             var result = 0

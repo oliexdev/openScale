@@ -306,7 +306,8 @@ data class MeasurementType(
          * on first use — the user may change all of it afterwards.
          *
          * The factory picks the delivery unit: [devicePercent] keys take [Percent] values,
-         * [deviceKg] takes [Kg], [deviceFloat] a plain dimensionless [Float].
+         * [deviceKg] takes [Kg], [deviceOhm] takes [Ohm], and [deviceFloat] a plain dimensionless
+         * [Float].
          */
         fun devicePercent(
             path: String,
@@ -330,6 +331,18 @@ data class MeasurementType(
             rightAxis: Boolean = false,
             isInternal: Boolean = false
         ): Key<Kg> = deviceFloatKey(path, nameResId, UnitType.KG, icon, color, enabled, pinned, rightAxis, isInternal)
+
+        /** See [devicePercent]; raw values arrive as [Ohm]. */
+        fun deviceOhm(
+            path: String,
+            @StringRes nameResId: Int,
+            icon: MeasurementTypeIcon = MeasurementTypeIcon.IC_DEFAULT,
+            color: Int = DEVICE_DEFAULT_COLOR,
+            enabled: Boolean = true,
+            pinned: Boolean = false,
+            rightAxis: Boolean = false,
+            isInternal: Boolean = false
+        ): Key<Ohm> = deviceFloatKey(path, nameResId, UnitType.OHM, icon, color, enabled, pinned, rightAxis, isInternal)
 
         /** See [devicePercent]; a dimensionless decimal (score, index, ratio). */
         fun deviceFloat(

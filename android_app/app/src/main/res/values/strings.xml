@@ -187,6 +187,16 @@
     <string name="measurement_type_heart_rate">Heart Rate</string>
     <string name="measurement_type_impedance">Impedance (high)</string>
     <string name="measurement_type_impedance_low">Impedance (low)</string>
+    <string name="measurement_type_segmental_impedance_low_left_arm">Impedance (low, left arm)</string>
+    <string name="measurement_type_segmental_impedance_low_right_arm">Impedance (low, right arm)</string>
+    <string name="measurement_type_segmental_impedance_low_torso">Impedance (low, torso)</string>
+    <string name="measurement_type_segmental_impedance_low_left_leg">Impedance (low, left leg)</string>
+    <string name="measurement_type_segmental_impedance_low_right_leg">Impedance (low, right leg)</string>
+    <string name="measurement_type_segmental_impedance_high_left_arm">Impedance (high, left arm)</string>
+    <string name="measurement_type_segmental_impedance_high_right_arm">Impedance (high, right arm)</string>
+    <string name="measurement_type_segmental_impedance_high_torso">Impedance (high, torso)</string>
+    <string name="measurement_type_segmental_impedance_high_left_leg">Impedance (high, left leg)</string>
+    <string name="measurement_type_segmental_impedance_high_right_leg">Impedance (high, right leg)</string>
     <string name="measurement_type_ecw">Extracellular water</string>
     <string name="measurement_type_icw">Intracellular water</string>
     <string name="measurement_type_protein">Protein</string>
