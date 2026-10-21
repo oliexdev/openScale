@@ -77,6 +77,7 @@ import com.health.openscale.core.bluetooth.scales.RobiS9Handler
 import com.health.openscale.core.bluetooth.scales.RunstarR5Handler
 import com.health.openscale.core.bluetooth.scales.RunstarR6Handler
 import com.health.openscale.core.bluetooth.scales.RyFitHandler
+import com.health.openscale.core.bluetooth.scales.SamsungSmartScaleHandler
 import com.health.openscale.core.bluetooth.scales.SanitasSbf72Handler
 import com.health.openscale.core.bluetooth.scales.SenssunHandler
 import com.health.openscale.core.bluetooth.scales.SinocareHandler
@@ -154,6 +155,7 @@ class ScaleFactory @Inject constructor(
             YunmaiHandler(isMini = true),
             YunmaiXHandler(),
             TrisaBodyAnalyzeHandler(),
+            SamsungSmartScaleHandler(),
             SanitasSbf72Handler(),
             StandardBeurerSanitasHandler(),
             SoehnleHandler(),
