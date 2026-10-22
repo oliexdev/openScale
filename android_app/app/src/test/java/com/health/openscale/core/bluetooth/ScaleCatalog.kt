@@ -28,6 +28,7 @@ import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
 import com.health.openscale.core.bluetooth.scales.CultSmartScaleProHandler
+import com.health.openscale.core.bluetooth.scales.ChipseaBleHandler
 import com.health.openscale.core.bluetooth.scales.CustomOpenScaleHandler
 import com.health.openscale.core.bluetooth.scales.DeviceCapability
 import com.health.openscale.core.bluetooth.scales.DigooDGSO38HHandler
@@ -335,6 +336,9 @@ object ScaleCatalog {
             claimedBy OkOkHandler::class.java,
         advertisement(name = "ADV", manufacturerData = listOf(0xF0FF to ByteArray(16)))
             claimedBy OkOkHandler::class.java,
+        // Chipsea-BLE: connectable GATT scale (service 0xFFF0), claimed by its exact name —
+        // not by the service, which is Chipsea's generic UART service.
+        device("Chipsea-BLE", uuid16(0xFFF0)) claimedBy ChipseaBleHandler::class.java,
         // Etekcity Fit 8S: nameless, company id 0x06D0 plus service 0xFFD0.
         advertisement(
             services = listOf(uuid16(0xFFD0)),

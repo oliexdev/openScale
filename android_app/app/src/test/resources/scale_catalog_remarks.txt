@@ -22,3 +22,4 @@ PICOOC Mini Lite = Tested with the PICOOC-L broadcast protocol. Weight and imped
 QN Scale (Broadcast) = No pairing needed. Tested with the FITINDEX FT-26R-W, which reports weight only (no body composition — these units have no electrodes). Stay on the scale until the display stops changing, around six seconds; it only reports a reading once it settles, so stepping off earlier records nothing.
 AAAxHandler = No pairing needed: the Icomon/Fitdays "AAA" boards only broadcast. Weight only; the impedance frame is not decoded. Newer boards (e.g. "AAA07A", Posture FG220LB) are recognised by their advertisement, not just by name.
 Fitdays FG2202WB = Body composition needs the handlebar held during the weigh-in; with feet only the scale measures no impedance
+Chipsea-BLE = Chipsea GATT body-fat scale (service 0xFFF0, vendor app "OKOK International") — not the broadcast OKOK protocol
