@@ -567,9 +567,10 @@ class PicoocHandler : ScaleDeviceHandler() {
          * matches 71.7 kg exactly. The top bit is therefore a separate flag, not part of the
          * value. It is decoded into [LiveFrame.poundFlag] and logged pending an explanation.
          *
-         * PICOOC-CC sends a short 10-byte variant instead: `[op][len][ts BE 4B][weight/20]
-         * [impedance/10]`, with no pound, unit, phase or flag fields. It arrives once, after the
-         * profile exchange, with the settled reading, so it is treated as complete.
+         * PICOOC-CC and PICOOC-S3 send a short 10-byte variant instead: `[op][len][ts BE 4B]
+         * [weight/20][impedance/10]`, with no pound, unit, phase or flag fields. It arrives once,
+         * after the profile exchange, with the settled reading, so it is treated as complete. The
+         * impedance is 0 when the user weighs with socks on.
          */
         fun parseLiveFrame(data: ByteArray): LiveFrame? {
             // Keyed on the length byte, so a truncated long frame is still rejected below.

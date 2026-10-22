@@ -212,6 +212,9 @@ object ScaleCatalog {
         device("Keep_S3") claimedBy KeepS3Handler::class.java,
         // The S3 Lite V2.0 advertises as PICOOC-CQ; the Latin series carries no vendor prefix.
         device("PICOOC-CQ") claimedBy PicoocHandler::class.java,
+        // PICOOC-CC and PICOOC-S3 send the short 10-byte live frame.
+        device("PICOOC-CC") claimedBy PicoocHandler::class.java,
+        device("PICOOC-S3") claimedBy PicoocHandler::class.java,
         device("Latin-S") claimedBy PicoocHandler::class.java,
         device("PICOOC-L") claimedBy PicoocBroadcastHandler::class.java,
         device("Beurer BF450") claimedBy BeurerBF450Handler::class.java,
