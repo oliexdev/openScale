@@ -125,6 +125,42 @@ class ChipseaBleLibTest {
     }
 
     @Test
+    fun `v11 multi packet live measurement unlocked is a weight only preview`() {
+        // Same payload as the locked live test but property 0x00: the lock flag is
+        // clear, so the composition fields must not be reported as final values.
+        val first = lib.feed(
+            hex("CA 11 10 12 12 00 00 00 00 00 00 00 00 00 01 02 F3 00 EA"),
+        )
+        assertThat(first).isNull()
+
+        val m = lib.feed(hex("CA 11 0B 12 22 02 27 01 48 06 72 00 5A 1D"))
+
+        assertThat(m).isNotNull()
+        assertThat(m!!.locked).isFalse()
+        assertThat(m.weightKg).isWithin(0.001f).of(75.5f)
+        assertThat(m.bodyFatPercent).isNull()
+        assertThat(m.bmrKcal).isNull()
+    }
+
+    @Test
+    fun `v11 multi packet with inconsistent chunk totals is dropped`() {
+        // Chunks 1 and 4 of a 5-chunk sequence, then chunk 3 claiming a total of 3:
+        // the stored count matches the new total but index 2 was never received,
+        // so the sequence must be dropped instead of throwing on the missing chunk.
+        assertThat(lib.feed(hex("CA 11 06 12 15 01 02 03 04"))).isNull()
+        assertThat(lib.feed(hex("CA 11 06 12 45 05 06 07 08"))).isNull()
+        assertThat(lib.feed(hex("CA 11 06 12 33 09 0A 0B 0C"))).isNull()
+
+        // A following well-formed sequence still completes normally.
+        assertThat(
+            lib.feed(hex("CA 11 10 12 12 00 00 00 00 01 00 00 00 00 01 02 F3 00 EA")),
+        ).isNull()
+        val m = lib.feed(hex("CA 11 0B 12 22 02 27 01 48 06 72 00 5A 1D"))
+        assertThat(m).isNotNull()
+        assertThat(m!!.locked).isTrue()
+    }
+
+    @Test
     fun `v11 multi packet history record carries its timestamp`() {
         // Same payload as the live test but timestamp 0x6553F100 = 1700000000 s,
         // subtype 19, single chunk: split (1 << 4) | 1 = 0x11, len 23+2 = 0x19.

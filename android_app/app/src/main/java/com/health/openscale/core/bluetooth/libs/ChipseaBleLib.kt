@@ -144,6 +144,15 @@ class ChipseaBleLib {
     private fun parseAssembled(payload: ByteArray, history: Boolean): Measurement? {
         if (payload.size < 23) return null
         val property = payload[4]
+        if (!isLocked(property)) {
+            // Weight has not settled yet — live preview only, like parseSingleFrame;
+            // the composition fields are not valid until the lock flag is set.
+            return Measurement(
+                weightKg = decodeWeightKg(payload[10], payload[11], property),
+                locked = false,
+                timestamp = if (history) Date(u32be(payload, 0) * 1000L) else null,
+            )
+        }
         return Measurement(
             weightKg = decodeWeightKg(payload[10], payload[11], property),
             locked = true,
@@ -170,12 +179,14 @@ class ChipseaBleLib {
         if (index == 1) chunks.clear()
         chunks[index] = frame.copyOfRange(5, 5 + payloadLength)
         if (index != total) return null
-        if (chunks.size != total) {
+        // Chunk totals can disagree within one sequence (a later frame may carry a
+        // smaller total), so the count alone does not prove every index is present.
+        if (chunks.size != total || (1..total).any { it !in chunks }) {
             chunks.clear()
             return null
         }
         var assembled = ByteArray(0)
-        for (i in 1..total) assembled += chunks[i]!!
+        for (i in 1..total) assembled += chunks.getValue(i)
         chunks.clear()
         return assembled
     }
