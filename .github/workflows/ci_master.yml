@@ -43,6 +43,11 @@ jobs:
         run: ./gradlew compileDebugAndroidTestKotlin
       - name: Build APK
         run: ./gradlew assembleDebug
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openScale-debug-apk
+          path: android_app/app/build/outputs/apk/debug/openScale-debug.apk
       - uses: "marvinpinto/action-automatic-releases@latest"
         if: github.event_name == 'push'
         with:
