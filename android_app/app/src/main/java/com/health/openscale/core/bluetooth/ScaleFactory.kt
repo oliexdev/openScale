@@ -62,6 +62,7 @@ import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
 import com.health.openscale.core.bluetooth.scales.XiaomiS800Handler
 import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
+import com.health.openscale.core.bluetooth.scales.RedmondSkybalanceHandler
 import com.health.openscale.core.bluetooth.scales.OmronWlcHandler
 import com.health.openscale.core.bluetooth.scales.PicoocHandler
 import com.health.openscale.core.bluetooth.scales.PicoocBroadcastHandler
@@ -151,6 +152,7 @@ class ScaleFactory @Inject constructor(
             RyFitHandler(),
             CultSmartScaleProHandler(),
             RealmeSmartScaleHandler(),
+            RedmondSkybalanceHandler(),
             YunmaiHandler(isMini = false),
             YunmaiHandler(isMini = true),
             YunmaiXHandler(),

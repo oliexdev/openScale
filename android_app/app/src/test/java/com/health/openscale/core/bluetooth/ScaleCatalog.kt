@@ -57,6 +57,7 @@ import com.health.openscale.core.bluetooth.scales.MedisanaBs44xHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
+import com.health.openscale.core.bluetooth.scales.RedmondSkybalanceHandler
 import com.health.openscale.core.bluetooth.scales.OmronWlcHandler
 import com.health.openscale.core.bluetooth.scales.PicoocHandler
 import com.health.openscale.core.bluetooth.scales.PicoocBroadcastHandler
@@ -220,6 +221,11 @@ object ScaleCatalog {
         device("RYFIT") claimedBy RyFitHandler::class.java,
         device("CULT Smart Scale Pro") claimedBy CultSmartScaleProHandler::class.java,
         device("realme Smart Scale") claimedBy RealmeSmartScaleHandler::class.java,
+        device("RS-73S") claimedBy RedmondSkybalanceHandler::class.java,
+        device("RS-744S") claimedBy RedmondSkybalanceHandler::class.java,
+        device("RS-745S") claimedBy RedmondSkybalanceHandler::class.java,
+        device("RS-762S") claimedBy RedmondSkybalanceHandler::class.java,
+        device("RS-773S") claimedBy RedmondSkybalanceHandler::class.java,
         device("YUNMAI-ISSE-1234") claimedBy YunmaiHandler::class.java,
         device("YUNMAI-SIGNAL-1234") claimedBy YunmaiHandler::class.java,
         device("01257B1234") claimedBy TrisaBodyAnalyzeHandler::class.java,
