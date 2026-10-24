@@ -67,8 +67,7 @@ import java.util.UUID
  * | `0xD0` | phone → scale | the time/profile frame, see below |
  * | `0xDF` | phone → scale | control: `04 <wire type>` = ACK, `01` = sent once after the profile |
  *
- * The `0xD0` body, byte by byte (the vendor SDK's `encodeTimeAndUserInfo`; the fields are named
- * from its keys, and a Urikar Aero I switched its display kg → lb → st → kg with them):
+ * The `0xD0` body, byte by byte (a Urikar Aero I switched its display kg → lb → st → kg with it):
  *
  * | body | field |
  * |---|---|
@@ -681,14 +680,14 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         fun weightGrams(raw: ByteArray, at: Int): Int =
             (((raw[at].toInt() and 0xFF) shl 16) or u16(raw, at + 1)) and WEIGHT_G_MASK
 
-        /** The scale's display-unit codes: kg 0, lb 1, st 2 (the vendor SDK also has jin 3). */
+        /** The scale's display-unit codes: kg 0, lb 1, st 2. */
         fun unitCode(unit: WeightUnit): Int = when (unit) {
             WeightUnit.KG -> 0
             WeightUnit.LB -> 1
             WeightUnit.ST -> 2
         }
 
-        /** The vendor's rounding for weights: `trunc(v * 1000) / 10`, i.e. hundredths of a kg. */
+        /** Weights in truncated hundredths of a kg: `trunc(v * 1000) / 10`. */
         internal fun hundredths(kg: Float): Int =
             (((1000.0 * kg.toDouble()).toFloat().toInt()) / 10).coerceIn(0, 0xFFFF)
 

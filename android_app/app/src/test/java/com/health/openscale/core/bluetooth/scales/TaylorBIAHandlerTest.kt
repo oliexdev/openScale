@@ -560,7 +560,7 @@ class TaylorBIAHandlerTest {
     }
 
     @Test
-    fun `weights are sent in hundredths of a kg with the vendor's truncation`() {
+    fun `weights are sent in truncated hundredths of a kg`() {
         assertThat(TaylorBIAHandler.hundredths(80.7f)).isEqualTo(8070)
         assertThat(TaylorBIAHandler.hundredths(75f)).isEqualTo(7500)
         assertThat(TaylorBIAHandler.hundredths(0f)).isEqualTo(0)
