@@ -19,7 +19,6 @@ package com.health.openscale.core.bluetooth
 
 import androidx.compose.runtime.Composable
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
-import com.health.openscale.core.bluetooth.data.ScaleUser
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -84,8 +83,8 @@ interface ScaleCommunicator {
     /** Indicates whether a GATT connection is active. For broadcast-only devices this is always `false`. */
     val isConnected: StateFlow<Boolean>
 
-    /** Start communicating with a device identified by [address]. Binds the session to [scaleUser]. */
-    fun connect(address: String, scaleUser: ScaleUser?)
+    /** Start communicating with a device identified by [address] for the selected app user. */
+    fun connect(address: String)
 
     /** Terminate the current session (disconnect or stop scanning). */
     fun disconnect()
