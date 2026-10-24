@@ -23,7 +23,6 @@ import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.ScaleCommunicator
 import com.health.openscale.core.bluetooth.ScaleFactory
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
-import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.ConnectionStatus
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.Bpm
@@ -63,14 +62,14 @@ import kotlin.time.Duration.Companion.milliseconds
  *              event observation will be launched (e.g., `viewModelScope` from BluetoothViewModel).
  * @param scaleFactory A factory for creating [com.health.openscale.core.bluetooth.ScaleCommunicator] instances based on device information.
  * @param measurementFacade Facade for handling measurement-related operations.
- * @param getCurrentScaleUser Callback function to retrieve the current Bluetooth scale user.
+ * @param getCurrentUserId Callback function to retrieve the id of the selected app user.
  */
 @OptIn(FlowPreview::class) // debounce
 class BleConnector(
     private val scope: CoroutineScope,
     private val scaleFactory: ScaleFactory,
     private val measurementFacade: MeasurementFacade,
-    private val getCurrentScaleUser: () -> ScaleUser?,
+    private val getCurrentUserId: () -> Int?,
     ) : AutoCloseable {
 
     private companion object {
@@ -150,17 +149,6 @@ class BleConnector(
             val deviceDisplayName = deviceInfo.name
             LogManager.i(TAG, "Attempting to connect to $deviceDisplayName")
 
-            // Some legacy or specific openScale handlers might require a valid user.
-            val needsUserCheck = deviceInfo.determinedHandlerDisplayName?.contains("legacy", ignoreCase = true) == true ||
-                    deviceInfo.determinedHandlerDisplayName?.startsWith("com.health.openscale") == true
-
-            if (needsUserCheck && getCurrentScaleUser()?.id == 0) {
-                LogManager.e(TAG, "User ID is 0, which might be problematic for handler '${deviceInfo.determinedHandlerDisplayName}'. Connection ABORTED.")
-                _connectionError.value = "No user selected. Connection to $deviceDisplayName not possible."
-                _connectionStatus.value = ConnectionStatus.FAILED
-                return@launch
-            }
-
             if (!deviceInfo.isSupported) {
                 LogManager.e(TAG, "Device $deviceDisplayName is NOT supported according to ScannedInfo. Connection ABORTED.")
                 _connectionError.value = "$deviceDisplayName is not supported."
@@ -189,7 +177,7 @@ class BleConnector(
 
             LogManager.i(TAG, "ActiveCommunicator successfully created: ${activeCommunicator!!.javaClass.simpleName}. Starting observation job...")
             observeActiveCommunicatorEvents(deviceInfo)
-            activeCommunicator?.connect(deviceInfo.address, getCurrentScaleUser())
+            activeCommunicator?.connect(deviceInfo.address)
         }
     }
 
@@ -434,7 +422,7 @@ class BleConnector(
         measurementData: ScaleMeasurement,
         deviceName: String
     ) {
-        val currentAppUserId = getCurrentScaleUser()?.id
+        val currentAppUserId = getCurrentUserId()
         if (currentAppUserId == 0) {
             LogManager.e(TAG, "($deviceName): No App User ID to save measurement.")
             _snackbarEvents.tryEmit(

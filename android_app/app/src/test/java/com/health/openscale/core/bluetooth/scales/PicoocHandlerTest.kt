@@ -193,6 +193,47 @@ class PicoocHandlerTest {
         assertThat(frame.poundFlag).isTrue()
     }
 
+    /** Captured from a PICOOC-CC weighing 82.3 kg; this model sends a 10-byte live frame. */
+    @Test
+    fun `parses the captured short PICOOC-CC weight frame`() {
+        val frame = PicoocHandler.parseLiveFrame(
+            hex("39 0A 6A D6 52 D7 06 6E 11 8A"),
+        )!!
+
+        assertThat(frame.timestamp).isEqualTo(0x6AD6_52D7L)
+        assertThat(frame.weightKg).isWithin(0.0001f).of(82.3f)
+        assertThat(frame.impedance).isWithin(0.0001).of(449.0)
+        assertThat(frame.complete).isTrue()
+    }
+
+    /** Captured from a PICOOC-S3: barefoot (85.3 kg, 483 Ω) and with socks on (85.1 kg, 0 Ω). */
+    @Test
+    fun `parses the captured short PICOOC-S3 weight frames`() {
+        val barefoot = PicoocHandler.parseLiveFrame(hex("39 0A 6A DA 30 28 06 AA 12 DE"))!!
+        assertThat(barefoot.weightKg).isWithin(0.0001f).of(85.3f)
+        assertThat(barefoot.impedance).isWithin(0.0001).of(483.0)
+        assertThat(barefoot.complete).isTrue()
+
+        val socks = PicoocHandler.parseLiveFrame(hex("39 0A 6A D9 EF 8A 06 A6 00 00"))!!
+        assertThat(socks.weightKg).isWithin(0.0001f).of(85.1f)
+        assertThat(socks.impedance).isEqualTo(0.0)
+        assertThat(socks.complete).isTrue()
+    }
+
+    /** With socks on the S3 reports no impedance: the weight is still stored, without composition. */
+    @Test
+    fun `stores the weight alone when the short frame carries no impedance`() = runTest {
+        val setup = attachedHandler(scope = this)
+        setup.handler.handleConnected(setup.user)
+
+        setup.handler.handleNotification(notifyCharacteristic, hex("39 0A 6A D9 EF 8A 06 A6 00 00"))
+        setup.handler.handleDisconnected()
+
+        val measurement = setup.callbacks.published.single()
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(85.1f)
+        assertThat(measurement[MeasurementType.BODY_FAT]).isNull()
+    }
+
     @Test
     fun `treats a non-zero trailing flag as still settling`() {
         assertThat(PicoocHandler.parseLiveFrame(liveFrame(complete = false))!!.complete).isFalse()
@@ -435,6 +476,28 @@ class PicoocHandlerTest {
 
         assertThat(setup.callbacks.published).hasSize(1)
         assertThat(setup.callbacks.published.single()[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(70.0f)
+    }
+
+    /**
+     * Replays a captured PICOOC-CC session: time sync, empty history, profile request, one
+     * short live frame, then the scale hanging up about 6 s later.
+     */
+    @Test
+    fun `replays the captured PICOOC-CC session as a single record`() = runTest {
+        val setup = attachedHandler(scope = this)
+        setup.handler.handleConnected(setup.user)
+
+        setup.handler.handleNotification(notifyCharacteristic, hex("35 02"))
+        setup.handler.handleNotification(notifyCharacteristic, hex("37 02"))
+        setup.handler.handleNotification(notifyCharacteristic, hex("30 05 00 06 6E"))
+        setup.handler.handleNotification(notifyCharacteristic, hex("39 0A 6A D6 52 D7 06 6E 11 8A"))
+        setup.handler.handleDisconnected()
+
+        assertThat(setup.callbacks.published).hasSize(1)
+        val measurement = setup.callbacks.published.single()
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(82.3f)
+        assertThat(measurement[MeasurementType.IMPEDANCE]?.value).isWithin(0.0001f).of(449.0f)
+        assertThat(measurement[MeasurementType.BODY_FAT]?.value).isGreaterThan(0f)
     }
 
     @Test

@@ -457,7 +457,7 @@ class StandardWeightProfileHandlerTest {
 
     @Test
     fun `recognises the A&D UC-352BLE advertisement without depending on its serial suffix`() {
-        val support = AndUC352BLEHandler().supportFor(device("A&D_UC-352BLE_01166D", uuid16(0x181D)))
+        val support = PlainSigScaleHandler().supportFor(device("A&D_UC-352BLE_01166D", uuid16(0x181D)))
 
         assertThat(support).isNotNull()
         assertThat(support!!.displayName).isEqualTo("A&D UC-352BLE")
@@ -472,12 +472,21 @@ class StandardWeightProfileHandlerTest {
 
     @Test
     fun `A&D UC-352BLE matching is case insensitive and rejects other devices`() {
-        val handler = AndUC352BLEHandler()
+        val handler = PlainSigScaleHandler()
 
         assertThat(handler.supportFor(device("a&d_uc-352ble_abcdef", uuid16(0x181D)))).isNotNull()
         assertThat(handler.supportFor(device("A&D_UC-355BLE_01166D", uuid16(0x181D)))).isNull()
         assertThat(handler.supportFor(device("UC-352BLE", uuid16(0x181D)))).isNull()
         assertThat(handler.supportFor(device("A&D_UC-352BLE_01166D"))).isNotNull()
+    }
+
+    @Test
+    fun `Samsung Smart Scale is only claimed with the weight scale service`() {
+        val handler = PlainSigScaleHandler()
+
+        val support = handler.supportFor(device("LEFU_SCALE CF376", uuid16(0x181D), uuid16(0x181C)))
+        assertThat(support?.displayName).isEqualTo("Samsung Smart Scale (GP-BELAD001BP0)")
+        assertThat(handler.supportFor(device("LEFU_SCALE CF376", uuid16(0xFFF0)))).isNull()
     }
 
     @Test
@@ -490,7 +499,7 @@ class StandardWeightProfileHandlerTest {
 
         for ((payload, expected) in captured) {
             val callbacks = CapturingCallbacks()
-            val handler = attachedHandler(AndUC352BLEHandler(), "A&D_UC-352BLE_01166D", callbacks)
+            val handler = attachedHandler(PlainSigScaleHandler(), "A&D_UC-352BLE_01166D", callbacks)
 
             handler.handleNotification(chrWeight, hex(payload))
             handler.handleDisconnected()

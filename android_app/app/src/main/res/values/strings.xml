@@ -436,6 +436,12 @@
     <string name="s400_bind_key_description">The Xiaomi S400 scale requires a BLE bind key for decryption. Extract this key from Xiaomi Cloud using the Xiaomi Cloud Tokens Extractor tool.</string>
     <string name="s400_bind_key_error">Bind key must be exactly 32 hex characters</string>
     <string name="bt_s400_missing_bind_key">S400: Bind key not configured. Go to Bluetooth settings to enter your BLE key.</string>
+    <string name="hs2s_device_key_label">Device key</string>
+    <string name="hs2s_device_key_description">The original Wyze Scale (WHSCL1) needs its 32-character device key from the Wyze cloud. iHealth HS2S and HS2S Pro scales need no key.</string>
+    <string name="hs2s_device_key_error">Device key must be exactly 32 hex characters</string>
+    <string name="bt_hs2s_missing_device_key">Wyze Scale: device key not configured. Go to Bluetooth settings to enter it.</string>
+    <string name="bt_hs2s_wrong_device_key">Scale authentication failed: the device key doesn\'t match this scale.</string>
+    <string name="bt_hs2s_auth_failed">The scale rejected authentication.</string>
 
     <!-- Huawei Hagrid Scale Configuration -->
     <string name="huawei_hagrid_secrets_title">Huawei Hagrid WSP secrets</string>
@@ -925,6 +931,48 @@
     <string name="bt_warn_write_failed">Write to %1$s failed.</string>
     <string name="bt_warn_notify_state_failed">Changing notify state for %1$s failed.</string>
     <string name="bt_warn_consent_wrong_retry">Consent code was not accepted. Please check and try again.</string>
+    <string name="bt_warn_qardio_users_full">The QardioBase has no free user slots. Reset the scale in the device settings to remove all users, then connect again.</string>
+    <string name="bt_info_qardio_updating">Updating the scale…</string>
+    <string name="bt_info_qardio_updated">Scale updated.</string>
+    <string name="bt_warn_qardio_other_user">Weigh-in of %1$s not saved: the scale assigned it to \"%2$s\". If that was you, step off and press the middle of the scale until the pointer is on your name.</string>
+    <string name="bt_info_qardio_guest">The scale did not recognise you. Step off and press the middle of the scale until the pointer is on your name.</string>
+    <string name="bt_warn_qardio_profile_timeout">The scale stopped answering while your profile was being saved. Connect again to retry.</string>
+    <string name="bt_warn_qardio_config_timeout">The scale did not enter its settings mode, so your profile was not sent. Step off the scale and connect again to retry.</string>
+    <string name="bt_warn_qardio_reset_timeout">The scale did not confirm the reset. It will be tried again on the next connection.</string>
+    <string name="bt_warn_qardio_guest_not_saved">Weigh-in of %1$s not saved: the scale did not recognise you. Next time, step off and press the middle of the scale until the pointer is on your name.</string>
+    <string name="qardio_section_info">Scale</string>
+    <string name="qardio_info_none">Connect once to read the scale\'s details.</string>
+    <string name="qardio_info_model">Model</string>
+    <string name="qardio_info_firmware">Firmware</string>
+    <string name="qardio_info_software">Software</string>
+    <string name="qardio_info_battery_value">%1$d%%</string>
+    <string name="qardio_info_profiles">Profiles</string>
+    <string name="qardio_info_profile_other">other (not from this phone)</string>
+    <string name="qardio_section_scale">Scale settings</string>
+    <string name="qardio_section_phone">This phone</string>
+    <string name="qardio_section_maintenance">Maintenance</string>
+    <string name="qardio_action_resend">Resend</string>
+    <string name="qardio_action_reset">Reset</string>
+    <string name="qardio_config_resend_pending">Profiles will be sent on the next connection.</string>
+    <string name="qardio_config_impedance">Body composition</string>
+    <string name="qardio_config_impedance_desc">Measures fat, water, muscle and bone with a small current. Turn off for anyone with a pacemaker or other implant, or during pregnancy.</string>
+    <string name="qardio_config_haptic">Vibration</string>
+    <string name="qardio_config_haptic_desc">The scale vibrates when it turns on, when a measurement is done and when its settings change.</string>
+    <string name="qardio_config_scale_wide_pending">Change pending: sent on the next connection.</string>
+    <string name="qardio_config_save_guest">Save guest weigh-ins</string>
+    <string name="qardio_config_save_guest_desc">Saves weigh-ins the scale does not recognise to the active user. Use only if nobody else uses the scale.</string>
+    <string name="bt_info_qardio_resetting">Resetting the scale and removing all users…</string>
+    <string name="qardio_config_description">openScale keeps the active user\'s profile up to date on the scale. The scale shows names in lowercase, up to 6 letters or digits.</string>
+    <string name="qardio_config_select_on_connect">Select my profile when connecting</string>
+    <string name="qardio_config_select_on_connect_desc">Tells the scale the next weigh-in is the active openScale user\'s, as the official app did. The scale can still recognise someone else.</string>
+    <string name="qardio_config_resend_profiles">Resend profiles</string>
+    <string name="qardio_config_reset">Reset scale</string>
+    <string name="qardio_config_reset_desc">On the next connection, removes all users and the Wi-Fi network and restores the scale\'s defaults. The connection after that adds your profile again.</string>
+    <string name="qardio_config_reset_legacy">Legacy reset (experimental)</string>
+    <string name="qardio_config_reset_legacy_desc">The Qardio app\'s reset for firmware older than 1.8. Try it only if the normal reset does nothing.</string>
+    <string name="qardio_config_resend_profiles_desc">Sends the profile of each openScale user on this phone again on their next connection.</string>
+    <string name="bt_info_qardio_reset_done">Scale reset. Your profile is added again the next time the scale connects.</string>
+    <string name="qardio_config_reset_pending">Pending: the scale will be reset the next time this phone connects.</string>
 
     <!-- Errors -->
     <string name="bt_error_ucp_not_authorized">Consent code not accepted. Please check and try again.</string>
