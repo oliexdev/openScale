@@ -213,8 +213,9 @@ object ScaleCatalog {
         device("AE BS-06") claimedBy ActiveEraBF06Handler::class.java,
         device("AFU-BH-TZ-B1", uuid16(0xFC50)) claimedBy AfuB1Handler::class.java,
         device("Keep_S3") claimedBy KeepS3Handler::class.java,
-        // The S3 Lite V2.0 advertises as PICOOC-CQ; the Latin series carries no vendor prefix.
         device("PICOOC-CQ") claimedBy PicoocHandler::class.java,
+        device("PICOOC-CC") claimedBy PicoocHandler::class.java,
+        device("PICOOC-S3") claimedBy PicoocHandler::class.java,
         device("Latin-S") claimedBy PicoocHandler::class.java,
         device("PICOOC-L") claimedBy PicoocBroadcastHandler::class.java,
         device("Beurer BF450") claimedBy BeurerBF450Handler::class.java,
@@ -242,7 +243,6 @@ object ScaleCatalog {
         device("Shape200") claimedBy SoehnleHandler::class.java,
         device("Weight Scale") claimedBy SinocareHandler::class.java,
         device("SENSSUN FAT") claimedBy SenssunHandler::class.java,
-        // No QN service advertised, so the QN driver must not take it.
         device("RENPHO-SCALE-1234") claimedBy RenphoHandler::class.java,
         device("QN-Scale", uuid16(0xFFE0)) claimedBy QNHandler::class.java,
         device("Health Scale") claimedBy OneByoneHandler::class.java,
@@ -306,8 +306,6 @@ object ScaleCatalog {
         device("BEURER BF710") claimedBy BeurerSanitasHandler::class.java,
         device("SANITAS SBF70") claimedBy BeurerSanitasHandler::class.java,
         device("AAA002") claimedBy AAAxHandler::class.java,
-        // AAAx board under a newer name that also advertises 0xFFB0; recognised by its frame
-        // (MAC echo of C0:FF:EE:12:34:56 + checksummed weight payload), not by MGBHandler.
         advertisement(
             name = "AAA07A",
             services = listOf(SERVICE_FFB0),
@@ -316,9 +314,6 @@ object ScaleCatalog {
         device("1BODY CONNECT") claimedBy BodyConnectHandler::class.java,
         device("1X-LINE") claimedBy BodyConnectHandler::class.java,
         device("10376BAA") claimedBy WeightGurusA3Handler::class.java,
-
-        // Omron reports its model as the GAP name once bonded; advertised local names carry the
-        // model id instead (see OmronWlcHandler.MODELS_BY_ADVERTISED_ID).
         device("HBF-702T") claimedBy OmronWlcHandler::class.java,
         device("KRD-703T") claimedBy OmronWlcHandler::class.java,
         device("HBF-227T") claimedBy OmronWlcHandler::class.java,
@@ -328,33 +323,24 @@ object ScaleCatalog {
         device("BCM-500") claimedBy OmronWlcHandler::class.java,
         device("VIVA") claimedBy OmronWlcHandler::class.java,
         device("BLEsmart_0001000C0080E1A2B3C4") claimedBy OmronWlcHandler::class.java,
-
-        // --- Matched by advertisement fingerprint, not by name ---
-        // Yunmai X: advertised service 0x1320.
         advertisement(services = listOf(uuid16(0x1320))) claimedBy YunmaiXHandler::class.java,
-        // QN broadcast variant: company id 0xFFFF with the AABB magic header.
         advertisement(
             manufacturerData = listOf(
                 0xFFFF to byteArrayOf(0xAA.toByte(), 0xBB.toByte(), 0x00, 0x00, 0x00, 0x00)
             )
         ) claimedBy QNHandlerBroadcast::class.java,
-        // OKOK: company id behind one of the known names.
         advertisement(name = "ADV", manufacturerData = listOf(0x20CA to ByteArray(16)))
             claimedBy OkOkHandler::class.java,
         advertisement(name = "ADV", manufacturerData = listOf(0x11CA to ByteArray(16)))
             claimedBy OkOkHandler::class.java,
         advertisement(name = "ADV", manufacturerData = listOf(0xF0FF to ByteArray(16)))
             claimedBy OkOkHandler::class.java,
-        // Etekcity Fit 8S: nameless, company id 0x06D0 plus service 0xFFD0.
         advertisement(
             services = listOf(uuid16(0xFFD0)),
             manufacturerData = listOf(ETEKCITY_COMPANY_ID to ByteArray(20)),
         ) claimedBy EtekcityFit8SHandler::class.java,
-        // Scaleup: any manufacturer record whose company-id low byte is 0xD0 (measuring) or 0xE0.
         advertisement(manufacturerData = listOf(0x1DD0 to ByteArray(9)))
             claimedBy ScaleupHandler::class.java,
-        // AiLink broadcast body-fat scale: service 0xF0A0 plus an encrypted, checksummed record
-        // whose "company id" is really the vendor's CID/VID pair. Real capture from an "EL1".
         advertisement(
             name = "EL1",
             services = listOf(uuid16(0xF0A0)),
