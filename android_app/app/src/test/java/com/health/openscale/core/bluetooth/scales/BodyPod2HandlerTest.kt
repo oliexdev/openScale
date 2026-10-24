@@ -16,13 +16,18 @@ import com.health.openscale.core.bluetooth.ScaleCatalog.uuid16
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.Ohm
 import kotlinx.coroutines.CoroutineScope
 import java.util.UUID
 import kotlin.coroutines.EmptyCoroutineContext
 import org.junit.Test
 
 class BodyPod2HandlerTest {
+    // Frames rebuilt from the values of a real barefoot weigh-in posted in PR #1537.
+    private val stableWeight = hex("cf 00 80 8e 21 00 00 00 00 01 e1")
+    private val lowSegments = hex("be 00 02 0c 29 0c 0c 01 75 09 02 0a ec")
+    private val highSegments = hex("be 01 74 0a c3 0a f5 00 8f 08 f7 08 85")
+    private val dataCharacteristic = uuid16(0xFFF4)
+
     @Test
     fun `builds documented user profile and checksum`() {
         val user = ScaleUser(bodyHeight = 173f)
@@ -47,35 +52,39 @@ class BodyPod2HandlerTest {
 
     @Test
     fun `validates CF and BE packet checksums`() {
-        // CF: stable weight 0x2451 (92.97 kg); BE: two-frequency segment impedances.
-        val cf = hex("cf 00 80 51 24 00 00 00 00 01 3b")
-        val be = hex("be 00 f7 0c 9d 0c 0e 01 03 07 11 09 c7")
-
-        assertThat(BodyPod2Handler.validChecksum(cf)).isTrue()
-        assertThat(BodyPod2Handler.uint16le(cf, 3)).isEqualTo(0x2451)
-        assertThat(BodyPod2Handler.validChecksum(be)).isTrue()
-        assertThat(BodyPod2Handler.validChecksum(be.copyOf().also { it[1] = 2 })).isFalse()
+        assertThat(BodyPod2Handler.validChecksum(stableWeight)).isTrue()
+        assertThat(BodyPod2Handler.uint16le(stableWeight, 3)).isEqualTo(8590)
+        assertThat(BodyPod2Handler.validChecksum(lowSegments)).isTrue()
+        assertThat(BodyPod2Handler.validChecksum(lowSegments.copyOf().also { it[1] = 2 })).isFalse()
     }
 
     @Test
-    fun `publishes both frequency segment impedances as disabled device values`() {
+    fun `publishes the whole-body impedance of both frequencies`() {
         val setup = attachedHandler()
-        val dataCharacteristic = uuid16(0xFFF4)
         setup.handler.handleConnected(setup.user)
-        setup.handler.handleNotification(dataCharacteristic, hex("cf 00 80 51 24 00 00 00 00 01 3b"))
-        setup.handler.handleNotification(dataCharacteristic, hex("be 00 f7 0c 9d 0c 0e 01 03 07 11 09 c7"))
-        setup.handler.handleNotification(dataCharacteristic, hex("be 01 f7 0c 9d 0c 0e 01 03 07 11 09 c6"))
+        setup.handler.handleNotification(dataCharacteristic, stableWeight)
+        setup.handler.handleNotification(dataCharacteristic, lowSegments)
+        setup.handler.handleNotification(dataCharacteristic, highSegments)
 
         val measurement = setup.callbacks.published.single()
-        val segmentals = measurement.values.filterKeys { it.identity.startsWith("ble.segmental.impedance.") }
-        assertThat(segmentals).hasSize(10)
-        assertThat(segmentals.keys.all { !it.defaultEnabled }).isTrue()
-        assertThat(value(segmentals, "ble.segmental.impedance.low.right_arm")).isWithin(0.001f).of(331.9f)
-        assertThat(value(segmentals, "ble.segmental.impedance.high.left_leg")).isWithin(0.001f).of(232.1f)
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(0.001f).of(85.9f)
+        assertThat(measurement[MeasurementType.IMPEDANCE_LOW]?.value).isWithin(0.01f).of(585.3f)
+        assertThat(measurement[MeasurementType.IMPEDANCE]?.value).isWithin(0.01f).of(520.35f)
     }
 
-    private fun value(values: Map<MeasurementType.Key<*>, Any>, identity: String): Float =
-        (values.entries.single { it.key.identity == identity }.value as Ohm).value
+    @Test
+    fun `publishes the weight without impedance when it is implausible`() {
+        val setup = attachedHandler()
+        setup.handler.handleConnected(setup.user)
+        setup.handler.handleNotification(dataCharacteristic, stableWeight)
+        setup.handler.handleNotification(dataCharacteristic, hex("be 00 00 00 00 00 00 00 00 00 00 00 be"))
+        setup.handler.handleNotification(dataCharacteristic, hex("be 01 00 00 00 00 00 00 00 00 00 00 bf"))
+
+        val measurement = setup.callbacks.published.single()
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(0.001f).of(85.9f)
+        assertThat(measurement[MeasurementType.IMPEDANCE]).isNull()
+        assertThat(measurement[MeasurementType.IMPEDANCE_LOW]).isNull()
+    }
 
     private fun attachedHandler(): Setup {
         val handler = BodyPod2Handler()
