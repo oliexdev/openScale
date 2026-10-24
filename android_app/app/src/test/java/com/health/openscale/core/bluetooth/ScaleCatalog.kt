@@ -64,6 +64,7 @@ import com.health.openscale.core.bluetooth.scales.OneByoneHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
 import com.health.openscale.core.bluetooth.scales.QNHandler
 import com.health.openscale.core.bluetooth.scales.QNHandlerBroadcast
+import com.health.openscale.core.bluetooth.scales.QardioBaseHandler
 import com.health.openscale.core.bluetooth.scales.RealmeSmartScaleHandler
 import com.health.openscale.core.bluetooth.scales.RelaxmedicHandler
 import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
@@ -283,6 +284,7 @@ object ScaleCatalog {
         device("Body Fat-B2") claimedBy EbelterBodyFatB2Handler::class.java,
         device("Electronic Scale") claimedBy ExcelvanCF36xHandler::class.java,
         device("Dara 2.0") claimedBy HumeDara2Handler::class.java,
+        device("QardioBase") claimedBy QardioBaseHandler::class.java,
         device("Etekcity Smart Fitness Scale") claimedBy EtekcityESF551Handler::class.java,
         device("EUFY C20") claimedBy EufyC20Handler::class.java,
         device("eufy T9148") claimedBy EufyP2Handler::class.java,
