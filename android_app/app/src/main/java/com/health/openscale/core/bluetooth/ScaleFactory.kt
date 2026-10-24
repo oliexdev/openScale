@@ -31,6 +31,7 @@ import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
 import com.health.openscale.core.bluetooth.scales.CultSmartScaleProHandler
 import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.BroadcastScaleAdapter
+import com.health.openscale.core.bluetooth.scales.ChipseaBleHandler
 import com.health.openscale.core.bluetooth.scales.CustomOpenScaleHandler
 import com.health.openscale.core.bluetooth.scales.DebugGattHandler
 import com.health.openscale.core.bluetooth.scales.DeviceSupport
@@ -171,6 +172,7 @@ class ScaleFactory @Inject constructor(
             OneByoneHandler(),
             OneByoneNewHandler(),
             OkOkHandler(),
+            ChipseaBleHandler(),
             MiScaleS400Handler(),
             XiaomiS800Handler(),
             MiScaleHandler(),
