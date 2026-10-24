@@ -19,18 +19,28 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Locale
+import java.util.UUID
 
 /**
- * Handler for the A&D UC-352BLE.
- *
- * The scale uses the Bluetooth SIG Weight Scale Profile: measurements are indicated on 2A9D and
- * its clock is written through Current Time (2A2B). [StandardWeightProfileHandler] implements both
- * parts, so this class only supplies model-specific discovery and capability metadata.
+ * Scales that speak the plain Bluetooth SIG Weight Scale Profile: measurements are indicated on
+ * 2A9D and the clock is written through Current Time (2A2B). [StandardWeightProfileHandler]
+ * implements both, so this class only supplies model discovery and capability metadata.
  */
-class AndUC352BLEHandler : StandardWeightProfileHandler() {
+class PlainSigScaleHandler : StandardWeightProfileHandler() {
+
+    private class Model(val namePrefix: String, val displayName: String, val requiredService: UUID? = null)
+
+    private val models = listOf(
+        Model("A&D_UC-352BLE_", "A&D UC-352BLE"),
+        // LEFU_SCALE is Lefu's generic name; only the variant on 0x181D speaks this profile.
+        Model("LEFU_SCALE", "Samsung Smart Scale (GP-BELAD001BP0)", requiredService = uuid16(0x181D)),
+    )
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        if (!device.name.uppercase(Locale.US).startsWith(DEVICE_NAME_PREFIX)) return null
+        val name = device.name.uppercase(Locale.US)
+        val model = models.firstOrNull {
+            name.startsWith(it.namePrefix) && (it.requiredService == null || it.requiredService in device.serviceUuids)
+        } ?: return null
 
         val capabilities = setOf(
             DeviceCapability.TIME_SYNC,
@@ -38,14 +48,10 @@ class AndUC352BLEHandler : StandardWeightProfileHandler() {
             DeviceCapability.BATTERY_LEVEL,
         )
         return DeviceSupport(
-            displayName = "A&D UC-352BLE",
+            displayName = model.displayName,
             capabilities = capabilities,
             implemented = capabilities,
             linkMode = LinkMode.CONNECT_GATT,
         )
-    }
-
-    private companion object {
-        const val DEVICE_NAME_PREFIX = "A&D_UC-352BLE_"
     }
 }

@@ -325,17 +325,17 @@ abstract class ModernScaleAdapter(
      * Template method: base validates input & selected user, then calls [doConnect].
      * Many handlers expect a selected user from app state;
      */
-    final override fun connect(address: String, scaleUser: ScaleUser?) {
+    final override fun connect(address: String) {
         targetAddress = address
         _isConnecting.value = true
 
         scope.launch {
             val user: ScaleUser? =
-                scaleUser
-                    ?: selectedUserSnapshot
+                selectedUserSnapshot
                     ?: withTimeoutOrNull(750.milliseconds) {
                         userFacade.observeSelectedUser().first()
                     }?.let(::mapUser)
+                        ?.also { selectedUserSnapshot = selectedUserSnapshot ?: it }
 
             if (user == null) {
                 _events.tryEmit(
@@ -517,6 +517,8 @@ abstract class ModernScaleAdapter(
                         scaleUnit = weightType.unit.toWeightUnit()
                     }
                 }
+            }.onFailure { t ->
+                LogManager.w(TAG, "Mapping user ${u.id} failed, continuing with defaults for goal/initial weight and unit", t)
             }
         }
 

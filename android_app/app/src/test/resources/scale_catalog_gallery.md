@@ -204,7 +204,8 @@ _Please select a scale for further information_
 <sub>Beurer BF500</sub>
 </th>
 <th>
--
+<img src='../raw/master/docs/scales/qardio_qardiobase2.jpg' width='300px' alt='image missing' /> <br>
+<sub>Qardio QardioBase 2</sub>
 </th>
 </tr>
 

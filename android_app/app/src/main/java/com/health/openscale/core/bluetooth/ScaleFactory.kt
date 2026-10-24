@@ -28,10 +28,10 @@ import com.health.openscale.core.bluetooth.scales.AiLinkBroadcastHandler
 import com.health.openscale.core.bluetooth.scales.FitTrackDaraHandler
 import com.health.openscale.core.bluetooth.scales.ScaleupHandler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
-import com.health.openscale.core.bluetooth.scales.AndUC352BLEHandler
 import com.health.openscale.core.bluetooth.scales.CultSmartScaleProHandler
 import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.BroadcastScaleAdapter
+import com.health.openscale.core.bluetooth.scales.ChipseaBleHandler
 import com.health.openscale.core.bluetooth.scales.CustomOpenScaleHandler
 import com.health.openscale.core.bluetooth.scales.DebugGattHandler
 import com.health.openscale.core.bluetooth.scales.DeviceSupport
@@ -52,6 +52,7 @@ import com.health.openscale.core.bluetooth.scales.HuaweiCH100SHandler
 import com.health.openscale.core.bluetooth.scales.HuaweiHagridWspHandler
 import com.health.openscale.core.bluetooth.scales.HumeDara2Handler
 import com.health.openscale.core.bluetooth.scales.IHealthHS3Handler
+import com.health.openscale.core.bluetooth.scales.IHealthHs2sHandler
 import com.health.openscale.core.bluetooth.scales.InlifeHandler
 import com.health.openscale.core.bluetooth.scales.KeepS3Handler
 import com.health.openscale.core.bluetooth.scales.LinkMode
@@ -61,14 +62,18 @@ import com.health.openscale.core.bluetooth.scales.MiScaleHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
 import com.health.openscale.core.bluetooth.scales.XiaomiS800Handler
 import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
+import com.health.openscale.core.bluetooth.scales.BodyPod2Handler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
+import com.health.openscale.core.bluetooth.scales.RedmondSkybalanceHandler
 import com.health.openscale.core.bluetooth.scales.OmronWlcHandler
 import com.health.openscale.core.bluetooth.scales.PicoocHandler
+import com.health.openscale.core.bluetooth.scales.PlainSigScaleHandler
 import com.health.openscale.core.bluetooth.scales.PicoocBroadcastHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
 import com.health.openscale.core.bluetooth.scales.QNHandler
 import com.health.openscale.core.bluetooth.scales.QNHandlerBroadcast
+import com.health.openscale.core.bluetooth.scales.QardioBaseHandler
 import com.health.openscale.core.bluetooth.scales.RealmeSmartScaleHandler
 import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
 import com.health.openscale.core.bluetooth.scales.RenphoHandler
@@ -136,7 +141,7 @@ class ScaleFactory @Inject constructor(
          */
         @VisibleForTesting
         internal fun createHandlers(): List<ScaleDeviceHandler> = listOf(
-            AndUC352BLEHandler(),
+            PlainSigScaleHandler(),
             HealthKeep280Handler(),
             PicoocHandler(),
             // Exact PICOOC-L match must precede ScaleupHandler's generic 0xD0 manufacturer match.
@@ -150,6 +155,7 @@ class ScaleFactory @Inject constructor(
             RyFitHandler(),
             CultSmartScaleProHandler(),
             RealmeSmartScaleHandler(),
+            RedmondSkybalanceHandler(),
             YunmaiHandler(isMini = false),
             YunmaiHandler(isMini = true),
             YunmaiXHandler(),
@@ -166,6 +172,7 @@ class ScaleFactory @Inject constructor(
             OneByoneHandler(),
             OneByoneNewHandler(),
             OkOkHandler(),
+            ChipseaBleHandler(),
             MiScaleS400Handler(),
             XiaomiS800Handler(),
             MiScaleHandler(),
@@ -182,6 +189,7 @@ class ScaleFactory @Inject constructor(
             MedisanaBs44xHandler(),
             InlifeHandler(),
             IHealthHS3Handler(),
+            IHealthHs2sHandler(),
             HuaweiAhCh100Handler(),
             HuaweiCH100SHandler(),
             HuaweiHagridWspHandler(),
@@ -190,6 +198,7 @@ class ScaleFactory @Inject constructor(
             ExingtechY1Handler(),
             EbelterBodyFatB2Handler(),
             HumeDara2Handler(),
+            QardioBaseHandler(),
             ExcelvanCF36xHandler(),
             EtekcityESF551Handler(),
             EtekcityFit8SHandler(),
@@ -202,6 +211,7 @@ class ScaleFactory @Inject constructor(
             BeurerSanitasHandler(),
             ScaleupHandler(),
             BodyConnectHandler(),
+            BodyPod2Handler(),
             WeightGurusA3Handler(),
         )
     }

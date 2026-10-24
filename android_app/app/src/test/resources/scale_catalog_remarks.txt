@@ -10,6 +10,9 @@
 
 Xiaomi Mi Scale v1 = No data on the scale is ever deleted
 Xiaomi Body Composition Scale S400 = See [#1297](https://github.com/oliexdev/openScale/pull/1297) for more details
+Wyze Scale (WHSCL1) = Needs the scale's 32-character device key from the Wyze cloud. See [#853](https://github.com/oliexdev/openScale/issues/853)
+iHealth HS2S = Untested on hardware, see [#853](https://github.com/oliexdev/openScale/issues/853)
+iHealth HS2S Pro = Untested on hardware, see [#853](https://github.com/oliexdev/openScale/issues/853)
 Sanitas SBF70 / SilverCrest SBF75 / Crane = The assigned user name on the scale and in openScale have to be the same, see [FAQ](Frequently-Asked-Questions-(FAQ)#how-do-i-get-the-body-metrics-water-muscle-fat-percentage-on-my-sbf70-scale)
 Digoo DG-SO38H (Mengii) = Initialisation process needs to be reverse engineered. Currently you have to use the vendor's app once to initialise the scale.
 ES-CS20M / ES-32MD = Uses the Trisa Body Analyze body measurement library until the original [QN scale library](https://github.com/oliexdev/openScale/issues/373) is fully reverse engineered
@@ -22,4 +25,6 @@ PICOOC Mini Lite = Tested with the PICOOC-L broadcast protocol. Weight and imped
 QN Scale (Broadcast) = No pairing needed. Tested with the FITINDEX FT-26R-W, which reports weight only (no body composition — these units have no electrodes). Stay on the scale until the display stops changing, around six seconds; it only reports a reading once it settles, so stepping off earlier records nothing.
 AAAxHandler = No pairing needed: the Icomon/Fitdays "AAA" boards only broadcast. Weight only; the impedance frame is not decoded. Newer boards (e.g. "AAA07A", Posture FG220LB) are recognised by their advertisement, not just by name.
 Fitdays FG2202WB = Body composition needs the handlebar held during the weigh-in; with feet only the scale measures no impedance
+Qardio QardioBase / QardioBase 2 = Works without the defunct Qardio cloud. openScale stores each app user as a profile on the scale (several phones can share one scale; names are shown lowercase, max 6 characters). Body composition (fat, water, skeletal muscle, bone) is the scale's own and needs a recognised profile; lean body mass and BMI come from openScale. The QardioBase 2 identifies who is on it and learns from the first 1-3 weigh-ins; weigh-ins it assigns to someone else or to guest are not saved (guest saving can be enabled). The scale cannot delete a single user; use the reset in the device settings. Wi-Fi upload, goal and display modes are not used. QardioBase X is a different device and is not supported.
+Chipsea-BLE = Chipsea GATT body-fat scale (service 0xFFF0, vendor app "OKOK International") — not the broadcast OKOK protocol
 Urikar Aero I = Sold with the Fitdays app (the label reads "Urikar APP"). The display unit (kg, lb, st) follows the weight unit set in openScale. Body composition needs bare feet on the electrodes; without contact only the weight is recorded.

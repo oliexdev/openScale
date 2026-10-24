@@ -26,7 +26,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.ScaleFactory
-import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.scales.DeviceSupport
 import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.data.ConnectionStatus
@@ -40,7 +39,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -94,7 +92,7 @@ interface BluetoothFacade {
  * Facade responsible for orchestrating Bluetooth operations.
  *
  * This class encapsulates scanning, connection management,
- * saved device handling, and user context mapping (App [User] → [ScaleUser]).
+ * saved device handling, and the selected user context.
  * It exposes state as [StateFlow]s for UI consumption and emits one-shot messages
  * for transient events (e.g., Snackbar notifications).
  *
@@ -119,7 +117,7 @@ class BluetoothFacadeImpl @Inject constructor(
         scope = scope,
         scaleFactory = scaleFactory,
         measurementFacade = measurementFacade,
-        getCurrentScaleUser = { currentBtScaleUser.value }
+        getCurrentUserId = { currentAppUser.value?.id }
     )
 
     override val snackbarEventsFromConnector: SharedFlow<SnackbarEvent> = connection.snackbarEvents
@@ -180,7 +178,6 @@ class BluetoothFacadeImpl @Inject constructor(
 
     // --- Current user context ---
     private val currentAppUser = MutableStateFlow<User?>(null)
-    private val currentBtScaleUser = MutableStateFlow<ScaleUser?>(null)
 
     init {
         observeCurrentUser()
@@ -191,20 +188,10 @@ class BluetoothFacadeImpl @Inject constructor(
             userFacade.observeSelectedUser()
                 .collect { user ->
                     currentAppUser.value = user
-                    currentBtScaleUser.value = user?.let { toScaleUser(it) }
                     LogManager.i(TAG, "User context updated -> ${user?.name ?: "none"}")
                 }
         }
     }
-
-    private fun toScaleUser(u: User): ScaleUser =
-        ScaleUser().apply {
-            id = u.id
-            userName = u.name
-            birthday = Date(u.birthDate)
-            bodyHeight = u.heightCm
-            gender = u.gender
-        }
 
     // --- API: Scanning & Connection ---
     override fun startScan(durationMs: Long) {
