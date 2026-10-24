@@ -109,6 +109,10 @@ class OneByoneHandler : ScaleDeviceHandler() {
             displayName = model,
             capabilities = caps,
             implemented  = caps,
+            // Use Conservative timing: this family does not benefit from MTU negotiation
+            // and legacy units (particularly the 1byone Health Scale) can disconnect if
+            // aggressive parameters are applied immediately after GATT discovery.
+            tuningProfile = TuningProfile.Conservative,
             linkMode = LinkMode.CONNECT_GATT
         )
     }
@@ -129,18 +133,35 @@ class OneByoneHandler : ScaleDeviceHandler() {
         isOneByoneClassic = isOneByoneClassicName(getPeripheral()?.name.orEmpty())
         logD("Connected to ${if (isOneByoneClassic) MODEL_1BYONE_DISPLAY else "an Eufy model"}")
 
-        // 1) Subscribe to notifications on 0xFFF4
-        setNotifyOn(SVC_FFF0, CHR_FFF4)
+        if (isOneByoneClassic) {
+            // 1byone "Health Scale":
+            // 1) Configure unit/group first. The 1byone scale expects this command before any notification
+            //    subscription to avoid hitting its aggressive 1.5s idle sleep. withResponse = false
+            //    because CHR_FFF1 is a command pipe that does not acknowledge writes (Android 17 enforces WriteType).
+            writeTo(SVC_FFF0, CHR_FFF1, buildModeUnitCmd(user), withResponse = false)
 
-        // 2) Configure unit/group (matches legacy magic FD 37 ...)
-        writeTo(SVC_FFF0, CHR_FFF1, buildModeUnitCmd(user))
+            // 2) Subscribe to notifications on 0xFFF4
+            setNotifyOn(SVC_FFF0, CHR_FFF4)
 
-        // 3) Sync device clock, then wait for ACK "F1 00"
-        val clock = buildClockCmd()
-        waitAckClock = true
-        writeTo(SVC_FFF0, CHR_FFF1, clock)
+            // 3) Sync device clock, then wait for ACK "F1 00"
+            val clock = buildClockCmd()
+            waitAckClock = true
+            writeTo(SVC_FFF0, CHR_FFF1, clock, withResponse = false)
+        } else {
+            // Eufy models (C1, P1, A1): retain original legacy sequence
+            // 1) Subscribe to notifications on 0xFFF4
+            setNotifyOn(SVC_FFF0, CHR_FFF4)
 
-        // 1) Battery: subscribe + read once
+            // 2) Configure unit/group (matches legacy magic FD 37 ...)
+            writeTo(SVC_FFF0, CHR_FFF1, buildModeUnitCmd(user))
+
+            // 3) Sync device clock, then wait for ACK "F1 00"
+            val clock = buildClockCmd()
+            waitAckClock = true
+            writeTo(SVC_FFF0, CHR_FFF1, clock)
+        }
+
+        // 4) Battery: subscribe + read once
         setNotifyOn(SVC_180F, CHR_2A19)
         readFrom(SVC_180F, CHR_2A19)
 

@@ -168,7 +168,7 @@ fun rememberBluetoothActionButton(
                     val hasAllPermissions = hasScanPerm && hasConnectPerm
 
                     if (!hasAllPermissions) {
-                        // Launch request for both permissions at once
+                        // Launch request for required permissions (Scan and Connect)
                         permissionsLauncher.launch(
                             arrayOf(
                                 Manifest.permission.BLUETOOTH_SCAN,

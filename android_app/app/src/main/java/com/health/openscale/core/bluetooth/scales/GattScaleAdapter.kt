@@ -38,11 +38,13 @@ import com.welie.blessed.GattStatus
 import com.welie.blessed.HciStatus
 import com.welie.blessed.WriteType
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withTimeout
+import java.io.IOException
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration.Companion.milliseconds
@@ -60,11 +62,11 @@ class GattScaleAdapter(
     measurementFacade: MeasurementFacade,
     userFacade: UserFacade,
     handler: ScaleDeviceHandler,
-    profile: TuningProfile = TuningProfile.Balanced
+    profile: TuningProfile = TuningProfile.Balanced,
+    private val central: BluetoothCentralManager
 ) : ModernScaleAdapter(context, settingsFacade, measurementFacade, userFacade, handler) {
 
     private val tuning: BleGattTuning = profile.forGatt()
-    private lateinit var central: BluetoothCentralManager
     private var currentPeripheral: BluetoothPeripheral? = null
 
     private val opQueue = Channel<suspend () -> Unit>(Channel.UNLIMITED)
@@ -78,8 +80,10 @@ class GattScaleAdapter(
     private var nextOpId = 0L
 
     private val ioMutex = Mutex()
-
     private var connectAttempts = 0
+
+    // MTU synchronization for Android 17 (API 37)
+    private var mtuDeferred = CompletableDeferred<Int>()
 
     init {
         // Worker coroutine processes queued BLE operations sequentially
@@ -113,61 +117,94 @@ class GattScaleAdapter(
     }
 
     // -------------------------------------------------------------------------------------------------
-    // Bluetooth central callbacks
+    // System-level events routed from BluetoothFacade
     // -------------------------------------------------------------------------------------------------
-    private val centralCallback = object : BluetoothCentralManagerCallback() {
-        override fun onDiscovered(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
-            if (peripheral.address != targetAddress) return
-            LogManager.i(TAG, "Found $targetAddress → stop scan + connect")
-            central.stopScan()
-            scope.launch {
-                if (tuning.connectAfterScanDelayMs > 0) delay(tuning.connectAfterScanDelayMs.milliseconds)
-                central.connect(peripheral, peripheralCallback)
-            }
+    fun onDiscovered(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
+        if (peripheral.address != targetAddress) return
+        LogManager.i(TAG, "Found $targetAddress → stop scan + connect")
+        central.stopScan()
+        scope.launch {
+            if (tuning.connectAfterScanDelayMs > 0) delay(tuning.connectAfterScanDelayMs.milliseconds)
+            central.connect(peripheral, peripheralCallback)
         }
+    }
 
-        override fun onConnected(peripheral: BluetoothPeripheral) {
-            scope.launch {
-                currentPeripheral = peripheral
-                _isConnected.value = true
-                _isConnecting.value = false
-                _events.tryEmit(BluetoothEvent.Connected(peripheral.name, peripheral.address))
-            }
+    fun onConnected(peripheral: BluetoothPeripheral) {
+        if (peripheral.address != targetAddress) return
+        scope.launch {
+            currentPeripheral = peripheral
+            _isConnected.value = true
+            _isConnecting.value = false
+            _events.tryEmit(BluetoothEvent.Connected(peripheral.name, peripheral.address))
         }
+    }
 
-        override fun onConnectionFailed(peripheral: BluetoothPeripheral, status: HciStatus) {
-            scope.launch {
-                LogManager.e(TAG, "Connection failed ${peripheral.address}: $status")
-                if (connectAttempts < tuning.common.maxRetries) {
-                    val nextTry = connectAttempts + 1
-                    _events.tryEmit(
-                        BluetoothEvent.DeviceMessage(
-                            context.getString(R.string.bt_info_reconnecting_try, nextTry, tuning.common.maxRetries),
-                            peripheral.address
-                        )
+    fun onConnectionFailed(peripheral: BluetoothPeripheral, status: HciStatus) {
+        if (peripheral.address != targetAddress) return
+        scope.launch {
+            LogManager.e(TAG, "Connection failed ${peripheral.address}: $status")
+            
+            // Android 17: Fatal GATT table failures
+            val statusInt = status.value
+            if (statusInt == 133 || statusInt == 257) {
+                LogManager.e(TAG, "Fatal GATT failure ($statusInt). Enforcing 5s system cooldown.")
+                _events.tryEmit(BluetoothEvent.ConnectionFailed(peripheral.address, "System Bluetooth Exhausted (Cooldown 5s)"))
+                cleanup()
+                delay(5000.milliseconds) // Mandatory wait to allow Android 17 table to clear
+                return@launch
+            }
+
+            if (connectAttempts < tuning.common.maxRetries) {
+                val nextTry = connectAttempts + 1
+                _events.tryEmit(
+                    BluetoothEvent.DeviceMessage(
+                        context.getString(R.string.bt_info_reconnecting_try, nextTry, tuning.common.maxRetries),
+                        peripheral.address
                     )
-                    connectAttempts = nextTry
-                    delay(tuning.common.retryBackoffMs.milliseconds)
-                    runCatching { central.stopScan() }
-                    central.scanForPeripheralsWithAddresses(setOf(peripheral.address))
-                    _isConnecting.value = true
-                } else {
-                    _events.tryEmit(BluetoothEvent.ConnectionFailed(peripheral.address, status.toString()))
-                    cleanup()
-                }
+                )
+                connectAttempts = nextTry
+                delay(tuning.common.retryBackoffMs.milliseconds)
+                runCatching { central.stopScan() }
+                central.scanForPeripheralsWithAddresses(setOf(peripheral.address))
+                _isConnecting.value = true
+            } else {
+                _events.tryEmit(BluetoothEvent.ConnectionFailed(peripheral.address, status.toString()))
+                cleanup()
             }
         }
+    }
 
-        override fun onDisconnected(peripheral: BluetoothPeripheral, status: HciStatus) {
-            scope.launch {
-                LogManager.i(TAG, "Disconnected ${peripheral.address}: $status")
-                runCatching { handler.handleDisconnected() }
-                runCatching { handler.detach() }
-                lastDisconnectAtMs = SystemClock.elapsedRealtime()
-                if (peripheral.address == targetAddress) {
-                    _events.tryEmit(BluetoothEvent.Disconnected(peripheral.address, status.toString()))
-                    cleanup()
+    fun onDisconnected(peripheral: BluetoothPeripheral, status: HciStatus) {
+        if (peripheral.address != targetAddress) return
+        scope.launch {
+            LogManager.i(TAG, "Disconnected ${peripheral.address}: $status")
+            
+            // Handle fatal status during disconnect/operation
+            val statusInt = status.value
+            if (statusInt == 133 || statusInt == 257) {
+                LogManager.e(TAG, "Fatal GATT failure during operation ($statusInt). Enforcing 5s system cooldown.")
+                delay(5000.milliseconds)
+            }
+
+            // Immediately fail-fast any pending operations in the queue
+            // to prevent hitting Android 17 status=257 for attempting to write to a closed client.
+            ioMutex.lock()
+            try {
+                mtuDeferred.completeExceptionally(IOException("Scale disconnected during MTU negotiation"))
+                deferredMap.values.forEach { pending ->
+                    pending.deferred.completeExceptionally(IOException("Scale disconnected: ${status.name}"))
                 }
+                deferredMap.clear()
+            } finally {
+                ioMutex.unlock()
+            }
+
+            runCatching { handler.handleDisconnected() }
+            runCatching { handler.detach() }
+            lastDisconnectAtMs = SystemClock.elapsedRealtime()
+            if (peripheral.address == targetAddress) {
+                _events.tryEmit(BluetoothEvent.Disconnected(peripheral.address, status.toString()))
+                cleanup()
             }
         }
     }
@@ -180,21 +217,46 @@ class GattScaleAdapter(
             LogManager.d(TAG, "Services discovered for ${peripheral.address}")
             currentPeripheral = peripheral
 
-            if (tuning.requestHighConnectionPriority) runCatching { peripheral.requestConnectionPriority(ConnectionPriority.HIGH) }
-            if (tuning.requestMtuBytes > 23) runCatching { peripheral.requestMtu(tuning.requestMtuBytes) }
+            scope.launch {
+                // Android 17: Stability delay after discovery
+                if (tuning.postDiscoverDelayMs > 0) delay(tuning.postDiscoverDelayMs.milliseconds)
 
-            val user = selectedUserSnapshot ?: run {
-                central.cancelConnection(peripheral); return
+                if (tuning.requestHighConnectionPriority) runCatching { peripheral.requestConnectionPriority(ConnectionPriority.HIGH) }
+                
+                // Android 17: Explicitly wait for MTU before starting data I/O
+                if (tuning.requestMtuBytes > 23) {
+                    LogManager.d(TAG, "Requesting MTU ${tuning.requestMtuBytes} and waiting for negotiation...")
+                    mtuDeferred = CompletableDeferred()
+                    runCatching { peripheral.requestMtu(tuning.requestMtuBytes) }
+                    
+                    try {
+                        withTimeout(2500.milliseconds) {
+                            val mtu = mtuDeferred.await()
+                            LogManager.i(TAG, "MTU negotiation complete: $mtu bytes")
+                        }
+                    } catch (e: Exception) {
+                        LogManager.w(TAG, "MTU negotiation timed out or failed. Link may be unstable.")
+                    }
+                }
+
+                val user = selectedUserSnapshot ?: run {
+                    central.cancelConnection(peripheral); return@launch
+                }
+
+                val driverSettings = FacadeDriverSettings(
+                    facade = settingsFacade,
+                    scope = scope,
+                    handlerNamespace = handler::class.simpleName ?: "Handler"
+                )
+
+                handler.attach(transport, appCallbacks, driverSettings, dataProvider, scope)
+                handler.handleConnected(user)
             }
+        }
 
-            val driverSettings = FacadeDriverSettings(
-                facade = settingsFacade,
-                scope = scope,
-                handlerNamespace = handler::class.simpleName ?: "Handler"
-            )
-
-            handler.attach(transport, appCallbacks, driverSettings, dataProvider, scope)
-            handler.handleConnected(user)
+        override fun onMtuChanged(peripheral: BluetoothPeripheral, mtu: Int, status: GattStatus) {
+            LogManager.d(TAG, "onMtuChanged: status=$status, mtu=$mtu")
+            mtuDeferred.complete(mtu)
         }
 
         override fun onCharacteristicWrite(
@@ -268,7 +330,7 @@ class GattScaleAdapter(
                     withTimeout(tuning.operationTimeoutMs.milliseconds) {
                         deferred.await()
                     }
-                } catch (_: Exception) {
+                } catch (_: TimeoutCancellationException) {
                     LogManager.w(TAG, "Timeout waiting for notify on $characteristic")
                 } finally {
                     val current = deferredMap[characteristic]
@@ -290,6 +352,21 @@ class GattScaleAdapter(
                 val opId = ++nextOpId
                 val deferred = CompletableDeferred<Unit>()
                 deferredMap[characteristic] = PendingOp(opId, deferred)
+
+                if (!withResponse && (ch.properties and BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE == 0)) {
+                    // WRITE_NO_RESPONSE not advertised by the peripheral, but the caller requires
+                    // an unacknowledged write. Patch the in-memory property bitmask so the stack
+                    // sends a WRITE_COMMAND instead of a WRITE_REQUEST (Android 17 enforces this).
+                    LogManager.w(TAG, "Characteristic $characteristic: WRITE_NO_RESPONSE not advertised; patching properties for compatibility.")
+                    try {
+                        val field = BluetoothGattCharacteristic::class.java.getDeclaredField("mProperties")
+                        field.isAccessible = true
+                        field.setInt(ch, field.getInt(ch) or BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)
+                        LogManager.i(TAG, "Characteristic $characteristic: WRITE_NO_RESPONSE property patched successfully.")
+                    } catch (e: Exception) {
+                        LogManager.e(TAG, "Failed to patch characteristic $characteristic properties", e)
+                    }
+                }
 
                 val supportsWriteNoResponse = ch.properties and BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE != 0
                 val supportsWriteResponse = ch.properties and BluetoothGattCharacteristic.PROPERTY_WRITE != 0
@@ -320,7 +397,7 @@ class GattScaleAdapter(
                     withTimeout(tuning.operationTimeoutMs.milliseconds) {
                         deferred.await()
                     }
-                } catch (_: Throwable) {
+                } catch (_: TimeoutCancellationException) {
                     LogManager.w(TAG, "Timeout waiting for write on $characteristic")
                 } finally {
                     val current = deferredMap[characteristic]
@@ -351,7 +428,7 @@ class GattScaleAdapter(
                     withTimeout(tuning.operationTimeoutMs.milliseconds) {
                         deferred.await()
                     }
-                } catch (_: Throwable) {
+                } catch (_: TimeoutCancellationException) {
                     LogManager.w(TAG, "Timeout waiting for read on $characteristic")
                 } finally {
                     val current = deferredMap[characteristic]
@@ -381,10 +458,6 @@ class GattScaleAdapter(
     // Connection management
     // -------------------------------------------------------------------------------------------------
     override fun doConnect(address: String, selectedUser: ScaleUser) {
-        if (!::central.isInitialized) {
-            central = BluetoothCentralManager(context, centralCallback, mainHandler)
-        }
-
         val sinceLastDisconnect = SystemClock.elapsedRealtime() - lastDisconnectAtMs
         val waitMs = (tuning.common.reconnectCooldownMs - sinceLastDisconnect).coerceAtLeast(0)
 
@@ -412,17 +485,15 @@ class GattScaleAdapter(
     }
 
     override fun doDisconnect() {
-        runCatching { if (::central.isInitialized) central.stopScan() }
+        runCatching { central.stopScan() }
         currentPeripheral?.let { runCatching { central.cancelConnection(it) } }
         currentPeripheral = null
     }
 
     override fun close() {
-        // Stop accepting new BLE operations and release the Blessed central
-        // (its broadcast receivers) before the base cancels the coroutine scope,
-        // which terminates the busy-waiting op-queue worker.
+        // Stop accepting new BLE operations
         runCatching { opQueue.close() }
-        runCatching { if (::central.isInitialized) central.close() }
+        // Do NOT close centralManager as it is shared singleton!
         super.close()
     }
 }
