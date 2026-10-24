@@ -53,11 +53,19 @@ class YunmaiXHandlerTest {
      * @param weightRaw   weight in units of 0.01 kg (u16 BE)
      * @param impedance   impedance in Ω (u16 BE); 0 until the final frame
      * @param sessionByte the per-weigh-in byte at offset [7]; varies between sessions
+     * @param signature   the three signature bytes at offsets [4..6]; defaults to the
+     *                    international 0B 74 17, the Chinese M1827CH uses 06 52 11
      */
-    private fun frame(state: Int, weightRaw: Int, impedance: Int = 0, sessionByte: Int = 0x04): ByteArray {
+    private fun frame(
+        state: Int,
+        weightRaw: Int,
+        impedance: Int = 0,
+        sessionByte: Int = 0x04,
+        signature: ByteArray = byteArrayOf(0x0B, 0x74, 0x17)
+    ): ByteArray {
         val body = byteArrayOf(
             0x12.toByte(), 0xEE.toByte(), 0xFF.toByte(), 0xC0.toByte(), // MAC bytes 2..5, reversed
-            0x0B, 0x74, 0x17,                                           // signature
+            signature[0], signature[1], signature[2],                    // signature
             sessionByte.toByte(),
             state.toByte(),
             (weightRaw shr 8).toByte(), weightRaw.toByte(),
@@ -110,6 +118,25 @@ class YunmaiXHandlerTest {
     }
 
     @Test
+    fun `parses Chinese M1827CH final frame with alternate signature`() {
+        // Frame layout observed on a 好轻 mini 2S (M1827CH); values are synthetic.
+        val f = YunmaiXAdv.parse(
+            MFR_ID,
+            frame(
+                0x03,
+                weightRaw = 6540,
+                impedance = 480,
+                sessionByte = 0x10,
+                signature = byteArrayOf(0x06, 0x52, 0x11),
+            ),
+            ADDRESS,
+        )!!
+        assertThat(f.state).isEqualTo(YunmaiXAdv.STATE_FINAL)
+        assertThat(f.weightKg).isWithin(1e-3f).of(65.40f)
+        assertThat(f.impedanceOhm).isEqualTo(480)
+    }
+
+    @Test
     fun `parses final frame regardless of the per-session byte`() {
         // byte[7] varies between weigh-ins and must not be treated as a constant.
         val f = YunmaiXAdv.parse(MFR_ID, frame(0x03, weightRaw = 8000, impedance = 500, sessionByte = 0x10), ADDRESS)!!
@@ -157,6 +184,18 @@ class YunmaiXHandlerTest {
     @Test
     fun `claims nameless device advertising an idle frame`() {
         assertThat(YunmaiXHandler().supportFor(device(frame(0x01, weightRaw = 0)))).isNotNull()
+    }
+
+    @Test
+    fun `claims nameless Chinese scale with alternate signature`() {
+        val payload = frame(
+            0x03,
+            weightRaw = 6540,
+            impedance = 480,
+            sessionByte = 0x10,
+            signature = byteArrayOf(0x06, 0x52, 0x11),
+        )
+        assertThat(YunmaiXHandler().supportFor(device(payload))).isNotNull()
     }
 
     @Test
