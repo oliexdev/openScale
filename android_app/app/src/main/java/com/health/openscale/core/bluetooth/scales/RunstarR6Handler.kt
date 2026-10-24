@@ -33,6 +33,7 @@ import com.health.openscale.core.data.Kcal
 import com.health.openscale.core.data.Kg
 import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.Percent
+import com.health.openscale.core.data.WeightUnit
 
 /**
  * Runstar R6 smart scale, the Hoffen HO-36 (ICOMON model FG2210LB, Fitdays app), and the
@@ -66,6 +67,16 @@ import com.health.openscale.core.data.Percent
  * the second part is not decoded. Its impedance is only measured with the handlebar held —
  * feet only, the scale reports 50 Ω, which the plausibility range below rejects.
  *
+ * The Lescale F4P (ICOMON model FI2019LB-C) speaks the same protocol (checksum verified
+ * across every frame of six weigh-ins) with two differences seen so far:
+ *  - the top three bits of the trailer byte are flags, not part of the checksum: 0x20 is
+ *    set on every frame while the scale displays pounds. The flag in frames the app sends
+ *    sets the display unit — a 0xBA user frame without it switched the scale to kg —
+ *    so frames to the F4P carry the user's unit (see [unitFlags]).
+ *  - like the HO-36, it gets the 0xBA user frame after the 0xA1 ack. With it the scale
+ *    shows body composition on its display and, after the weight locks (A2 state 0x04,
+ *    about 20 s), reports impedance and heart rate in 0xA3.
+ *
  * Despite the name this is a different, incompatible protocol from [RunstarR5Handler].
  */
 class RunstarR6Handler : ScaleDeviceHandler() {
@@ -80,6 +91,9 @@ class RunstarR6Handler : ScaleDeviceHandler() {
     private var lastPublishedWeightRaw: Int? = null
     private var outgoingSeq = 0
     private var isHoffen = false
+    private var isLescale = false
+    /** Trailer flag bits for outgoing frames; only the F4P gets any (see [unitFlags]). */
+    private var outgoingFlags = 0
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.lowercase(Locale.ROOT)
@@ -95,6 +109,7 @@ class RunstarR6Handler : ScaleDeviceHandler() {
             // and TaylorBIAHandler leaves it alone for that.
             name == "my_scale" && SERVICE in device.serviceUuids &&
                 SERVICE_FG2202WB in device.serviceUuids -> "Fitdays FG2202WB"
+            name == LESCALE_F4P_NAME.lowercase(Locale.ROOT) -> "Lescale F4P"
             else -> return null
         }
 
@@ -122,6 +137,8 @@ class RunstarR6Handler : ScaleDeviceHandler() {
         lastPublishedWeightRaw = null
         outgoingSeq = 0
         isHoffen = getPeripheral()?.name.equals(HOFFEN_NAME, ignoreCase = true)
+        isLescale = getPeripheral()?.name.equals(LESCALE_F4P_NAME, ignoreCase = true)
+        outgoingFlags = if (isLescale) unitFlags(user.scaleUnit) else 0
 
         // Subscribe live first, then result — mirrors RobiS9Handler's subscription order
         // for the same FFB0 family.
@@ -147,8 +164,9 @@ class RunstarR6Handler : ScaleDeviceHandler() {
             TYPE_DEVICE_INFO -> {
                 logD("Runstar R6 device info ${data.toHexPreview(20)}")
                 sendAck(seq)
-                // Fitdays sends the HO-36's user frame right after this ack.
-                if (isHoffen) sendHoffenUserInfo(user)
+                // Fitdays sends the HO-36's user frame right after this ack; the F4P
+                // accepts the same frame (answers 0xA0 01).
+                if (isHoffen || isLescale) sendHoffenUserInfo(user)
             }
             TYPE_ACK -> logD("Runstar R6 ack ${data.toHexPreview(20)}")
             TYPE_FINAL_RESULT -> handleFinalResult(data, seq, user)
@@ -305,7 +323,7 @@ class RunstarR6Handler : ScaleDeviceHandler() {
         if (heightCm !in 1..255) {
             // The frame carries the height in one byte; without one there is nothing
             // truthful to send, and body composition would be skipped anyway.
-            logW("Runstar R6 HO-36 no usable body height, not sending the user frame")
+            logW("Runstar R6 no usable body height, not sending the user frame")
             return
         }
         val payload = encodeHoffenUserInfo(
@@ -325,8 +343,9 @@ class RunstarR6Handler : ScaleDeviceHandler() {
 
     /**
      * Build a 20-byte outgoing frame: `[seq][len][00][type][payload…][chk]`, where `len`
-     * covers TYPE + payload (i.e. `payload.size + 1`) and `chk` is [computeChecksum]. Uses
-     * and advances [outgoingSeq]. Kept general so a future handshake can reuse it.
+     * covers TYPE + payload (i.e. `payload.size + 1`) and `chk` is [computeChecksum] with
+     * [outgoingFlags] OR-ed into its top bits. Uses and advances [outgoingSeq]. Kept general
+     * so a future handshake can reuse it.
      */
     private fun buildFrame(type: Int, payload: ByteArray): ByteArray {
         require(payload.size <= 15) { "payload too large for a 20-byte frame" }
@@ -339,7 +358,7 @@ class RunstarR6Handler : ScaleDeviceHandler() {
         for (i in payload.indices) {
             frame[4 + i] = payload[i]
         }
-        frame[19] = computeChecksum(frame).toByte()
+        frame[19] = (computeChecksum(frame) or outgoingFlags).toByte()
         return frame
     }
 
@@ -354,6 +373,9 @@ class RunstarR6Handler : ScaleDeviceHandler() {
 
         /** Advertised name of the Hoffen HO-36. */
         private const val HOFFEN_NAME = "HOFFEN"
+
+        /** Advertised name of the Lescale F4P. */
+        private const val LESCALE_F4P_NAME = "Lescale F4P"
 
         private const val STATE_MEASURING = 0x01
         private const val STATE_SETTLING = 0x02
@@ -410,8 +432,22 @@ class RunstarR6Handler : ScaleDeviceHandler() {
             return sum and 0x1F
         }
 
+        /**
+         * Compares the low five bits only: the Lescale F4P uses the top three bits of the
+         * trailer as flags (0x20 = pounds). The other scales leave them clear.
+         */
         internal fun isChecksumValid(frame: ByteArray): Boolean =
-            (frame[19].toInt() and 0xFF) == computeChecksum(frame)
+            (frame[19].toInt() and 0x1F) == computeChecksum(frame)
+
+        /** Trailer flag the Lescale F4P reads as "display pounds". */
+        internal const val FLAG_UNIT_LB = 0x20
+
+        /**
+         * Trailer flags that make the F4P display [unit]. Stones were never tested and map to
+         * kg rather than a guessed bit.
+         */
+        internal fun unitFlags(unit: WeightUnit): Int =
+            if (unit == WeightUnit.LB) FLAG_UNIT_LB else 0x00
 
         /**
          * Low 19 bits of a 24-bit weight field (up to 524 kg). The HO-36 sets 0x68 in the
