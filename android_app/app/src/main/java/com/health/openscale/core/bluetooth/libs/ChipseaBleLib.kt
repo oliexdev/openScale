@@ -23,12 +23,9 @@ import java.util.Date
 /**
  * Wire protocol of the Chipsea "Chipsea-BLE" GATT body-fat scales — the house protocol of
  * Chipsea (芯海) scale chipsets, sold under many no-name brands and driven by the vendor app
- * "OKOK International" (`com.chipsea.btcontrol.en`). Not to be confused with the broadcast
+ * "OKOK International". Not to be confused with the broadcast
  * OKOK advertisements handled by [com.health.openscale.core.bluetooth.scales.OkOkHandler],
  * nor with the Chipsea "WeChat scale" protocol of the Hoffen BBS-8107.
- *
- * Decoded from the vendor app's own Bluetooth library (`com.chipsea.btlib`:
- * `chipseaStraightFrame`, `syncChipseaInstruction`, `WeightUnitUtil`, `BytesUtil`).
  *
  * GATT layout:
  *   service        0000fff0-0000-1000-8000-00805f9b34fb
@@ -206,8 +203,7 @@ class ChipseaBleLib {
         fun isLocked(property: Byte): Boolean = (property.toInt() and 0x01) != 0
 
         /**
-         * Decode a raw weight (two big-endian bytes) to kilograms using the property byte,
-         * mirroring the vendor's `WeightUnitUtil.Parser`.
+         * Decode a raw weight (two big-endian bytes) to kilograms using the property byte.
          */
         fun decodeWeightKg(hi: Byte, lo: Byte, property: Byte): Float {
             val p = property.toInt()

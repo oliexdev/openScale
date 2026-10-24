@@ -26,8 +26,7 @@ import java.util.Date
 /**
  * Unit tests for [ChipseaBleLib] — the Chipsea-BLE GATT protocol.
  *
- * Frames are synthetic, built byte by byte from the layout documented in [ChipseaBleLib]
- * (itself decoded from the vendor app's Bluetooth library); no personal captures.
+ * Frames are synthetic, built byte by byte from the layout documented in [ChipseaBleLib].
  * The reference measurement used throughout: 75.5 kg, 23.4 % body fat, 55.1 % water,
  * 32.8 % muscle, 1650 kcal BMR, visceral fat 9.0, 2.9 kg bone mass.
  */
