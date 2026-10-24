@@ -895,4 +895,24 @@
     <string name="qardio_section_info">Tehtnica</string>
     <string name="qardio_info_none">Povežite se enkrat, da si ogledaš podrobnosti o tehtnici.</string>
     <string name="qardio_info_model">Model</string>
+    <string name="qardio_info_firmware">Strojna programska oprema</string>
+    <string name="qardio_info_software">Programska oprema</string>
+    <string name="qardio_info_battery_value">%1$d%%</string>
+    <string name="qardio_info_profiles">Profili</string>
+    <string name="qardio_info_profile_other">drugo (ni iz tega telefona)</string>
+    <string name="qardio_section_scale">Nastavitve tehtnice</string>
+    <string name="qardio_section_phone">Ta telefon</string>
+    <string name="qardio_section_maintenance">Vzdrževanje</string>
+    <string name="qardio_action_resend">Ponovno pošlji</string>
+    <string name="qardio_action_reset">Ponastavi</string>
+    <string name="qardio_config_resend_pending">Profili bodo poslani ob naslednji povezavi.</string>
+    <string name="qardio_config_impedance">Sestava telesa</string>
+    <string name="qardio_config_impedance_desc">Z majhnim električnim tokom meri vsebnost maščobe, vode, mišic in kosti. Napravo je treba izklopiti pri osebah s srčnim spodbujevalnikom ali drugim vsadkom ter med nosečnostjo.</string>
+    <string name="qardio_config_haptic">Vibracija</string>
+    <string name="qardio_config_haptic_desc">Tehtnica vibrira ob vklopu, ob zaključku merjenja in ob spremembi nastavitev.</string>
+    <string name="qardio_config_scale_wide_pending">Sprememba je v čakanju: bo poslana ob naslednji povezavi.</string>
+    <string name="qardio_config_save_guest">Shrani podatke o teži gostov</string>
+    <string name="qardio_config_save_guest_desc">Shrani tehtanja, ki jih tehtnica ne prepozna kot tehtanja aktivnega uporabnika. Uporabljaj to funkcijo le, če tehtnico ne uporablja nihče drug.</string>
+    <string name="bt_info_qardio_resetting">Ponastavitev tehtnice in izbris vseh uporabnikov …</string>
+    <string name="qardio_config_description">openScale posodablja profil aktivnega uporabnika na tehtnici. Tehtnica prikazuje imena v malih črkah, dolga do 6 črk ali številk.</string>
 </resources>
