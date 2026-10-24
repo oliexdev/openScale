@@ -84,6 +84,7 @@ import com.health.openscale.core.bluetooth.scales.StandardBeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.TaylorBIAHandler
 import com.health.openscale.core.bluetooth.scales.TrisaBodyAnalyzeHandler
 import com.health.openscale.core.bluetooth.scales.VitafitVT701Handler
+import com.health.openscale.core.bluetooth.scales.TerraillonWebCoachHandler
 import com.health.openscale.core.bluetooth.scales.WeightGurusA3Handler
 import com.health.openscale.core.bluetooth.scales.XiaomiS800Handler
 import com.health.openscale.core.bluetooth.scales.YunmaiHandler
@@ -314,6 +315,7 @@ object ScaleCatalog {
         device("1BODY CONNECT") claimedBy BodyConnectHandler::class.java,
         device("1X-LINE") claimedBy BodyConnectHandler::class.java,
         device("10376BAA") claimedBy WeightGurusA3Handler::class.java,
+        device("01376012345678", uuid16(0x7892)) claimedBy TerraillonWebCoachHandler::class.java,        
 
         // Omron reports its model as the GAP name once bonded; advertised local names carry the
         // model id instead (see OmronWlcHandler.MODELS_BY_ADVERTISED_ID).
