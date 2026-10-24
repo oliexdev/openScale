@@ -920,4 +920,15 @@
     <string name="qardio_config_resend_profiles">Ponovno pošiljanje profilov</string>
     <string name="qardio_config_reset">Ponastavi tehtnico</string>
     <string name="qardio_config_reset_desc">Ob naslednji povezavi se izbrišejo vsi uporabniki in omrežje Wi-Fi ter se obnovijo tovarniške nastavitve tehtnice. Nato pri naslednji povezavi se tvoj profil ponovno doda.</string>
+    <string name="qardio_config_reset_legacy">Ponastavitev starega tipa (eksperimentalno)</string>
+    <string name="qardio_config_reset_legacy_desc">Ponastavitev aplikacije Qardio za različice strojne programske opreme starejše od 1.8. To poskusi le, če običajna ponastavitev ne deluje.</string>
+    <string name="qardio_config_resend_profiles_desc">Ob naslednji povezavi ponovno pošlje profil vsakega uporabnika openScale na tem telefonu.</string>
+    <string name="bt_info_qardio_reset_done">Ponastavitev tehtnice. Tvoj profil bo ponovno dodan, ko se bo tehtnica naslednjič povezala.</string>
+    <string name="qardio_config_reset_pending">Na čakanju: tehtnica se bo ponastavila ob naslednji povezavi tega telefona.</string>
+    <string name="hs2s_device_key_label">Ključ naprave</string>
+    <string name="hs2s_device_key_description">Za originalno tehtnico Wyze Scale (WHSCL1) je potreben 32-znakovni ključ naprave iz oblaka Wyze. Tehtnici iHealth HS2S in HS2S Pro ključa ne potrebujeta.</string>
+    <string name="hs2s_device_key_error">Ključ naprave mora vsebovati natanko 32 šestnajstiških znakov</string>
+    <string name="bt_hs2s_missing_device_key">Tehtnica Wyze: ključ naprave ni nastavljen. Odpri nastavitve Bluetootha in ga vnesi.</string>
+    <string name="bt_hs2s_wrong_device_key">Preverjanje pristnosti tehtnice ni uspelo: ključ naprave se ne ujema s to tehtnico.</string>
+    <string name="bt_hs2s_auth_failed">Tehtnica je zavrnila preverjanje pristnosti.</string>
 </resources>
