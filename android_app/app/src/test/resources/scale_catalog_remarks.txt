@@ -10,6 +10,9 @@
 
 Xiaomi Mi Scale v1 = No data on the scale is ever deleted
 Xiaomi Body Composition Scale S400 = See [#1297](https://github.com/oliexdev/openScale/pull/1297) for more details
+Wyze Scale (WHSCL1) = Needs the scale's 32-character device key from the Wyze cloud. See [#853](https://github.com/oliexdev/openScale/issues/853)
+iHealth HS2S = Untested on hardware, see [#853](https://github.com/oliexdev/openScale/issues/853)
+iHealth HS2S Pro = Untested on hardware, see [#853](https://github.com/oliexdev/openScale/issues/853)
 Sanitas SBF70 / SilverCrest SBF75 / Crane = The assigned user name on the scale and in openScale have to be the same, see [FAQ](Frequently-Asked-Questions-(FAQ)#how-do-i-get-the-body-metrics-water-muscle-fat-percentage-on-my-sbf70-scale)
 Digoo DG-SO38H (Mengii) = Initialisation process needs to be reverse engineered. Currently you have to use the vendor's app once to initialise the scale.
 ES-CS20M / ES-32MD = Uses the Trisa Body Analyze body measurement library until the original [QN scale library](https://github.com/oliexdev/openScale/issues/373) is fully reverse engineered
