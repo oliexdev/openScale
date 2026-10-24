@@ -99,6 +99,7 @@ import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.core.service.ScannedDeviceInfo
+import com.welie.blessed.BluetoothCentralManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -234,7 +235,8 @@ class ScaleFactory @Inject constructor(
      */
     private fun createModernCommunicator(
         handler: ScaleDeviceHandler,
-        support: DeviceSupport
+        support: DeviceSupport,
+        centralManager: BluetoothCentralManager
     ): ScaleCommunicator? {
         // Resolve effective tuning: prefer user-saved value, fall back to handler default
         val effectiveTuning: TuningProfile = run {
@@ -252,7 +254,8 @@ class ScaleFactory @Inject constructor(
                     measurementFacade,
                     userFacade,
                     handler,
-                    effectiveTuning
+                    effectiveTuning,
+                    centralManager
                 )
 
             LinkMode.BROADCAST_ONLY ->
@@ -262,7 +265,8 @@ class ScaleFactory @Inject constructor(
                     measurementFacade,
                     userFacade,
                     handler,
-                    effectiveTuning
+                    effectiveTuning,
+                    centralManager
                 )
 
             LinkMode.CLASSIC_SPP ->
@@ -281,9 +285,13 @@ class ScaleFactory @Inject constructor(
      * Creates the most suitable [ScaleCommunicator] for the given scanned device.
      *
      * @param deviceInfo Information about the scanned Bluetooth device.
+     * @param centralManager The shared app-wide Bluetooth manager.
      * @return A [ScaleCommunicator] instance if a suitable handler or adapter is found, otherwise null.
      */
-    fun createCommunicator(deviceInfo: ScannedDeviceInfo): ScaleCommunicator? {
+    fun createCommunicator(
+        deviceInfo: ScannedDeviceInfo,
+        centralManager: BluetoothCentralManager
+    ): ScaleCommunicator? {
         val primaryIdentifier = deviceInfo.name
         LogManager.d(TAG, "createCommunicator: Searching for communicator for '${primaryIdentifier}' (${deviceInfo.address}). Handler hint: '${deviceInfo.determinedHandlerDisplayName}'")
 
@@ -291,7 +299,7 @@ class ScaleFactory @Inject constructor(
         //    which dumps the GATT tree and logs notifications but stores nothing.
         if (readSettingBlocking(settingsFacade.developerModeEnabled) == true) {
             LogManager.i(TAG, "Developer mode active → routing '$primaryIdentifier' to DebugGattHandler. No measurement will be stored.")
-            return createModernCommunicator(DebugGattHandler(), DebugGattHandler.SUPPORT)
+            return createModernCommunicator(DebugGattHandler(), DebugGattHandler.SUPPORT, centralManager)
         }
 
         // 1. Check if a modern Kotlin handler explicitly supports the device.
@@ -299,7 +307,7 @@ class ScaleFactory @Inject constructor(
             val support = handler.supportFor(deviceInfo)
             if (support != null) {
                 LogManager.i(TAG, "Modern handler '${support.displayName}' supports '$primaryIdentifier'.")
-                val modern = createModernCommunicator(handler, support)
+                val modern = createModernCommunicator(handler, support, centralManager)
                 if (modern != null) {
                     LogManager.i(TAG, "Modern communicator '${modern.javaClass.simpleName}' created for '$primaryIdentifier' with linkMode=${support.linkMode}.")
                     return modern

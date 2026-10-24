@@ -28,7 +28,6 @@ import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
 import com.health.openscale.core.utils.LogManager
 import com.welie.blessed.BluetoothCentralManager
-import com.welie.blessed.BluetoothCentralManagerCallback
 import com.welie.blessed.BluetoothPeripheral
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -49,12 +48,12 @@ class BroadcastScaleAdapter(
     measurementFacade: MeasurementFacade,
     userFacade: UserFacade,
     handler: ScaleDeviceHandler,
-    profile: TuningProfile = TuningProfile.Balanced
+    profile: TuningProfile = TuningProfile.Balanced,
+    private val central: BluetoothCentralManager
 ) : ModernScaleAdapter(context, settingsFacade, measurementFacade, userFacade, handler) {
 
     private val tuning: BleBroadcastTuning = profile.forBroadcast()
 
-    private lateinit var central: BluetoothCentralManager
     private var broadcastAttached = false
     private var scanTimeoutJob: Job? = null
     private var attempt = 0
@@ -66,71 +65,70 @@ class BroadcastScaleAdapter(
 
     private fun now() = SystemClock.elapsedRealtime()
 
-    private val centralCallback = object : BluetoothCentralManagerCallback() {
-        override fun onDiscovered(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
-            // Filter: only target MAC
-            if (peripheral.address != targetAddress) return
+    // -------------------------------------------------------------------------------------------------
+    // System-level events routed from BluetoothFacade
+    // -------------------------------------------------------------------------------------------------
+    fun onDiscovered(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
+        // Filter: only target MAC
+        if (peripheral.address != targetAddress) return
 
-            // Filter: the scan is over (measurement complete, timed out, or disconnected).
-            // Android still delivers advertisements that were already queued when stopScan()
-            // was called; processing them would re-attach the handler we just released.
-            if (!isScanning) return
+        // Filter: the scan is over (measurement complete, timed out, or disconnected).
+        if (!isScanning) return
 
-            // Filter: optional RSSI threshold
-            val rssi = scanResult.rssi
-            tuning.minRssiDbm?.let { if (rssi < it) return }
+        // Filter: optional RSSI threshold
+        val rssi = scanResult.rssi
+        tuning.minRssiDbm?.let { if (rssi < it) return }
 
-            // De-dup: collapse identical packets within packetDedupWindowMs
-            val bytes = scanResult.scanRecord?.bytes
+        // De-dup: collapse identical packets within packetDedupWindowMs
+        val bytes = scanResult.scanRecord?.bytes
 
-            LogManager.d(TAG,"Discovered advertisement from ${peripheral.address} RSSI=$rssi ${bytes?.toHexPreview(24)}")
+        LogManager.d(TAG,"Discovered advertisement from ${peripheral.address} RSSI=$rssi ${bytes?.toHexPreview(24)}")
 
-            val hash = contentHash(bytes, rssi)
-            val t = now()
-            val last = dedupSeen[hash]
-            if (last != null && (t - last) <= tuning.packetDedupWindowMs) {
-                LogManager.w(TAG, "Deduplicated packet hash=$hash from ${peripheral.address}")
-                return
-            }
-            dedupSeen[hash] = t
-            trimDedup(t)
+        val hash = contentHash(bytes, rssi)
+        val t = now()
+        val last = dedupSeen[hash]
+        if (last != null && (t - last) <= tuning.packetDedupWindowMs) {
+            LogManager.w(TAG, "Deduplicated packet hash=$hash from ${peripheral.address}")
+            return
+        }
+        dedupSeen[hash] = t
+        trimDedup(t)
 
-            // Attach handler as soon as we see the target device (if not already)
-            ensureAttached(peripheral.address)
+        // Attach handler as soon as we see the target device (if not already)
+        ensureAttached(peripheral.address)
 
-            // Optional stabilization: avoid forwarding bursts too quickly
-            if (t - lastForwardAtMs < tuning.stabilizeWindowMs) {
-                LogManager.w(TAG, "Skipping forwarding to handler (stabilize window) from ${peripheral.address}")
-                return
-            }
+        // Optional stabilization: avoid forwarding bursts too quickly
+        if (t - lastForwardAtMs < tuning.stabilizeWindowMs) {
+            LogManager.w(TAG, "Skipping forwarding to handler (stabilize window) from ${peripheral.address}")
+            return
+        }
 
-            val user = selectedUserSnapshot ?: return
-            LogManager.d(TAG,"Forwarding advertisement to handler: ${peripheral.address} RSSI=$rssi ${bytes?.toHexPreview(24)}")
-            val action = handler.onAdvertisement(scanResult, user)
-            LogManager.d(TAG, "Handler returned $action for ${peripheral.address}")
+        val user = selectedUserSnapshot ?: return
+        LogManager.d(TAG,"Forwarding advertisement to handler: ${peripheral.address} RSSI=$rssi ${bytes?.toHexPreview(24)}")
+        val action = handler.onAdvertisement(scanResult, user)
+        LogManager.d(TAG, "Handler returned $action for ${peripheral.address}")
 
-            when (action) {
-                BroadcastAction.IGNORED -> LogManager.d(TAG, "Advertisement IGNORED for ${peripheral.address}")
-                BroadcastAction.CONSUMED_KEEP_SCANNING -> {
-                    LogManager.d(TAG, "Advertisement CONSUMED for ${peripheral.address}")
-                    lastForwardAtMs = t
-                    _events.tryEmit(
-                        BluetoothEvent.DeviceMessage(
-                            context.getString(R.string.bt_info_waiting_for_measurement),
-                            peripheral.address
-                        )
+        when (action) {
+            BroadcastAction.IGNORED -> LogManager.d(TAG, "Advertisement IGNORED for ${peripheral.address}")
+            BroadcastAction.CONSUMED_KEEP_SCANNING -> {
+                LogManager.d(TAG, "Advertisement CONSUMED for ${peripheral.address}")
+                lastForwardAtMs = t
+                _events.tryEmit(
+                    BluetoothEvent.DeviceMessage(
+                        context.getString(R.string.bt_info_waiting_for_measurement),
+                        peripheral.address
                     )
-                }
-                BroadcastAction.CONSUMED_STOP -> {
-                    lastForwardAtMs = t
-                    LogManager.d(TAG, "Measurement stabilized → BroadcastComplete for ${peripheral.address}")
-                    _events.tryEmit(BluetoothEvent.BroadcastComplete(peripheral.address))
-                    stopScanInternal()
-                    cleanup()
-                    runCatching { handler.handleDisconnected() }
-                    runCatching { handler.detach() }
-                    broadcastAttached = false
-                }
+                )
+            }
+            BroadcastAction.CONSUMED_STOP -> {
+                lastForwardAtMs = t
+                LogManager.d(TAG, "Measurement stabilized → BroadcastComplete for ${peripheral.address}")
+                _events.tryEmit(BluetoothEvent.BroadcastComplete(peripheral.address))
+                stopScanInternal()
+                cleanup()
+                runCatching { handler.handleDisconnected() }
+                runCatching { handler.detach() }
+                broadcastAttached = false
             }
         }
     }
@@ -141,18 +139,12 @@ class BroadcastScaleAdapter(
         handler.DeviceConfigurationUi()
     }
 
-    private fun ensureCentral() {
-        if (!::central.isInitialized) {
-            central = BluetoothCentralManager(context, centralCallback, mainHandler)
-        }
-    }
-
     private fun ensureAttached(address: String) {
         if (broadcastAttached) return
         val driverSettings = FacadeDriverSettings(
             facade = settingsFacade,
             scope = scope,
-            handlerNamespace = handler::class.simpleName ?: "Handler"
+            handlerNamespace = handler.javaClass.simpleName
         )
         handler.attach(noopTransport, appCallbacks, driverSettings, dataProvider, scope)
         broadcastAttached = true
@@ -200,7 +192,7 @@ class BroadcastScaleAdapter(
 
     private fun stopScanInternal() {
         scanTimeoutJob?.cancel(); scanTimeoutJob = null
-        runCatching { if (::central.isInitialized) central.stopScan() }
+        runCatching { central.stopScan() }
         isScanning = false
         lastDisconnectAtMs = now()
     }
@@ -235,8 +227,6 @@ class BroadcastScaleAdapter(
     }
 
     override fun doConnect(address: String, selectedUser: ScaleUser) {
-        ensureCentral()
-
         // Attach early so UI can show “Listening…”
         ensureAttached(address)
 

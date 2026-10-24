@@ -23,6 +23,7 @@ import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.util.SparseArray
 import com.health.openscale.core.bluetooth.ScaleFactory
 import com.health.openscale.core.utils.LogManager
@@ -78,17 +79,17 @@ data class ScannedDeviceInfo(
 class BluetoothScannerManager(
     private val context: Context,
     private val externalScope: CoroutineScope,
-    private val scaleFactory: ScaleFactory
+    private val scaleFactory: ScaleFactory,
+    private val centralManager: BluetoothCentralManager
 ) {
     private companion object {
         const val TAG = "BluetoothScannerMgr"
+        private const val MAX_SCANS_PER_WINDOW = 5
+        private const val SCAN_WINDOW_MS = 30_000L
     }
 
-    // Ensures Blessed library callbacks are executed on the main thread.
-    private val blessedBluetoothHandler = Handler(Looper.getMainLooper())
-    private val centralManager: BluetoothCentralManager by lazy {
-        BluetoothCentralManager(context, centralManagerCallback, blessedBluetoothHandler)
-    }
+    // --- NO LONGER NEEDED: managed by BluetoothFacade ---
+    // private val centralManager: BluetoothCentralManager by lazy { ... }
 
     private val _scannedDevices = MutableStateFlow<List<ScannedDeviceInfo>>(emptyList())
     /**
@@ -115,6 +116,27 @@ class BluetoothScannerManager(
     // Stores unique devices found during a scan, keyed by MAC address, for efficient updates.
     private val deviceMap = mutableMapOf<String, ScannedDeviceInfo>()
 
+    // --- Android 17 (API 37) Scan Rate Limiting ---
+    private val scanStartTimestamps = mutableListOf<Long>()
+
+    /**
+     * Records a scan start and returns true if within the system quota (5 per 30s).
+     */
+    private fun checkScanQuota(): Boolean {
+        val now = SystemClock.elapsedRealtime()
+        scanStartTimestamps.removeAll { it < now - SCAN_WINDOW_MS }
+        
+        if (scanStartTimestamps.size >= MAX_SCANS_PER_WINDOW) {
+            val oldest = scanStartTimestamps.first()
+            val waitMs = SCAN_WINDOW_MS - (now - oldest)
+            LogManager.w(TAG, "Scan quota reached (5/30s). Must wait ${waitMs}ms.")
+            return false
+        }
+        
+        scanStartTimestamps.add(now)
+        return true
+    }
+
     /**
      * Starts a Bluetooth LE scan for a specified duration.
      *
@@ -134,6 +156,12 @@ class BluetoothScannerManager(
             LogManager.d(TAG, "Scan is already in progress.")
             return
         }
+
+        if (!checkScanQuota()) {
+            _scanError.value = "Scanning too frequently. Please wait a moment."
+            return
+        }
+
         LogManager.i(TAG, "Starting device scan for $scanDurationMs ms.")
 
         deviceMap.clear()
@@ -234,102 +262,99 @@ class BluetoothScannerManager(
     fun close() {
         LogManager.i(TAG, "Closing BluetoothScannerManager.")
         stopScanInternal(isTimeout = false) // Ensure scan is stopped.
-        try {
-            // Crucial to close BluetoothCentralManager to release system resources
-            // and unregister internal broadcast receivers used by the Blessed library.
-            centralManager.close()
-            LogManager.d(TAG, "Blessed BluetoothCentralManager closed successfully.")
-        } catch (e: Exception) {
-            LogManager.e(TAG, "Error closing Blessed BluetoothCentralManager: ${e.message}", e)
+        // DO NOT close centralManager here as it is shared!
+    }
+
+    /**
+     * Entry point for system-level discovery events routed by the Facade.
+     */
+    @SuppressLint("MissingPermission")
+    fun onDiscovered(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
+        val deviceName = peripheral.name
+        val deviceAddress = peripheral.address
+        val rssi = scanResult.rssi
+        val serviceUuids: List<UUID> = scanResult.scanRecord?.serviceUuids?.mapNotNull { it?.uuid } ?: emptyList()
+        val manufacturerData: SparseArray<ByteArray>? = scanResult.scanRecord?.manufacturerSpecificData
+        val serviceData: Map<UUID, ByteArray> = scanResult.scanRecord?.serviceData
+            ?.mapKeys { it.key.uuid }
+            ?.mapValues { it.value.copyOf() }
+            ?: emptyMap()
+
+        val newDevice = ScannedDeviceInfo(
+            name = deviceName,
+            address = deviceAddress,
+            rssi = rssi,
+            serviceUuids = serviceUuids,
+            manufacturerData = manufacturerData,
+            serviceData = serviceData,
+            isSupported = false, // will be determined in the next getSupportingHandlerInfo
+            determinedHandlerDisplayName = null // // will be determined in the next getSupportingHandlerInfo
+        )
+
+        val (isSupported, handlerName) = scaleFactory.getSupportingHandlerInfo(newDevice)
+
+        newDevice.isSupported = isSupported
+        newDevice.determinedHandlerDisplayName = handlerName
+
+        val existingDevice = deviceMap[newDevice.address]
+        var listShouldBeUpdated = false
+
+        if (existingDevice != null) {
+            // Update criteria: if RSSI changed, or if key device info (name, support, handler, services, manufacturer data) has improved or changed.
+            val nameChangedToKnown = newDevice.name.isNotEmpty() && existingDevice.name.isEmpty()
+            val supportStatusImproved = !existingDevice.isSupported && newDevice.isSupported
+            val handlerChanged = newDevice.determinedHandlerDisplayName != existingDevice.determinedHandlerDisplayName
+            val serviceUuidsUpdated = newDevice.serviceUuids.isNotEmpty() && newDevice.serviceUuids != existingDevice.serviceUuids
+            val manuDataUpdated = newDevice.manufacturerData != null && !newDevice.manufacturerData.contentEquals(existingDevice.manufacturerData)
+            val serviceDataUpdated = newDevice.serviceData.isNotEmpty() && !newDevice.serviceData.contentEquals(existingDevice.serviceData)
+
+            if (newDevice.rssi != existingDevice.rssi || nameChangedToKnown || supportStatusImproved || handlerChanged || serviceUuidsUpdated || manuDataUpdated || serviceDataUpdated) {
+                deviceMap[newDevice.address] = existingDevice.copy(
+                    name = newDevice.name.ifEmpty { existingDevice.name }, // Prefer new name if available.
+                    rssi = newDevice.rssi,
+                    isSupported = existingDevice.isSupported || newDevice.isSupported, // Retain 'supported' status if ever true.
+                    determinedHandlerDisplayName = newDevice.determinedHandlerDisplayName ?: existingDevice.determinedHandlerDisplayName,
+                    serviceUuids = if (newDevice.serviceUuids.isNotEmpty()) newDevice.serviceUuids else existingDevice.serviceUuids,
+                    manufacturerData = newDevice.manufacturerData ?: existingDevice.manufacturerData,
+                    serviceData = newDevice.serviceData.ifEmpty { existingDevice.serviceData }
+                )
+                listShouldBeUpdated = true
+            }
+        } else {
+            // Add new device if it's supported, or has a meaningful name, or provides service/manufacturer data.
+            // This avoids populating the list with devices that have no identifying information and are not supported.
+            if (newDevice.isSupported ||
+                newDevice.name.isNotEmpty() ||
+                newDevice.serviceUuids.isNotEmpty() ||
+                (newDevice.manufacturerData != null && newDevice.manufacturerData.isNotEmpty()) ||
+                newDevice.serviceData.isNotEmpty()
+            ) {
+                deviceMap[newDevice.address] = newDevice
+                listShouldBeUpdated = true
+            }
+        }
+
+        if (listShouldBeUpdated) {
+            // Filter ensures only devices that are supported or have a meaningful name (not generic "Unknown Device") are emitted.
+            // Sorting provides a consistent and user-friendly order.
+            _scannedDevices.value = deviceMap.values
+                .filter { it.isSupported || (it.name.isNotEmpty() && it.name != "Unbekanntes Gerät" && it.name != "Unknown Device") }
+                .sortedWith(compareByDescending<ScannedDeviceInfo> { it.isSupported }
+                    .thenByDescending { it.rssi }
+                    .thenBy { it.name.ifEmpty { "zzzz" }.lowercase() }) // "zzzz" ensures unnamed devices sort last.
+                .toList()
         }
     }
 
-    private val centralManagerCallback = object : BluetoothCentralManagerCallback() {
-        @SuppressLint("MissingPermission") // Permissions are handled before scan initiation.
-        override fun onDiscovered(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
-            val deviceName = peripheral.name
-            val deviceAddress = peripheral.address
-            val rssi = scanResult.rssi
-            val serviceUuids: List<UUID> = scanResult.scanRecord?.serviceUuids?.mapNotNull { it?.uuid } ?: emptyList()
-            val manufacturerData: SparseArray<ByteArray>? = scanResult.scanRecord?.manufacturerSpecificData
-            val serviceData: Map<UUID, ByteArray> = scanResult.scanRecord?.serviceData
-                ?.mapKeys { it.key.uuid }
-                ?.mapValues { it.value.copyOf() }
-                ?: emptyMap()
-
-            val newDevice = ScannedDeviceInfo(
-                name = deviceName,
-                address = deviceAddress,
-                rssi = rssi,
-                serviceUuids = serviceUuids,
-                manufacturerData = manufacturerData,
-                serviceData = serviceData,
-                isSupported = false, // will be determined in the next getSupportingHandlerInfo
-                determinedHandlerDisplayName = null // // will be determined in the next getSupportingHandlerInfo
-            )
-
-            val (isSupported, handlerName) = scaleFactory.getSupportingHandlerInfo(newDevice)
-
-            newDevice.isSupported = isSupported
-            newDevice.determinedHandlerDisplayName = handlerName
-
-            val existingDevice = deviceMap[newDevice.address]
-            var listShouldBeUpdated = false
-
-            if (existingDevice != null) {
-                // Update criteria: if RSSI changed, or if key device info (name, support, handler, services, manufacturer data) has improved or changed.
-                val nameChangedToKnown = newDevice.name.isNotEmpty() && existingDevice.name.isEmpty()
-                val supportStatusImproved = !existingDevice.isSupported && newDevice.isSupported
-                val handlerChanged = newDevice.determinedHandlerDisplayName != existingDevice.determinedHandlerDisplayName
-                val serviceUuidsUpdated = newDevice.serviceUuids.isNotEmpty() && newDevice.serviceUuids != existingDevice.serviceUuids
-                val manuDataUpdated = newDevice.manufacturerData != null && !newDevice.manufacturerData.contentEquals(existingDevice.manufacturerData)
-                val serviceDataUpdated = newDevice.serviceData.isNotEmpty() && !newDevice.serviceData.contentEquals(existingDevice.serviceData)
-
-                if (newDevice.rssi != existingDevice.rssi || nameChangedToKnown || supportStatusImproved || handlerChanged || serviceUuidsUpdated || manuDataUpdated || serviceDataUpdated) {
-                    deviceMap[newDevice.address] = existingDevice.copy(
-                        name = newDevice.name.ifEmpty { existingDevice.name }, // Prefer new name if available.
-                        rssi = newDevice.rssi,
-                        isSupported = existingDevice.isSupported || newDevice.isSupported, // Retain 'supported' status if ever true.
-                        determinedHandlerDisplayName = newDevice.determinedHandlerDisplayName ?: existingDevice.determinedHandlerDisplayName,
-                        serviceUuids = if (newDevice.serviceUuids.isNotEmpty()) newDevice.serviceUuids else existingDevice.serviceUuids,
-                        manufacturerData = newDevice.manufacturerData ?: existingDevice.manufacturerData,
-                        serviceData = newDevice.serviceData.ifEmpty { existingDevice.serviceData }
-                    )
-                    listShouldBeUpdated = true
-                }
-            } else {
-                // Add new device if it's supported, or has a meaningful name, or provides service/manufacturer data.
-                // This avoids populating the list with devices that have no identifying information and are not supported.
-                if (newDevice.isSupported ||
-                    newDevice.name.isNotEmpty() ||
-                    newDevice.serviceUuids.isNotEmpty() ||
-                    (newDevice.manufacturerData != null && newDevice.manufacturerData.isNotEmpty()) ||
-                    newDevice.serviceData.isNotEmpty()
-                ) {
-                    deviceMap[newDevice.address] = newDevice
-                    listShouldBeUpdated = true
-                }
-            }
-
-            if (listShouldBeUpdated) {
-                // Filter ensures only devices that are supported or have a meaningful name (not generic "Unknown Device") are emitted.
-                // Sorting provides a consistent and user-friendly order.
-                _scannedDevices.value = deviceMap.values
-                    .filter { it.isSupported || (it.name.isNotEmpty() && it.name != "Unbekanntes Gerät" && it.name != "Unknown Device") }
-                    .sortedWith(compareByDescending<ScannedDeviceInfo> { it.isSupported }
-                        .thenByDescending { it.rssi }
-                        .thenBy { it.name.ifEmpty { "zzzz" }.lowercase() }) // "zzzz" ensures unnamed devices sort last.
-                    .toList()
-            }
-        }
-
-        override fun onScanFailed(scanFailure: ScanFailure) {
-            LogManager.e(TAG, "Bluetooth scan failed: $scanFailure")
-            externalScope.launch {
-                _scanError.value = "Bluetooth Scan Failed: $scanFailure"
-                _isScanning.value = false
-                scanTimeoutJob?.cancel() // Stop scan timeout if scan fails.
-            }
+    /**
+     * Entry point for system-level scan failure events routed by the Facade.
+     */
+    fun onScanFailed(scanFailure: ScanFailure) {
+        LogManager.e(TAG, "Bluetooth scan failed: $scanFailure")
+        externalScope.launch {
+            _scanError.value = "Bluetooth Scan Failed: $scanFailure"
+            _isScanning.value = false
+            scanTimeoutJob?.cancel() // Stop scan timeout if scan fails.
         }
     }
 
