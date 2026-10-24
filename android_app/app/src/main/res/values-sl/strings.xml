@@ -915,4 +915,9 @@
     <string name="qardio_config_save_guest_desc">Shrani tehtanja, ki jih tehtnica ne prepozna kot tehtanja aktivnega uporabnika. Uporabljaj to funkcijo le, če tehtnico ne uporablja nihče drug.</string>
     <string name="bt_info_qardio_resetting">Ponastavitev tehtnice in izbris vseh uporabnikov …</string>
     <string name="qardio_config_description">openScale posodablja profil aktivnega uporabnika na tehtnici. Tehtnica prikazuje imena v malih črkah, dolga do 6 črk ali številk.</string>
+    <string name="qardio_config_select_on_connect">Ob povezovanju izberi moj profil</string>
+    <string name="qardio_config_select_on_connect_desc">Tehtnici sporoči, da je naslednje tehtanje namenjeno aktivnemu uporabniku aplikacije openScale, tako kot je to počela uradna aplikacija. Tehtnica lahko še vedno prepozna tudi koga drugega.</string>
+    <string name="qardio_config_resend_profiles">Ponovno pošiljanje profilov</string>
+    <string name="qardio_config_reset">Ponastavi tehtnico</string>
+    <string name="qardio_config_reset_desc">Ob naslednji povezavi se izbrišejo vsi uporabniki in omrežje Wi-Fi ter se obnovijo tovarniške nastavitve tehtnice. Nato pri naslednji povezavi se tvoj profil ponovno doda.</string>
 </resources>
