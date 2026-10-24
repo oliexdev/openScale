@@ -28,14 +28,19 @@ import com.health.openscale.core.bluetooth.scales.TaylorBIAHandler.Model
 import com.health.openscale.core.bluetooth.scales.TaylorBIAHandler.ScaleFrame
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.WeightUnit
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
 import org.junit.Test
 import java.util.Calendar
 import java.util.UUID
 import kotlin.coroutines.EmptyCoroutineContext
 
 /**
- * Tests for [TaylorBIAHandler], which drives two scales on the same `AC 27` protocol:
+ * Tests for [TaylorBIAHandler], which drives three scales on the same `AC 27` protocol:
  *
  *  - **Taylor 5331891 BIA** — frames from btsnoop_hci.log. Ground truth: the user's recorded
  *    12:49 pm weigh-in read 171.2 lb, and the matching stable frame was `AC 27 80 8D 2F 52 …`
@@ -43,7 +48,11 @@ import kotlin.coroutines.EmptyCoroutineContext
  *  - **ALPHA Smart Scale PRO 3** — frames captured with the vendor's FitDays app (2026-09-20).
  *    Its last weigh-in reads 88 970 g and 469 Ohm; FitDays showed 88.95 kg, i.e. rounded to the
  *    scale's 0.05 kg display resolution.
+ *  - **Urikar Aero I Pro** — frames from openScale's own GATT log of the scale, taken on a phone
+ *    in the Toronto time zone. The three `0xD0` frames below are the ones that switched the
+ *    scale's display to kg, lb and st.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class TaylorBIAHandlerTest {
 
     private val serviceFfb0: UUID = uuid16(0xFFB0)
@@ -63,6 +72,14 @@ class TaylorBIAHandlerTest {
     private val alphaFinal = hex("AC 27 01 00 01 D5 01 80 69 5B 8A 00 00 00 00 00 00 24 D6 00")
     private val alphaFinalNoImpedance = hex("AC 27 01 00 00 00 01 80 69 5C 98 00 00 00 00 00 00 24 D6 19")
     private val alphaStored = hex("AC 27 00 6A B0 4E E1 80 68 18 F6 00 00 00 01 00 00 24 D8 1C")
+
+    // --- Aero I frames (device logs); bit 5 of the last byte is clear, as on the ALPHA.
+    private val aeroIdle = hex("AC 27 00 8C 00 00 00 00 00 00 00 00 00 00 00 00 00 00 D5 01")
+    private val aeroLive = hex("AC 27 00 8D 3B 3C 00 00 00 00 00 00 00 00 00 00 00 00 D5 19")
+    private val aeroLocked = hex("AC 27 80 8D 3B 3C 00 00 00 00 00 00 00 00 00 00 00 00 D5 19")
+    private val aeroResult = hex("AC 27 01 00 02 28 00 00 00 00 00 00 00 00 00 00 00 07 D6 08")
+    private val aeroResultNoContact = hex("AC 27 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 D6 1E")
+    private val aeroStored = hex("AC 27 00 6A D6 CC C3 80 8D 3C CC 00 00 00 01 02 30 07 D8 16")
 
     // --- Matching --------------------------------------------------------------
 
@@ -476,6 +493,333 @@ class TaylorBIAHandlerTest {
         assertThat(setup.callbacks.published).isEmpty()
     }
 
+    // --- Aero I -----------------------------------------------------------------
+
+    @Test
+    fun `claims the Aero I only together with service FFB0`() {
+        val handler = TaylorBIAHandler()
+
+        assertThat(handler.supportFor(device("Aero I", serviceFfb0))!!.displayName).isEqualTo("Urikar Aero I")
+        assertThat(handler.supportFor(device("aero i pro", serviceFfb0))!!.displayName).isEqualTo("Urikar Aero I")
+        assertThat(handler.supportFor(device("Aero I"))).isNull()
+        assertThat(handler.supportFor(device("Aero II", serviceFfb0))).isNull()
+        assertThat(handler.supportFor(device("Aero Ix", serviceFfb0))).isNull()
+    }
+
+    @Test
+    fun `the Aero I implements the display unit and the stored records`() {
+        val support = TaylorBIAHandler().supportFor(device("Aero I", serviceFfb0))!!
+
+        assertThat(support.linkMode).isEqualTo(LinkMode.CONNECT_GATT)
+        assertThat(support.implemented).containsAtLeast(
+            DeviceCapability.UNIT_CONFIG,
+            DeviceCapability.BODY_COMPOSITION,
+            DeviceCapability.HISTORY_READ,
+            DeviceCapability.TIME_SYNC,
+        )
+    }
+
+    @Test
+    fun `Aero I frames decode like the ALPHA's, and its result carries no weight`() {
+        assertThat(TaylorBIAHandler.parse(aeroIdle)).isEqualTo(ScaleFrame.LiveWeight(0, locked = false))
+        assertThat(TaylorBIAHandler.parse(aeroLive)).isEqualTo(ScaleFrame.LiveWeight(80_700, locked = false))
+        assertThat(TaylorBIAHandler.parse(aeroLocked)).isEqualTo(ScaleFrame.LiveWeight(80_700, locked = true))
+        assertThat(TaylorBIAHandler.parse(aeroResult))
+            .isEqualTo(ScaleFrame.FinalResult(weightGrams = 0, impedanceOhms = 552, locked = false))
+        assertThat(TaylorBIAHandler.parse(aeroResultNoContact))
+            .isEqualTo(ScaleFrame.FinalResult(weightGrams = 0, impedanceOhms = 0, locked = false))
+        assertThat(TaylorBIAHandler.parse(aeroStored))
+            .isEqualTo(ScaleFrame.StoredRecord(timestampEpochSeconds = 0x6AD6CCC3L, weightGrams = 81_100))
+    }
+
+    /**
+     * Each of these was written to the scale by the handler's predecessor, and the display switched:
+     * time zone -4 h (`F0`), male, 174 cm, age 39, no goal, a starting weight of 80.70 kg.
+     */
+    @Test
+    fun `builds the profile frames that switched the display to kg, lb and st`() {
+        fun frame(epoch: Long, unit: WeightUnit) = TaylorBIAHandler.buildProfile(
+            nowEpochSeconds = epoch,
+            heightCm = 174,
+            age = 39,
+            sex = TaylorBIAHandler.SEX_MALE,
+            timezoneQuarterHours = -16,
+            unitCode = TaylorBIAHandler.unitCode(unit),
+            userIndex = 1,
+            weightHundredths = TaylorBIAHandler.hundredths(80.7f),
+            targetHundredths = 0,
+            flags = 0x01,
+        )
+
+        assertThat(frame(0x6AD6DFB5L, WeightUnit.KG))
+            .isEqualTo(hex("AC 27 6A D6 DF B5 F0 00 01 AE 1F 86 27 01 00 00 01 00 D0 11"))
+        assertThat(frame(0x6AD6DDF5L, WeightUnit.LB))
+            .isEqualTo(hex("AC 27 6A D6 DD F5 F0 01 01 AE 1F 86 27 01 00 00 01 00 D0 50"))
+        assertThat(frame(0x6AD6DF53L, WeightUnit.ST))
+            .isEqualTo(hex("AC 27 6A D6 DF 53 F0 02 01 AE 1F 86 27 01 00 00 01 00 D0 B1"))
+    }
+
+    @Test
+    fun `weights are sent in truncated hundredths of a kg`() {
+        assertThat(TaylorBIAHandler.hundredths(80.7f)).isEqualTo(8070)
+        assertThat(TaylorBIAHandler.hundredths(75f)).isEqualTo(7500)
+        assertThat(TaylorBIAHandler.hundredths(0f)).isEqualTo(0)
+        assertThat(TaylorBIAHandler.hundredths(-3f)).isEqualTo(0)
+    }
+
+    @Test
+    fun `the default profile frame still reproduces the ALPHA capture`() {
+        val frame = TaylorBIAHandler.buildProfile(
+            nowEpochSeconds = 0x6AD6DFB5L, heightCm = 165, age = 31, sex = TaylorBIAHandler.SEX_FEMALE,
+        )
+
+        assertThat(frame[6].toInt()).isEqualTo(0x08)   // +2 h
+        assertThat(frame[7].toInt()).isEqualTo(0)      // kg
+        assertThat(frame[8].toInt()).isEqualTo(0)      // user 0
+        assertThat(frame[16].toInt()).isEqualTo(0x03)
+    }
+
+    @Test
+    fun `the Aero I writes one profile frame with its unit and user data and no ALPHA control frame`() {
+        val user = aeroUser(WeightUnit.LB)
+        val setup = attached(Model.AERO_I, user)
+
+        setup.handler.handleConnected(user)
+
+        assertThat(setup.transport.notifications).containsExactly(serviceFfb0 to charData)
+        val frame = setup.transport.writes.single().payload
+        assertThat(setup.transport.writes.single().characteristic).isEqualTo(charCfg)
+        assertThat(frame[18].toInt() and 0xFF).isEqualTo(TaylorBIAHandler.WIRE_PROFILE)
+        assertThat(frame[7].toInt()).isEqualTo(1)                                    // lb
+        assertThat(frame[8].toInt()).isEqualTo(1)                                    // user index
+        assertThat(frame[9].toInt() and 0xFF).isEqualTo(174)
+        assertThat(frame.copyOfRange(10, 12)).isEqualTo(hex("1F 86"))                // 80.70 kg
+        assertThat(frame[12].toInt()).isEqualTo(39)
+        assertThat(frame[13].toInt()).isEqualTo(TaylorBIAHandler.SEX_MALE)
+        assertThat(frame[16].toInt()).isEqualTo(0x01)                                // impedance on
+        assertThat(frame[19].toInt() and 0xFF).isEqualTo(TaylorBIAHandler.phoneChecksum(frame))
+    }
+
+    @Test
+    fun `the Aero I time zone byte follows the phone's zone`() {
+        val previous = java.util.TimeZone.getDefault()
+        try {
+            java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("America/Toronto"))
+            val user = aeroUser()
+            val setup = attached(Model.AERO_I, user)
+            setup.handler.handleConnected(user)
+
+            val offset = java.util.TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 1000 / 900
+            assertThat(setup.transport.writes.single().payload[6].toInt()).isEqualTo(offset)
+        } finally {
+            java.util.TimeZone.setDefault(previous)
+        }
+    }
+
+    @Test
+    fun `a locked Aero I weight waits for the result, then publishes weight, impedance and body composition`() {
+        val setup = connectedAero()
+
+        setup.handler.handleNotification(charData, aeroIdle)
+        setup.handler.handleNotification(charData, aeroLive)
+        setup.handler.handleNotification(charData, aeroLocked)
+        assertThat(setup.callbacks.published).isEmpty()
+
+        setup.handler.handleNotification(charData, aeroResult)
+
+        val measurement = setup.callbacks.published.single()
+        assertThat(measurement.userId).isEqualTo(setup.user.id)
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(1e-4f).of(80.7f)
+        assertThat(measurement[MeasurementType.IMPEDANCE]?.value).isWithin(1e-4f).of(552f)
+        assertThat(measurement.values.keys).containsAtLeast(
+            MeasurementType.BODY_FAT, MeasurementType.WATER, MeasurementType.MUSCLE,
+            MeasurementType.BONE, MeasurementType.LBM, MeasurementType.BMR,
+        )
+        assertThat(setup.transport.writes.last().payload)
+            .isEqualTo(hex("AC 27 04 D6 00 00 00 00 00 00 00 00 00 00 00 00 00 00 DF B9"))
+    }
+
+    @Test
+    fun `an Aero I result without contact publishes the weight alone`() {
+        val setup = connectedAero()
+
+        setup.handler.handleNotification(charData, aeroLocked)
+        setup.handler.handleNotification(charData, aeroResultNoContact)
+
+        assertThat(setup.callbacks.published.single().values.keys).containsExactly(MeasurementType.WEIGHT)
+    }
+
+    @Test
+    fun `the Aero I result is acknowledged every time but published once`() {
+        val setup = connectedAero()
+
+        setup.handler.handleNotification(charData, aeroLocked)
+        repeat(3) { setup.handler.handleNotification(charData, aeroResult) }
+
+        assertThat(setup.callbacks.published).hasSize(1)
+        assertThat(setup.transport.writes.count { it.payload[2].toInt() == TaylorBIAHandler.CMD_ACK }).isEqualTo(3)
+    }
+
+    @Test
+    fun `an Aero I result with no locked weight publishes nothing`() {
+        val setup = connectedAero()
+
+        setup.handler.handleNotification(charData, aeroLive)   // not locked
+        setup.handler.handleNotification(charData, aeroResult)
+
+        assertThat(setup.callbacks.published).isEmpty()
+    }
+
+    @Test
+    fun `the Aero I records the next weigh-in once its unlocked step-on readings arrive`() {
+        val setup = connectedAero()
+
+        setup.handler.handleNotification(charData, aeroLocked)
+        setup.handler.handleNotification(charData, aeroResult)
+        setup.handler.handleNotification(charData, aeroLocked)    // still standing: nothing new
+        assertThat(setup.callbacks.published).hasSize(1)
+
+        // The scale sends nothing between weigh-ins: the next step-on starts with unlocked readings.
+        setup.handler.handleNotification(charData, aeroLive)
+        setup.handler.handleNotification(charData, aeroLocked)
+        setup.handler.handleNotification(charData, aeroResult)
+
+        assertThat(setup.callbacks.published).hasSize(2)
+    }
+
+    @Test
+    fun `an empty platform also re-arms the Aero I after a publish`() {
+        val setup = connectedAero()
+
+        setup.handler.handleNotification(charData, aeroLocked)
+        setup.handler.handleNotification(charData, aeroResult)
+        setup.handler.handleNotification(charData, aeroIdle)
+        setup.handler.handleNotification(charData, aeroLocked)
+        setup.handler.handleNotification(charData, aeroResult)
+
+        assertThat(setup.callbacks.published).hasSize(2)
+    }
+
+    @Test
+    fun `stepping off before the result arrives does not lose the Aero I's weight`() {
+        val setup = connectedAero()
+
+        setup.handler.handleNotification(charData, aeroLocked)
+        setup.handler.handleNotification(charData, aeroIdle)      // stepped off early
+        setup.handler.handleNotification(charData, aeroResult)
+
+        val measurement = setup.callbacks.published.single()
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(1e-4f).of(80.7f)
+        assertThat(measurement[MeasurementType.IMPEDANCE]?.value).isWithin(1e-4f).of(552f)
+    }
+
+    /** A 0xD8 record: Unix time at 3..6, the weight word at 8..10, a valid 5-bit checksum. */
+    private fun storedRecord(epochSeconds: Long, grams: Int): ByteArray {
+        val f = ByteArray(20)
+        f[0] = 0xAC.toByte(); f[1] = 0x27
+        for (k in 0..3) f[3 + k] = (epochSeconds ushr (24 - 8 * k)).toByte()
+        f[7] = 0x80.toByte()
+        f[8] = (0x80 or (grams ushr 16)).toByte(); f[9] = (grams ushr 8).toByte(); f[10] = grams.toByte()
+        f[18] = 0xD8.toByte()
+        f[19] = TaylorBIAHandler.scaleChecksum(f).toByte()
+        return f
+    }
+
+    /**
+     * Seen on the device: a weigh-in made while the phone was still connecting is stored on the scale
+     * and arrives after the next live weigh-in. It has the same weight (the same person) and is not
+     * a copy, so it must not be dropped.
+     */
+    @Test
+    fun `an Aero I stored record is imported even when it has the weight of the live weigh-in`() {
+        val setup = connectedAero()
+        val earlier = System.currentTimeMillis() / 1000 - 213
+
+        setup.handler.handleNotification(charData, aeroLocked)
+        setup.handler.handleNotification(charData, aeroResult)
+        setup.handler.handleNotification(charData, storedRecord(earlier, 80_700))
+
+        assertThat(setup.callbacks.published).hasSize(2)
+        val record = setup.callbacks.published.last()
+        assertThat(record[MeasurementType.WEIGHT]?.value).isWithin(1e-4f).of(80.7f)
+        assertThat(record.dateTime?.time).isEqualTo(earlier * 1000L)
+        assertThat(setup.transport.writes.map { it.payload }
+            .any { it[2].toInt() == TaylorBIAHandler.CMD_ACK && (it[3].toInt() and 0xFF) == TaylorBIAHandler.WIRE_STORED_RECORD })
+            .isTrue()
+    }
+
+    @Test
+    fun `a missing Aero I result still records the weight after the wait`() {
+        val scope = TestScope()
+        val setup = connectedAero(scope)
+
+        setup.handler.handleNotification(charData, aeroLocked)
+        scope.advanceTimeBy(7_900)
+        scope.runCurrent()
+        assertThat(setup.callbacks.published).isEmpty()
+
+        scope.advanceTimeBy(200)
+        scope.runCurrent()
+
+        val measurement = setup.callbacks.published.single()
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(1e-4f).of(80.7f)
+        assertThat(measurement.values.keys).containsExactly(MeasurementType.WEIGHT)
+    }
+
+    @Test
+    fun `an Aero I result that arrives in time cancels the weight-only fallback`() {
+        val scope = TestScope()
+        val setup = connectedAero(scope)
+
+        setup.handler.handleNotification(charData, aeroLocked)
+        setup.handler.handleNotification(charData, aeroResult)
+        scope.advanceTimeBy(20_000)
+        scope.runCurrent()
+
+        assertThat(setup.callbacks.published).hasSize(1)
+    }
+
+    @Test
+    fun `Aero I stored records publish at their own timestamp and are acknowledged, and the link stays open`() {
+        val setup = connectedAero()
+
+        setup.handler.handleNotification(charData, aeroStored)
+
+        val record = setup.callbacks.published.single()
+        assertThat(record[MeasurementType.WEIGHT]?.value).isWithin(1e-4f).of(81.1f)
+        assertThat(record.dateTime?.time).isEqualTo(0x6AD6CCC3L * 1000L)
+        assertThat(setup.transport.writes.single().payload[3].toInt() and 0xFF).isEqualTo(TaylorBIAHandler.WIRE_STORED_RECORD)
+        assertThat(setup.transport.disconnects).isEqualTo(0)
+    }
+
+    @Test
+    fun `the Aero I never drops the link itself`() {
+        val setup = connectedAero()
+
+        setup.handler.handleNotification(charData, aeroLocked)
+        setup.handler.handleNotification(charData, aeroResult)
+
+        assertThat(setup.transport.disconnects).isEqualTo(0)
+    }
+
+    private fun aeroUser(unit: WeightUnit = WeightUnit.KG): ScaleUser =
+        ScaleUser(
+            id = 1,
+            birthday = Calendar.getInstance().apply { add(Calendar.YEAR, -39); add(Calendar.DAY_OF_YEAR, -1) }.time,
+            bodyHeight = 174f,
+            gender = GenderType.MALE,
+            initialWeight = 80.7f,
+            scaleUnit = unit,
+        )
+
+    /** An Aero I that has connected; the handshake write is dropped so a test sees only what it triggers. */
+    private fun connectedAero(scope: CoroutineScope = TestScope()): Setup {
+        val user = aeroUser()
+        val setup = attached(Model.AERO_I, user, scope)
+        setup.handler.handleConnected(user)
+        return setup.also { it.transport.writes.clear() }
+    }
+
     // --- Harness ---------------------------------------------------------------
 
     /** A connected handler whose handshake writes are still in [CapturingTransport.writes]. */
@@ -490,9 +834,17 @@ class TaylorBIAHandlerTest {
         handshake(model).also { it.transport.writes.clear() }
 
     /** Builds a handler that has already matched [model]'s advertisement, as ScaleFactory does. */
-    private fun attached(model: Model, user: ScaleUser): Setup {
+    private fun attached(
+        model: Model,
+        user: ScaleUser,
+        scope: CoroutineScope = CoroutineScope(EmptyCoroutineContext),
+    ): Setup {
         val handler = TaylorBIAHandler()
-        val name = if (model == Model.ALPHA_PRO3) "MY_SCALE" else "BIA SCALE"
+        val name = when (model) {
+            Model.ALPHA_PRO3 -> "MY_SCALE"
+            Model.AERO_I -> "Aero I"
+            Model.TAYLOR_BIA -> "BIA SCALE"
+        }
         assertThat(handler.supportFor(device(name, serviceFfb0))).isNotNull()
 
         val transport = CapturingTransport()
@@ -502,7 +854,7 @@ class TaylorBIAHandlerTest {
             callbacks = callbacks,
             settings = InMemorySettings(),
             data = FixedDataProvider(user),
-            scope = CoroutineScope(EmptyCoroutineContext),
+            scope = scope,
         )
         return Setup(handler, transport, callbacks, user)
     }
@@ -535,7 +887,8 @@ class TaylorBIAHandlerTest {
             writes += Write(service, characteristic, payload.copyOf())
         }
         override fun read(service: UUID, characteristic: UUID) = Unit
-        override fun disconnect() = Unit
+        var disconnects = 0
+        override fun disconnect() { disconnects++ }
         override fun hasCharacteristic(service: UUID, characteristic: UUID) = true
     }
 

@@ -26,6 +26,7 @@ import com.health.openscale.core.data.Kg
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.Percent
+import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.service.ScannedDeviceInfo
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -33,6 +34,7 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import java.util.UUID
 
 /**
@@ -41,6 +43,8 @@ import java.util.UUID
  *  - **Taylor 5331891 BIA** — advertises as "5331891 BIA Scale" (PR #1393).
  *  - **ALPHA Smart Scale PRO 3** (model SCP-03, sold in Poland) — advertises as "MY_SCALE";
  *    weight, impedance and the weigh-ins it stored while the phone was away (issue #1358).
+ *  - **Urikar Aero I / Aero I Pro** — advertises as "Aero I"; the same frames, plus the display
+ *    unit (kg, lb or st) that follows the weight unit chosen in openScale.
  *
  * Both share the GATT layout with the MGB family, which is why [MGBHandler] used to mis-claim
  * them; this handler must stay ahead of it in ScaleFactory.
@@ -60,8 +64,23 @@ import java.util.UUID
  * | `0xD5` | scale → phone | live weight, byte 2 = `0x80` once the display locked |
  * | `0xD6` | scale → phone | final result: impedance (u16 @4) + weight (@8) |
  * | `0xD8` | scale → phone | stored record: Unix time BE (@3) + weight (@8), must be ACKed |
- * | `0xD0` | phone → scale | Unix time BE + `08 00 00` + height cm + `00 00` + age + sex |
+ * | `0xD0` | phone → scale | the time/profile frame, see below |
  * | `0xDF` | phone → scale | control: `04 <wire type>` = ACK, `01` = sent once after the profile |
+ *
+ * The `0xD0` body, byte by byte (a Urikar Aero I switched its display kg → lb → st → kg with it):
+ *
+ * | body | field |
+ * |---|---|
+ * | 0..3 | Unix time, big-endian |
+ * | 4 | UTC offset in 15-minute steps, signed (`08` = +2 h, the capture the ALPHA path replays) |
+ * | 5 | display unit: 0 kg, 1 lb, 2 st |
+ * | 6 | user index |
+ * | 7 | height, cm |
+ * | 8..9 | the user's weight in hundredths of a kg, big-endian |
+ * | 10 | age |
+ * | 11 | sex, 1 male / 2 female |
+ * | 12..13 | target weight in hundredths of a kg, big-endian |
+ * | 14 | flags, bit 0 = measure impedance, bit 1 = the "low weight" feature (ALPHA: `03`) |
  *
  * Weight is the low 18 bits of the big-endian 24-bit word (`69 5B 8A` → 88 970 g), so the Taylor's
  * `8C`/`8D` "channel" is simply that word's top byte. Timestamps are Unix seconds, big-endian.
@@ -72,7 +91,9 @@ import java.util.UUID
  * Only two things differ, both selected by [model]:
  *
  *  - **Handshake.** The Taylor gets the old 8-byte `AC 02 … CC` MGB config frames it was verified
- *    with; the ALPHA gets the `0xD0`/`0xDF` frames FitDays writes.
+ *    with; the ALPHA gets the `0xD0`/`0xDF` frames FitDays writes. The ALPHA's `0xD0` keeps the
+ *    bytes of its capture (time zone `+2 h`, kg); the Aero I gets the real time zone, the unit and
+ *    its profile weight in them.
  *  - **Publishing.** The ALPHA publishes on the `0xD6` final result and ACKs it. Under openScale's
  *    handshake the Taylor never sends a locked or final frame in practice — it just streams live
  *    values that plateau — so it publishes once the same weight has repeated [STABLE_FRAMES]
@@ -83,6 +104,14 @@ import java.util.UUID
  * ALPHA gets. Whether openScale's 8-byte handshake can be swapped for that one is untested, so it
  * stays as it is; if a `0xD6` does arrive, its impedance is published.
  *
+ * The Aero I's `0xD6` carries the impedance but **no weight**, so its weight comes from the locked
+ * `0xD5` packet that precedes it by about three seconds: the weight waits for the result, with
+ * [AERO_RESULT_WAIT_MS] as the limit after which it is published alone. Its link stays open (the
+ * scale switches itself off). The scale goes quiet after a weigh-in instead of reporting an empty
+ * platform, so the next one is recognised by its first unlocked reading. The scale is only awake for
+ * a few seconds after it wakes, so a weigh-in made before the phone has connected is stored on the
+ * scale and arrives as a stored record on the next connection; those are imported like the ALPHA's.
+ *
  * Neither scale transmits body composition: both vendor apps compute fat/water/muscle/… on the
  * phone with formulas we do not have. Where an impedance arrives, openScale computes its own with
  * [StandardImpedanceLib] instead — the same science-based path a dozen other handlers take.
@@ -90,7 +119,7 @@ import java.util.UUID
 class TaylorBIAHandler : ScaleDeviceHandler() {
 
     /** The products this driver serves. */
-    internal enum class Model { TAYLOR_BIA, ALPHA_PRO3 }
+    internal enum class Model { TAYLOR_BIA, ALPHA_PRO3, AERO_I }
 
     /** Decoded NOTIFY frame. */
     internal sealed class ScaleFrame {
@@ -121,16 +150,19 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
     /** Run-length of consecutive identical readings; when it hits [STABLE_FRAMES] we publish. */
     private var stableCount = 0
 
-    /** Guards against publishing more than one final measurement per session. */
+    /** Guards against publishing more than one final measurement per session (Aero I: per weigh-in). */
     private var published = false
+
+    /** Aero I: the weight of the locked `0xD5` packet, held until the `0xD6` result brings the impedance. */
+    private var lockedWeightGrams = 0
 
     /** Last-resort timer (see [FALLBACK_DELAY_MS]) for the case where the weight never settles. */
     private var fallbackJob: Job? = null
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val matched = modelFor(device.name) ?: return null
-        // "MY_SCALE" is a generic enough name to demand the service as well; the Taylor's is not.
-        if (matched == Model.ALPHA_PRO3 && device.serviceUuids.none { it == SERVICE }) return null
+        // "MY_SCALE" and "Aero I" are generic enough names to demand the service as well; the Taylor's is not.
+        if (matched != Model.TAYLOR_BIA && device.serviceUuids.none { it == SERVICE }) return null
         // The Fitdays FG2202WB also advertises as "MY_SCALE" on 0xFFB0, but speaks the Runstar R6
         // protocol (RunstarR6Handler). It adds 0x1530, which the ALPHA does not (#1534).
         if (matched == Model.ALPHA_PRO3 && SERVICE_FG2202WB in device.serviceUuids) return null
@@ -171,6 +203,27 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
                 ),
                 linkMode = LinkMode.CONNECT_GATT
             )
+
+            Model.AERO_I -> DeviceSupport(
+                displayName = "Urikar Aero I",
+                capabilities = setOf(
+                    DeviceCapability.LIVE_WEIGHT_STREAM,
+                    DeviceCapability.BODY_COMPOSITION,
+                    DeviceCapability.HISTORY_READ,
+                    DeviceCapability.TIME_SYNC,
+                    DeviceCapability.USER_SYNC,
+                    DeviceCapability.UNIT_CONFIG,
+                ),
+                implemented = setOf(
+                    DeviceCapability.LIVE_WEIGHT_STREAM,
+                    DeviceCapability.BODY_COMPOSITION,
+                    DeviceCapability.HISTORY_READ,
+                    DeviceCapability.TIME_SYNC,
+                    DeviceCapability.USER_SYNC,
+                    DeviceCapability.UNIT_CONFIG,
+                ),
+                linkMode = LinkMode.CONNECT_GATT
+            )
         }
     }
 
@@ -180,6 +233,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         pendingWeightGrams = 0
         stableCount = 0
         published = false
+        lockedWeightGrams = 0
         fallbackJob?.cancel()
         fallbackJob = null
         // supportFor() latched the model when the device was matched; once connected the peripheral
@@ -193,6 +247,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         when (model) {
             Model.TAYLOR_BIA -> writeTaylorHandshake(user)
             Model.ALPHA_PRO3 -> writeAlphaHandshake(user)
+            Model.AERO_I -> writeAeroHandshake(user)
         }
 
         // Prompt the user to step on; the result arrives asynchronously via onNotification().
@@ -230,6 +285,10 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
     // --- Frame handling -------------------------------------------------------
 
     private fun onLiveWeight(frame: ScaleFrame.LiveWeight, user: ScaleUser) {
+        if (model == Model.AERO_I) {
+            onAeroLiveWeight(frame, user)
+            return
+        }
         if (model == Model.ALPHA_PRO3) {
             // The ALPHA always follows up with a final result, so live frames are only logged.
             if (frame.weightGrams != pendingWeightGrams) {
@@ -255,9 +314,44 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         }
     }
 
+    /**
+     * Aero I: the first locked reading is held for the result packet, with a timer so a missing result
+     * still records the weight. After a publish, any unlocked reading (the step-on ramp, or an empty
+     * platform) means the next weigh-in has begun and re-arms the handler; before the publish it is
+     * ignored, so stepping off early cannot lose the weight that is waiting for its result.
+     */
+    private fun onAeroLiveWeight(frame: ScaleFrame.LiveWeight, user: ScaleUser) {
+        if (!frame.locked) {
+            if (published) {
+                published = false
+                lockedWeightGrams = 0
+            }
+            return
+        }
+        if (published || lockedWeightGrams > 0) return
+
+        lockedWeightGrams = frame.weightGrams
+        logI("locked weight ${frame.weightGrams} g, waiting for the result packet")
+        fallbackJob = scope.launch {
+            delay(AERO_RESULT_WAIT_MS)
+            logW("no result packet within $AERO_RESULT_WAIT_MS ms, publishing the weight alone")
+            publishFinal(user, lockedWeightGrams, impedanceOhms = 0)
+        }
+    }
+
     private fun onFinalResult(frame: ScaleFrame.FinalResult, user: ScaleUser) {
         logI("final result ${frame.weightGrams} g, impedance=${frame.impedanceOhms} Ω, locked=${frame.locked}")
         acknowledge(WIRE_FINAL_RESULT)
+
+        if (model == Model.AERO_I) {
+            // The result carries the impedance but no weight; that came with the locked packet.
+            if (published || lockedWeightGrams <= 0) {
+                logD("result without a pending locked weight, ignoring")
+                return
+            }
+            publishFinal(user, lockedWeightGrams, frame.impedanceOhms)
+            return
+        }
 
         if (model == Model.TAYLOR_BIA) {
             publishAndDisconnect(user, frame.weightGrams, frame.impedanceOhms)
@@ -406,6 +500,28 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         writeProfile(user)
     }
 
+    /**
+     * The Aero I gets one `0xD0` frame carrying what it needs to follow openScale: the real time zone,
+     * the display unit and the user's profile. The profile weight is the starting weight, which
+     * openScale converts to kg; the last measurement is not unit-aware and is not used.
+     */
+    private fun writeAeroHandshake(user: ScaleUser) {
+        val now = System.currentTimeMillis()
+        val frame = buildProfile(
+            nowEpochSeconds = now / 1000L,
+            heightCm = user.bodyHeight.toInt(),
+            age = user.age,
+            sex = if (user.gender.isMale()) SEX_MALE else SEX_FEMALE,
+            timezoneQuarterHours = TimeZone.getDefault().getOffset(now) / 1000 / 900,
+            unitCode = unitCode(user.scaleUnit),
+            userIndex = AERO_USER_INDEX,
+            weightHundredths = hundredths(user.initialWeight),
+            targetHundredths = hundredths(user.goalWeight),
+            flags = FLAG_IMPEDANCE,
+        )
+        writeTo(SERVICE, CHAR_CFG, frame)
+    }
+
     private fun writeProfile(user: ScaleUser) {
         val frame = buildProfile(
             nowEpochSeconds = System.currentTimeMillis() / 1000L,
@@ -416,9 +532,9 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         writeTo(SERVICE, CHAR_CFG, frame)
     }
 
-    /** Only the ALPHA expects its results to be acknowledged; the Taylor has never seen a 0xDF. */
+    /** The ALPHA and Aero I expect their results to be acknowledged; the Taylor has never seen a 0xDF. */
     private fun acknowledge(wireType: Int) {
-        if (model != Model.ALPHA_PRO3) return
+        if (model == Model.TAYLOR_BIA) return
         writeTo(SERVICE, CHAR_CFG, buildAck(wireType))
     }
 
@@ -458,6 +574,19 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
          * user keeps shifting), publish the latest reading anyway so a measurement is still recorded.
          */
         private const val FALLBACK_DELAY_MS = 8000L
+
+        /** How long the Aero I's locked weight waits for its result packet, which follows in about 3 s. */
+        private const val AERO_RESULT_WAIT_MS = 8_000L
+
+        /** The Aero I's user slot; one slot is all openScale uses. */
+        private const val AERO_USER_INDEX = 1
+
+        /** `0xD0` flags: bit 0 measures impedance, bit 1 is the ALPHA's "low weight" feature (see the class doc). */
+        private const val FLAG_IMPEDANCE = 0x01
+        private const val FLAGS_ALPHA = 0x03
+
+        /** The ALPHA capture was taken at +2 h; its profile frame keeps that time zone byte. */
+        private const val ALPHA_TIMEZONE_QUARTER_HOURS = 0x08
 
         /** Grace period so the queued ACK leaves before we drop the ALPHA's link. */
         private const val DISCONNECT_DELAY_MS = 1_000L
@@ -505,6 +634,7 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
             val name = advertisedName.trim().uppercase(Locale.ROOT)
             return when {
                 name == "MY_SCALE" -> Model.ALPHA_PRO3
+                name == "AERO I" || name.startsWith("AERO I ") -> Model.AERO_I
                 name.startsWith("5331891") || name.contains("BIA SCALE") -> Model.TAYLOR_BIA
                 else -> null
             }
@@ -550,18 +680,46 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
         fun weightGrams(raw: ByteArray, at: Int): Int =
             (((raw[at].toInt() and 0xFF) shl 16) or u16(raw, at + 1)) and WEIGHT_G_MASK
 
+        /** The scale's display-unit codes: kg 0, lb 1, st 2. */
+        fun unitCode(unit: WeightUnit): Int = when (unit) {
+            WeightUnit.KG -> 0
+            WeightUnit.LB -> 1
+            WeightUnit.ST -> 2
+        }
+
+        /** Weights in truncated hundredths of a kg: `trunc(v * 1000) / 10`. */
+        internal fun hundredths(kg: Float): Int =
+            (((1000.0 * kg.toDouble()).toFloat().toInt()) / 10).coerceIn(0, 0xFFFF)
+
         /**
-         * AC 27 <unix32> 08 00 00 <height> 00 00 <age> <sex> 00 00 03 00 D0 <chk> — the time/profile
-         * frame FitDays writes right after enabling notifications. [sex] is [SEX_MALE] or [SEX_FEMALE].
+         * AC 27 <unix32> <tz> <unit> <user> <height> <weight u16> <age> <sex> <target u16> <flags> 00 D0
+         * <chk> — the time/profile frame FitDays writes right after enabling notifications; the fields
+         * are in the class doc. [sex] is [SEX_MALE] or [SEX_FEMALE]. The defaults reproduce the
+         * frame the ALPHA capture was taken with: +2 h, kg, user 0, no weights, flags `03`.
          */
-        fun buildProfile(nowEpochSeconds: Long, heightCm: Int, age: Int, sex: Int): ByteArray {
+        fun buildProfile(
+            nowEpochSeconds: Long,
+            heightCm: Int,
+            age: Int,
+            sex: Int,
+            timezoneQuarterHours: Int = ALPHA_TIMEZONE_QUARTER_HOURS,
+            unitCode: Int = 0,
+            userIndex: Int = 0,
+            weightHundredths: Int = 0,
+            targetHundredths: Int = 0,
+            flags: Int = FLAGS_ALPHA,
+        ): ByteArray {
             val body = ByteArray(16)
             putU32(body, 0, nowEpochSeconds)
-            body[4] = 0x08
+            body[4] = timezoneQuarterHours.toByte()
+            body[5] = unitCode.toByte()
+            body[6] = userIndex.toByte()
             body[7] = heightCm.coerceIn(0, 255).toByte()
+            putU16(body, 8, weightHundredths)
             body[10] = age.coerceIn(0, 255).toByte()
             body[11] = sex.toByte()
-            body[14] = 0x03
+            putU16(body, 12, targetHundredths)
+            body[14] = flags.toByte()
             return buildPhoneFrame(body, WIRE_PROFILE)
         }
 
@@ -582,6 +740,11 @@ class TaylorBIAHandler : ScaleDeviceHandler() {
             f[18] = wireType.toByte()
             f[19] = phoneChecksum(f).toByte()
             return f
+        }
+
+        private fun putU16(dst: ByteArray, at: Int, value: Int) {
+            dst[at] = ((value ushr 8) and 0xFF).toByte()
+            dst[at + 1] = (value and 0xFF).toByte()
         }
 
         private fun putU32(dst: ByteArray, at: Int, value: Long) {
