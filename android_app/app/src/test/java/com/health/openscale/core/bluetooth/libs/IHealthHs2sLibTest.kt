@@ -24,8 +24,7 @@ import java.util.UUID
 
 /**
  * Fixtures are real traffic:
- * - HS2S Pro handshake: iHealth MyVitals logcat (MAC 00:4D:32:31:32:CE), where the app logs K,
- *   R1 and its FC answer.
+ * - HS2S Pro handshake (MAC 00:4D:32:31:32:CE): K, R1 and the FC answer of a real session.
  * - Wyze Scale (WHSCL1): HCI snoop logs attached to openScale issue #853 (188.7 lb weighing;
  *   the Wyze app showed 85.6 kg, fat 21.4 %, muscle 139.3 lb, bone 9.0 lb, water 57.6 %,
  *   protein 16.2 %, visceral fat 8, BMR 1823).
@@ -33,7 +32,7 @@ import java.util.UUID
 class IHealthHs2sLibTest {
 
     companion object {
-        // HS2S Pro: FB payload, the R1 the app sent, the K it logged and the FC it sent.
+        // HS2S Pro: FB payload, R1, session key and FC of a real handshake.
         private const val PRO_FB = "22437d54503b24736c64766c7557527449117c719637c3e4072cef6d1f31869040372423004d323132ce00000000000000000000"
         private const val PRO_R1 = "025b5e4a3f113d640c5e7960035b4b0b"
         private const val PRO_K = "9094aa138f9fb6e6cef3f12f9a97040a"
@@ -61,14 +60,14 @@ class IHealthHs2sLibTest {
     fun `HS2S Pro session key derives from the MAC seed and model key`() {
         val challenge = IHealthHs2sLib.parseAuthChallenge(hex(PRO_FB))!!
         assertThat(toHex(challenge.seed)).isEqualTo("004d323132ce00000000000000000000")
-        val key = IHealthHs2sLib.deriveKey(challenge.seed, Variant.HS2S_PRO.masterKey!!)
+        val key = IHealthHs2sLib.deriveKey(challenge.seed, Variant.HS2S_PRO.modelKey!!)
         assertThat(toHex(key)).isEqualTo(PRO_K)
     }
 
     @Test
-    fun `HS2S Pro challenge answer matches the vendor app byte for byte`() {
+    fun `HS2S Pro challenge answer matches a real handshake byte for byte`() {
         val challenge = IHealthHs2sLib.parseAuthChallenge(hex(PRO_FB))!!
-        val key = IHealthHs2sLib.deriveKey(challenge.seed, Variant.HS2S_PRO.masterKey!!)
+        val key = IHealthHs2sLib.deriveKey(challenge.seed, Variant.HS2S_PRO.modelKey!!)
         val answer = IHealthHs2sLib.answerChallenge(challenge, hex(PRO_R1), key)
         assertThat(answer).isNotNull()
         assertThat(toHex(answer!!)).isEqualTo(PRO_FC)
@@ -77,7 +76,7 @@ class IHealthHs2sLibTest {
     @Test
     fun `wrong key is rejected instead of answering`() {
         val challenge = IHealthHs2sLib.parseAuthChallenge(hex(PRO_FB))!!
-        val wrong = IHealthHs2sLib.deriveKey(challenge.seed, Variant.HS2S.masterKey!!)
+        val wrong = IHealthHs2sLib.deriveKey(challenge.seed, Variant.HS2S.modelKey!!)
         assertThat(IHealthHs2sLib.answerChallenge(challenge, hex(PRO_R1), wrong)).isNull()
     }
 

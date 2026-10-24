@@ -58,9 +58,8 @@ import java.util.UUID
  * iHealth HS2S family: iHealth HS2S, iHealth HS2S Pro and the Wyze Scale (WHSCL1).
  *
  * Protocol and authentication are documented in [IHealthHs2sLib]. The iHealth models derive
- * their session key from the scale MAC and a model key shipped in iHealth's app. The Wyze Scale
- * uses a per-scale key that Wyze serves from its cloud, so the user enters it once in the device
- * settings (fetched with the helper script linked from the issue).
+ * their session key from the scale MAC and a fixed per-model key. The Wyze Scale uses its own
+ * per-scale key, which the user enters once in the device settings.
  *
  * Session, following the vendor apps: FA/FB/FC/FD handshake → time (0x10) → update user (0x21)
  * → select user (0x23, retried after 0x24 if the scale is busy) → offline records (0x31, paged,
@@ -209,6 +208,7 @@ class IHealthHs2sHandler : ScaleDeviceHandler() {
             IHealthHs2sLib.CMD_USER_ONLINE -> {
                 if (p.isNotEmpty() && p[0].toInt() == 0) {
                     pendingOnlineUser = false
+                    userInfo(R.string.bt_info_step_on_scale)
                     send(IHealthHs2sLib.CMD_OFFLINE_DATA, IHealthHs2sLib.offlineDataRequest(scaleUserId, offlineRead))
                 } else {
                     // The scale is still finishing a measurement; it sends 0x24 when done.
@@ -251,8 +251,8 @@ class IHealthHs2sHandler : ScaleDeviceHandler() {
             requestDisconnect()
             return
         }
-        val key = if (v.masterKey != null) {
-            IHealthHs2sLib.deriveKey(challenge.seed, v.masterKey)
+        val key = if (v.modelKey != null) {
+            IHealthHs2sLib.deriveKey(challenge.seed, v.modelKey)
         } else {
             settingsGetString(SETTINGS_KEY_DEVICE_KEY)?.let { IHealthHs2sLib.parseHexKey(it) } ?: run {
                 userWarn(R.string.bt_hs2s_missing_device_key)

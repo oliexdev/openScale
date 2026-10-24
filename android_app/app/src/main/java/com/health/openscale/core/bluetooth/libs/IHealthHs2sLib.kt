@@ -29,12 +29,11 @@ import java.util.UUID
  * len = bytes from seqHi to the end of the payload, sum = their sum & 0xFF. Frames longer than
  * 20 bytes are split across writes/notifications.
  *
- * Authentication (iHealth `IdentifyIns2`): host sends 16 random ASCII bytes R1 (FA); the scale
+ * Authentication: host sends 16 random ASCII bytes R1 (FA); the scale
  * answers R2(16) · XXTEA(R1, K)(20) · seed(16) (FB), seed = MAC + 10 zero bytes; the host checks
  * R1 and replies XXTEA(R2, K) (FC); the scale acks FD or rejects FE.
- * K = XXTEA(seed, Ka) with a per-model key Ka. iHealth ships Ka in its app; Wyze keeps it on its
- * servers and hands each scale's K ("device_key") to the app, so the Wyze Scale needs that key
- * entered by the user.
+ * K = XXTEA(seed, Ka) with a fixed per-model key Ka. The Wyze Scale has no model key; its
+ * per-scale K is entered by the user.
  */
 object IHealthHs2sLib {
 
@@ -63,12 +62,12 @@ object IHealthHs2sLib {
         val displayName: String,
         /** 16-character protocol name; the GATT UUIDs are its ASCII bytes. */
         val protocol: String,
-        /** Per-model master key, or null when the scale's own key must be entered. */
-        val masterKey: ByteArray?,
+        /** Per-model key, or null when the scale's own key must be entered. */
+        val modelKey: ByteArray?,
         val impedanceCount: Int,
         /** WHSCL1 inserts a body-type byte before the body-composition block. */
         val hasBodyTypeByte: Boolean,
-        /** User records carry a trailing heart-rate flag (iHealth `createOrUpdateUserInfoHR`). */
+        /** User records carry a trailing heart-rate flag. */
         val userRecordHasHrFlag: Boolean,
     ) {
         HS2S(
@@ -156,8 +155,8 @@ object IHealthHs2sLib {
         )
     }
 
-    /** Session key for scales whose master key is known; the first 16 bytes are used. */
-    fun deriveKey(seed: ByteArray, masterKey: ByteArray): ByteArray = xxteaEncrypt(seed, masterKey).copyOf(16)
+    /** Session key for scales with a model key; the first 16 bytes are used. */
+    fun deriveKey(seed: ByteArray, modelKey: ByteArray): ByteArray = xxteaEncrypt(seed, modelKey).copyOf(16)
 
     /** Returns the FC payload, or null if the scale's R1' doesn't decrypt to [r1] (wrong key). */
     fun answerChallenge(challenge: AuthChallenge, r1: ByteArray, key: ByteArray): ByteArray? {
@@ -172,7 +171,7 @@ object IHealthHs2sLib {
         return ByteArray(16) { h.substring(it * 2, it * 2 + 2).toInt(16).toByte() }
     }
 
-    // --- XXTEA as used by iHealth (XXTEA2): little-endian words, encrypt appends the plaintext
+    // --- XXTEA variant: little-endian words, encrypt appends the plaintext
     // length as an extra word and decrypt strips it; keys are padded/truncated to 16 bytes. ---
 
     private const val DELTA = -0x61c88647 // 0x9E3779B9
@@ -348,7 +347,7 @@ object IHealthHs2sLib {
         return OfflineBatch(records, payload.last().toInt() == 1)
     }
 
-    /** Visceral fat grade and BMR the way the Wyze app derives them (Wyze 2.31, `rg.e`). */
+    /** Visceral fat grade and BMR, matching the values the Wyze app shows. */
     fun wyzeVisceralFat(weightKg: Float, fatPercent: Float, heightCm: Float): Float {
         val lbm = weightKg * (100f - fatPercent) / 100f
         val h = heightCm / 100f
