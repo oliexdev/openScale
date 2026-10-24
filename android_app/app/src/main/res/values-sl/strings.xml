@@ -883,4 +883,16 @@
     <string name="measurement_type_hydration_shift">Sprememba hidracije</string>
     <string name="bt_error_mi_scale_service_missing">Ta naprava ne ponuja podprte storitve Mi Scale.</string>
     <string name="bt_warn_mi_scale_variant_downgraded">Ta tehtnica je predstavljena kot model v2, vendar prikazuje le težo. Na tej napravi ni na voljo merjenje telesne sestave.</string>
+    <string name="bt_warn_qardio_users_full">QardioBase nima prostih mest za uporabnike. V nastavitvah naprave ponastavi tehtnico, da odstraniš vse uporabnike, nato pa se ponovno poveži.</string>
+    <string name="bt_info_qardio_updating">Posodabljanje tehtnice …</string>
+    <string name="bt_info_qardio_updated">Tehtnica posodobljena.</string>
+    <string name="bt_warn_qardio_other_user">Teža %1$s ni bila shranjena: tehtnica jo je pripisala »%2$s«. Če si to ti, stopi s tehtnice in pritisni na sredino tehtnice, dokler se kazalec ne ustavi na tvojem imenu.</string>
+    <string name="bt_info_qardio_guest">Tehtnica te ni prepoznala. Stopi z nje in pritisni na sredino tehtnice, dokler se kazalec ne ustavi na tvojem imenu.</string>
+    <string name="bt_warn_qardio_profile_timeout">Tehtnica je prenehala odgovarjati med shranjevanjem tvojega profila. Ponovno se poveži, da poskusiš še enkrat.</string>
+    <string name="bt_warn_qardio_config_timeout">Tehtnica ni prešla v način nastavitev, zato tvoj profil ni bil poslan. Stopi s tehtnice in se ponovno poveži, da poskusiš še enkrat.</string>
+    <string name="bt_warn_qardio_reset_timeout">Tehtnica ni potrdila ponastavitve. Pri naslednji povezavi se bo poskus ponovil.</string>
+    <string name="bt_warn_qardio_guest_not_saved">Teža %1$s ni bila shranjena: tehtnica te ni prepoznala. Naslednjič stopi s tehtnice in pritisni na sredino tehtnice, dokler se kazalec ne ustavi na tvojem imenu.</string>
+    <string name="qardio_section_info">Tehtnica</string>
+    <string name="qardio_info_none">Povežite se enkrat, da si ogledaš podrobnosti o tehtnici.</string>
+    <string name="qardio_info_model">Model</string>
 </resources>
