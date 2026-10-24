@@ -28,7 +28,6 @@ import com.health.openscale.core.bluetooth.scales.AiLinkBroadcastHandler
 import com.health.openscale.core.bluetooth.scales.FitTrackDaraHandler
 import com.health.openscale.core.bluetooth.scales.ScaleupHandler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
-import com.health.openscale.core.bluetooth.scales.AndUC352BLEHandler
 import com.health.openscale.core.bluetooth.scales.CultSmartScaleProHandler
 import com.health.openscale.core.bluetooth.scales.BeurerSanitasHandler
 import com.health.openscale.core.bluetooth.scales.BroadcastScaleAdapter
@@ -67,6 +66,7 @@ import com.health.openscale.core.bluetooth.scales.OkOkHandler
 import com.health.openscale.core.bluetooth.scales.RedmondSkybalanceHandler
 import com.health.openscale.core.bluetooth.scales.OmronWlcHandler
 import com.health.openscale.core.bluetooth.scales.PicoocHandler
+import com.health.openscale.core.bluetooth.scales.PlainSigScaleHandler
 import com.health.openscale.core.bluetooth.scales.PicoocBroadcastHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneHandler
 import com.health.openscale.core.bluetooth.scales.OneByoneNewHandler
@@ -140,7 +140,7 @@ class ScaleFactory @Inject constructor(
          */
         @VisibleForTesting
         internal fun createHandlers(): List<ScaleDeviceHandler> = listOf(
-            AndUC352BLEHandler(),
+            PlainSigScaleHandler(),
             HealthKeep280Handler(),
             PicoocHandler(),
             // Exact PICOOC-L match must precede ScaleupHandler's generic 0xD0 manufacturer match.
