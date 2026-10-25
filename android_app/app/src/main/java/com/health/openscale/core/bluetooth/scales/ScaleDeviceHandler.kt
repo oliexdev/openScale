@@ -201,6 +201,9 @@ abstract class ScaleDeviceHandler {
 
     // --- To be implemented by concrete handlers --------------------------------
 
+    /** GATT target advertisement, before connection/attach; inspect metadata only, without I/O. */
+    open fun onGattAdvertisement(result: ScanResult) = Unit
+
     /** Called after services are discovered and the link is ready for I/O (GATT devices only). */
     protected open fun onConnected(user: ScaleUser) = Unit
 

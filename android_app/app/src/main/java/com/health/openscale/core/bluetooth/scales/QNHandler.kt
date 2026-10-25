@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import android.os.Handler
 import android.os.Looper
+import android.bluetooth.le.ScanResult
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
@@ -82,14 +83,14 @@ class QNHandler : ScaleDeviceHandler() {
     private var seenProtocolType: Byte = 0x00.toByte()
 
     /**
-     * True for the GE CS 10 G "Fit Plus" family, which always reports protocolType 0xFF and is
-     * the only sub-family this handler's behavior has been verified against via a real BTSnoop
-     * capture (weight, impedance, the 0x1F ack, and real height/age/gender in the 0x13 config).
-     * Everything gated on this flag falls back to the pre-existing, longer-serving behavior for
-     * every other protocolType, so verified fixes for this one family can't regress the rest.
+     * VA devices captured as protocolType 0xFF include both GE "Fit Plus" and RENPHO ES-CS20M.
+     * They share the completion state/acknowledgment but can advertise different resistance
+     * encodings; protocolType alone does not determine that encoding.
      */
     private val isCapturedUniversalVariant: Boolean
         get() = seenProtocolType == 0xFF.toByte()
+
+    private var usesEncryptedResistance = false
 
     /** Flag to track if we've received the protocol type from 0x12 frame. */
     private var hasReceivedProtocolType = false
@@ -150,6 +151,15 @@ class QNHandler : ScaleDeviceHandler() {
 
     // ---- Connection sequencing -------------------------------------------------
 
+    override fun onGattAdvertisement(result: ScanResult) {
+        // VA manufacturer payload byte 15, bit 2 advertises the resistance bit permutation.
+        // Missing/short metadata uses the original, unencrypted whole-ohm encoding.
+        val manufacturer = result.scanRecord?.manufacturerSpecificData
+        val payload = if (manufacturer != null && manufacturer.size() > 0) manufacturer.valueAt(0) else null
+        usesEncryptedResistance = payload != null && payload.size > 15 &&
+            (payload[15].toInt() and 0x04) != 0
+    }
+
     override fun onConnected(user: ScaleUser) {
         hasPublishedForThisSession = false
         weightScaleFactor = 100.0f
@@ -160,6 +170,7 @@ class QNHandler : ScaleDeviceHandler() {
         sessionStartedScaleSeconds = (System.currentTimeMillis() / 1000L) - SCALE_UNIX_TIMESTAMP_OFFSET
         historyRetryHandler.removeCallbacksAndMessages(null)
         currentUser = user
+        logD("QN: VA advertisement resistance encryption=$usesEncryptedResistance")
 
         // Generic Access: Device Name
         readFrom(uuid16(0x1800), uuid16(0x2A00))
@@ -327,8 +338,8 @@ class QNHandler : ScaleDeviceHandler() {
             // so they keep the original (state 1 or 2) behavior.
             stable = if (isCapturedUniversalVariant) stableFlag == 0x02 else (stableFlag == 0x02 || stableFlag == 0x01)
             raw = u16be(data[5], data[6])
-            r1 = u16be(data[7], data[8])
-            r2 = u16be(data[9], data[10])
+            r1 = resistance(data[7], data[8])
+            r2 = resistance(data[9], data[10])
             logD("QN: using ES-30M format (byte[4]=$stableFlag)")
         } else {
             // Original format: byte[5]=stable, bytes[3,4]=weight
@@ -471,6 +482,7 @@ class QNHandler : ScaleDeviceHandler() {
     override fun onDisconnected() {
         isConnected = false
         currentUser = null
+        usesEncryptedResistance = false
         historyRetryHandler.removeCallbacksAndMessages(null)
     }
 
@@ -509,23 +521,17 @@ class QNHandler : ScaleDeviceHandler() {
             else -> 0x01.toByte() // KG
         }
 
-        // Height/age/gender, per the vendor SDK's CmdBuilder.buildCmd(0x13, scaleType,
-        // [unit, lightInterval, height, age, gender]) (QNDecoderImpl.setScaleConfig).
-        // Clamped to the vendor's own [60,220]cm / [6,80]yr bounds (buildUserInfoCmd) so an
-        // out-of-range profile can't produce a byte the scale's firmware doesn't expect.
-        // Gender wire byte is inverted from the vendor's internal enum: 0 = male, 1 = female.
-        // Verified against a real capture of the protocolType 0xFF ("Fit Plus") family only;
-        // other protocolTypes keep sending zeros (the pre-existing behavior) until we have
-        // evidence they also expect real values here.
-        val heightByte = if (isCapturedUniversalVariant) user.bodyHeight.toInt().coerceIn(60, 220).toByte() else 0x00.toByte()
-        val ageByte = if (isCapturedUniversalVariant) user.age.coerceIn(6, 80).toByte() else 0x00.toByte()
-        val genderByte = if (!isCapturedUniversalVariant) 0x00.toByte() else if (user.gender.isMale()) 0x00.toByte() else 0x01.toByte()
-
-        logD("QN: sending config with seenProtocolType=$seenProtocolType unitByte=$unitByte height=$heightByte age=$ageByte gender=$genderByte")
+        // VA/0xFF scales use [unit, lightInterval, measurementFlags, babyFlags, reserved],
+        // NOT the height/age/gender layout of the classic QN decoder. In measurementFlags,
+        // bit 0 disables BIA and bit 1 persists the setting. An odd height sent here silently
+        // switches an ES-CS20M to weight-only mode; an odd age also enables baby weighing.
+        // Keep these switches clear. The user profile belongs in the VA 0xA0 exchange.
+        // Zeroes also preserve the pre-existing configuration for classic QN devices.
+        logD("QN: sending config with seenProtocolType=$seenProtocolType unitByte=$unitByte")
 
         // Configure unit on both flavors (the non-matching write will be ignored by the stack).
         val cfg = byteArrayOf(
-            0x13, 0x09, seenProtocolType, unitByte, 0x10, heightByte, ageByte, genderByte, 0x00
+            0x13, 0x09, seenProtocolType, unitByte, 0x10, 0x00, 0x00, 0x00, 0x00
         )
         cfg[cfg.lastIndex] = checksum(cfg, 0, cfg.lastIndex) // last byte = checksum
 
@@ -570,6 +576,17 @@ class QNHandler : ScaleDeviceHandler() {
     private fun u16le(a: Byte, b: Byte): Float =
         ((a.toInt() and 0xFF) or ((b.toInt() and 0xFF) shl 8)).toFloat()
 
+    private fun resistance(high: Byte, low: Byte): Float {
+        if (!isCapturedUniversalVariant || !usesEncryptedResistance) return u16be(high, low)
+        // Swap bits 0/4 and 3/5 within EACH byte; this is not a decimal scale factor.
+        fun decode(value: Byte): Byte {
+            val v = value.toInt() and 0xFF
+            return ((v and 0xC6) or ((v and 0x01) shl 4) or ((v and 0x10) shr 4) or
+                ((v and 0x08) shl 2) or ((v and 0x20) shr 2)).toByte()
+        }
+        return u16be(decode(high), decode(low))
+    }
+
     private fun u32le(a: Byte, b: Byte, c: Byte, d: Byte): Long =
         (a.toLong() and 0xFFL) or
         ((b.toLong() and 0xFFL) shl 8) or
@@ -577,20 +594,24 @@ class QNHandler : ScaleDeviceHandler() {
         ((d.toLong() and 0xFFL) shl 24)
 
     private fun publishQnMeasurement(user: ScaleUser, weightKg: Float, r1: Float, source: String) {
-        // On the captured "Fit Plus" family, r1 is raw ADC counts in tenths of an ohm (e.g.
-        // 4350 -> 435.0 Ohm), landing squarely in the ~300-1000 Ohm range the Trisa formula
-        // below is documented against; taken as whole ohms it's roughly 10x too large. The
-        // vendor SDK's own two-byte combine (MeasureDecoder.h/twoByte2Int) applies no scaling,
-        // so this is specific to how this family's firmware reports the value, not a universal
-        // QN constant -- scoped accordingly rather than changed for every protocolType.
-        val impedanceOhm = if (isCapturedUniversalVariant) r1 / 10f else r1
+        // Four-electrode VA resistance is whole ohms after optional wire decoding. Dividing
+        // all 0xFF readings by ten turns the ES-CS20M's real ~500 ohms into ~50 ohms.
+        val impedanceOhm = r1
 
         val m = ScaleMeasurement().apply {
             userId = user.id
             this[MeasurementType.WEIGHT] = Kg(weightKg)
-            // Store the (possibly rescaled) resistance so body composition can be recomputed later.
-            this[MeasurementType.IMPEDANCE] = Ohm(impedanceOhm)
         }
+
+        // A completed weight-only reading is valid, but zero/missing resistance carries no
+        // body-composition information. Do not turn it into plausible-looking fat/muscle values.
+        if (r1 <= 0f) {
+            logD("QN: publishing $source weight-only measurement weight=$weightKg kg (no impedance)")
+            publish(m.snapshot())
+            return
+        }
+        // Store the (possibly rescaled) resistance so body composition can be recomputed later.
+        m[MeasurementType.IMPEDANCE] = Ohm(impedanceOhm)
 
         // Pre-existing ad-hoc calibration for the other protocolTypes this handler already
         // serves; left untouched since we have no capture evidence to correct it for them.

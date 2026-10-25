@@ -120,6 +120,7 @@ class GattScaleAdapter(
             if (peripheral.address != targetAddress) return
             LogManager.i(TAG, "Found $targetAddress → stop scan + connect")
             central.stopScan()
+            handler.onGattAdvertisement(scanResult)
             scope.launch {
                 if (tuning.connectAfterScanDelayMs > 0) delay(tuning.connectAfterScanDelayMs.milliseconds)
                 central.connect(peripheral, peripheralCallback)
