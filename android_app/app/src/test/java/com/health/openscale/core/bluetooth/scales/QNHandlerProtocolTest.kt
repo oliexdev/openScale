@@ -23,6 +23,7 @@ import org.robolectric.shadows.ShadowBluetoothDevice
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -98,9 +99,11 @@ class QNHandlerProtocolTest {
     }
 
     @Suppress("DEPRECATION")
-    private fun advertisement(payload: ByteArray?): ScanResult {
-        val bytes = if (payload == null) byteArrayOf(0) else
+    private fun advertisement(payload: ByteArray?, name: String? = null): ScanResult {
+        val manufacturer = if (payload == null) byteArrayOf() else
             byteArrayOf((payload.size + 3).toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte()) + payload
+        val localName = name?.toByteArray(Charsets.UTF_8)?.let { byteArrayOf((it.size + 1).toByte(), 0x09) + it } ?: byteArrayOf()
+        val bytes = localName + manufacturer + byteArrayOf(0)
         val parse = ScanRecord::class.java.getDeclaredMethod("parseFromBytes", ByteArray::class.java)
         parse.isAccessible = true
         val record = parse.invoke(null, bytes) as ScanRecord
@@ -113,6 +116,123 @@ class QNHandlerProtocolTest {
             r1High, r1Low, r1High, r1Low, 0x00, 0x00, 0x00)
         frame[frame.lastIndex] = checksum(frame, 0, frame.lastIndex - 1)
         return frame
+    }
+
+    private fun renphoHandler(user: ScaleUser = testUser()) =
+        newHandler(user, scanResult = advertisement(null, "Renpho-Scale"))
+
+    private fun fatFrame(resistance: Int = 500, fatTenths: Int = 200): ByteArray =
+        completedVaFrame((resistance shr 8).toByte(), resistance.toByte()).also {
+            it[11] = (fatTenths shr 8).toByte()
+            it[12] = fatTenths.toByte()
+            it[it.lastIndex] = checksum(it, 0, it.lastIndex - 1)
+        }
+
+    @Test
+    fun `Renpho VA profile uses real user data in guest mode without deleting a user`() {
+        val user = testUser().copy(bodyHeight = 183.9f, gender = GenderType.FEMALE)
+        val (handler, transport, _) = renphoHandler(user)
+        handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+        handler.handleNotification(CHR_T2_NOTIFY, byteArrayOf(0x21, 0x05, 0xFF.toByte(), 0x00, 0x25))
+        val profiles = transport.writes.map { it.payload }.filter { it[0] == 0xA0.toByte() }
+        assertThat(profiles).hasSize(1)
+        val profile = profiles.single()
+        assertThat(profile.take(7)).containsExactlyElementsIn(
+            listOf(0xA0, 0x0D, 0x02, 0xFE, 0xFF, 0xEE, 0x01).map { it.toByte() }).inOrder()
+        assertThat(profile[7]).isEqualTo(user.age.toByte())
+        assertThat(profile[8]).isEqualTo(0x07.toByte()) // 1830 mm, big-endian
+        assertThat(profile[9]).isEqualTo(0x26.toByte())
+        assertThat(profile[10]).isEqualTo(0x04.toByte())
+        assertThat(profile.last()).isEqualTo(checksum(profile, 0, profile.lastIndex - 1))
+    }
+
+    @Test
+    fun `Renpho extreme activity requests the firmware athlete algorithm`() {
+        val (handler, transport, _) = renphoHandler(testUser().copy(activityLevel = ActivityLevel.EXTREME))
+        handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+        handler.handleNotification(CHR_T2_NOTIFY, byteArrayOf(0x21, 0x05, 0xFF.toByte(), 0x00, 0x25))
+        assertThat(transport.writes.single { it.payload[0] == 0xA0.toByte() }.payload[10]).isEqualTo(0x0E.toByte())
+    }
+
+    @Test
+    fun `Renpho VA keeps firmware fat and derives the Renpho composition panel`() {
+        val (handler, _, callbacks) = renphoHandler()
+        handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+        handler.handleNotification(CHR_T2_NOTIFY, fatFrame())
+        val m = callbacks.published.single()
+        assertThat(m[MeasurementType.WEIGHT]?.value).isEqualTo(70f)
+        assertThat(m[MeasurementType.IMPEDANCE]?.value).isEqualTo(500f)
+        assertThat(m[MeasurementType.BODY_FAT]?.value).isEqualTo(20f)
+        assertThat(m[MeasurementType.WATER]?.value).isWithin(0.01f).of(57.7574f)
+        assertThat(m[MeasurementType.MUSCLE]?.value).isWithin(0.01f).of(51.6114f)
+        assertThat(m[MeasurementType.BONE]?.value).isWithin(0.01f).of(2.8013f)
+        assertThat(m[MeasurementType.BMR]?.value).isEqualTo(1580f)
+        assertThat(m[MeasurementType.LBM]?.value).isEqualTo(56f)
+        assertThat(m[MeasurementType.PROTEIN]?.value).isWithin(0.01f).of(18.24f)
+        assertThat(m[QNHandler.TOTAL_MUSCLE]?.value).isWithin(0.01f).of(75.9982f)
+    }
+
+    @Test
+    fun `Renpho missing or invalid firmware fat is not silently replaced with Trisa`() {
+        for (fat in listOf(0, 1001, 65535)) {
+            val (handler, _, callbacks) = renphoHandler()
+            handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+            handler.handleNotification(CHR_T2_NOTIFY, fatFrame(fatTenths = fat))
+            val m = callbacks.published.single()
+            assertThat(m[MeasurementType.IMPEDANCE]?.value).isEqualTo(500f)
+            assertThat(m[MeasurementType.BODY_FAT]).isNull()
+            assertThat(m[MeasurementType.WATER]).isNull()
+        }
+    }
+
+    @Test
+    fun `Renpho short packet cannot treat a checksum byte as firmware fat`() {
+        val (handler, _, callbacks) = renphoHandler()
+        handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+        val short = fatFrame().copyOf(13)
+        short[12] = checksum(short, 0, 11)
+        handler.handleNotification(CHR_T2_NOTIFY, short)
+        assertThat(callbacks.published.single()[MeasurementType.IMPEDANCE]?.value).isEqualTo(500f)
+        assertThat(callbacks.published.single()[MeasurementType.BODY_FAT]).isNull()
+    }
+
+    @Test
+    fun `Renpho zero resistance still produces weight only even if a fat field is present`() {
+        val (handler, _, callbacks) = renphoHandler()
+        handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+        handler.handleNotification(CHR_T2_NOTIFY, fatFrame(resistance = 0))
+        assertThat(callbacks.published.single()[MeasurementType.BODY_FAT]).isNull()
+        assertThat(callbacks.published.single()[MeasurementType.IMPEDANCE]).isNull()
+    }
+
+    @Test
+    fun `firmware composition change is restricted to the Renpho name and VA protocol`() {
+        for ((name, proto) in listOf("Fit Plus" to 0xFF.toByte(), "Renpho-Scale" to 0x07.toByte())) {
+            val user = testUser()
+            val (handler, _, callbacks) = newHandler(user, scanResult = advertisement(null, name))
+            handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(proto, 0))
+            handler.handleNotification(CHR_T2_NOTIFY, fatFrame().also {
+                it[2] = proto; it[it.lastIndex] = checksum(it, 0, it.lastIndex - 1)
+            })
+            assertThat(callbacks.published.single()[MeasurementType.BODY_FAT]?.value).isNotEqualTo(20f)
+            assertThat(callbacks.published.single()[QNHandler.TOTAL_MUSCLE]).isNull()
+        }
+    }
+
+    @Test
+    fun `Renpho extended stored record uses big endian resistance and firmware fat`() {
+        val (handler, _, callbacks) = renphoHandler()
+        handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+        val frame = byteArrayOf(0x23, 0x13, 0xFF.toByte(), 1, 1, 0xFE.toByte(),
+            0, 0, 0, 0, 0x1B, 0x58, 0x01, 0xF4.toByte(), 0x01, 0xF2.toByte(), 0, 0xC8.toByte(), 0)
+        val timestamp = System.currentTimeMillis() / 1000L - 946_702_800L
+        for (i in 0..3) frame[6 + i] = (timestamp shr (8 * i)).toByte()
+        frame[frame.lastIndex] = checksum(frame, 0, frame.lastIndex - 1)
+        handler.handleNotification(CHR_T2_NOTIFY, frame)
+        val m = callbacks.published.single()
+        assertThat(m[MeasurementType.WEIGHT]?.value).isEqualTo(70f)
+        assertThat(m[MeasurementType.IMPEDANCE]?.value).isEqualTo(500f)
+        assertThat(m[MeasurementType.BODY_FAT]?.value).isEqualTo(20f)
     }
 
     @Test

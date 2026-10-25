@@ -25,10 +25,14 @@ import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.TrisaBodyAnalyzeLib
+import com.health.openscale.core.bluetooth.libs.RenphoBodyComposition
+import com.health.openscale.core.data.ActivityLevel
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.UUID
 import kotlin.experimental.and
+import com.health.openscale.core.data.Kcal
 import com.health.openscale.core.data.Kg
 import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.Percent
@@ -47,6 +51,10 @@ import com.health.openscale.core.data.Percent
 class QNHandler : ScaleDeviceHandler() {
 
     companion object {
+        val TOTAL_MUSCLE = MeasurementType.devicePercent(
+            "total_muscle", R.string.measurement_type_total_muscle,
+            icon = MeasurementTypeIcon.IC_M_WORKOUT, color = 0xFF2E7D32.toInt()
+        )
         // Vendor “epoch”: seconds since 2000-01-01 00:00:00 UTC
         private const val SCALE_UNIX_TIMESTAMP_OFFSET = 946_702_800L
         private const val MAX_STORED_DATA_QUERY_ATTEMPTS = 10
@@ -91,6 +99,9 @@ class QNHandler : ScaleDeviceHandler() {
         get() = seenProtocolType == 0xFF.toByte()
 
     private var usesEncryptedResistance = false
+    private var isRenphoDevice = false
+    private val isRenphoVa: Boolean
+        get() = isRenphoDevice && isCapturedUniversalVariant
 
     /** Flag to track if we've received the protocol type from 0x12 frame. */
     private var hasReceivedProtocolType = false
@@ -134,6 +145,7 @@ class QNHandler : ScaleDeviceHandler() {
         // gate; it does not let us claim a device we cannot talk to.
         if (!(hasQN && (nameIsQnFamily || hasAe00))) return null
 
+        isRenphoDevice = nameLc == "renpho-scale"
         likelyUseType1 = uuids.contains(uuid16(0xFFE0)) && !uuids.contains(uuid16(0xFFF0))
 
         val caps = setOf(
@@ -152,6 +164,7 @@ class QNHandler : ScaleDeviceHandler() {
     // ---- Connection sequencing -------------------------------------------------
 
     override fun onGattAdvertisement(result: ScanResult) {
+        result.scanRecord?.deviceName?.let { isRenphoDevice = it.equals("Renpho-Scale", ignoreCase = true) }
         // VA manufacturer payload byte 15, bit 2 advertises the resistance bit permutation.
         // Missing/short metadata uses the original, unencrypted whole-ohm encoding.
         val manufacturer = result.scanRecord?.manufacturerSpecificData
@@ -256,6 +269,17 @@ class QNHandler : ScaleDeviceHandler() {
             }
             0x12 -> handleScaleInfoFrame(data)         // scale factor setup
             0x21 -> {
+                if (isRenphoVa) {
+                    // VA guest mode avoids selecting or deleting a vendor-app user slot.
+                    val profile = renphoGuestProfile(user)
+                    if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
+                        writeTo(SVC_T2, CHR_T2_WRITE_SHARED, profile, true)
+                    } else if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
+                        writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, profile, true)
+                    }
+                    sendStoredDataQuery("Renpho guest profile")
+                    return
+                }
                 // ES-30M requires TWO 0xA0 response frames (from BLE capture analysis)
                 logD("QN: received 0x21 frame, sending TWO 0xA0 responses")
 
@@ -382,7 +406,11 @@ class QNHandler : ScaleDeviceHandler() {
         logD( "QN: weight=$weightKg kg, r1=$r1, r2=$r2 (weight scale factor is = $weightScaleFactor)")
 
         if (weightKg > 0f) {
-            publishQnMeasurement(user, weightKg, r1, "live")
+            // VA final packets carry the scale's own body-fat result at bytes 11..12.
+            // The checksum is not part of this field, so a full packet needs >= 14 bytes.
+            val deviceFat = if (isRenphoVa && isES30MFormat && data.size >= 14)
+                (u16be(data[11], data[12]) / 10f).takeIf { it > 0f && it < 100f } else null
+            publishQnMeasurement(user, weightKg, r1, "live", deviceFat)
             hasPublishedForThisSession = true
         }
     }
@@ -414,8 +442,11 @@ class QNHandler : ScaleDeviceHandler() {
         val rawWeight = u16be(data[10], data[11])
         val weightKg = rawWeight / 100.0f
         val recordScaleSeconds = u32le(data[6], data[7], data[8], data[9])
-        val r1 = u16le(data[13], data[14])
-        val r2 = u16le(data[15], data[16])
+        if (isRenphoVa && (data.size < 19 || data[3] == 0.toByte())) return
+        val r1 = if (isRenphoVa) resistance(data[12], data[13]) else u16le(data[13], data[14])
+        val r2 = if (isRenphoVa) resistance(data[14], data[15]) else u16le(data[15], data[16])
+        val deviceFat = if (isRenphoVa)
+            (u16be(data[16], data[17]) / 10f).takeIf { it > 0f && it < 100f } else null
 
         logD("QN: stored candidate weight=$weightKg kg raw=$rawWeight r1=$r1 r2=$r2 recordScaleSeconds=$recordScaleSeconds sessionStartedScaleSeconds=$sessionStartedScaleSeconds")
 
@@ -430,7 +461,7 @@ class QNHandler : ScaleDeviceHandler() {
             return
         }
 
-        publishQnMeasurement(user, weightKg, r1, "stored")
+        publishQnMeasurement(user, weightKg, r1, "stored", deviceFat)
         hasPublishedForThisSession = true
     }
 
@@ -564,6 +595,19 @@ class QNHandler : ScaleDeviceHandler() {
 
     // ---- Helpers ---------------------------------------------------------------
 
+    private fun renphoGuestProfile(user: ScaleUser): ByteArray {
+        // Vendor app truncates height to whole cm, then sends big-endian millimetres.
+        val heightMm = user.bodyHeight.toInt().coerceIn(40, 240) * 10
+        val algorithm = if (user.activityLevel == ActivityLevel.EXTREME) 0x0E else 0x04
+        val profile = byteArrayOf(
+            0xA0.toByte(), 0x0D, 0x02, 0xFE.toByte(), 0xFF.toByte(), 0xEE.toByte(),
+            if (user.gender.isMale()) 0x00 else 0x01, user.age.coerceIn(0, 255).toByte(),
+            (heightMm shr 8).toByte(), heightMm.toByte(), algorithm.toByte(), 0x02, 0x00
+        )
+        profile[profile.lastIndex] = checksum(profile, 0, profile.lastIndex - 1)
+        return profile
+    }
+
     private fun checksum(buf: ByteArray, from: Int, toInclusive: Int): Byte {
         var s = 0
         for (i in from..toInclusive) s = (s + (buf[i].toInt() and 0xFF)) and 0xFF
@@ -593,7 +637,7 @@ class QNHandler : ScaleDeviceHandler() {
         ((c.toLong() and 0xFFL) shl 16) or
         ((d.toLong() and 0xFFL) shl 24)
 
-    private fun publishQnMeasurement(user: ScaleUser, weightKg: Float, r1: Float, source: String) {
+    private fun publishQnMeasurement(user: ScaleUser, weightKg: Float, r1: Float, source: String, deviceFat: Float? = null) {
         // Four-electrode VA resistance is whole ohms after optional wire decoding. Dividing
         // all 0xFF readings by ten turns the ES-CS20M's real ~500 ohms into ~50 ohms.
         val impedanceOhm = r1
@@ -610,8 +654,28 @@ class QNHandler : ScaleDeviceHandler() {
             publish(m.snapshot())
             return
         }
-        // Store the (possibly rescaled) resistance so body composition can be recomputed later.
+        // Store decoded resistance in ohms so composition can be recomputed later.
         m[MeasurementType.IMPEDANCE] = Ohm(impedanceOhm)
+
+        if (isRenphoVa) {
+            // Prefer the firmware's result for the real guest profile. If it is absent,
+            // retain weight and impedance rather than silently substituting Trisa estimates.
+            if (deviceFat != null) {
+                val male = user.gender.isMale()
+                val bone = RenphoBodyComposition.boneMass(weightKg, deviceFat, male)
+                m[MeasurementType.BODY_FAT] = Percent(deviceFat)
+                m[MeasurementType.WATER] = Percent(RenphoBodyComposition.waterPercent(deviceFat, male))
+                m[MeasurementType.MUSCLE] = Percent(RenphoBodyComposition.skeletalMusclePercent(deviceFat, male))
+                m[MeasurementType.BONE] = Kg(bone)
+                m[MeasurementType.BMR] = Kcal(RenphoBodyComposition.basalMetabolicRate(bone, male).toFloat())
+                m[MeasurementType.PROTEIN] = Percent(RenphoBodyComposition.proteinPercent(deviceFat, male))
+                m[MeasurementType.LBM] = Kg(weightKg * (100f - deviceFat) / 100f)
+                m[TOTAL_MUSCLE] = Percent(100f - deviceFat - bone * 100f / weightKg)
+            }
+            logD("QN: Renpho $source weight=$weightKg kg impedance=$impedanceOhm ohm deviceFat=$deviceFat")
+            publish(m.snapshot())
+            return
+        }
 
         // Pre-existing ad-hoc calibration for the other protocolTypes this handler already
         // serves; left untouched since we have no capture evidence to correct it for them.
