@@ -189,6 +189,7 @@ class RedmondSkybalanceHandler : ScaleDeviceHandler() {
     private companion object {
         private val MODEL_NAMES = mapOf(
             "RS-73S" to "RS-73S",
+            "RS-78S" to "RS-78S",
             "RS-744S" to "RS-744S",
             "RS-745S" to "RS-745S",
             "RS-762S" to "RS-762S",
