@@ -442,6 +442,7 @@
     <string name="bt_hs2s_missing_device_key">Wyze Scale: device key not configured. Go to Bluetooth settings to enter it.</string>
     <string name="bt_hs2s_wrong_device_key">Scale authentication failed: the device key doesn\'t match this scale.</string>
     <string name="bt_hs2s_auth_failed">The scale rejected authentication.</string>
+    <string name="bt_wyze_scale_x_user_rejected">Wyze Scale X: the scale rejected the user profile.</string>
 
     <!-- Huawei Hagrid Scale Configuration -->
     <string name="huawei_hagrid_secrets_title">Huawei Hagrid WSP secrets</string>
