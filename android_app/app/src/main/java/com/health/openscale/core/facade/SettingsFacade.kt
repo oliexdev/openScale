@@ -127,6 +127,8 @@ object SettingsPreferenceKeys {
     val BODY_WATER_FORMULA_OPTION = stringPreferencesKey("body_water_formula_option")
     val LBM_FORMULA_OPTION        = stringPreferencesKey("lbm_formula_option")
 
+    val INBODY_CALIBRATION_ENABLED = booleanPreferencesKey("inbody_calibration_enabled")
+
     // Context strings for screen-specific settings (can be used as prefixes for dynamic keys)
     const val OVERVIEW_SCREEN_CONTEXT = "overview_screen"
     const val GRAPH_SCREEN_CONTEXT = "graph_screen"
@@ -294,6 +296,9 @@ interface SettingsFacade {
 
     val selectedLbmFormula: Flow<LbmFormulaOption>
     suspend fun setSelectedLbmFormula(option: LbmFormulaOption)
+
+    val isInBodyCalibrationEnabled: Flow<Boolean>
+    suspend fun setInBodyCalibrationEnabled(enabled: Boolean)
 
     val autoConnectOnStartup: Flow<Boolean>
     suspend fun setAutoConnectOnStartup(enabled: Boolean)
@@ -1091,6 +1096,16 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun setSelectedLbmFormula(option: LbmFormulaOption) {
         LogManager.d(TAG, "Setting LBM_FORMULA_OPTION to: ${option.name}")
         saveSetting(SettingsPreferenceKeys.LBM_FORMULA_OPTION.name, option.name)
+    }
+
+    override val isInBodyCalibrationEnabled: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.INBODY_CALIBRATION_ENABLED.name,
+        true
+    )
+
+    override suspend fun setInBodyCalibrationEnabled(enabled: Boolean) {
+        LogManager.d(TAG, "Setting INBODY_CALIBRATION_ENABLED to: $enabled")
+        saveSetting(SettingsPreferenceKeys.INBODY_CALIBRATION_ENABLED.name, enabled)
     }
 
     @Suppress("UNCHECKED_CAST")

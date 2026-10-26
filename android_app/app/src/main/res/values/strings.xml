@@ -628,6 +628,7 @@
     <string name="settings_item_user">User</string>
     <string name="settings_item_measurement_types">Measurement Types</string>
     <string name="settings_item_bluetooth">Bluetooth</string>
+    <string name="settings_item_calibration">Scale Calibration (InBody)</string>
     <string name="settings_item_chart">Chart</string>
     <string name="settings_item_data_management">Data Management</string>
     <string name="settings_item_about">About</string>
@@ -1056,4 +1057,47 @@
     <string name="dialog_message_export_photos">Export only the CSV, or a ZIP file with the CSV and all photos? The ZIP can be imported again, photos included.</string>
     <string name="action_export_csv_only">CSV only</string>
     <string name="action_export_zip_with_photos">ZIP with photos</string>
+
+    <!-- InBody Calibration -->
+    <string name="calibration_title">InBody Calibration</string>
+    <string name="calibration_enable_label">Enable InBody Calibration</string>
+    <string name="calibration_enable_description">Applies calibrated offsets to incoming measurements from impedance scales.</string>
+    <string name="calibration_current_title">Active Calibration Profile</string>
+    <string name="calibration_no_profile">No active InBody calibration profile.</string>
+    <string name="calibration_no_profile_desc">Calibrate your smart scale by pairing it with values from a clinical InBody test.</string>
+    <string name="calibration_btn_new">New InBody Calibration</string>
+    <string name="calibration_btn_reset">Reset Calibration</string>
+    <string name="calibration_btn_recalibrate">Recalibrate</string>
+    <string name="calibration_paired_scale">Paired Scale</string>
+    <string name="calibration_date">Calibration Date</string>
+    <string name="calibration_baseline_weighin">Baseline Weigh-In</string>
+    <string name="calibration_reset_confirm_title">Reset Calibration?</string>
+    <string name="calibration_reset_confirm_message">This will remove the active InBody calibration profile. Future measurements will use standard scale formulas without offsets.</string>
+    <string name="calibration_wizard_title">InBody Calibration Wizard</string>
+    <string name="calibration_step1_title">1. Select Baseline Weigh-In</string>
+    <string name="calibration_step1_desc">Select a home scale weigh-in taken on the same day as your InBody test. Only measurements with bioelectrical impedance are shown.</string>
+    <string name="calibration_step1_empty">No measurements with bioelectrical impedance found. Please take a measurement with your smart scale first.</string>
+    <string name="calibration_step2_title">2. Enter InBody Values</string>
+    <string name="calibration_step2_desc">Enter the values directly from your InBody result sheet. All mass values should be entered in kilograms (kg).</string>
+    <string name="calibration_step3_title">3. Review Calculated Offsets</string>
+    <string name="calibration_step3_desc">These additive intercept offsets (Δ) will be applied to future measurements with impedance.</string>
+    <string name="calibration_field_weight">InBody Weight (kg)</string>
+    <string name="calibration_field_fat">Body Fat Mass (kg)</string>
+    <string name="calibration_field_fat_percent">Body Fat Percentage (%)</string>
+    <string name="calibration_field_muscle">Skeletal Muscle Mass (SMM) (kg)</string>
+    <string name="calibration_field_water">Total Body Water (TBW) (kg / L)</string>
+    <string name="calibration_field_bone">Bone Mass / Minerals (kg)</string>
+    <string name="calibration_field_visceral_fat">Visceral Fat Level (1–20+)</string>
+    <string name="calibration_field_protein">Protein Mass (kg, optional)</string>
+    <string name="calibration_toggle_fat_unit">Toggle kg / %</string>
+    <string name="calibration_saved_success">Calibration profile successfully saved and applied to baseline measurement.</string>
+    <string name="calibration_reset_success">Calibration profile successfully reset.</string>
+    <string name="calibration_summary_header_metric">Metric</string>
+    <string name="calibration_summary_header_scale">Scale</string>
+    <string name="calibration_summary_header_inbody">InBody</string>
+    <string name="calibration_summary_header_offset">Offset (Δ)</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_next">Next</string>
+    <string name="action_back">Back</string>
+    <string name="action_save">Save</string>
 </resources>

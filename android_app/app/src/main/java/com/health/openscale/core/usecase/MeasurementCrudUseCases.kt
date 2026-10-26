@@ -68,10 +68,16 @@ class MeasurementCrudUseCases @Inject constructor(
      */
     suspend fun saveMeasurement(
         measurement: Measurement,
-        values: List<MeasurementValue>
+        values: List<MeasurementValue>,
+        applyCalibration: Boolean = (measurement.id == 0)
     ): Result<Int> = runCatching {
         val correctedValues = transformation.applyAmputationCorrection(measurement, values)
-        val finalValues : List<MeasurementValue> = transformation.applySelectedFormulasForMeasurement(measurement, correctedValues)
+        val formulaValues : List<MeasurementValue> = transformation.applySelectedFormulasForMeasurement(measurement, correctedValues)
+        val finalValues : List<MeasurementValue> = if (applyCalibration) {
+            transformation.applyInBodyCalibration(measurement, formulaValues)
+        } else {
+            formulaValues
+        }
 
         if (measurement.id == 0) {
             // Insert path

@@ -24,6 +24,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.health.openscale.core.data.InBodyCalibration
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
@@ -45,7 +46,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext ctx: Context): AppDatabase =
         Room.databaseBuilder(ctx, AppDatabase::class.java, AppDatabase.Companion.DATABASE_NAME)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19)
             .build()
 
     @Provides
@@ -58,6 +59,8 @@ object DatabaseModule {
     fun provideMeasurementValueDao(db: AppDatabase): MeasurementValueDao = db.measurementValueDao()
     @Provides
     fun provideMeasurementTypeDao(db: AppDatabase): MeasurementTypeDao = db.measurementTypeDao()
+    @Provides
+    fun provideInBodyCalibrationDao(db: AppDatabase): InBodyCalibrationDao = db.inBodyCalibrationDao()
 }
 
 /**
@@ -71,8 +74,9 @@ object DatabaseModule {
         Measurement::class,
         MeasurementValue::class,
         MeasurementType::class,
+        InBodyCalibration::class,
     ],
-    version = 18,
+    version = 19,
     exportSchema = true
 )
 @TypeConverters(DatabaseConverters::class)
@@ -83,6 +87,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun measurementDao(): MeasurementDao
     abstract fun measurementValueDao(): MeasurementValueDao
     abstract fun measurementTypeDao(): MeasurementTypeDao
+    abstract fun inBodyCalibrationDao(): InBodyCalibrationDao
 
     companion object {
         const val DATABASE_NAME = "openScale.db"
@@ -868,3 +873,43 @@ val MIGRATION_17_18 = object : Migration(17, 18) {
         )
     }
 }
+
+/**
+ * Migration from version 18 to 19:
+ * Adds the `inbody_calibration` table for storing user InBody calibration records,
+ * including raw reference inputs and calibrated additive intercept offsets (all mass offsets in Kg).
+ * Enforces a UNIQUE index on `userId` so each user maintains at most one active calibration profile.
+ */
+val MIGRATION_18_19 = object : Migration(18, 19) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `inbody_calibration` (
+                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                `userId` INTEGER NOT NULL,
+                `createdAt` INTEGER NOT NULL,
+                `scaleMeasurementTimestamp` INTEGER NOT NULL,
+                `scaleName` TEXT,
+                `inBodyWeightKg` REAL NOT NULL,
+                `inBodyFatPercent` REAL,
+                `inBodyMuscleKg` REAL,
+                `inBodyWaterLiters` REAL,
+                `inBodyBoneKg` REAL,
+                `inBodyVisceralFat` REAL,
+                `inBodyProteinKg` REAL,
+                `offsetFfmKg` REAL,
+                `offsetMuscleKg` REAL,
+                `offsetWaterKg` REAL,
+                `offsetBoneKg` REAL,
+                `offsetVisceralFat` REAL,
+                `offsetProteinKg` REAL,
+                FOREIGN KEY(`userId`) REFERENCES `User`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL(
+            "CREATE UNIQUE INDEX IF NOT EXISTS `index_inbody_calibration_userId` ON `inbody_calibration` (`userId`)"
+        )
+    }
+}
+

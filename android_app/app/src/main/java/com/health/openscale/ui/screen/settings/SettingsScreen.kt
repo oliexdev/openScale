@@ -27,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.Bluetooth
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
@@ -88,6 +89,7 @@ fun SettingsScreen(
     val userSettingsLabel = stringResource(R.string.settings_item_user)
     val measurementTypesLabel = stringResource(R.string.settings_item_measurement_types)
     val bluetoothLabel = stringResource(R.string.settings_item_bluetooth)
+    val calibrationLabel = stringResource(R.string.settings_item_calibration)
     val chartSettingsLabel = stringResource(R.string.settings_item_chart)
     val dataManagementLabel = stringResource(R.string.settings_item_data_management)
     val aboutLabel = stringResource(R.string.settings_item_about)
@@ -116,6 +118,12 @@ fun SettingsScreen(
             icon = Icons.Filled.Bluetooth,
             route = Routes.BLUETOOTH_SETTINGS,
             contentDescription = bluetoothLabel
+        ),
+        SettingsItem(
+            label = calibrationLabel,
+            icon = Icons.Default.Build,
+            route = Routes.CALIBRATION_SETTINGS,
+            contentDescription = calibrationLabel
         ),
         SettingsItem(
             label = chartSettingsLabel,

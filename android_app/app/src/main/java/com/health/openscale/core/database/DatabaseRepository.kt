@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.database
 
+import com.health.openscale.core.data.InBodyCalibration
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
@@ -44,6 +45,7 @@ class DatabaseRepository @Inject constructor(
     private val measurementDao: MeasurementDao,
     private val measurementTypeDao: MeasurementTypeDao,
     private val measurementValueDao: MeasurementValueDao,
+    private val inBodyCalibrationDao: InBodyCalibrationDao,
     private val derivedValuesCalculator: DerivedValuesCalculator
 ) {
 
@@ -102,6 +104,25 @@ class DatabaseRepository @Inject constructor(
 
     fun getAllGoalsForUser(userId: Int): Flow<List<UserGoals>> {
         return userGoalsDao.getAllForUser(userId)
+    }
+
+    // --- InBody Calibration Operations ---
+    suspend fun insertOrUpdateInBodyCalibration(calibration: InBodyCalibration): Long {
+        LogManager.d(TAG, "Inserting/updating InBody calibration for userId: ${calibration.userId}")
+        return inBodyCalibrationDao.insertOrUpdate(calibration)
+    }
+
+    fun observeInBodyCalibrationForUser(userId: Int): Flow<InBodyCalibration?> {
+        return inBodyCalibrationDao.observeForUser(userId)
+    }
+
+    suspend fun getInBodyCalibrationForUser(userId: Int): InBodyCalibration? {
+        return inBodyCalibrationDao.getForUser(userId)
+    }
+
+    suspend fun deleteInBodyCalibrationForUser(userId: Int) {
+        LogManager.d(TAG, "Deleting InBody calibration for userId: $userId")
+        inBodyCalibrationDao.deleteForUser(userId)
     }
 
     // --- Measurement Operations ---

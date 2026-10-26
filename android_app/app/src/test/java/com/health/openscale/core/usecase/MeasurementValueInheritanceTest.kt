@@ -80,7 +80,7 @@ class MeasurementValueInheritanceTest {
         val query = MeasurementQueryUseCases(repo)
         val sync = SyncUseCases(app, MeasurementTypeCrudUseCases(repo, ApplicationProvider.getApplicationContext()))
         transformation = MeasurementTransformationUseCase(
-            settings, UserUseCases(ApplicationProvider.getApplicationContext(), repo, settings, sync), query
+            settings, UserUseCases(ApplicationProvider.getApplicationContext(), repo, settings, sync), query, repo
         )
 
         val types = repo.getAllMeasurementTypes().first()

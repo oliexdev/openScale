@@ -61,6 +61,8 @@ import com.health.openscale.ui.screen.settings.AboutScreen
 import com.health.openscale.ui.screen.settings.BluetoothDetailScreen
 import com.health.openscale.ui.screen.settings.BluetoothScreen
 import com.health.openscale.ui.screen.settings.BluetoothViewModel
+import com.health.openscale.ui.screen.settings.CalibrationSettingsScreen
+import com.health.openscale.ui.screen.settings.CalibrationWizardScreen
 import com.health.openscale.ui.screen.settings.ChartSettingsScreen
 import com.health.openscale.ui.screen.settings.DataManagementSettingsScreen
 import com.health.openscale.ui.screen.settings.GeneralSettingsScreen
@@ -284,6 +286,12 @@ fun AppNavHost(
                     bluetoothViewModel = bluetoothViewModel
                 )
             }
+            composable(Routes.CALIBRATION_WIZARD) {
+                CalibrationWizardScreen(
+                    navController = navController,
+                    sharedViewModel = sharedViewModel
+                )
+            }
         }
         // Box to fill the space behind the system navigation bar, if visible.
         // This prevents UI elements from being drawn under a translucent navigation bar,
@@ -307,6 +315,7 @@ private val settingsCategoryRoutes = listOf(
     Routes.USER_SETTINGS,
     Routes.MEASUREMENT_TYPES,
     Routes.BLUETOOTH_SETTINGS,
+    Routes.CALIBRATION_SETTINGS,
     Routes.CHART_SETTINGS,
     Routes.DATA_MANAGEMENT_SETTINGS,
     Routes.ABOUT_SETTINGS,
@@ -339,6 +348,10 @@ private fun SettingsCategoryScreen(
             navController = navController,
             sharedViewModel = sharedViewModel,
             bluetoothViewModel = bluetoothViewModel
+        )
+        Routes.CALIBRATION_SETTINGS -> CalibrationSettingsScreen(
+            navController = navController,
+            sharedViewModel = sharedViewModel
         )
         Routes.CHART_SETTINGS -> ChartSettingsScreen(sharedViewModel = sharedViewModel)
         Routes.DATA_MANAGEMENT_SETTINGS -> DataManagementSettingsScreen(settingsViewModel = settingsViewModel)

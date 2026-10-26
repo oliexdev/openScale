@@ -168,8 +168,7 @@ class SharedViewModelTest {
         val weightTypeId = repo.getAllMeasurementTypes().first()
             .first { it.key == MeasurementType.WEIGHT }.id
 
-        val dayMillis = 24L * 60 * 60 * 1000
-        val startMillis = System.currentTimeMillis() - elapsedDays * dayMillis
+        val startMillis = java.time.ZonedDateTime.now().minusDays(elapsedDays).toInstant().toEpochMilli()
         listOf(startMillis to startValue, System.currentTimeMillis() to currentValue)
             .forEach { (ts, value) ->
                 val id = repo.insertMeasurement(Measurement(userId = uid, timestamp = ts)).toInt()

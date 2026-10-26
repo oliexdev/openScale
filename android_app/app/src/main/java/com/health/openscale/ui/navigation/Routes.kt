@@ -50,6 +50,8 @@ object Routes {
     const val MEASUREMENT_TYPE_DETAIL = "settings/typeDetail"
     const val BLUETOOTH_SETTINGS = "settings/bluetooth"
     const val BLUETOOTH_DETAIL = "settings/bluetoothDetail"
+    const val CALIBRATION_SETTINGS = "settings/calibration"
+    const val CALIBRATION_WIZARD = "settings/calibration/wizard"
     const val CHART_SETTINGS = "settings/chart"
     const val DATA_MANAGEMENT_SETTINGS = "settings/dataManagement"
     const val ABOUT_SETTINGS = "settings/about"

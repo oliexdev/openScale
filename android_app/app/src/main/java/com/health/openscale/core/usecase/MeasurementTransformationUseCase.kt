@@ -20,6 +20,7 @@ package com.health.openscale.core.usecase
 import com.health.openscale.core.data.BodyFatFormulaOption
 import com.health.openscale.core.data.BodyWaterFormulaOption
 import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.data.InBodyCalibration
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.LbmFormulaOption
 import com.health.openscale.core.data.Measurement
@@ -28,6 +29,7 @@ import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
 import com.health.openscale.core.data.WeightUnit
+import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.utils.CalculationUtils
 import com.health.openscale.core.utils.ConverterUtils
@@ -49,7 +51,8 @@ import kotlin.math.pow
 class MeasurementTransformationUseCase @Inject constructor(
     private val settings: SettingsFacade,
     private val userUseCases: UserUseCases,
-    private val query: MeasurementQueryUseCases
+    private val query: MeasurementQueryUseCases,
+    private val databaseRepository: DatabaseRepository
 ) {
 
     /**
@@ -483,5 +486,495 @@ class MeasurementTransformationUseCase @Inject constructor(
         updatedValues[weightIndex] = originalWeightValue.copy(floatValue = correctedWeight)
 
         return updatedValues
+    }
+
+    /**
+     * Applies InBody calibration offsets to an incoming measurement.
+     *
+     * InBody calibration uses per-compartment additive intercept offsets (Δ in kilograms)
+     * computed from a same-day clinical InBody/DEXA reference scan.
+     *
+     * Rules:
+     * - Only applied if calibration is enabled globally in settings.
+     * - Only applied if an active calibration profile exists for the user.
+     * - Forward-only: measurement timestamp must be >= calibration.scaleMeasurementTimestamp.
+     * - Impedance required: only measurements with raw impedance > 0 are calibrated.
+     * - All mass offsets are added in kilograms, preserving regression slopes.
+     * - Body Fat is derived from calibrated FFM (Mass Conservation).
+     *
+     * @return [values] with calibrated values replacing or augmenting uncalibrated ones.
+     */
+    suspend fun applyInBodyCalibration(
+        measurement: Measurement,
+        values: List<MeasurementValue>,
+        calibration: InBodyCalibration? = null
+    ): List<MeasurementValue> {
+        val isEnabled = settings.isInBodyCalibrationEnabled.first()
+        if (!isEnabled) {
+            return values
+        }
+
+        val activeCalibration = calibration
+            ?: databaseRepository.getInBodyCalibrationForUser(measurement.userId)
+            ?: return values
+
+        if (measurement.timestamp < activeCalibration.scaleMeasurementTimestamp) {
+            return values
+        }
+
+        val types = query.getAllMeasurementTypes().first()
+        val byKey = types.associateBy { it.key }
+
+        // Bioimpedance check: scale must report impedance > 0
+        val impedanceType = byKey[MeasurementType.IMPEDANCE]
+        val impedanceVal = impedanceType?.let { t -> values.find { it.typeId == t.id }?.floatValue }
+        if (impedanceVal == null || impedanceVal <= 0f) {
+            return values
+        }
+
+        // Anchor: weight in kg
+        val weightType = byKey[MeasurementType.WEIGHT] ?: return values
+        val weightVal = values.find { it.typeId == weightType.id }?.floatValue ?: return values
+        val weightKg = when (weightType.unit) {
+            UnitType.KG -> weightVal
+            UnitType.LB -> ConverterUtils.toKilogram(weightVal, WeightUnit.LB)
+            UnitType.ST -> ConverterUtils.toKilogram(weightVal, WeightUnit.ST)
+            else -> return values
+        }
+        if (weightKg <= 0f) {
+            return values
+        }
+
+        val out = values.toMutableList()
+
+        fun upsertFloat(type: MeasurementType, newValue: Float?) {
+            val idx = out.indexOfFirst { it.typeId == type.id }
+            if (idx >= 0) {
+                out[idx] = out[idx].copy(floatValue = newValue)
+            } else if (newValue != null) {
+                out.add(
+                    MeasurementValue(
+                        id = 0,
+                        measurementId = measurement.id,
+                        typeId = type.id,
+                        floatValue = newValue
+                    )
+                )
+            }
+        }
+
+        // --- A. FFM (LBM) & BODY FAT (%) (Mass conservation) ---
+        activeCalibration.offsetFfmKg?.let { deltaFfmKg ->
+            val lbmType = byKey[MeasurementType.LBM]
+            val bfType = byKey[MeasurementType.BODY_FAT]
+
+            val uncalibratedFfmKg: Float? = run {
+                val lbmVal = lbmType?.let { t -> out.find { it.typeId == t.id }?.floatValue }
+                if (lbmVal != null) {
+                    when (lbmType.unit) {
+                        UnitType.KG -> lbmVal
+                        UnitType.LB -> ConverterUtils.toKilogram(lbmVal, WeightUnit.LB)
+                        UnitType.ST -> ConverterUtils.toKilogram(lbmVal, WeightUnit.ST)
+                        else -> lbmVal
+                    }
+                } else {
+                    val bfVal = bfType?.let { t -> out.find { it.typeId == t.id }?.floatValue }
+                    bfVal?.let { weightKg * (1f - it / 100f) }
+                }
+            }
+
+            if (uncalibratedFfmKg != null) {
+                val calibratedFfmKg = (uncalibratedFfmKg + deltaFfmKg)
+                    .coerceIn(weightKg * 0.10f, weightKg * 0.98f)
+
+                lbmType?.let { type ->
+                    val calibratedLbmVal = when (type.unit) {
+                        UnitType.KG -> CalculationUtils.roundTo(calibratedFfmKg)
+                        UnitType.LB -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(calibratedFfmKg, WeightUnit.LB)
+                        )
+                        UnitType.ST -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(calibratedFfmKg, WeightUnit.ST)
+                        )
+                        else -> CalculationUtils.roundTo(calibratedFfmKg)
+                    }
+                    upsertFloat(type, calibratedLbmVal)
+                }
+
+                bfType?.let { type ->
+                    val calibratedBfPercent = (((weightKg - calibratedFfmKg) / weightKg) * 100f)
+                        .coerceIn(1.0f, 75.0f)
+                    upsertFloat(type, CalculationUtils.roundTo(calibratedBfPercent))
+                }
+            }
+        }
+
+        // --- B. MUSCLE (%) ---
+        activeCalibration.offsetMuscleKg?.let { deltaMuscleKg ->
+            byKey[MeasurementType.MUSCLE]?.let { type ->
+                val uncalibratedVal = out.find { it.typeId == type.id }?.floatValue
+                if (uncalibratedVal != null) {
+                    val uncalibratedMuscleKg = when (type.unit) {
+                        UnitType.PERCENT -> (uncalibratedVal / 100f) * weightKg
+                        UnitType.KG -> uncalibratedVal
+                        UnitType.LB -> ConverterUtils.toKilogram(uncalibratedVal, WeightUnit.LB)
+                        UnitType.ST -> ConverterUtils.toKilogram(uncalibratedVal, WeightUnit.ST)
+                        else -> (uncalibratedVal / 100f) * weightKg
+                    }
+                    val calibratedMuscleKg = (uncalibratedMuscleKg + deltaMuscleKg).coerceIn(0f, weightKg)
+                    val calibratedVal = when (type.unit) {
+                        UnitType.PERCENT -> CalculationUtils.roundTo(((calibratedMuscleKg / weightKg) * 100f).coerceIn(1f, 90f))
+                        UnitType.KG -> CalculationUtils.roundTo(calibratedMuscleKg)
+                        UnitType.LB -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(calibratedMuscleKg, WeightUnit.LB)
+                        )
+                        UnitType.ST -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(calibratedMuscleKg, WeightUnit.ST)
+                        )
+                        else -> CalculationUtils.roundTo(((calibratedMuscleKg / weightKg) * 100f).coerceIn(1f, 90f))
+                    }
+                    upsertFloat(type, calibratedVal)
+                }
+            }
+        }
+
+        // --- C. TOTAL BODY WATER (%) ---
+        activeCalibration.offsetWaterKg?.let { deltaWaterKg ->
+            byKey[MeasurementType.WATER]?.let { type ->
+                val uncalibratedVal = out.find { it.typeId == type.id }?.floatValue
+                if (uncalibratedVal != null) {
+                    val uncalibratedWaterKg = when (type.unit) {
+                        UnitType.PERCENT -> (uncalibratedVal / 100f) * weightKg
+                        UnitType.KG -> uncalibratedVal
+                        UnitType.LB -> ConverterUtils.toKilogram(uncalibratedVal, WeightUnit.LB)
+                        UnitType.ST -> ConverterUtils.toKilogram(uncalibratedVal, WeightUnit.ST)
+                        else -> (uncalibratedVal / 100f) * weightKg
+                    }
+                    val calibratedWaterKg = (uncalibratedWaterKg + deltaWaterKg).coerceIn(0f, weightKg)
+                    val calibratedVal = when (type.unit) {
+                        UnitType.PERCENT -> CalculationUtils.roundTo(((calibratedWaterKg / weightKg) * 100f).coerceIn(1f, 95f))
+                        UnitType.KG -> CalculationUtils.roundTo(calibratedWaterKg)
+                        UnitType.LB -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(calibratedWaterKg, WeightUnit.LB)
+                        )
+                        UnitType.ST -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(calibratedWaterKg, WeightUnit.ST)
+                        )
+                        else -> CalculationUtils.roundTo(((calibratedWaterKg / weightKg) * 100f).coerceIn(1f, 95f))
+                    }
+                    upsertFloat(type, calibratedVal)
+                }
+            }
+        }
+
+        // --- D. BONE MASS (kg) ---
+        activeCalibration.offsetBoneKg?.let { deltaBoneKg ->
+            byKey[MeasurementType.BONE]?.let { type ->
+                val uncalibratedVal = out.find { it.typeId == type.id }?.floatValue
+                if (uncalibratedVal != null) {
+                    val uncalibratedBoneKg = when (type.unit) {
+                        UnitType.KG -> uncalibratedVal
+                        UnitType.LB -> ConverterUtils.toKilogram(uncalibratedVal, WeightUnit.LB)
+                        UnitType.ST -> ConverterUtils.toKilogram(uncalibratedVal, WeightUnit.ST)
+                        else -> uncalibratedVal
+                    }
+                    val calibratedBoneKg = (uncalibratedBoneKg + deltaBoneKg).coerceIn(0.5f, 15f)
+                    val calibratedVal = when (type.unit) {
+                        UnitType.KG -> CalculationUtils.roundTo(calibratedBoneKg)
+                        UnitType.LB -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(calibratedBoneKg, WeightUnit.LB)
+                        )
+                        UnitType.ST -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(calibratedBoneKg, WeightUnit.ST)
+                        )
+                        else -> CalculationUtils.roundTo(calibratedBoneKg)
+                    }
+                    upsertFloat(type, calibratedVal)
+                }
+            }
+        }
+
+        // --- E. VISCERAL FAT (dimensionless level) ---
+        activeCalibration.offsetVisceralFat?.let { deltaVf ->
+            byKey[MeasurementType.VISCERAL_FAT]?.let { type ->
+                val uncalibratedVal = out.find { it.typeId == type.id }?.floatValue
+                if (uncalibratedVal != null) {
+                    val calibratedVf = (uncalibratedVal + deltaVf).coerceAtLeast(1.0f)
+                    upsertFloat(type, CalculationUtils.roundTo(calibratedVf))
+                }
+            }
+        }
+
+        // --- F. PROTEIN (%) ---
+        activeCalibration.offsetProteinKg?.let { deltaProteinKg ->
+            byKey[MeasurementType.PROTEIN]?.let { type ->
+                val uncalibratedVal = out.find { it.typeId == type.id }?.floatValue
+                if (uncalibratedVal != null) {
+                    val uncalibratedProteinKg = when (type.unit) {
+                        UnitType.PERCENT -> (uncalibratedVal / 100f) * weightKg
+                        UnitType.KG -> uncalibratedVal
+                        UnitType.LB -> ConverterUtils.toKilogram(uncalibratedVal, WeightUnit.LB)
+                        UnitType.ST -> ConverterUtils.toKilogram(uncalibratedVal, WeightUnit.ST)
+                        else -> (uncalibratedVal / 100f) * weightKg
+                    }
+                    val calibratedProteinKg = (uncalibratedProteinKg + deltaProteinKg).coerceIn(0f, weightKg)
+                    val calibratedVal = when (type.unit) {
+                        UnitType.PERCENT -> CalculationUtils.roundTo(((calibratedProteinKg / weightKg) * 100f).coerceIn(1f, 50f))
+                        UnitType.KG -> CalculationUtils.roundTo(calibratedProteinKg)
+                        UnitType.LB -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(calibratedProteinKg, WeightUnit.LB)
+                        )
+                        UnitType.ST -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(calibratedProteinKg, WeightUnit.ST)
+                        )
+                        else -> CalculationUtils.roundTo(((calibratedProteinKg / weightKg) * 100f).coerceIn(1f, 50f))
+                    }
+                    upsertFloat(type, calibratedVal)
+                }
+            }
+        }
+
+        LogManager.i(
+            "MeasurementTransformation",
+            "InBody calibration applied for user ${measurement.userId} on measurement ${measurement.id}."
+        )
+        return out
+    }
+
+    /**
+     * Reverts InBody calibration offsets on measurement values, returning them to their
+     * uncalibrated state.
+     *
+     * @param measurement Target measurement.
+     * @param values Values currently containing calibrated values.
+     * @param calibration Optional explicit calibration profile to revert. If null, the active
+     *                    calibration for [measurement.userId] is fetched from the database.
+     */
+    suspend fun revertInBodyCalibration(
+        measurement: Measurement,
+        values: List<MeasurementValue>,
+        calibration: InBodyCalibration? = null
+    ): List<MeasurementValue> {
+        val activeCalibration = calibration
+            ?: databaseRepository.getInBodyCalibrationForUser(measurement.userId)
+            ?: return values
+
+        val types = query.getAllMeasurementTypes().first()
+        val byKey = types.associateBy { it.key }
+
+        // Bioimpedance check: scale must report impedance > 0
+        val impedanceType = byKey[MeasurementType.IMPEDANCE]
+        val impedanceVal = impedanceType?.let { t -> values.find { it.typeId == t.id }?.floatValue }
+        if (impedanceVal == null || impedanceVal <= 0f) {
+            return values
+        }
+
+        // Anchor: weight in kg
+        val weightType = byKey[MeasurementType.WEIGHT] ?: return values
+        val weightVal = values.find { it.typeId == weightType.id }?.floatValue ?: return values
+        val weightKg = when (weightType.unit) {
+            UnitType.KG -> weightVal
+            UnitType.LB -> ConverterUtils.toKilogram(weightVal, WeightUnit.LB)
+            UnitType.ST -> ConverterUtils.toKilogram(weightVal, WeightUnit.ST)
+            else -> return values
+        }
+        if (weightKg <= 0f) {
+            return values
+        }
+
+        val out = values.toMutableList()
+
+        fun upsertFloat(type: MeasurementType, newValue: Float?) {
+            val idx = out.indexOfFirst { it.typeId == type.id }
+            if (idx >= 0) {
+                out[idx] = out[idx].copy(floatValue = newValue)
+            } else if (newValue != null) {
+                out.add(
+                    MeasurementValue(
+                        id = 0,
+                        measurementId = measurement.id,
+                        typeId = type.id,
+                        floatValue = newValue
+                    )
+                )
+            }
+        }
+
+        // --- A. FFM (LBM) & BODY FAT (%) (Revert mass conservation) ---
+        activeCalibration.offsetFfmKg?.let { deltaFfmKg ->
+            val lbmType = byKey[MeasurementType.LBM]
+            val bfType = byKey[MeasurementType.BODY_FAT]
+
+            val currentFfmKg: Float? = run {
+                val lbmVal = lbmType?.let { t -> out.find { it.typeId == t.id }?.floatValue }
+                if (lbmVal != null) {
+                    when (lbmType.unit) {
+                        UnitType.KG -> lbmVal
+                        UnitType.LB -> ConverterUtils.toKilogram(lbmVal, WeightUnit.LB)
+                        UnitType.ST -> ConverterUtils.toKilogram(lbmVal, WeightUnit.ST)
+                        else -> lbmVal
+                    }
+                } else {
+                    val bfVal = bfType?.let { t -> out.find { it.typeId == t.id }?.floatValue }
+                    bfVal?.let { weightKg * (1f - it / 100f) }
+                }
+            }
+
+            if (currentFfmKg != null) {
+                val uncalibratedFfmKg = (currentFfmKg - deltaFfmKg)
+                    .coerceIn(weightKg * 0.10f, weightKg * 0.98f)
+
+                lbmType?.let { type ->
+                    val uncalibratedLbmVal = when (type.unit) {
+                        UnitType.KG -> CalculationUtils.roundTo(uncalibratedFfmKg)
+                        UnitType.LB -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(uncalibratedFfmKg, WeightUnit.LB)
+                        )
+                        UnitType.ST -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(uncalibratedFfmKg, WeightUnit.ST)
+                        )
+                        else -> CalculationUtils.roundTo(uncalibratedFfmKg)
+                    }
+                    upsertFloat(type, uncalibratedLbmVal)
+                }
+
+                bfType?.let { type ->
+                    val uncalibratedBfPercent = (((weightKg - uncalibratedFfmKg) / weightKg) * 100f)
+                        .coerceIn(1.0f, 75.0f)
+                    upsertFloat(type, CalculationUtils.roundTo(uncalibratedBfPercent))
+                }
+            }
+        }
+
+        // --- B. MUSCLE (%) ---
+        activeCalibration.offsetMuscleKg?.let { deltaMuscleKg ->
+            byKey[MeasurementType.MUSCLE]?.let { type ->
+                val currentVal = out.find { it.typeId == type.id }?.floatValue
+                if (currentVal != null) {
+                    val currentMuscleKg = when (type.unit) {
+                        UnitType.PERCENT -> (currentVal / 100f) * weightKg
+                        UnitType.KG -> currentVal
+                        UnitType.LB -> ConverterUtils.toKilogram(currentVal, WeightUnit.LB)
+                        UnitType.ST -> ConverterUtils.toKilogram(currentVal, WeightUnit.ST)
+                        else -> (currentVal / 100f) * weightKg
+                    }
+                    val uncalibratedMuscleKg = (currentMuscleKg - deltaMuscleKg).coerceIn(0f, weightKg)
+                    val uncalibratedVal = when (type.unit) {
+                        UnitType.PERCENT -> CalculationUtils.roundTo(((uncalibratedMuscleKg / weightKg) * 100f).coerceIn(1f, 90f))
+                        UnitType.KG -> CalculationUtils.roundTo(uncalibratedMuscleKg)
+                        UnitType.LB -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(uncalibratedMuscleKg, WeightUnit.LB)
+                        )
+                        UnitType.ST -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(uncalibratedMuscleKg, WeightUnit.ST)
+                        )
+                        else -> CalculationUtils.roundTo(((uncalibratedMuscleKg / weightKg) * 100f).coerceIn(1f, 90f))
+                    }
+                    upsertFloat(type, uncalibratedVal)
+                }
+            }
+        }
+
+        // --- C. TOTAL BODY WATER (%) ---
+        activeCalibration.offsetWaterKg?.let { deltaWaterKg ->
+            byKey[MeasurementType.WATER]?.let { type ->
+                val currentVal = out.find { it.typeId == type.id }?.floatValue
+                if (currentVal != null) {
+                    val currentWaterKg = when (type.unit) {
+                        UnitType.PERCENT -> (currentVal / 100f) * weightKg
+                        UnitType.KG -> currentVal
+                        UnitType.LB -> ConverterUtils.toKilogram(currentVal, WeightUnit.LB)
+                        UnitType.ST -> ConverterUtils.toKilogram(currentVal, WeightUnit.ST)
+                        else -> (currentVal / 100f) * weightKg
+                    }
+                    val uncalibratedWaterKg = (currentWaterKg - deltaWaterKg).coerceIn(0f, weightKg)
+                    val uncalibratedVal = when (type.unit) {
+                        UnitType.PERCENT -> CalculationUtils.roundTo(((uncalibratedWaterKg / weightKg) * 100f).coerceIn(1f, 95f))
+                        UnitType.KG -> CalculationUtils.roundTo(uncalibratedWaterKg)
+                        UnitType.LB -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(uncalibratedWaterKg, WeightUnit.LB)
+                        )
+                        UnitType.ST -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(uncalibratedWaterKg, WeightUnit.ST)
+                        )
+                        else -> CalculationUtils.roundTo(((uncalibratedWaterKg / weightKg) * 100f).coerceIn(1f, 95f))
+                    }
+                    upsertFloat(type, uncalibratedVal)
+                }
+            }
+        }
+
+        // --- D. BONE MASS (kg) ---
+        activeCalibration.offsetBoneKg?.let { deltaBoneKg ->
+            byKey[MeasurementType.BONE]?.let { type ->
+                val currentVal = out.find { it.typeId == type.id }?.floatValue
+                if (currentVal != null) {
+                    val currentBoneKg = when (type.unit) {
+                        UnitType.KG -> currentVal
+                        UnitType.LB -> ConverterUtils.toKilogram(currentVal, WeightUnit.LB)
+                        UnitType.ST -> ConverterUtils.toKilogram(currentVal, WeightUnit.ST)
+                        else -> currentVal
+                    }
+                    val uncalibratedBoneKg = (currentBoneKg - deltaBoneKg).coerceIn(0.5f, 15f)
+                    val uncalibratedVal = when (type.unit) {
+                        UnitType.KG -> CalculationUtils.roundTo(uncalibratedBoneKg)
+                        UnitType.LB -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(uncalibratedBoneKg, WeightUnit.LB)
+                        )
+                        UnitType.ST -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(uncalibratedBoneKg, WeightUnit.ST)
+                        )
+                        else -> CalculationUtils.roundTo(uncalibratedBoneKg)
+                    }
+                    upsertFloat(type, uncalibratedVal)
+                }
+            }
+        }
+
+        // --- E. VISCERAL FAT (dimensionless level) ---
+        activeCalibration.offsetVisceralFat?.let { deltaVf ->
+            byKey[MeasurementType.VISCERAL_FAT]?.let { type ->
+                val currentVal = out.find { it.typeId == type.id }?.floatValue
+                if (currentVal != null) {
+                    val uncalibratedVf = (currentVal - deltaVf).coerceAtLeast(1.0f)
+                    upsertFloat(type, CalculationUtils.roundTo(uncalibratedVf))
+                }
+            }
+        }
+
+        // --- F. PROTEIN (%) ---
+        activeCalibration.offsetProteinKg?.let { deltaProteinKg ->
+            byKey[MeasurementType.PROTEIN]?.let { type ->
+                val currentVal = out.find { it.typeId == type.id }?.floatValue
+                if (currentVal != null) {
+                    val currentProteinKg = when (type.unit) {
+                        UnitType.PERCENT -> (currentVal / 100f) * weightKg
+                        UnitType.KG -> currentVal
+                        UnitType.LB -> ConverterUtils.toKilogram(currentVal, WeightUnit.LB)
+                        UnitType.ST -> ConverterUtils.toKilogram(currentVal, WeightUnit.ST)
+                        else -> (currentVal / 100f) * weightKg
+                    }
+                    val uncalibratedProteinKg = (currentProteinKg - deltaProteinKg).coerceIn(0f, weightKg)
+                    val uncalibratedVal = when (type.unit) {
+                        UnitType.PERCENT -> CalculationUtils.roundTo(((uncalibratedProteinKg / weightKg) * 100f).coerceIn(1f, 50f))
+                        UnitType.KG -> CalculationUtils.roundTo(uncalibratedProteinKg)
+                        UnitType.LB -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(uncalibratedProteinKg, WeightUnit.LB)
+                        )
+                        UnitType.ST -> CalculationUtils.roundTo(
+                            ConverterUtils.fromKilogram(uncalibratedProteinKg, WeightUnit.ST)
+                        )
+                        else -> CalculationUtils.roundTo(((uncalibratedProteinKg / weightKg) * 100f).coerceIn(1f, 50f))
+                    }
+                    upsertFloat(type, uncalibratedVal)
+                }
+            }
+        }
+
+        LogManager.i(
+            "MeasurementTransformation",
+            "InBody calibration reverted for user ${measurement.userId} on measurement ${measurement.id}."
+        )
+        return out
     }
 }
