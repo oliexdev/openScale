@@ -130,6 +130,10 @@ class CalibrationViewModel @Inject constructor(
         _validationError.value = null
     }
 
+    fun setValidationError(error: String) {
+        _validationError.value = error
+    }
+
     fun proceedToStep3(userId: Int, scaleName: String? = null, onSuccess: () -> Unit) {
         val baseline = _selectedBaseline.value
         if (baseline == null) {

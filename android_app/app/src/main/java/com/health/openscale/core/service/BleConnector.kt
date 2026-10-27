@@ -18,6 +18,7 @@
 package com.health.openscale.core.service
 
 import android.annotation.SuppressLint
+import androidx.compose.material3.SnackbarDuration
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.ScaleCommunicator
@@ -105,6 +106,7 @@ class BleConnector(
     private val savedBurstSignal = MutableSharedFlow<Unit>(replay = 0, extraBufferCapacity = 64)
     private val pendingSavedCount = AtomicInteger(0)
     @Volatile private var lastSavedArgs: List<Any> = emptyList()
+    @Volatile private var lastSavedMissingBodyFat: Boolean = false
 
     init {
         scope.launch {
@@ -115,10 +117,16 @@ class BleConnector(
                     if (count <= 0) return@collect
 
                     if (count == 1) {
+                        val messageRes = if (lastSavedMissingBodyFat) {
+                            R.string.bluetooth_connector_measurement_saved_no_body_fat
+                        } else {
+                            R.string.bluetooth_connector_measurement_saved
+                        }
                         _snackbarEvents.emit(
                             SnackbarEvent(
-                                messageResId = R.string.bluetooth_connector_measurement_saved,
-                                messageFormatArgs = lastSavedArgs
+                                messageResId = messageRes,
+                                messageFormatArgs = lastSavedArgs,
+                                duration = if (lastSavedMissingBodyFat) SnackbarDuration.Long else SnackbarDuration.Short
                             )
                         )
                     } else {
@@ -524,6 +532,9 @@ class BleConnector(
                 )
                 pendingSavedCount.incrementAndGet()
                 lastSavedArgs = listOf(measurementData[MeasurementType.WEIGHT]?.value ?: 0f, deviceName)
+                val hasImpedance = MeasurementType.IMPEDANCE in measurementData || MeasurementType.IMPEDANCE_LOW in measurementData
+                val hasBodyFat = MeasurementType.BODY_FAT in measurementData || MeasurementType.LBM in measurementData
+                lastSavedMissingBodyFat = (hasImpedance && !hasBodyFat)
                 savedBurstSignal.tryEmit(Unit)
             } catch (e: Exception) {
                 LogManager.e(TAG, "Error saving measurement from $deviceName.", e)

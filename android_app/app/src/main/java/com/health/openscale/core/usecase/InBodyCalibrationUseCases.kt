@@ -123,6 +123,10 @@ class InBodyCalibrationUseCases @Inject constructor(
         if (impedance == null || impedance <= 0f) {
             return "The selected scale measurement does not contain bioelectrical impedance data."
         }
+        val hasBodyFat = baseline.values.any { it.type.key == MeasurementType.BODY_FAT || it.type.key == MeasurementType.LBM }
+        if (!hasBodyFat) {
+            return "The selected scale measurement is missing body composition data (fat/muscle). Please select a complete weigh-in taken with bare feet."
+        }
         if (input.inBodyWeightKg <= 10f || input.inBodyWeightKg > 350f) {
             return "InBody weight must be between 10 kg and 350 kg."
         }

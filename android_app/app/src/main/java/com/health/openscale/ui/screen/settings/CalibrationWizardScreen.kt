@@ -55,6 +55,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -64,6 +65,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -87,6 +89,7 @@ fun CalibrationWizardScreen(
 ) {
     val user by sharedViewModel.selectedUser.collectAsState()
     val userId = user?.id ?: 1
+    val context = LocalContext.current
 
     val step by viewModel.wizardStep.collectAsState()
     val baseline by viewModel.selectedBaseline.collectAsState()
@@ -147,8 +150,15 @@ fun CalibrationWizardScreen(
                 },
                 onCancel = { navController.popBackStack() },
                 onNext = {
+                    val hasBodyFat = baseline?.values?.any {
+                        it.type.key == MeasurementType.BODY_FAT || it.type.key == MeasurementType.LBM
+                    } == true
                     if (baseline == null) {
                         viewModel.clearValidationError()
+                    } else if (!hasBodyFat) {
+                        viewModel.setValidationError(
+                            context.getString(R.string.calibration_error_baseline_missing_body_comp)
+                        )
                     } else {
                         viewModel.setWizardStep(2)
                     }
@@ -249,6 +259,7 @@ private fun Step1BaselineSelection(
     viewModel: CalibrationViewModel
 ) {
     val measurements by viewModel.getEligibleBaselineMeasurements(userId).collectAsState(initial = emptyList())
+    val context = LocalContext.current
     val dateFormatter = remember {
         DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.getDefault())
     }
@@ -287,13 +298,23 @@ private fun Step1BaselineSelection(
                 val isSelected = selectedBaseline?.measurement?.id == mwv.measurement.id
                 val weight = mwv.values.find { it.type.key == MeasurementType.WEIGHT }?.value?.floatValue
                 val fat = mwv.values.find { it.type.key == MeasurementType.BODY_FAT }?.value?.floatValue
+                val lbm = mwv.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue
                 val impedance = mwv.values.find { it.type.key == MeasurementType.IMPEDANCE }?.value?.floatValue
                 val muscle = mwv.values.find { it.type.key == MeasurementType.MUSCLE }?.value?.floatValue
+                val hasBodyFat = fat != null || lbm != null
 
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onSelectBaseline(mwv) }
+                        .clickable {
+                            if (hasBodyFat) {
+                                onSelectBaseline(mwv)
+                            } else {
+                                viewModel.setValidationError(
+                                    context.getString(R.string.calibration_error_baseline_missing_body_comp)
+                                )
+                            }
+                        }
                         .border(
                             width = if (isSelected) 2.dp else 1.dp,
                             color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
@@ -341,11 +362,38 @@ private fun Step1BaselineSelection(
                                     color = MaterialTheme.colorScheme.primary
                                 )
                             }
+                            if (!hasBodyFat) {
+                                Surface(
+                                    color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
+                                    shape = MaterialTheme.shapes.extraSmall,
+                                    modifier = Modifier.padding(top = 4.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Warning,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(12.dp),
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.calibration_baseline_missing_body_comp_warning),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onErrorContainer
+                                        )
+                                    }
+                                }
+                            }
                         }
                         Icon(
                             imageVector = if (isSelected) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
                             contentDescription = null,
-                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                            tint = if (!hasBodyFat) MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+                            else if (isSelected) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.outline
                         )
                     }
                 }

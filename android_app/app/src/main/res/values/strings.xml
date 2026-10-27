@@ -459,6 +459,7 @@
     <string name="bluetooth_connector_measurement_types_not_loaded">Error: Measurement types not loaded.</string>
     <string name="bluetooth_connector_measurement_no_values">No valid measurement values received from %1$s.</string>
     <string name="bluetooth_connector_measurement_saved">Measurement (%1$.1f kg) from %2$s saved.</string>
+    <string name="bluetooth_connector_measurement_saved_no_body_fat">Measurement (%1$.1f kg) from %2$s saved, but body composition was not recorded. Please weigh barefoot with dry skin.</string>
     <string name="bluetooth_connector_measurement_save_error">Error saving measurement from %1$s.</string>
     <string name="bluetooth_connector_device_message">%1$s: %2$s</string>
     <string name="bluetooth_connector_listening_for_device">Listening for %1$s…</string>
@@ -1096,6 +1097,8 @@
     <string name="calibration_summary_header_scale">Scale</string>
     <string name="calibration_summary_header_inbody">InBody</string>
     <string name="calibration_summary_header_offset">Offset (Δ)</string>
+    <string name="calibration_baseline_missing_body_comp_warning">Incomplete: body fat not recorded. Barefoot skin contact required.</string>
+    <string name="calibration_error_baseline_missing_body_comp">The selected scale measurement lacks body composition data (fat/muscle). Please select a complete weigh-in taken with bare feet.</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_next">Next</string>
     <string name="action_back">Back</string>

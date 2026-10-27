@@ -144,6 +144,21 @@ class InBodyCalibrationUseCasesTest {
     }
 
     @Test
+    fun validateInputs_rejectsMissingBodyComposition() {
+        val m = Measurement(id = 1, userId = userId, timestamp = 10_000L)
+        val partialMeasurement = MeasurementWithValues(
+            m,
+            listOf(
+                MeasurementValueWithType(MeasurementValue(1, 1, weightType!!.id, floatValue = 80f), weightType!!),
+                MeasurementValueWithType(MeasurementValue(2, 1, impedanceType!!.id, floatValue = 500f), impedanceType!!)
+            )
+        )
+        val input = InBodyFormInput(inBodyWeightKg = 80f)
+        val error = calibrationUseCases.validateInputs(input, partialMeasurement)
+        assertThat(error).contains("body composition")
+    }
+
+    @Test
     fun validateInputs_rejectsOutOfRangeWeights() {
         val baseline = createBaseline()
         assertThat(calibrationUseCases.validateInputs(InBodyFormInput(inBodyWeightKg = 5f), baseline)).isNotNull()
