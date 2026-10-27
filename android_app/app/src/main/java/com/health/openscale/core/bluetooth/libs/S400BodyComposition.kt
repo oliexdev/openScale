@@ -306,8 +306,13 @@ object S400BodyComposition {
      * fat at which a BIA body fat stops being a difference of opinion and starts
      * being a report on the electrode contact. Symmetric: a foot-to-foot scale
      * fails high (dry or cold feet) at least as often as it fails low.
+     *
+     * Set to 15.0 percentage points (~3.5 SD of Deurenberg's 4.1-4.4% SEE): large
+     * enough to avoid false-positive suppression on genuine biological variation
+     * (e.g. muscular builds, tall individuals, or dry skin contact ~12-13 points off),
+     * while still rejecting severe contact faults (e.g. 16+ points off in §3.1b test).
      */
-    private const val DEURENBERG_MARGIN = 12.0f
+    private const val DEURENBERG_MARGIN = 15.0f
 
     fun compute(
         inputs: S400Inputs,

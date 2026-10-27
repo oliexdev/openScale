@@ -309,6 +309,21 @@ class S400BodyCompositionTest {
     }
 
     @Test
+    fun deurenbergGuard_allowsValidHighImpedanceWeighing() {
+        // Real-world S400 weighing (187 cm, 101.7 kg, rHigh 554.3 Ω, rLow 612.3 Ω).
+        // BIA yields 35.4 % body fat while Deurenberg BMI formula gives ~22.8 % (12.56 points apart).
+        // A 15.0 % margin allows this valid biological variation through rather than suppressing.
+        val r = S400BodyComposition.compute(S400Inputs(
+            age = 18, sexMale = true, heightCm = 187f, weightKg = 101.7f,
+            rHighRaw = 554.3f, rLowRaw = 612.3f,
+        ))
+        assertThat(r.tbwKg).isNotNull()
+        assertThat(r.bfPct).isNotNull()
+        assertThat(r.smmKg).isNotNull()
+        assertThat(r.proteinPct).isNotNull()
+    }
+
+    @Test
     fun vfi_reportedForNormalWeightWomen() {
         // §7.2 sits exactly on the `w = 0.5·h - 13` weight where the female
         // regression used to switch to a branch that cannot return an in-range
