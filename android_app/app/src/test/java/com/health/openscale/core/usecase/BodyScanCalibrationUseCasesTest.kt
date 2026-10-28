@@ -32,6 +32,7 @@ import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.model.MeasurementValueWithType
 import com.health.openscale.core.model.MeasurementWithValues
+import com.health.openscale.core.utils.CalculationUtils
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -645,6 +646,236 @@ class BodyScanCalibrationUseCasesTest {
         // Verify reversion recovers original uncalibrated VF (8.6):
         val revGain = transformation.revertBodyScanCalibration(mGain, calGain, cal)
         assertThat(revGain.find { it.typeId == vfType!!.id }?.floatValue).isWithin(0.05f).of(8.6f)
+    }
+
+    @Test
+    fun trajectorySimulation_12WeekCut_maintainsSmoothMonotonicCurvesAndMassConservation() = runBlocking {
+        // Calibration profile at Day 0:
+        // W0 = 90.0 kg, scanFatPercent = 20.0% -> Scan FFM = 72.0 kg
+        // Baseline scale raw FFM = 68.0 kg -> offsetFfmKg = +4.0 kg
+        // Baseline scale raw Muscle = 36.0 kg (40.0%), scan Muscle = 38.0 kg -> offsetMuscleKg = +2.0 kg
+        // Baseline scale raw VF = 12.0, scan VF = 10.0 -> offsetVisceralFat = -2.0
+        val cal = BodyScanCalibration(
+            userId = userId,
+            scaleMeasurementTimestamp = 10_000L,
+            scaleName = "Clinical InBody Scanner",
+            scaleBaselineWeightKg = 90.0f,
+            scanWeightKg = 90.0f,
+            scanFatPercent = 20.0f,
+            scanMuscleKg = 38.0f,
+            scanVisceralFat = 10.0f,
+            offsetFfmKg = 4.0f,
+            offsetMuscleKg = 2.0f,
+            offsetVisceralFat = -2.0f
+        )
+
+        var prevCalLbm: Float? = null
+        var prevCalBf: Float? = null
+        var prevCalVf: Float? = null
+
+        // 12-week cut: from 90.0 kg down to 78.0 kg (12 steps of 1.0 kg loss: 0.8 kg fat + 0.2 kg lean mass)
+        for (step in 0..12) {
+            val weightKg = 90.0f - step * 1.0f
+            val rawLbmKg = 68.0f - step * 0.20f
+            val rawFatMassKg = weightKg - rawLbmKg
+            val rawFatPercent = CalculationUtils.roundTo((rawFatMassKg / weightKg) * 100f)
+            val rawMuscleKg = 36.0f - step * 0.10f
+            val rawMusclePercent = CalculationUtils.roundTo((rawMuscleKg / weightKg) * 100f)
+            val rawVf = 12.0f - step * 0.25f
+            val rawImpedance = 480.0f + step * 5.0f
+
+            val measurement = Measurement(id = step + 1, userId = userId, timestamp = 10_000L + step * 7 * 86_400_000L)
+            val incomingValues = listOf(
+                MeasurementValue(measurementId = step + 1, typeId = weightType!!.id, floatValue = weightKg),
+                MeasurementValue(measurementId = step + 1, typeId = impedanceType!!.id, floatValue = rawImpedance),
+                MeasurementValue(measurementId = step + 1, typeId = lbmType!!.id, floatValue = rawLbmKg),
+                MeasurementValue(measurementId = step + 1, typeId = fatType!!.id, floatValue = rawFatPercent),
+                MeasurementValue(measurementId = step + 1, typeId = muscleType!!.id, floatValue = rawMusclePercent),
+                MeasurementValue(measurementId = step + 1, typeId = vfType!!.id, floatValue = rawVf)
+            )
+
+            val calibrated = transformation.applyBodyScanCalibration(measurement, incomingValues, cal)
+            val calLbm = calibrated.find { it.typeId == lbmType!!.id }?.floatValue!!
+            val calBf = calibrated.find { it.typeId == fatType!!.id }?.floatValue!!
+            val calVf = calibrated.find { it.typeId == vfType!!.id }?.floatValue!!
+
+            // 1. Mass Conservation: Fat Mass (kg) + Calibrated FFM (kg) == Total Scale Weight (kg)
+            val calFatMassKg = weightKg * (calBf / 100f)
+            assertThat(calFatMassKg + calLbm).isWithin(0.1f).of(weightKg)
+
+            // 2. Strict Monotonicity and Smoothness
+            if (prevCalLbm != null && prevCalBf != null && prevCalVf != null) {
+                assertThat(calLbm).isLessThan(prevCalLbm)
+                assertThat(calBf).isLessThan(prevCalBf)
+                assertThat(calVf).isAtMost(prevCalVf)
+
+                // Smooth step-to-step delta (< 1.5% body fat change per 1 kg step)
+                assertThat(kotlin.math.abs(calBf - prevCalBf)).isLessThan(1.5f)
+            }
+
+            // 3. Lossless Round-Trip Reversibility
+            val reverted = transformation.revertBodyScanCalibration(measurement, calibrated, cal)
+            val revLbm = reverted.find { it.typeId == lbmType!!.id }?.floatValue!!
+            val revBf = reverted.find { it.typeId == fatType!!.id }?.floatValue!!
+            val revVf = reverted.find { it.typeId == vfType!!.id }?.floatValue!!
+
+            assertThat(revLbm).isWithin(0.05f).of(rawLbmKg)
+            assertThat(revBf).isWithin(0.05f).of(rawFatPercent)
+            assertThat(revVf).isWithin(0.05f).of(rawVf)
+
+            prevCalLbm = calLbm
+            prevCalBf = calBf
+            prevCalVf = calVf
+        }
+    }
+
+    @Test
+    fun trajectorySimulation_leanBulk_neutralizesFalseVisceralFatIncrease() = runBlocking {
+        // Calibration profile at Day 0:
+        // W0 = 75.0 kg, scanFatPercent = 16.0% (Scan Fat = 12.0 kg, Scan FFM = 63.0 kg)
+        // Baseline scale raw FFM = 60.0 kg -> offsetFfmKg = +3.0 kg
+        // Baseline scale raw Muscle = 30.0 kg (40.0%), scan Muscle = 32.0 kg -> offsetMuscleKg = +2.0 kg
+        // Baseline scale raw VF = 8.0, scan VF = 7.0 -> offsetVisceralFat = -1.0
+        val cal = BodyScanCalibration(
+            userId = userId,
+            scaleMeasurementTimestamp = 10_000L,
+            scaleName = "Clinical InBody Scanner",
+            scaleBaselineWeightKg = 75.0f,
+            scanWeightKg = 75.0f,
+            scanFatPercent = 16.0f,
+            scanMuscleKg = 32.0f,
+            scanVisceralFat = 7.0f,
+            offsetFfmKg = 3.0f,
+            offsetMuscleKg = 2.0f,
+            offsetVisceralFat = -1.0f
+        )
+
+        var prevCalLbm: Float? = null
+        var prevCalMusclePct: Float? = null
+        var prevCalBf: Float? = null
+        var initialCalVf: Float? = null
+        var maxCalVf = Float.MIN_VALUE
+
+        // 8-step lean bulk: from 75.0 kg up to 79.0 kg (+0.5 kg per step)
+        // 90% lean mass gain (+0.45 kg FFM), 10% fat gain (+0.05 kg fat)
+        // Scale's uncalibrated VF formula falsely elevates VF from 8.0 to 8.6 (+0.075 per 0.5 kg gain)
+        for (step in 0..8) {
+            val weightKg = 75.0f + step * 0.5f
+            val rawLbmKg = 60.0f + step * 0.45f
+            val rawFatMassKg = 15.0f + step * 0.05f
+            val rawFatPercent = CalculationUtils.roundTo((rawFatMassKg / weightKg) * 100f)
+            val rawMuscleKg = 30.0f + step * 0.35f
+            val rawMusclePercent = CalculationUtils.roundTo((rawMuscleKg / weightKg) * 100f)
+            // Weight-driven false VF elevation on scale:
+            val rawVf = 8.0f + step * 0.075f
+            val rawImpedance = 500.0f - step * 3.0f
+
+            val measurement = Measurement(id = step + 1, userId = userId, timestamp = 10_000L + step * 14 * 86_400_000L)
+            val incomingValues = listOf(
+                MeasurementValue(measurementId = step + 1, typeId = weightType!!.id, floatValue = weightKg),
+                MeasurementValue(measurementId = step + 1, typeId = impedanceType!!.id, floatValue = rawImpedance),
+                MeasurementValue(measurementId = step + 1, typeId = lbmType!!.id, floatValue = rawLbmKg),
+                MeasurementValue(measurementId = step + 1, typeId = fatType!!.id, floatValue = rawFatPercent),
+                MeasurementValue(measurementId = step + 1, typeId = muscleType!!.id, floatValue = rawMusclePercent),
+                MeasurementValue(measurementId = step + 1, typeId = vfType!!.id, floatValue = rawVf)
+            )
+
+            val calibrated = transformation.applyBodyScanCalibration(measurement, incomingValues, cal)
+            val calLbm = calibrated.find { it.typeId == lbmType!!.id }?.floatValue!!
+            val calMusclePct = calibrated.find { it.typeId == muscleType!!.id }?.floatValue!!
+            val calBf = calibrated.find { it.typeId == fatType!!.id }?.floatValue!!
+            val calVf = calibrated.find { it.typeId == vfType!!.id }?.floatValue!!
+
+            if (step == 0) {
+                initialCalVf = calVf
+            }
+            if (calVf > maxCalVf) {
+                maxCalVf = calVf
+            }
+
+            if (prevCalLbm != null && prevCalMusclePct != null && prevCalBf != null) {
+                // Lean mass and muscle % monotonically increase
+                assertThat(calLbm).isGreaterThan(prevCalLbm)
+                assertThat(calMusclePct).isGreaterThan(prevCalMusclePct)
+
+                // Body fat % decreases because 90% of weight gained is lean mass
+                assertThat(calBf).isLessThan(prevCalBf)
+            }
+
+            prevCalLbm = calLbm
+            prevCalMusclePct = calMusclePct
+            prevCalBf = calBf
+        }
+
+        // Visceral fat protection: even though raw scale VF rose by +0.6,
+        // calibrated VF stayed flat or increased by less than 0.2 points:
+        assertThat(maxCalVf - initialCalVf!!).isAtMost(0.2f)
+    }
+
+    @Test
+    fun propertyInvariant_positiveAndNegativeOffsets_preserveMonotonicityAndBounds() = runBlocking {
+        // Test both a positive profile (+4.5 kg FFM, +2.5 kg muscle) and a negative profile (-4.5 kg FFM, -2.5 kg muscle)
+        val offsetProfiles = listOf(
+            Pair(+4.5f, +2.5f),
+            Pair(-4.5f, -2.5f)
+        )
+
+        for ((offsetFfm, offsetMuscle) in offsetProfiles) {
+            val cal = BodyScanCalibration(
+                userId = userId,
+                scaleMeasurementTimestamp = 10_000L,
+                scaleName = "Reference Profile",
+                scaleBaselineWeightKg = 80.0f,
+                scanWeightKg = 80.0f,
+                scanFatPercent = 20.0f,
+                scanMuscleKg = 35.0f,
+                offsetFfmKg = offsetFfm,
+                offsetMuscleKg = offsetMuscle
+            )
+
+            var prevCalFfm: Float? = null
+
+            // Sweep uncalibrated FFM from 45.0 kg to 85.0 kg in 1.0 kg increments
+            for (rawFfmInt in 45..85) {
+                val rawFfm = rawFfmInt.toFloat()
+                val weightKg = rawFfm / 0.75f // Keep FFM around 75% of body weight
+                val rawMuscleKg = rawFfm * 0.55f
+                val rawMusclePercent = (rawMuscleKg / weightKg) * 100f
+                val rawFatMassKg = weightKg - rawFfm
+                val rawFatPercent = (rawFatMassKg / weightKg) * 100f
+
+                val measurement = Measurement(id = rawFfmInt, userId = userId, timestamp = 20_000L)
+                val incomingValues = listOf(
+                    MeasurementValue(measurementId = rawFfmInt, typeId = weightType!!.id, floatValue = weightKg),
+                    MeasurementValue(measurementId = rawFfmInt, typeId = impedanceType!!.id, floatValue = 500.0f),
+                    MeasurementValue(measurementId = rawFfmInt, typeId = lbmType!!.id, floatValue = rawFfm),
+                    MeasurementValue(measurementId = rawFfmInt, typeId = fatType!!.id, floatValue = rawFatPercent),
+                    MeasurementValue(measurementId = rawFfmInt, typeId = muscleType!!.id, floatValue = rawMusclePercent)
+                )
+
+                val calibrated = transformation.applyBodyScanCalibration(measurement, incomingValues, cal)
+                val calFfm = calibrated.find { it.typeId == lbmType!!.id }?.floatValue!!
+
+                // 1. Strict monotonicity: calibrated FFM strictly increases as raw FFM increases
+                if (prevCalFfm != null) {
+                    assertThat(calFfm).isGreaterThan(prevCalFfm)
+                }
+
+                // 2. Dynamic scaling factor invariant: effective scaling factor stays within [0.70f, 1.30f]
+                val effectiveOffset = calFfm - rawFfm
+                val scalingFactor = effectiveOffset / offsetFfm
+                // Allow a tiny epsilon (0.02f) for roundTo(2 decimal places)
+                assertThat(scalingFactor).isAtLeast(0.70f - 0.02f)
+                assertThat(scalingFactor).isAtMost(1.30f + 0.02f)
+
+                // 3. Lossless round-trip reversibility across the entire sweep
+                val reverted = transformation.revertBodyScanCalibration(measurement, calibrated, cal)
+                val revFfm = reverted.find { it.typeId == lbmType!!.id }?.floatValue!!
+                assertThat(revFfm).isWithin(0.05f).of(rawFfm)
+
+                prevCalFfm = calFfm
+            }
+        }
     }
 }
 
