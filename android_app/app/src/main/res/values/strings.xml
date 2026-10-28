@@ -1063,6 +1063,8 @@
     <string name="calibration_title">Body Scan Calibration</string>
     <string name="calibration_enable_label">Enable Body Scan Calibration</string>
     <string name="calibration_enable_description">Applies calibrated offsets to incoming measurements from impedance scales.</string>
+    <string name="calibration_intro_title">About Body Scan Calibration</string>
+    <string name="calibration_intro_description">Stores calibration offsets computed from a high-accuracy reference body scan (such as InBody, Tanita, or DEXA) paired with a home smart scale weigh-in taken on the same day. openScale dynamically applies these adjustments so your charts reflect clinical reference accuracy.</string>
     <string name="calibration_current_title">Active Calibration Profile</string>
     <string name="calibration_no_profile">No active body scan calibration profile.</string>
     <string name="calibration_no_profile_desc">Calibrate your smart scale by pairing it with values from a reference body scan (e.g. InBody, Tanita, DEXA).</string>

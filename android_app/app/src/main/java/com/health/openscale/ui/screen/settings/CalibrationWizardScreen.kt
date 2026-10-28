@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -57,7 +56,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -115,173 +113,164 @@ fun CalibrationWizardScreen(
         sharedViewModel.setTopBarActions(emptyList())
     }
 
-    Scaffold(
-        bottomBar = {
-            Surface(
-                tonalElevation = 3.dp,
-                shadowElevation = 8.dp
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Step indicator banner (pinned at top)
+        StepIndicator(currentStep = step)
+
+        // Validation Error banner if present
+        validationError?.let { error ->
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .navigationBarsPadding()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    when (step) {
-                        1 -> {
-                            OutlinedButton(onClick = { navController.popBackStack() }) {
-                                Text(stringResource(R.string.action_cancel))
-                            }
-                            Button(
-                                onClick = {
-                                    val hasBodyFat = baseline?.values?.any {
-                                        it.type.key == MeasurementType.BODY_FAT || it.type.key == MeasurementType.LBM
-                                    } == true
-                                    if (baseline == null) {
-                                        viewModel.clearValidationError()
-                                    } else if (!hasBodyFat) {
-                                        viewModel.setValidationError(
-                                            context.getString(R.string.calibration_error_baseline_missing_body_comp)
-                                        )
-                                    } else {
-                                        viewModel.clearValidationError()
-                                        viewModel.setWizardStep(2)
-                                    }
-                                },
-                                enabled = baseline != null
-                            ) {
-                                Text(stringResource(R.string.action_next))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))
-                            }
-                        }
-                        2 -> {
-                            OutlinedButton(onClick = {
-                                viewModel.clearValidationError()
-                                viewModel.setWizardStep(1)
-                            }) {
-                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(stringResource(R.string.action_back))
-                            }
-                            Button(
-                                onClick = {
-                                    viewModel.proceedToStep3(userId, savedScaleName) {
-                                        // Success handled inside viewModel setting step to 3
-                                    }
-                                },
-                                enabled = scanWeight.isNotBlank()
-                            ) {
-                                Text(stringResource(R.string.action_next))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))
-                            }
-                        }
-                        3 -> {
-                            OutlinedButton(
-                                onClick = {
-                                    viewModel.clearValidationError()
-                                    viewModel.setWizardStep(2)
-                                },
-                                enabled = !isSaving
-                            ) {
-                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(stringResource(R.string.action_back))
-                            }
-                            Button(
-                                onClick = {
-                                    viewModel.saveCalibration(
-                                        onSuccess = {
-                                            sharedViewModel.showSnackbar(messageResId = R.string.calibration_saved_success)
-                                            navController.popBackStack()
-                                        },
-                                        onError = { errMsg ->
-                                            sharedViewModel.showSnackbar(message = errMsg)
-                                        }
-                                    )
-                                },
-                                enabled = !isSaving && calculatedCalibration != null
-                            ) {
-                                if (isSaving) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(16.dp),
-                                        strokeWidth = 2.dp,
-                                        color = MaterialTheme.colorScheme.onPrimary
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                }
-                                Text(stringResource(R.string.action_save))
-                            }
-                        }
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = error,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
                 }
             }
         }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Step indicator banner (pinned at top)
-            StepIndicator(currentStep = step)
 
-            // Validation Error banner if present
-            validationError?.let { error ->
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+        // Scrollable Content area
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
+            when (step) {
+                1 -> Step1BaselineSelection(
+                    userId = userId,
+                    selectedBaseline = baseline,
+                    onSelectBaseline = {
+                        viewModel.selectBaseline(it)
+                        viewModel.clearValidationError()
+                    },
+                    viewModel = viewModel
+                )
+                2 -> Step2BodyScanInputs(
+                    viewModel = viewModel
+                )
+                3 -> Step3ReviewAndSave(
+                    calibration = calculatedCalibration,
+                    baseline = effectiveBaseline ?: baseline,
+                    selectedScope = calibrationScope,
+                    onSelectScope = { viewModel.setCalibrationScope(it) }
+                )
+            }
+        }
+
+        // Bottom Action Buttons
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            when (step) {
+                1 -> {
+                    OutlinedButton(onClick = { navController.popBackStack() }) {
+                        Text(stringResource(R.string.action_cancel))
+                    }
+                    Button(
+                        onClick = {
+                            val hasBodyFat = baseline?.values?.any {
+                                it.type.key == MeasurementType.BODY_FAT || it.type.key == MeasurementType.LBM
+                            } == true
+                            if (baseline == null) {
+                                viewModel.clearValidationError()
+                            } else if (!hasBodyFat) {
+                                viewModel.setValidationError(
+                                    context.getString(R.string.calibration_error_baseline_missing_body_comp)
+                                )
+                            } else {
+                                viewModel.clearValidationError()
+                                viewModel.setWizardStep(2)
+                            }
+                        },
+                        enabled = baseline != null
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Warning,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = error,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
+                        Text(stringResource(R.string.action_next))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))
                     }
                 }
-            }
-
-            // Scrollable Content area
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                when (step) {
-                    1 -> Step1BaselineSelection(
-                        userId = userId,
-                        selectedBaseline = baseline,
-                        onSelectBaseline = {
-                            viewModel.selectBaseline(it)
-                            viewModel.clearValidationError()
+                2 -> {
+                    OutlinedButton(onClick = {
+                        viewModel.clearValidationError()
+                        viewModel.setWizardStep(1)
+                    }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(stringResource(R.string.action_back))
+                    }
+                    Button(
+                        onClick = {
+                            viewModel.proceedToStep3(userId, savedScaleName) {
+                                // Success handled inside viewModel setting step to 3
+                            }
                         },
-                        viewModel = viewModel
-                    )
-                    2 -> Step2BodyScanInputs(
-                        viewModel = viewModel
-                    )
-                    3 -> Step3ReviewAndSave(
-                        calibration = calculatedCalibration,
-                        baseline = effectiveBaseline ?: baseline,
-                        selectedScope = calibrationScope,
-                        onSelectScope = { viewModel.setCalibrationScope(it) }
-                    )
+                        enabled = scanWeight.isNotBlank()
+                    ) {
+                        Text(stringResource(R.string.action_next))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))
+                    }
+                }
+                3 -> {
+                    OutlinedButton(
+                        onClick = {
+                            viewModel.clearValidationError()
+                            viewModel.setWizardStep(2)
+                        },
+                        enabled = !isSaving
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(stringResource(R.string.action_back))
+                    }
+                    Button(
+                        onClick = {
+                            viewModel.saveCalibration(
+                                onSuccess = {
+                                    sharedViewModel.showSnackbar(messageResId = R.string.calibration_saved_success)
+                                    navController.popBackStack()
+                                },
+                                onError = { errMsg ->
+                                    sharedViewModel.showSnackbar(message = errMsg)
+                                }
+                            )
+                        },
+                        enabled = !isSaving && calculatedCalibration != null
+                    ) {
+                        if (isSaving) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                        Text(stringResource(R.string.action_save))
+                    }
                 }
             }
         }
