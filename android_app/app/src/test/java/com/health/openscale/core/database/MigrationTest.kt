@@ -186,6 +186,7 @@ class MigrationTest {
             userId = 1,
             scaleMeasurementTimestamp = 1751328000000L,
             scaleName = "Test Scale",
+            scaleBaselineWeightKg = 79.5f,
             inBodyWeightKg = 80.0f,
             inBodyFatPercent = 18.0f,
             inBodyMuscleKg = 35.0f,
@@ -196,6 +197,7 @@ class MigrationTest {
         repo.insertOrUpdateInBodyCalibration(calibration)
         val loaded = repo.getInBodyCalibrationForUser(1)
         assertThat(loaded).isNotNull()
+        assertThat(loaded?.scaleBaselineWeightKg).isEqualTo(79.5f)
         assertThat(loaded?.inBodyWeightKg).isEqualTo(80.0f)
         assertThat(loaded?.offsetFfmKg).isEqualTo(1.5f)
 

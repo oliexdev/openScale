@@ -67,6 +67,7 @@ class InBodyCalibrationUseCasesTest {
     private var waterType: MeasurementType? = null
     private var boneType: MeasurementType? = null
     private var vfType: MeasurementType? = null
+    private var proteinType: MeasurementType? = null
     private var impedanceType: MeasurementType? = null
 
     @Before
@@ -93,6 +94,7 @@ class InBodyCalibrationUseCasesTest {
         waterType = types.find { it.key == MeasurementType.WATER }
         boneType = types.find { it.key == MeasurementType.BONE }
         vfType = types.find { it.key == MeasurementType.VISCERAL_FAT }
+        proteinType = types.find { it.key == MeasurementType.PROTEIN }
         impedanceType = types.find { it.key == MeasurementType.IMPEDANCE }
 
         userId = repo.insertUser(
@@ -453,6 +455,192 @@ class InBodyCalibrationUseCasesTest {
         // Must preserve full float precision (not rounded to 1 or 2 decimals)
         assertThat(cal.offsetFfmKg).isNotNull()
         assertThat(cal.offsetFfmKg).isWithin(0.0001f).of(2.9531376f)
+    }
+
+    @Test
+    fun deleteCalibrationForUser_revertsAllForwardMeasurements() = runBlocking {
+        // Measurement at t = 5_000 (past)
+        val mPastId = repo.insertMeasurement(Measurement(userId = userId, timestamp = 5_000L)).toInt()
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mPastId, typeId = weightType!!.id, floatValue = 80.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mPastId, typeId = impedanceType!!.id, floatValue = 500.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mPastId, typeId = lbmType!!.id, floatValue = 64.0f))
+
+        // Baseline at t = 10_000
+        val mBaseId = repo.insertMeasurement(Measurement(userId = userId, timestamp = 10_000L)).toInt()
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mBaseId, typeId = weightType!!.id, floatValue = 80.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mBaseId, typeId = impedanceType!!.id, floatValue = 500.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mBaseId, typeId = lbmType!!.id, floatValue = 64.0f))
+
+        // Future measurement at t = 15_000
+        val mFutureId = repo.insertMeasurement(Measurement(userId = userId, timestamp = 15_000L)).toInt()
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mFutureId, typeId = weightType!!.id, floatValue = 80.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mFutureId, typeId = impedanceType!!.id, floatValue = 500.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mFutureId, typeId = lbmType!!.id, floatValue = 64.0f))
+
+        val baseline = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mBaseId }
+        val input = InBodyFormInput(inBodyWeightKg = 80.0f, inBodyFatKg = 13.0f) // FFM = 67.0 kg
+        val cal = calibrationUseCases.calculateCalibration(userId, baseline, input)
+        calibrationUseCases.saveCalibration(cal, baseline)
+
+        // Apply calibration to future measurement as well
+        val futureMwv = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mFutureId }
+        val calFutureValues = transformation.applyInBodyCalibration(futureMwv.measurement, futureMwv.values.map { it.value }, cal)
+        calFutureValues.forEach { repo.updateMeasurementValue(it) }
+
+        // Verify both baseline and future are calibrated to 67.0 kg
+        val allAfterCal = repo.getMeasurementsWithValuesForUser(userId).first()
+        assertThat(allAfterCal.first { it.measurement.id == mBaseId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue)
+            .isWithin(0.01f).of(67.0f)
+        assertThat(allAfterCal.first { it.measurement.id == mFutureId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue)
+            .isWithin(0.01f).of(67.0f)
+
+        // Delete calibration
+        calibrationUseCases.deleteCalibrationForUser(userId)
+
+        // Verify both baseline and future are reverted to uncalibrated 64.0 kg, past was never touched
+        val allReverted = repo.getMeasurementsWithValuesForUser(userId).first()
+        assertThat(allReverted.first { it.measurement.id == mPastId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue)
+            .isWithin(0.01f).of(64.0f)
+        assertThat(allReverted.first { it.measurement.id == mBaseId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue)
+            .isWithin(0.01f).of(64.0f)
+        assertThat(allReverted.first { it.measurement.id == mFutureId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue)
+            .isWithin(0.01f).of(64.0f)
+    }
+
+    @Test
+    fun dampedHybridScaling_exactAtDayZero_scalesWithMuscleGain_andRespectsClampLimits() = runBlocking {
+        // Calibration setup:
+        // W0 = 80.0 kg, InBody W = 80.0 kg, inBodyFatPercent = 16.25% (FFM = 67.0 kg)
+        // Raw scale FFM at baseline = 64.0 kg -> offsetFfmKg = +3.0 kg
+        // Raw scale Muscle at baseline = 32.0 kg, InBody Muscle = 35.0 kg -> offsetMuscleKg = +3.0 kg
+        val cal = InBodyCalibration(
+            userId = userId,
+            scaleMeasurementTimestamp = 10_000L,
+            scaleName = "Test Scale",
+            scaleBaselineWeightKg = 80.0f,
+            inBodyWeightKg = 80.0f,
+            inBodyFatPercent = 16.25f,
+            inBodyMuscleKg = 35.0f,
+            offsetFfmKg = 3.0f,
+            offsetMuscleKg = 3.0f
+        )
+
+        // Case A: Day 0 weigh-in (raw FFM = 64.0 kg, raw Muscle = 32.0 kg)
+        val mDay0 = Measurement(id = 1, userId = userId, timestamp = 10_000L)
+        val valuesDay0 = listOf(
+            MeasurementValue(measurementId = 1, typeId = weightType!!.id, floatValue = 80.0f),
+            MeasurementValue(measurementId = 1, typeId = impedanceType!!.id, floatValue = 500.0f),
+            MeasurementValue(measurementId = 1, typeId = lbmType!!.id, floatValue = 64.0f),
+            MeasurementValue(measurementId = 1, typeId = muscleType!!.id, floatValue = 40.0f) // 40% of 80 kg = 32 kg
+        )
+        val calDay0 = transformation.applyInBodyCalibration(mDay0, valuesDay0, cal)
+        val lbmDay0 = calDay0.find { it.typeId == lbmType!!.id }?.floatValue
+        val muscleDay0 = calDay0.find { it.typeId == muscleType!!.id }?.floatValue
+        // S_FFM = 1.0 -> 64.0 + 3.0 = 67.0 kg
+        assertThat(lbmDay0).isWithin(0.01f).of(67.0f)
+        // S_Muscle = 1.0 -> 32.0 + 3.0 = 35.0 kg -> (35.0 / 80.0) * 100 = 43.75%
+        assertThat(muscleDay0).isWithin(0.01f).of(43.75f)
+
+        // Reversion test at Day 0:
+        val revDay0 = transformation.revertInBodyCalibration(mDay0, calDay0, cal)
+        assertThat(revDay0.find { it.typeId == lbmType!!.id }?.floatValue).isWithin(0.01f).of(64.0f)
+        assertThat(revDay0.find { it.typeId == muscleType!!.id }?.floatValue).isWithin(0.01f).of(40.0f)
+
+        // Case B: Muscle gain weigh-in (raw FFM = 70.0 kg, W = 86.0 kg)
+        // rawMass0 = 64.0 kg. S_FFM = 0.5 + 0.5 * (70.0 / 64.0) = 1.046875
+        // Scaled offset = 3.0 * 1.046875 = 3.140625 kg -> Calibrated FFM = 70.0 + 3.140625 = 73.140625 kg (~73.14)
+        val mGain = Measurement(id = 2, userId = userId, timestamp = 20_000L)
+        val valuesGain = listOf(
+            MeasurementValue(measurementId = 2, typeId = weightType!!.id, floatValue = 86.0f),
+            MeasurementValue(measurementId = 2, typeId = impedanceType!!.id, floatValue = 480.0f),
+            MeasurementValue(measurementId = 2, typeId = lbmType!!.id, floatValue = 70.0f)
+        )
+        val calGain = transformation.applyInBodyCalibration(mGain, valuesGain, cal)
+        val lbmGain = calGain.find { it.typeId == lbmType!!.id }?.floatValue
+        assertThat(lbmGain).isWithin(0.01f).of(73.14f)
+
+        // Reversion test for muscle gain:
+        val revGain = transformation.revertInBodyCalibration(mGain, calGain, cal)
+        assertThat(revGain.find { it.typeId == lbmType!!.id }?.floatValue).isWithin(0.05f).of(70.0f)
+
+        // Case C: Clamped at upper limit (1.30)
+        // e.g. raw FFM = 120.0 kg -> ratio = 120 / 64 = 1.875 -> damped = 0.5 + 0.5*1.875 = 1.4375 -> clamped to 1.30
+        // Scaled offset = 3.0 * 1.30 = 3.90 kg -> Calibrated FFM = 120.0 + 3.90 = 123.90 kg
+        val mUpper = Measurement(id = 3, userId = userId, timestamp = 30_000L)
+        val valuesUpper = listOf(
+            MeasurementValue(measurementId = 3, typeId = weightType!!.id, floatValue = 130.0f),
+            MeasurementValue(measurementId = 3, typeId = impedanceType!!.id, floatValue = 450.0f),
+            MeasurementValue(measurementId = 3, typeId = lbmType!!.id, floatValue = 120.0f)
+        )
+        val calUpper = transformation.applyInBodyCalibration(mUpper, valuesUpper, cal)
+        val lbmUpper = calUpper.find { it.typeId == lbmType!!.id }?.floatValue
+        assertThat(lbmUpper).isWithin(0.01f).of(123.90f)
+
+        // Case D: Clamped at lower limit (0.70)
+        // e.g. raw FFM = 20.0 kg -> ratio = 20 / 64 = 0.3125 -> damped = 0.5 + 0.5*0.3125 = 0.65625 -> clamped to 0.70
+        // Scaled offset = 3.0 * 0.70 = 2.10 kg -> Calibrated FFM = 20.0 + 2.10 = 22.10 kg
+        val mLower = Measurement(id = 4, userId = userId, timestamp = 40_000L)
+        val valuesLower = listOf(
+            MeasurementValue(measurementId = 4, typeId = weightType!!.id, floatValue = 40.0f),
+            MeasurementValue(measurementId = 4, typeId = impedanceType!!.id, floatValue = 550.0f),
+            MeasurementValue(measurementId = 4, typeId = lbmType!!.id, floatValue = 20.0f)
+        )
+        val calLower = transformation.applyInBodyCalibration(mLower, valuesLower, cal)
+        val lbmLower = calLower.find { it.typeId == lbmType!!.id }?.floatValue
+        assertThat(lbmLower).isWithin(0.01f).of(22.10f)
+    }
+
+    @Test
+    fun fatMassDrivenVisceralFat_neutralizesFalseVFIncreaseFromMuscleGain() = runBlocking {
+        // Setup:
+        // W0 = 80.0 kg, inBodyFatPercent = 15.0% (BFM_cal_0 = 12.0 kg, FFM_cal_0 = 68.0 kg)
+        // Baseline scale raw FFM = 65.0 kg -> offsetFfmKg = +3.0 kg (calibrated FFM at t0 = 68.0 kg)
+        // Baseline scale raw VF = 8.0, InBody VF = 7.0 -> offsetVisceralFat = -1.0
+        val cal = InBodyCalibration(
+            userId = userId,
+            scaleMeasurementTimestamp = 10_000L,
+            scaleName = "Test Scale",
+            scaleBaselineWeightKg = 80.0f,
+            inBodyWeightKg = 80.0f,
+            inBodyFatPercent = 15.0f,
+            offsetFfmKg = 3.0f,
+            offsetVisceralFat = -1.0f
+        )
+
+        // Day 0 weigh-in:
+        val mDay0 = Measurement(id = 1, userId = userId, timestamp = 10_000L)
+        val valuesDay0 = listOf(
+            MeasurementValue(measurementId = 1, typeId = weightType!!.id, floatValue = 80.0f),
+            MeasurementValue(measurementId = 1, typeId = impedanceType!!.id, floatValue = 500.0f),
+            MeasurementValue(measurementId = 1, typeId = lbmType!!.id, floatValue = 65.0f),
+            MeasurementValue(measurementId = 1, typeId = vfType!!.id, floatValue = 8.0f)
+        )
+        val calDay0 = transformation.applyInBodyCalibration(mDay0, valuesDay0, cal)
+        // Day 0: deltaBfmActual = 0, deltaBfmAssumed = 0 -> VF = 8.0 - 1.0 = 7.0
+        assertThat(calDay0.find { it.typeId == vfType!!.id }?.floatValue).isWithin(0.01f).of(7.0f)
+
+        // Weigh-in after gaining 4.0 kg pure muscle (W_n = 84.0 kg):
+        // Raw FFM increases from 65.0 to 68.835 kg such that calibrated FFM becomes 72.0 kg (+4 kg lean mass)
+        // Vendor scale formula falsely elevated raw VF by +0.6 (from 8.0 to 8.6) due to the 4 kg weight gain:
+        val mGain = Measurement(id = 2, userId = userId, timestamp = 20_000L)
+        val valuesGain = listOf(
+            MeasurementValue(measurementId = 2, typeId = weightType!!.id, floatValue = 84.0f),
+            MeasurementValue(measurementId = 2, typeId = impedanceType!!.id, floatValue = 480.0f),
+            MeasurementValue(measurementId = 2, typeId = lbmType!!.id, floatValue = 68.835f),
+            MeasurementValue(measurementId = 2, typeId = vfType!!.id, floatValue = 8.6f)
+        )
+        val calGain = transformation.applyInBodyCalibration(mGain, valuesGain, cal)
+        // Calibrated FFM is ~72.0 kg.
+        // Current calibrated fat mass BFM_cal_n = 84.0 - 72.0 = 12.0 kg.
+        // deltaBfmActual = 12.0 - 12.0 = 0.0 kg.
+        // deltaBfmAssumed = 0.75 * (84.0 - 80.0) = 3.0 kg.
+        // Composition-aware correction: 0.20 * (0.0 - 3.0) = -0.6 rating points.
+        // VF_cal = 8.6 + (-1.0) + (-0.6) = 7.0! The false +0.6 increase is completely neutralized!
+        assertThat(calGain.find { it.typeId == vfType!!.id }?.floatValue).isWithin(0.05f).of(7.0f)
+
+        // Verify reversion recovers original uncalibrated VF (8.6):
+        val revGain = transformation.revertInBodyCalibration(mGain, calGain, cal)
+        assertThat(revGain.find { it.typeId == vfType!!.id }?.floatValue).isWithin(0.05f).of(8.6f)
     }
 }
 

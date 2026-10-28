@@ -563,6 +563,18 @@ class MeasurementTransformationUseCase @Inject constructor(
             }
         }
 
+        // Reference masses at t0 for damped hybrid allometric scaling (gamma = 0.5)
+        val hasValidBaseline = activeCalibration.scaleBaselineWeightKg > 0f && activeCalibration.inBodyWeightKg > 0f
+        val normRatio = if (hasValidBaseline) activeCalibration.scaleBaselineWeightKg / activeCalibration.inBodyWeightKg else null
+        val refFfmKg0 = if (hasValidBaseline) {
+            activeCalibration.inBodyFatPercent?.let { activeCalibration.scaleBaselineWeightKg * (1f - it / 100f) }
+        } else null
+        val refMuscleKg0 = if (normRatio != null) activeCalibration.inBodyMuscleKg?.let { it * normRatio } else null
+        val refWaterKg0 = if (normRatio != null) activeCalibration.inBodyWaterLiters?.let { (it * 0.995f) * normRatio } else null
+        val refProteinKg0 = if (normRatio != null) activeCalibration.inBodyProteinKg?.let { it * normRatio } else null
+
+        var calibratedFfmKgForVf: Float? = null
+
         // --- A. FFM (LBM) & BODY FAT (%) (Mass conservation) ---
         activeCalibration.offsetFfmKg?.let { deltaFfmKg ->
             val lbmType = byKey[MeasurementType.LBM]
@@ -584,8 +596,10 @@ class MeasurementTransformationUseCase @Inject constructor(
             }
 
             if (uncalibratedFfmKg != null) {
-                val calibratedFfmKg = (uncalibratedFfmKg + deltaFfmKg)
+                val scaledDeltaFfm = computeDampedScaledOffset(uncalibratedFfmKg, deltaFfmKg, refFfmKg0)
+                val calibratedFfmKg = (uncalibratedFfmKg + scaledDeltaFfm)
                     .coerceIn(weightKg * 0.10f, weightKg * 0.98f)
+                calibratedFfmKgForVf = calibratedFfmKg
 
                 lbmType?.let { type ->
                     val calibratedLbmVal = when (type.unit) {
@@ -621,7 +635,8 @@ class MeasurementTransformationUseCase @Inject constructor(
                         UnitType.ST -> ConverterUtils.toKilogram(uncalibratedVal, WeightUnit.ST)
                         else -> (uncalibratedVal / 100f) * weightKg
                     }
-                    val calibratedMuscleKg = (uncalibratedMuscleKg + deltaMuscleKg).coerceIn(0f, weightKg)
+                    val scaledDeltaMuscle = computeDampedScaledOffset(uncalibratedMuscleKg, deltaMuscleKg, refMuscleKg0)
+                    val calibratedMuscleKg = (uncalibratedMuscleKg + scaledDeltaMuscle).coerceIn(0f, weightKg)
                     val calibratedVal = when (type.unit) {
                         UnitType.PERCENT -> CalculationUtils.roundTo(((calibratedMuscleKg / weightKg) * 100f).coerceIn(1f, 90f))
                         UnitType.KG -> CalculationUtils.roundTo(calibratedMuscleKg)
@@ -650,7 +665,8 @@ class MeasurementTransformationUseCase @Inject constructor(
                         UnitType.ST -> ConverterUtils.toKilogram(uncalibratedVal, WeightUnit.ST)
                         else -> (uncalibratedVal / 100f) * weightKg
                     }
-                    val calibratedWaterKg = (uncalibratedWaterKg + deltaWaterKg).coerceIn(0f, weightKg)
+                    val scaledDeltaWater = computeDampedScaledOffset(uncalibratedWaterKg, deltaWaterKg, refWaterKg0)
+                    val calibratedWaterKg = (uncalibratedWaterKg + scaledDeltaWater).coerceIn(0f, weightKg)
                     val calibratedVal = when (type.unit) {
                         UnitType.PERCENT -> CalculationUtils.roundTo(((calibratedWaterKg / weightKg) * 100f).coerceIn(1f, 95f))
                         UnitType.KG -> CalculationUtils.roundTo(calibratedWaterKg)
@@ -699,7 +715,19 @@ class MeasurementTransformationUseCase @Inject constructor(
             byKey[MeasurementType.VISCERAL_FAT]?.let { type ->
                 val uncalibratedVal = out.find { it.typeId == type.id }?.floatValue
                 if (uncalibratedVal != null) {
-                    val calibratedVf = (uncalibratedVal + deltaVf).coerceAtLeast(1.0f)
+                    val calibratedVf = if (
+                        calibratedFfmKgForVf != null &&
+                        activeCalibration.inBodyFatPercent != null &&
+                        activeCalibration.scaleBaselineWeightKg > 0f
+                    ) {
+                        val bfmCal0 = activeCalibration.scaleBaselineWeightKg * (activeCalibration.inBodyFatPercent / 100f)
+                        val bfmCalN = weightKg - calibratedFfmKgForVf
+                        val deltaBfmActual = bfmCalN - bfmCal0
+                        val deltaBfmAssumed = 0.75f * (weightKg - activeCalibration.scaleBaselineWeightKg)
+                        (uncalibratedVal + deltaVf + 0.20f * (deltaBfmActual - deltaBfmAssumed)).coerceAtLeast(1.0f)
+                    } else {
+                        (uncalibratedVal + deltaVf).coerceAtLeast(1.0f)
+                    }
                     upsertFloat(type, CalculationUtils.roundTo(calibratedVf))
                 }
             }
@@ -717,7 +745,8 @@ class MeasurementTransformationUseCase @Inject constructor(
                         UnitType.ST -> ConverterUtils.toKilogram(uncalibratedVal, WeightUnit.ST)
                         else -> (uncalibratedVal / 100f) * weightKg
                     }
-                    val calibratedProteinKg = (uncalibratedProteinKg + deltaProteinKg).coerceIn(0f, weightKg)
+                    val scaledDeltaProtein = computeDampedScaledOffset(uncalibratedProteinKg, deltaProteinKg, refProteinKg0)
+                    val calibratedProteinKg = (uncalibratedProteinKg + scaledDeltaProtein).coerceIn(0f, weightKg)
                     val calibratedVal = when (type.unit) {
                         UnitType.PERCENT -> CalculationUtils.roundTo(((calibratedProteinKg / weightKg) * 100f).coerceIn(1f, 50f))
                         UnitType.KG -> CalculationUtils.roundTo(calibratedProteinKg)
@@ -800,6 +829,18 @@ class MeasurementTransformationUseCase @Inject constructor(
             }
         }
 
+        // Reference masses at t0 for reverting damped hybrid allometric scaling (gamma = 0.5)
+        val hasValidBaseline = activeCalibration.scaleBaselineWeightKg > 0f && activeCalibration.inBodyWeightKg > 0f
+        val normRatio = if (hasValidBaseline) activeCalibration.scaleBaselineWeightKg / activeCalibration.inBodyWeightKg else null
+        val refFfmKg0 = if (hasValidBaseline) {
+            activeCalibration.inBodyFatPercent?.let { activeCalibration.scaleBaselineWeightKg * (1f - it / 100f) }
+        } else null
+        val refMuscleKg0 = if (normRatio != null) activeCalibration.inBodyMuscleKg?.let { it * normRatio } else null
+        val refWaterKg0 = if (normRatio != null) activeCalibration.inBodyWaterLiters?.let { (it * 0.995f) * normRatio } else null
+        val refProteinKg0 = if (normRatio != null) activeCalibration.inBodyProteinKg?.let { it * normRatio } else null
+
+        var currentFfmKgForVf: Float? = null
+
         // --- A. FFM (LBM) & BODY FAT (%) (Revert mass conservation) ---
         activeCalibration.offsetFfmKg?.let { deltaFfmKg ->
             val lbmType = byKey[MeasurementType.LBM]
@@ -821,7 +862,8 @@ class MeasurementTransformationUseCase @Inject constructor(
             }
 
             if (currentFfmKg != null) {
-                val uncalibratedFfmKg = (currentFfmKg - deltaFfmKg)
+                currentFfmKgForVf = currentFfmKg
+                val uncalibratedFfmKg = revertDampedScaledMass(currentFfmKg, deltaFfmKg, refFfmKg0)
                     .coerceIn(weightKg * 0.10f, weightKg * 0.98f)
 
                 lbmType?.let { type ->
@@ -858,7 +900,7 @@ class MeasurementTransformationUseCase @Inject constructor(
                         UnitType.ST -> ConverterUtils.toKilogram(currentVal, WeightUnit.ST)
                         else -> (currentVal / 100f) * weightKg
                     }
-                    val uncalibratedMuscleKg = (currentMuscleKg - deltaMuscleKg).coerceIn(0f, weightKg)
+                    val uncalibratedMuscleKg = revertDampedScaledMass(currentMuscleKg, deltaMuscleKg, refMuscleKg0).coerceIn(0f, weightKg)
                     val uncalibratedVal = when (type.unit) {
                         UnitType.PERCENT -> CalculationUtils.roundTo(((uncalibratedMuscleKg / weightKg) * 100f).coerceIn(1f, 90f))
                         UnitType.KG -> CalculationUtils.roundTo(uncalibratedMuscleKg)
@@ -887,7 +929,7 @@ class MeasurementTransformationUseCase @Inject constructor(
                         UnitType.ST -> ConverterUtils.toKilogram(currentVal, WeightUnit.ST)
                         else -> (currentVal / 100f) * weightKg
                     }
-                    val uncalibratedWaterKg = (currentWaterKg - deltaWaterKg).coerceIn(0f, weightKg)
+                    val uncalibratedWaterKg = revertDampedScaledMass(currentWaterKg, deltaWaterKg, refWaterKg0).coerceIn(0f, weightKg)
                     val uncalibratedVal = when (type.unit) {
                         UnitType.PERCENT -> CalculationUtils.roundTo(((uncalibratedWaterKg / weightKg) * 100f).coerceIn(1f, 95f))
                         UnitType.KG -> CalculationUtils.roundTo(uncalibratedWaterKg)
@@ -936,7 +978,19 @@ class MeasurementTransformationUseCase @Inject constructor(
             byKey[MeasurementType.VISCERAL_FAT]?.let { type ->
                 val currentVal = out.find { it.typeId == type.id }?.floatValue
                 if (currentVal != null) {
-                    val uncalibratedVf = (currentVal - deltaVf).coerceAtLeast(1.0f)
+                    val uncalibratedVf = if (
+                        currentFfmKgForVf != null &&
+                        activeCalibration.inBodyFatPercent != null &&
+                        activeCalibration.scaleBaselineWeightKg > 0f
+                    ) {
+                        val bfmCal0 = activeCalibration.scaleBaselineWeightKg * (activeCalibration.inBodyFatPercent / 100f)
+                        val bfmCalN = weightKg - currentFfmKgForVf
+                        val deltaBfmActual = bfmCalN - bfmCal0
+                        val deltaBfmAssumed = 0.75f * (weightKg - activeCalibration.scaleBaselineWeightKg)
+                        (currentVal - deltaVf - 0.20f * (deltaBfmActual - deltaBfmAssumed)).coerceAtLeast(1.0f)
+                    } else {
+                        (currentVal - deltaVf).coerceAtLeast(1.0f)
+                    }
                     upsertFloat(type, CalculationUtils.roundTo(uncalibratedVf))
                 }
             }
@@ -954,7 +1008,7 @@ class MeasurementTransformationUseCase @Inject constructor(
                         UnitType.ST -> ConverterUtils.toKilogram(currentVal, WeightUnit.ST)
                         else -> (currentVal / 100f) * weightKg
                     }
-                    val uncalibratedProteinKg = (currentProteinKg - deltaProteinKg).coerceIn(0f, weightKg)
+                    val uncalibratedProteinKg = revertDampedScaledMass(currentProteinKg, deltaProteinKg, refProteinKg0).coerceIn(0f, weightKg)
                     val uncalibratedVal = when (type.unit) {
                         UnitType.PERCENT -> CalculationUtils.roundTo(((uncalibratedProteinKg / weightKg) * 100f).coerceIn(1f, 50f))
                         UnitType.KG -> CalculationUtils.roundTo(uncalibratedProteinKg)
@@ -976,5 +1030,47 @@ class MeasurementTransformationUseCase @Inject constructor(
             "InBody calibration reverted for user ${measurement.userId} on measurement ${measurement.id}."
         )
         return out
+    }
+
+    /**
+     * Damped hybrid allometric scaling factor (γ = 0.5) for lean mass compartments:
+     * S_M = (0.5 + 0.5 * (M_raw_n / M_raw_0)).coerceIn(0.70, 1.30)
+     * Scaled offset = Δ_M * S_M
+     */
+    private fun computeDampedScaledOffset(
+        rawMassN: Float,
+        deltaM: Float,
+        refMass0: Float?
+    ): Float {
+        if (refMass0 == null) return deltaM
+        val rawMass0 = refMass0 - deltaM
+        if (rawMass0 <= 1.0f) return deltaM
+        val sM = (0.5f + 0.5f * (rawMassN / rawMass0)).coerceIn(0.70f, 1.30f)
+        return deltaM * sM
+    }
+
+    /**
+     * Reverts damped hybrid allometric scaling to recover uncalibrated raw mass:
+     * M_cal_n = M_raw_n + Δ_M * (0.5 + 0.5 * M_raw_n / M_raw_0)
+     * M_raw_n = (M_cal_n - 0.5 * Δ_M) / (1.0 + 0.5 * Δ_M / M_raw_0)
+     */
+    private fun revertDampedScaledMass(
+        calMassN: Float,
+        deltaM: Float,
+        refMass0: Float?
+    ): Float {
+        if (refMass0 == null) return calMassN - deltaM
+        val rawMass0 = refMass0 - deltaM
+        if (rawMass0 <= 1.0f) return calMassN - deltaM
+
+        val denominator = 1.0f + (0.5f * deltaM / rawMass0)
+        if (denominator <= 0.01f) return calMassN - deltaM
+        val estimatedRaw = (calMassN - 0.5f * deltaM) / denominator
+        val sM = (0.5f + 0.5f * (estimatedRaw / rawMass0)).coerceIn(0.70f, 1.30f)
+        return when {
+            sM <= 0.70f -> calMassN - (deltaM * 0.70f)
+            sM >= 1.30f -> calMassN - (deltaM * 1.30f)
+            else -> estimatedRaw
+        }
     }
 }

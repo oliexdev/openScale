@@ -73,18 +73,18 @@ class InBodyCalibrationUseCases @Inject constructor(
     suspend fun getCalibrationForUser(userId: Int): InBodyCalibration? =
         databaseRepository.getInBodyCalibrationForUser(userId)
 
-    /** Deletes the calibration record for a user and reverts baseline offsets. */
+    /** Deletes the calibration record for a user and reverts calibration offsets on all affected measurements. */
     suspend fun deleteCalibrationForUser(userId: Int) {
         LogManager.i(TAG, "Deleting InBody calibration for user $userId")
         val existingCal = databaseRepository.getInBodyCalibrationForUser(userId)
         if (existingCal != null) {
             val measurements = databaseRepository.getMeasurementsWithValuesForUser(userId).first()
-            val baseline = measurements.find { it.measurement.timestamp == existingCal.scaleMeasurementTimestamp }
-            if (baseline != null) {
-                LogManager.i(TAG, "Reverting baseline measurement ${baseline.measurement.id} to uncalibrated values")
+            val forwardMeasurements = measurements.filter { it.measurement.timestamp >= existingCal.scaleMeasurementTimestamp }
+            forwardMeasurements.forEach { mwv ->
+                LogManager.i(TAG, "Reverting measurement ${mwv.measurement.id} to uncalibrated values")
                 val revertedValues = transformation.revertInBodyCalibration(
-                    baseline.measurement,
-                    baseline.values.map { it.value },
+                    mwv.measurement,
+                    mwv.values.map { it.value },
                     existingCal
                 )
                 revertedValues.forEach { v ->
@@ -92,7 +92,7 @@ class InBodyCalibrationUseCases @Inject constructor(
                         databaseRepository.updateMeasurementValue(v)
                     }
                 }
-                databaseRepository.recalculateDerivedValuesForMeasurement(baseline.measurement.id)
+                databaseRepository.recalculateDerivedValuesForMeasurement(mwv.measurement.id)
             }
         }
         databaseRepository.deleteInBodyCalibrationForUser(userId)
@@ -171,9 +171,7 @@ class InBodyCalibrationUseCases @Inject constructor(
         // If an active calibration was already applied to baseline, reverse it first to recover
         // original uncalibrated values so recalibrating does not double-offset or zero out.
         val existingCal = getCalibrationForUser(userId)
-        val isCalEnabled = settings.isInBodyCalibrationEnabled.first()
         val effectiveBaseline = if (existingCal != null &&
-            isCalEnabled &&
             baseline.measurement.timestamp >= existingCal.scaleMeasurementTimestamp
         ) {
             val revertedValues = transformation.revertInBodyCalibration(
@@ -319,6 +317,7 @@ class InBodyCalibrationUseCases @Inject constructor(
             userId = userId,
             scaleMeasurementTimestamp = baseline.measurement.timestamp,
             scaleName = scaleName,
+            scaleBaselineWeightKg = scaleWeightKg,
             inBodyWeightKg = input.inBodyWeightKg,
             inBodyFatPercent = resolvedFatPercent?.let { CalculationUtils.roundTo(it) },
             inBodyMuscleKg = input.inBodyMuscleKg?.let { CalculationUtils.roundTo(it) },
@@ -352,7 +351,6 @@ class InBodyCalibrationUseCases @Inject constructor(
         if (baselineMeasurement != null) {
             LogManager.i(TAG, "Immediately recalibrating baseline measurement ${baselineMeasurement.measurement.id}")
             val rawValues = if (existingCal != null &&
-                isCalEnabled &&
                 baselineMeasurement.measurement.timestamp >= existingCal.scaleMeasurementTimestamp
             ) {
                 transformation.revertInBodyCalibration(

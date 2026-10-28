@@ -890,6 +890,7 @@ val MIGRATION_18_19 = object : Migration(18, 19) {
                 `createdAt` INTEGER NOT NULL,
                 `scaleMeasurementTimestamp` INTEGER NOT NULL,
                 `scaleName` TEXT,
+                `scaleBaselineWeightKg` REAL NOT NULL DEFAULT 0.0,
                 `inBodyWeightKg` REAL NOT NULL,
                 `inBodyFatPercent` REAL,
                 `inBodyMuscleKg` REAL,

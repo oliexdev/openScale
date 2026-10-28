@@ -416,7 +416,7 @@
       },
       {
         "tableName": "inbody_calibration",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `scaleMeasurementTimestamp` INTEGER NOT NULL, `scaleName` TEXT, `inBodyWeightKg` REAL NOT NULL, `inBodyFatPercent` REAL, `inBodyMuscleKg` REAL, `inBodyWaterLiters` REAL, `inBodyBoneKg` REAL, `inBodyVisceralFat` REAL, `inBodyProteinKg` REAL, `offsetFfmKg` REAL, `offsetMuscleKg` REAL, `offsetWaterKg` REAL, `offsetBoneKg` REAL, `offsetVisceralFat` REAL, `offsetProteinKg` REAL, FOREIGN KEY(`userId`) REFERENCES `User`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `scaleMeasurementTimestamp` INTEGER NOT NULL, `scaleName` TEXT, `scaleBaselineWeightKg` REAL NOT NULL DEFAULT 0.0, `inBodyWeightKg` REAL NOT NULL, `inBodyFatPercent` REAL, `inBodyMuscleKg` REAL, `inBodyWaterLiters` REAL, `inBodyBoneKg` REAL, `inBodyVisceralFat` REAL, `inBodyProteinKg` REAL, `offsetFfmKg` REAL, `offsetMuscleKg` REAL, `offsetWaterKg` REAL, `offsetBoneKg` REAL, `offsetVisceralFat` REAL, `offsetProteinKg` REAL, FOREIGN KEY(`userId`) REFERENCES `User`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -447,6 +447,13 @@
             "columnName": "scaleName",
             "affinity": "TEXT",
             "notNull": false
+          },
+          {
+            "fieldPath": "scaleBaselineWeightKg",
+            "columnName": "scaleBaselineWeightKg",
+            "affinity": "REAL",
+            "notNull": true,
+            "defaultValue": "0.0"
           },
           {
             "fieldPath": "inBodyWeightKg",

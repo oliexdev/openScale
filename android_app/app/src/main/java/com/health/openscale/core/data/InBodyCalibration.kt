@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -53,6 +54,9 @@ data class InBodyCalibration(
     val scaleMeasurementTimestamp: Long,
     /** Name of the scale paired at calibration time (e.g. "Mi Body Composition Scale 2"). */
     val scaleName: String? = null,
+    /** Baseline home scale weight on calibration day (W0) in kg. */
+    @ColumnInfo(defaultValue = "0.0")
+    val scaleBaselineWeightKg: Float = 0f,
 
     // --- Raw InBody reference inputs from the sheet ---
     val inBodyWeightKg: Float,
