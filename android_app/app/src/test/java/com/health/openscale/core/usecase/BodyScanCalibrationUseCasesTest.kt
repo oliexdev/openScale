@@ -102,6 +102,7 @@ class BodyScanCalibrationUseCasesTest {
                 activityLevel = ActivityLevel.MODERATE, useAssistedWeighing = false
             )
         ).toInt()
+        settings.setBodyScanCalibrationEnabled(true)
     }
 
     @After
@@ -377,6 +378,10 @@ class BodyScanCalibrationUseCasesTest {
 
         // 3. User recalibrates using the SAME baseline measurement
         // Previously, this would read 67.0 kg as scale LBM and compute offset = 67 - 67 = 0.0 kg!
+        val uncalibratedBaseline = calibrationUseCases.getEffectiveUncalibratedBaseline(userId, baselineAfterCal1)
+        val uncalibratedLbm = uncalibratedBaseline.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue
+        assertThat(uncalibratedLbm).isWithin(0.01f).of(64.0f)
+
         val cal2 = calibrationUseCases.calculateCalibration(userId, baselineAfterCal1, input)
         assertThat(cal2.offsetFfmKg!!).isWithin(0.01f).of(3.0f)
 

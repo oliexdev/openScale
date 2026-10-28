@@ -95,6 +95,7 @@ fun CalibrationWizardScreen(
 
     val step by viewModel.wizardStep.collectAsState()
     val baseline by viewModel.selectedBaseline.collectAsState()
+    val effectiveBaseline by viewModel.effectiveBaseline.collectAsState()
     val validationError by viewModel.validationError.collectAsState()
     val isSaving by viewModel.isSaving.collectAsState()
     val calculatedCalibration by viewModel.calculatedCalibration.collectAsState()
@@ -270,7 +271,7 @@ fun CalibrationWizardScreen(
                     )
                     3 -> Step3ReviewAndSave(
                         calibration = calculatedCalibration,
-                        baseline = baseline
+                        baseline = effectiveBaseline ?: baseline
                     )
                 }
             }

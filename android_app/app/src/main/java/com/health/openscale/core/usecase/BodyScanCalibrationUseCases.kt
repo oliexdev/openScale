@@ -162,22 +162,32 @@ class BodyScanCalibrationUseCases @Inject constructor(
      * and the home scale weigh-in on calibration day, all reference scan mass inputs
      * are normalized by the ratio (W_scale / W_scan) before computing offsets.
      */
-    suspend fun calculateCalibration(
+    /**
+     * Returns an uncalibrated version of [baseline]. If an active calibration was already
+     * applied to [baseline], its offsets are reverted to restore original home scale readings.
+     */
+    suspend fun getEffectiveUncalibratedBaseline(
         userId: Int,
-        baseline: MeasurementWithValues,
-        input: BodyScanFormInput,
-        scaleName: String? = null
-    ): BodyScanCalibration {
-        // If an active calibration was already applied to baseline, reverse it first to recover
-        // original uncalibrated values so recalibrating does not double-offset or zero out.
+        baseline: MeasurementWithValues
+    ): MeasurementWithValues {
         val existingCal = getCalibrationForUser(userId)
-        val effectiveBaseline = if (existingCal != null &&
-            baseline.measurement.timestamp >= existingCal.scaleMeasurementTimestamp
+        return getEffectiveUncalibratedBaseline(baseline, existingCal)
+    }
+
+    /**
+     * Returns an uncalibrated version of [baseline], reverting offsets if [existingCalibration] is not null.
+     */
+    suspend fun getEffectiveUncalibratedBaseline(
+        baseline: MeasurementWithValues,
+        existingCalibration: BodyScanCalibration?
+    ): MeasurementWithValues {
+        return if (existingCalibration != null &&
+            baseline.measurement.timestamp >= existingCalibration.scaleMeasurementTimestamp
         ) {
             val revertedValues = transformation.revertBodyScanCalibration(
                 baseline.measurement,
                 baseline.values.map { it.value },
-                existingCal
+                existingCalibration
             )
             baseline.copy(
                 values = baseline.values.map { vt ->
@@ -188,6 +198,17 @@ class BodyScanCalibrationUseCases @Inject constructor(
         } else {
             baseline
         }
+    }
+
+    suspend fun calculateCalibration(
+        userId: Int,
+        baseline: MeasurementWithValues,
+        input: BodyScanFormInput,
+        scaleName: String? = null
+    ): BodyScanCalibration {
+        // If an active calibration was already applied to baseline, reverse it first to recover
+        // original uncalibrated values so recalibrating does not double-offset or zero out.
+        val effectiveBaseline = getEffectiveUncalibratedBaseline(userId, baseline)
 
         val types = query.getAllMeasurementTypes().first()
         val byKey = types.associateBy { it.key }
@@ -343,23 +364,18 @@ class BodyScanCalibrationUseCases @Inject constructor(
         baselineMeasurement: MeasurementWithValues? = null
     ): Long {
         LogManager.i(TAG, "Saving body scan calibration for user ${calibration.userId}")
+        settings.setBodyScanCalibrationEnabled(true)
         val existingCal = databaseRepository.getBodyScanCalibrationForUser(calibration.userId)
 
         val id = databaseRepository.insertOrUpdateBodyScanCalibration(calibration)
 
         if (baselineMeasurement != null) {
             LogManager.i(TAG, "Immediately recalibrating baseline measurement ${baselineMeasurement.measurement.id}")
-            val rawValues = if (existingCal != null &&
-                baselineMeasurement.measurement.timestamp >= existingCal.scaleMeasurementTimestamp
-            ) {
-                transformation.revertBodyScanCalibration(
-                    baselineMeasurement.measurement,
-                    baselineMeasurement.values.map { it.value },
-                    existingCal
-                )
-            } else {
-                baselineMeasurement.values.map { it.value }
-            }
+            val effectiveBaseline = getEffectiveUncalibratedBaseline(
+                baseline = baselineMeasurement,
+                existingCalibration = existingCal
+            )
+            val rawValues = effectiveBaseline.values.map { it.value }
 
             val calibratedValues = transformation.applyBodyScanCalibration(
                 baselineMeasurement.measurement,

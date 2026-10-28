@@ -101,6 +101,9 @@ class CalibrationViewModel @Inject constructor(
     private val _calculatedCalibration = MutableStateFlow<BodyScanCalibration?>(null)
     val calculatedCalibration: StateFlow<BodyScanCalibration?> = _calculatedCalibration.asStateFlow()
 
+    private val _effectiveBaseline = MutableStateFlow<MeasurementWithValues?>(null)
+    val effectiveBaseline: StateFlow<MeasurementWithValues?> = _effectiveBaseline.asStateFlow()
+
     private val _validationError = MutableStateFlow<String?>(null)
     val validationError: StateFlow<String?> = _validationError.asStateFlow()
 
@@ -177,6 +180,7 @@ class CalibrationViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val effectiveScaleName = scaleName ?: savedDeviceName.value ?: settingsFacade.observeSavedDevice().first()?.name
+                val uncalibratedBaseline = calibrationUseCases.getEffectiveUncalibratedBaseline(userId, baseline)
                 val calibration = calibrationUseCases.calculateCalibration(
                     userId = userId,
                     baseline = baseline,
@@ -184,6 +188,7 @@ class CalibrationViewModel @Inject constructor(
                     scaleName = effectiveScaleName
                 )
                 _calculatedCalibration.value = calibration
+                _effectiveBaseline.value = uncalibratedBaseline
                 _validationError.value = null
                 _wizardStep.value = 3
                 onSuccess()
@@ -236,6 +241,7 @@ class CalibrationViewModel @Inject constructor(
         _scanVisceralFat.value = ""
         _scanProtein.value = ""
         _calculatedCalibration.value = null
+        _effectiveBaseline.value = null
         _validationError.value = null
         _isSaving.value = false
     }
