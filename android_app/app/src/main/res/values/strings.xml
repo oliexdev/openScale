@@ -1080,8 +1080,8 @@
     <string name="calibration_step1_empty">No measurements with bioelectrical impedance found. Please take a measurement with your smart scale first.</string>
     <string name="calibration_step2_title">2. Enter Body Scan Values</string>
     <string name="calibration_step2_desc">Enter the values directly from your body scan result sheet (e.g. InBody, Tanita, DEXA). All mass values should be entered in kilograms (kg).</string>
-    <string name="calibration_step3_title">3. Review Calculated Offsets</string>
-    <string name="calibration_step3_desc">These additive intercept offsets (Δ) will be applied to future measurements with impedance.</string>
+    <string name="calibration_step3_title">3. Review Calibration</string>
+    <string name="calibration_step3_desc">Compare your home scale reading with your body scan reference and review the calibration adjustments.</string>
     <string name="calibration_field_weight">Body Scan Weight (kg)</string>
     <string name="calibration_field_fat">Body Fat Mass (kg)</string>
     <string name="calibration_field_fat_percent">Body Fat Percentage (%)</string>
@@ -1095,8 +1095,12 @@
     <string name="calibration_reset_success">Calibration profile successfully reset.</string>
     <string name="calibration_summary_header_metric">Metric</string>
     <string name="calibration_summary_header_scale">Scale</string>
-    <string name="calibration_summary_header_scan">Body Scan</string>
-    <string name="calibration_summary_header_offset">Offset (Δ)</string>
+    <string name="calibration_summary_header_scan">Scan</string>
+    <string name="calibration_summary_header_offset">Adjustment</string>
+    <string name="calibration_weight_alignment_title">Weight Alignment</string>
+    <string name="calibration_weight_alignment_desc">Scan values were aligned to your scale weight (%1$s kg) to eliminate clothing or timing differences.</string>
+    <string name="calibration_dynamic_adaptation_title">Dynamic Adaptation Active</string>
+    <string name="calibration_dynamic_adaptation_desc">Future weigh-ins will automatically apply these reference corrections, dynamically adapting as your body composition changes over time.</string>
     <string name="calibration_baseline_missing_body_comp_warning">Incomplete: body fat not recorded. Barefoot skin contact required.</string>
     <string name="calibration_error_baseline_missing_body_comp">The selected scale measurement lacks body composition data (fat/muscle). Please select a complete weigh-in taken with bare feet.</string>
     <string name="action_cancel">Cancel</string>

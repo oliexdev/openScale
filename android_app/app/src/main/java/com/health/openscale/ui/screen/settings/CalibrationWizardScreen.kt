@@ -67,13 +67,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.BodyScanCalibration
+import com.health.openscale.core.data.UnitType
+import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.model.MeasurementWithValues
+import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.ui.shared.SharedViewModel
 import java.text.DateFormat
 import java.util.Date
@@ -604,8 +608,15 @@ private fun Step2BodyScanInputs(
 }
 
 // ---------------------------------------------------------------------------
-// Step 3: Review Calculated Offsets & Confirm
+// Step 3: Review Calibration & Confirm
 // ---------------------------------------------------------------------------
+private data class ComparisonMetricRow(
+    val label: String,
+    val scaleText: String,
+    val scanText: String,
+    val adjustmentText: String
+)
+
 @Composable
 private fun Step3ReviewAndSave(
     calibration: BodyScanCalibration?,
@@ -630,87 +641,284 @@ private fun Step3ReviewAndSave(
 
         if (calibration != null && baseline != null) {
             val scaleWeight = baseline.values.find { it.type.key == MeasurementType.WEIGHT }?.value?.floatValue ?: 0f
-            val ratio = if (calibration.scanWeightKg > 0f) scaleWeight / calibration.scanWeightKg else 1f
 
+            val scaleFat = baseline.values.find { it.type.key == MeasurementType.BODY_FAT }?.value?.floatValue
+
+            val scaleMuscleItem = baseline.values.find { it.type.key == MeasurementType.MUSCLE }
+            val scaleMuscleKg: Float? = scaleMuscleItem?.value?.floatValue?.let { v ->
+                when (scaleMuscleItem.type.unit) {
+                    UnitType.PERCENT -> (v / 100f) * scaleWeight
+                    UnitType.KG -> v
+                    UnitType.LB -> ConverterUtils.toKilogram(v, WeightUnit.LB)
+                    UnitType.ST -> ConverterUtils.toKilogram(v, WeightUnit.ST)
+                    else -> if (v <= 100f && scaleWeight > 30f) (v / 100f) * scaleWeight else v
+                }
+            }
+
+            val scaleFfmKg: Float? = run {
+                val lbmItem = baseline.values.find { it.type.key == MeasurementType.LBM }
+                val lbmVal = lbmItem?.value?.floatValue
+                if (lbmVal != null) {
+                    when (lbmItem.type.unit) {
+                        UnitType.KG -> lbmVal
+                        UnitType.LB -> ConverterUtils.toKilogram(lbmVal, WeightUnit.LB)
+                        UnitType.ST -> ConverterUtils.toKilogram(lbmVal, WeightUnit.ST)
+                        else -> lbmVal
+                    }
+                } else {
+                    scaleFat?.let { scaleWeight * (1f - it / 100f) }
+                }
+            }
+
+            val scaleWaterItem = baseline.values.find { it.type.key == MeasurementType.WATER }
+            val scaleWaterKg: Float? = scaleWaterItem?.value?.floatValue?.let { v ->
+                when (scaleWaterItem.type.unit) {
+                    UnitType.PERCENT -> (v / 100f) * scaleWeight
+                    UnitType.KG -> v
+                    else -> if (v <= 100f && scaleWeight > 30f) (v / 100f) * scaleWeight else v
+                }
+            }
+
+            val scaleBone = baseline.values.find { it.type.key == MeasurementType.BONE }?.value?.floatValue
+            val scaleVisceralFat = baseline.values.find { it.type.key == MeasurementType.VISCERAL_FAT }?.value?.floatValue
+            val scaleProtein = baseline.values.find { it.type.key == MeasurementType.PROTEIN }?.value?.floatValue
+
+            // Weight Alignment Card
             ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    // Weight normalization summary
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Column {
+                            Text(
+                                text = "Home Scale",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = String.format(Locale.US, "%.1f kg", scaleWeight),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                         Text(
-                            text = "Scale Baseline Weight:",
+                            text = "vs",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.outline
                         )
-                        Text(text = "$scaleWeight kg", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = "Reference Scan",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = String.format(Locale.US, "%.1f kg", calibration.scanWeightKg),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
+
+                    if (kotlin.math.abs(scaleWeight - calibration.scanWeightKg) > 0.05f) {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                         Text(
-                            text = "Body Scan Weight:",
+                            text = stringResource(
+                                R.string.calibration_weight_alignment_desc,
+                                String.format(Locale.US, "%.1f", scaleWeight)
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Text(text = "${calibration.scanWeightKg} kg", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
                     }
+                }
+            }
+
+            // Comparison Rows
+            val rows = listOfNotNull(
+                calibration.scanFatPercent?.let {
+                    val diff = scaleFat?.let { sf -> it - sf }
+                    ComparisonMetricRow(
+                        label = "Body Fat",
+                        scaleText = scaleFat?.let { sf -> String.format(Locale.US, "%.1f %%", sf) } ?: "—",
+                        scanText = String.format(Locale.US, "%.1f %%", it),
+                        adjustmentText = diff?.let { d -> formatOffset(d, "%") } ?: "—"
+                    )
+                },
+                calibration.scanMuscleKg?.let {
+                    ComparisonMetricRow(
+                        label = "Skeletal Muscle (SMM)",
+                        scaleText = scaleMuscleKg?.let { sm -> String.format(Locale.US, "%.1f kg", sm) } ?: "—",
+                        scanText = String.format(Locale.US, "%.1f kg", it),
+                        adjustmentText = calibration.offsetMuscleKg?.let { om -> formatOffset(om, "kg") } ?: "—"
+                    )
+                },
+                calibration.offsetFfmKg?.let {
+                    val scanFfm = calibration.scanFatPercent?.let { fp -> scaleWeight * (1f - fp / 100f) }
+                        ?: scaleFfmKg?.plus(it)
+                    ComparisonMetricRow(
+                        label = "Fat-Free Mass (FFM)",
+                        scaleText = scaleFfmKg?.let { sf -> String.format(Locale.US, "%.1f kg", sf) } ?: "—",
+                        scanText = scanFfm?.let { sf -> String.format(Locale.US, "%.1f kg", sf) } ?: "—",
+                        adjustmentText = formatOffset(it, "kg")
+                    )
+                },
+                calibration.scanWaterLiters?.let {
+                    ComparisonMetricRow(
+                        label = "Total Body Water",
+                        scaleText = scaleWaterKg?.let { sw -> String.format(Locale.US, "%.1f kg", sw) } ?: "—",
+                        scanText = String.format(Locale.US, "%.1f L", it),
+                        adjustmentText = calibration.offsetWaterKg?.let { ow -> formatOffset(ow, "kg") } ?: "—"
+                    )
+                },
+                calibration.scanVisceralFat?.let {
+                    ComparisonMetricRow(
+                        label = "Visceral Fat",
+                        scaleText = scaleVisceralFat?.let { svf -> String.format(Locale.US, "%.1f", svf) } ?: "—",
+                        scanText = String.format(Locale.US, "%.1f", it),
+                        adjustmentText = calibration.offsetVisceralFat?.let { ovf -> formatOffset(ovf, "") } ?: "—"
+                    )
+                },
+                calibration.scanBoneKg?.let {
+                    ComparisonMetricRow(
+                        label = "Bone Mass",
+                        scaleText = scaleBone?.let { sb -> String.format(Locale.US, "%.1f kg", sb) } ?: "—",
+                        scanText = String.format(Locale.US, "%.1f kg", it),
+                        adjustmentText = calibration.offsetBoneKg?.let { ob -> formatOffset(ob, "kg") } ?: "—"
+                    )
+                },
+                calibration.scanProteinKg?.let {
+                    ComparisonMetricRow(
+                        label = "Protein Mass",
+                        scaleText = scaleProtein?.let { sp -> String.format(Locale.US, "%.1f kg", sp) } ?: "—",
+                        scanText = String.format(Locale.US, "%.1f kg", it),
+                        adjustmentText = calibration.offsetProteinKg?.let { op -> formatOffset(op, "kg") } ?: "—"
+                    )
+                }
+            )
+
+            // Side-by-side Table Card
+            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                    // Header Row
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Normalization Ratio (W₀ / W_scan):",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = String.format(Locale.US, "%.3f", ratio),
-                            style = MaterialTheme.typography.bodySmall,
+                            text = stringResource(R.string.calibration_summary_header_metric),
+                            style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1.4f)
+                        )
+                        Text(
+                            text = stringResource(R.string.calibration_summary_header_scale),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier.weight(0.85f)
+                        )
+                        Text(
+                            text = stringResource(R.string.calibration_summary_header_scan),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier.weight(0.85f)
+                        )
+                        Text(
+                            text = stringResource(R.string.calibration_summary_header_offset),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier.weight(1.0f)
                         )
                     }
 
                     HorizontalDivider()
 
-                    Text(
-                        text = "Calculated Offsets (Δ)",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold
-                    )
+                    rows.forEachIndexed { index, row ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = row.label,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.weight(1.4f)
+                            )
+                            Text(
+                                text = row.scaleText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier.weight(0.85f)
+                            )
+                            Text(
+                                text = row.scanText,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.SemiBold,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier.weight(0.85f)
+                            )
+                            Text(
+                                text = row.adjustmentText,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier.weight(1.0f)
+                            )
+                        }
+                        if (index < rows.lastIndex) {
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp))
+                        }
+                    }
+                }
+            }
 
-                    // Offsets table
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, MaterialTheme.shapes.small)
-                            .padding(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        calibration.offsetFfmKg?.let {
-                            ReviewOffsetRow("Fat-Free Mass (FFM)", formatOffset(it, "kg"))
-                        }
-                        calibration.scanFatPercent?.let {
-                            ReviewOffsetRow("Body Fat", "$it % (Mass Balance)")
-                        }
-                        calibration.offsetMuscleKg?.let {
-                            ReviewOffsetRow("Skeletal Muscle (SMM)", formatOffset(it, "kg"))
-                        }
-                        calibration.offsetWaterKg?.let {
-                            ReviewOffsetRow("Total Body Water (TBW)", formatOffset(it, "kg"))
-                        }
-                        calibration.offsetBoneKg?.let {
-                            ReviewOffsetRow("Bone Mass (Minerals)", formatOffset(it, "kg"))
-                        }
-                        calibration.offsetVisceralFat?.let {
-                            ReviewOffsetRow("Visceral Fat", formatOffset(it, ""))
-                        }
-                        calibration.offsetProteinKg?.let {
-                            ReviewOffsetRow("Protein Mass", formatOffset(it, "kg"))
-                        }
+            // Explainer Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            text = stringResource(R.string.calibration_dynamic_adaptation_title),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = stringResource(R.string.calibration_dynamic_adaptation_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }
@@ -718,26 +926,9 @@ private fun Step3ReviewAndSave(
     }
 }
 
-@Composable
-private fun ReviewOffsetRow(metric: String, offsetText: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(text = metric, style = MaterialTheme.typography.bodySmall)
-        Text(
-            text = offsetText,
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-    }
-}
-
 private fun formatOffset(offset: Float, unit: String): String {
     val sign = if (offset > 0) "+" else ""
     val u = if (unit.isNotBlank()) " $unit" else ""
-    val formatted = String.format(java.util.Locale.US, "%.2f", offset)
+    val formatted = String.format(Locale.US, "%.2f", offset)
     return "$sign$formatted$u"
 }
