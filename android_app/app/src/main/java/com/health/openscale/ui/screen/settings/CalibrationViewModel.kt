@@ -55,6 +55,12 @@ class CalibrationViewModel @Inject constructor(
         .map { it?.name }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    fun setCalibrationEnabled(userId: Int, enabled: Boolean) {
+        viewModelScope.launch {
+            calibrationUseCases.setCalibrationEnabledForUser(userId, enabled)
+        }
+    }
+
     fun setCalibrationEnabled(enabled: Boolean) {
         viewModelScope.launch {
             settingsFacade.setBodyScanCalibrationEnabled(enabled)

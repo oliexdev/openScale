@@ -150,7 +150,7 @@ fun CalibrationSettingsScreen(
                     }
                     Switch(
                         checked = isEnabled,
-                        onCheckedChange = { viewModel.setCalibrationEnabled(it) }
+                        onCheckedChange = { viewModel.setCalibrationEnabled(userId, it) }
                     )
                 }
             }

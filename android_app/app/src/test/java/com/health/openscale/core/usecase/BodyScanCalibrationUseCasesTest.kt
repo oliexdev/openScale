@@ -460,6 +460,74 @@ class BodyScanCalibrationUseCasesTest {
         // Must preserve full float precision (not rounded to 1 or 2 decimals)
         assertThat(cal.offsetFfmKg).isNotNull()
         assertThat(cal.offsetFfmKg).isWithin(0.0001f).of(2.9531376f)
+        assertThat(cal.scanFatPercent).isNotNull()
+        assertThat(cal.scanFatPercent!!).isWithin(0.0001f).of(18.594791f)
+    }
+
+    @Test
+    fun saveCalibration_automaticallyRecalibratesAllForwardMeasurements() = runBlocking {
+        // Baseline at t = 10_000
+        val mBaseId = repo.insertMeasurement(Measurement(userId = userId, timestamp = 10_000L)).toInt()
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mBaseId, typeId = weightType!!.id, floatValue = 80.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mBaseId, typeId = impedanceType!!.id, floatValue = 500.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mBaseId, typeId = lbmType!!.id, floatValue = 64.0f))
+
+        // Forward measurement at t = 15_000
+        val mFutureId = repo.insertMeasurement(Measurement(userId = userId, timestamp = 15_000L)).toInt()
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mFutureId, typeId = weightType!!.id, floatValue = 80.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mFutureId, typeId = impedanceType!!.id, floatValue = 500.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mFutureId, typeId = lbmType!!.id, floatValue = 64.0f))
+
+        val baseline = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mBaseId }
+        val cal1 = calibrationUseCases.calculateCalibration(userId, baseline, BodyScanFormInput(scanWeightKg = 80.0f, scanFatKg = 13.0f))
+        calibrationUseCases.saveCalibration(cal1, baseline)
+
+        // Verify both baseline and future were automatically calibrated to 67.0 kg by saveCalibration
+        var all = repo.getMeasurementsWithValuesForUser(userId).first()
+        assertThat(all.first { it.measurement.id == mBaseId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue).isWithin(0.01f).of(67.0f)
+        assertThat(all.first { it.measurement.id == mFutureId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue).isWithin(0.01f).of(67.0f)
+
+        // Recalibrate with new scan on the current database baseline (scan FFM = 68.0 kg -> offset +4.0 kg)
+        val currentBaseline = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mBaseId }
+        val cal2 = calibrationUseCases.calculateCalibration(userId, currentBaseline, BodyScanFormInput(scanWeightKg = 80.0f, scanFatKg = 12.0f))
+        calibrationUseCases.saveCalibration(cal2, currentBaseline)
+
+        // Verify both were updated to 68.0 kg (not double-offset to 71 kg or left at 67 kg)
+        all = repo.getMeasurementsWithValuesForUser(userId).first()
+        assertThat(all.first { it.measurement.id == mBaseId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue).isWithin(0.01f).of(68.0f)
+        assertThat(all.first { it.measurement.id == mFutureId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue).isWithin(0.01f).of(68.0f)
+    }
+
+    @Test
+    fun setCalibrationEnabledForUser_togglesApplicationAndProtectsAgainstDoubleReversion() = runBlocking {
+        val mId = repo.insertMeasurement(Measurement(userId = userId, timestamp = 10_000L)).toInt()
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mId, typeId = weightType!!.id, floatValue = 80.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mId, typeId = impedanceType!!.id, floatValue = 500.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mId, typeId = lbmType!!.id, floatValue = 64.0f))
+
+        val baseline = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mId }
+        val cal = calibrationUseCases.calculateCalibration(userId, baseline, BodyScanFormInput(scanWeightKg = 80.0f, scanFatKg = 13.0f))
+        calibrationUseCases.saveCalibration(cal, baseline)
+
+        // Initial: calibrated to 67.0 kg
+        var mwv = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mId }
+        assertThat(mwv.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue).isWithin(0.01f).of(67.0f)
+
+        // Toggle OFF: should revert DB row to 64.0 kg
+        calibrationUseCases.setCalibrationEnabledForUser(userId, false)
+        mwv = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mId }
+        assertThat(mwv.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue).isWithin(0.01f).of(64.0f)
+
+        // Toggle ON: should re-calibrate DB row to 67.0 kg
+        calibrationUseCases.setCalibrationEnabledForUser(userId, true)
+        mwv = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mId }
+        assertThat(mwv.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue).isWithin(0.01f).of(67.0f)
+
+        // Toggle OFF then delete: should NOT subtract offset again (remains 64.0 kg)
+        calibrationUseCases.setCalibrationEnabledForUser(userId, false)
+        calibrationUseCases.deleteCalibrationForUser(userId)
+        mwv = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mId }
+        assertThat(mwv.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue).isWithin(0.01f).of(64.0f)
     }
 
     @Test
@@ -486,11 +554,6 @@ class BodyScanCalibrationUseCasesTest {
         val input = BodyScanFormInput(scanWeightKg = 80.0f, scanFatKg = 13.0f) // FFM = 67.0 kg
         val cal = calibrationUseCases.calculateCalibration(userId, baseline, input)
         calibrationUseCases.saveCalibration(cal, baseline)
-
-        // Apply calibration to future measurement as well
-        val futureMwv = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mFutureId }
-        val calFutureValues = transformation.applyBodyScanCalibration(futureMwv.measurement, futureMwv.values.map { it.value }, cal)
-        calFutureValues.forEach { repo.updateMeasurementValue(it) }
 
         // Verify both baseline and future are calibrated to 67.0 kg
         val allAfterCal = repo.getMeasurementsWithValuesForUser(userId).first()

@@ -887,10 +887,9 @@ val MIGRATION_18_19 = object : Migration(18, 19) {
             CREATE TABLE IF NOT EXISTS `body_scan_calibration` (
                 `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 `userId` INTEGER NOT NULL,
-                `createdAt` INTEGER NOT NULL,
                 `scaleMeasurementTimestamp` INTEGER NOT NULL,
                 `scaleName` TEXT,
-                `scaleBaselineWeightKg` REAL NOT NULL DEFAULT 0.0,
+                `scaleBaselineWeightKg` REAL NOT NULL,
                 `scanWeightKg` REAL NOT NULL,
                 `scanFatPercent` REAL,
                 `scanMuscleKg` REAL,
@@ -904,6 +903,7 @@ val MIGRATION_18_19 = object : Migration(18, 19) {
                 `offsetBoneKg` REAL,
                 `offsetVisceralFat` REAL,
                 `offsetProteinKg` REAL,
+                `createdAt` INTEGER NOT NULL,
                 FOREIGN KEY(`userId`) REFERENCES `User`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
             )
             """.trimIndent()

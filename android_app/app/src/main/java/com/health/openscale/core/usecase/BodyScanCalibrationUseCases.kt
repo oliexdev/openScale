@@ -73,29 +73,85 @@ class BodyScanCalibrationUseCases @Inject constructor(
     suspend fun getCalibrationForUser(userId: Int): BodyScanCalibration? =
         databaseRepository.getBodyScanCalibrationForUser(userId)
 
+    /** Reverts calibration offsets from all forward measurements for [calibration]. */
+    private suspend fun revertMeasurements(
+        userId: Int,
+        calibration: BodyScanCalibration
+    ) {
+        val measurements = databaseRepository.getMeasurementsWithValuesForUser(userId).first()
+        val forwardMeasurements = measurements.filter { it.measurement.timestamp >= calibration.scaleMeasurementTimestamp }
+        forwardMeasurements.forEach { mwv ->
+            LogManager.i(TAG, "Reverting measurement ${mwv.measurement.id} to uncalibrated values")
+            val revertedValues = transformation.revertBodyScanCalibration(
+                mwv.measurement,
+                mwv.values.map { it.value },
+                calibration
+            )
+            revertedValues.forEach { v ->
+                if (v.id != 0) {
+                    databaseRepository.updateMeasurementValue(v)
+                }
+            }
+            databaseRepository.recalculateDerivedValuesForMeasurement(mwv.measurement.id)
+        }
+    }
+
+    /** Applies calibration offsets to all forward measurements for [calibration]. */
+    private suspend fun applyMeasurements(
+        userId: Int,
+        calibration: BodyScanCalibration
+    ) {
+        val measurements = databaseRepository.getMeasurementsWithValuesForUser(userId).first()
+        val forwardMeasurements = measurements.filter { it.measurement.timestamp >= calibration.scaleMeasurementTimestamp }
+        forwardMeasurements.forEach { mwv ->
+            LogManager.i(TAG, "Applying calibration to measurement ${mwv.measurement.id}")
+            val calibratedValues = transformation.applyBodyScanCalibration(
+                mwv.measurement,
+                mwv.values.map { it.value },
+                calibration
+            )
+            calibratedValues.forEach { v ->
+                if (v.id != 0) {
+                    databaseRepository.updateMeasurementValue(v)
+                } else {
+                    databaseRepository.insertMeasurementValue(v.copy(measurementId = mwv.measurement.id))
+                }
+            }
+            databaseRepository.recalculateDerivedValuesForMeasurement(mwv.measurement.id)
+        }
+    }
+
     /** Deletes the calibration record for a user and reverts calibration offsets on all affected measurements. */
     suspend fun deleteCalibrationForUser(userId: Int) {
         LogManager.i(TAG, "Deleting body scan calibration for user $userId")
+        val isEnabled = settings.isBodyScanCalibrationEnabled.first()
         val existingCal = databaseRepository.getBodyScanCalibrationForUser(userId)
-        if (existingCal != null) {
-            val measurements = databaseRepository.getMeasurementsWithValuesForUser(userId).first()
-            val forwardMeasurements = measurements.filter { it.measurement.timestamp >= existingCal.scaleMeasurementTimestamp }
-            forwardMeasurements.forEach { mwv ->
-                LogManager.i(TAG, "Reverting measurement ${mwv.measurement.id} to uncalibrated values")
-                val revertedValues = transformation.revertBodyScanCalibration(
-                    mwv.measurement,
-                    mwv.values.map { it.value },
-                    existingCal
-                )
-                revertedValues.forEach { v ->
-                    if (v.id != 0) {
-                        databaseRepository.updateMeasurementValue(v)
-                    }
-                }
-                databaseRepository.recalculateDerivedValuesForMeasurement(mwv.measurement.id)
-            }
+        if (existingCal != null && isEnabled) {
+            revertMeasurements(userId, existingCal)
         }
         databaseRepository.deleteBodyScanCalibrationForUser(userId)
+    }
+
+    /**
+     * Toggles whether body scan calibration is active and applies or reverts calibration offsets
+     * across all forward measurements in SQLite so history and charts reflect the change immediately.
+     */
+    suspend fun setCalibrationEnabledForUser(userId: Int, enabled: Boolean) {
+        val currentlyEnabled = settings.isBodyScanCalibrationEnabled.first()
+        if (currentlyEnabled == enabled) return
+
+        val activeCal = databaseRepository.getBodyScanCalibrationForUser(userId)
+        if (activeCal != null) {
+            if (enabled) {
+                settings.setBodyScanCalibrationEnabled(true)
+                applyMeasurements(userId, activeCal)
+            } else {
+                revertMeasurements(userId, activeCal)
+                settings.setBodyScanCalibrationEnabled(false)
+            }
+        } else {
+            settings.setBodyScanCalibrationEnabled(enabled)
+        }
     }
 
     /**
@@ -170,6 +226,8 @@ class BodyScanCalibrationUseCases @Inject constructor(
         userId: Int,
         baseline: MeasurementWithValues
     ): MeasurementWithValues {
+        val isEnabled = settings.isBodyScanCalibrationEnabled.first()
+        if (!isEnabled) return baseline
         val existingCal = getCalibrationForUser(userId)
         return getEffectiveUncalibratedBaseline(baseline, existingCal)
     }
@@ -340,12 +398,12 @@ class BodyScanCalibrationUseCases @Inject constructor(
             scaleName = scaleName,
             scaleBaselineWeightKg = scaleWeightKg,
             scanWeightKg = input.scanWeightKg,
-            scanFatPercent = resolvedFatPercent?.let { CalculationUtils.roundTo(it) },
-            scanMuscleKg = input.scanMuscleKg?.let { CalculationUtils.roundTo(it) },
-            scanWaterLiters = input.scanWaterLiters?.let { CalculationUtils.roundTo(it) },
-            scanBoneKg = input.scanBoneKg?.let { CalculationUtils.roundTo(it) },
-            scanVisceralFat = input.scanVisceralFat?.let { CalculationUtils.roundTo(it) },
-            scanProteinKg = input.scanProteinKg?.let { CalculationUtils.roundTo(it) },
+            scanFatPercent = resolvedFatPercent,
+            scanMuscleKg = input.scanMuscleKg,
+            scanWaterLiters = input.scanWaterLiters,
+            scanBoneKg = input.scanBoneKg,
+            scanVisceralFat = input.scanVisceralFat,
+            scanProteinKg = input.scanProteinKg,
             offsetFfmKg = offsetFfmKg,
             offsetMuscleKg = offsetMuscleKg,
             offsetWaterKg = offsetWaterKg,
@@ -357,29 +415,35 @@ class BodyScanCalibrationUseCases @Inject constructor(
 
     /**
      * Saves the calibration profile to the database and immediately recalibrates
-     * the baseline measurement so that changes are visible right away.
+     * all forward measurements (from baseline onwards) so that changes are visible right away.
      */
     suspend fun saveCalibration(
         calibration: BodyScanCalibration,
         baselineMeasurement: MeasurementWithValues? = null
     ): Long {
         LogManager.i(TAG, "Saving body scan calibration for user ${calibration.userId}")
-        settings.setBodyScanCalibrationEnabled(true)
+        val wasEnabled = settings.isBodyScanCalibrationEnabled.first()
         val existingCal = databaseRepository.getBodyScanCalibrationForUser(calibration.userId)
 
+        // If an active calibration existed and was active, first revert all its forward measurements
+        if (existingCal != null && wasEnabled) {
+            revertMeasurements(calibration.userId, existingCal)
+        }
+
+        settings.setBodyScanCalibrationEnabled(true)
         val id = databaseRepository.insertOrUpdateBodyScanCalibration(calibration)
 
-        if (baselineMeasurement != null) {
-            LogManager.i(TAG, "Immediately recalibrating baseline measurement ${baselineMeasurement.measurement.id}")
-            val effectiveBaseline = getEffectiveUncalibratedBaseline(
-                baseline = baselineMeasurement,
-                existingCalibration = existingCal
-            )
-            val rawValues = effectiveBaseline.values.map { it.value }
+        // Apply new calibration to all forward measurements from the scaleMeasurementTimestamp onwards
+        applyMeasurements(calibration.userId, calibration)
 
+        // If baselineMeasurement was passed explicitly but not yet present in repository, handle it
+        val measurements = databaseRepository.getMeasurementsWithValuesForUser(calibration.userId).first()
+        val baselineHandled = measurements.any { it.measurement.id == baselineMeasurement?.measurement?.id }
+        if (baselineMeasurement != null && !baselineHandled) {
+            LogManager.i(TAG, "Explicitly calibrating provided baseline measurement ${baselineMeasurement.measurement.id}")
             val calibratedValues = transformation.applyBodyScanCalibration(
                 baselineMeasurement.measurement,
-                rawValues,
+                baselineMeasurement.values.map { it.value },
                 calibration
             )
             calibratedValues.forEach { v ->
