@@ -24,7 +24,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.health.openscale.core.data.InBodyCalibration
+import com.health.openscale.core.data.BodyScanCalibration
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
@@ -60,7 +60,7 @@ object DatabaseModule {
     @Provides
     fun provideMeasurementTypeDao(db: AppDatabase): MeasurementTypeDao = db.measurementTypeDao()
     @Provides
-    fun provideInBodyCalibrationDao(db: AppDatabase): InBodyCalibrationDao = db.inBodyCalibrationDao()
+    fun provideBodyScanCalibrationDao(db: AppDatabase): BodyScanCalibrationDao = db.bodyScanCalibrationDao()
 }
 
 /**
@@ -74,7 +74,7 @@ object DatabaseModule {
         Measurement::class,
         MeasurementValue::class,
         MeasurementType::class,
-        InBodyCalibration::class,
+        BodyScanCalibration::class,
     ],
     version = 19,
     exportSchema = true
@@ -87,7 +87,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun measurementDao(): MeasurementDao
     abstract fun measurementValueDao(): MeasurementValueDao
     abstract fun measurementTypeDao(): MeasurementTypeDao
-    abstract fun inBodyCalibrationDao(): InBodyCalibrationDao
+    abstract fun bodyScanCalibrationDao(): BodyScanCalibrationDao
 
     companion object {
         const val DATABASE_NAME = "openScale.db"
@@ -876,7 +876,7 @@ val MIGRATION_17_18 = object : Migration(17, 18) {
 
 /**
  * Migration from version 18 to 19:
- * Adds the `inbody_calibration` table for storing user InBody calibration records,
+ * Adds the `body_scan_calibration` table for storing user body scan calibration records,
  * including raw reference inputs and calibrated additive intercept offsets (all mass offsets in Kg).
  * Enforces a UNIQUE index on `userId` so each user maintains at most one active calibration profile.
  */
@@ -884,20 +884,20 @@ val MIGRATION_18_19 = object : Migration(18, 19) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL(
             """
-            CREATE TABLE IF NOT EXISTS `inbody_calibration` (
+            CREATE TABLE IF NOT EXISTS `body_scan_calibration` (
                 `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 `userId` INTEGER NOT NULL,
                 `createdAt` INTEGER NOT NULL,
                 `scaleMeasurementTimestamp` INTEGER NOT NULL,
                 `scaleName` TEXT,
                 `scaleBaselineWeightKg` REAL NOT NULL DEFAULT 0.0,
-                `inBodyWeightKg` REAL NOT NULL,
-                `inBodyFatPercent` REAL,
-                `inBodyMuscleKg` REAL,
-                `inBodyWaterLiters` REAL,
-                `inBodyBoneKg` REAL,
-                `inBodyVisceralFat` REAL,
-                `inBodyProteinKg` REAL,
+                `scanWeightKg` REAL NOT NULL,
+                `scanFatPercent` REAL,
+                `scanMuscleKg` REAL,
+                `scanWaterLiters` REAL,
+                `scanBoneKg` REAL,
+                `scanVisceralFat` REAL,
+                `scanProteinKg` REAL,
                 `offsetFfmKg` REAL,
                 `offsetMuscleKg` REAL,
                 `offsetWaterKg` REAL,
@@ -909,7 +909,7 @@ val MIGRATION_18_19 = object : Migration(18, 19) {
             """.trimIndent()
         )
         db.execSQL(
-            "CREATE UNIQUE INDEX IF NOT EXISTS `index_inbody_calibration_userId` ON `inbody_calibration` (`userId`)"
+            "CREATE UNIQUE INDEX IF NOT EXISTS `index_body_scan_calibration_userId` ON `body_scan_calibration` (`userId`)"
         )
     }
 }

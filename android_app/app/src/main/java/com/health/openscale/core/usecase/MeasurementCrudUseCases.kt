@@ -74,7 +74,7 @@ class MeasurementCrudUseCases @Inject constructor(
         val correctedValues = transformation.applyAmputationCorrection(measurement, values)
         val formulaValues : List<MeasurementValue> = transformation.applySelectedFormulasForMeasurement(measurement, correctedValues)
         val finalValues : List<MeasurementValue> = if (applyCalibration) {
-            transformation.applyInBodyCalibration(measurement, formulaValues)
+            transformation.applyBodyScanCalibration(measurement, formulaValues)
         } else {
             formulaValues
         }

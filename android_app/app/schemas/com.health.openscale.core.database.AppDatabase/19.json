@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 19,
-    "identityHash": "6014292d77c511a03ed2d4573173a5c8",
+    "identityHash": "6eee9139bd25f539c926d5cbd294dc70",
     "entities": [
       {
         "tableName": "User",
@@ -415,8 +415,8 @@
         ]
       },
       {
-        "tableName": "inbody_calibration",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `scaleMeasurementTimestamp` INTEGER NOT NULL, `scaleName` TEXT, `scaleBaselineWeightKg` REAL NOT NULL DEFAULT 0.0, `inBodyWeightKg` REAL NOT NULL, `inBodyFatPercent` REAL, `inBodyMuscleKg` REAL, `inBodyWaterLiters` REAL, `inBodyBoneKg` REAL, `inBodyVisceralFat` REAL, `inBodyProteinKg` REAL, `offsetFfmKg` REAL, `offsetMuscleKg` REAL, `offsetWaterKg` REAL, `offsetBoneKg` REAL, `offsetVisceralFat` REAL, `offsetProteinKg` REAL, FOREIGN KEY(`userId`) REFERENCES `User`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "tableName": "body_scan_calibration",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` INTEGER NOT NULL, `scaleMeasurementTimestamp` INTEGER NOT NULL, `scaleName` TEXT, `scaleBaselineWeightKg` REAL NOT NULL, `scanWeightKg` REAL NOT NULL, `scanFatPercent` REAL, `scanMuscleKg` REAL, `scanWaterLiters` REAL, `scanBoneKg` REAL, `scanVisceralFat` REAL, `scanProteinKg` REAL, `offsetFfmKg` REAL, `offsetMuscleKg` REAL, `offsetWaterKg` REAL, `offsetBoneKg` REAL, `offsetVisceralFat` REAL, `offsetProteinKg` REAL, `createdAt` INTEGER NOT NULL, FOREIGN KEY(`userId`) REFERENCES `User`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -431,12 +431,6 @@
             "notNull": true
           },
           {
-            "fieldPath": "createdAt",
-            "columnName": "createdAt",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
             "fieldPath": "scaleMeasurementTimestamp",
             "columnName": "scaleMeasurementTimestamp",
             "affinity": "INTEGER",
@@ -445,93 +439,85 @@
           {
             "fieldPath": "scaleName",
             "columnName": "scaleName",
-            "affinity": "TEXT",
-            "notNull": false
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "scaleBaselineWeightKg",
             "columnName": "scaleBaselineWeightKg",
             "affinity": "REAL",
-            "notNull": true,
-            "defaultValue": "0.0"
+            "notNull": true
           },
           {
-            "fieldPath": "inBodyWeightKg",
-            "columnName": "inBodyWeightKg",
+            "fieldPath": "scanWeightKg",
+            "columnName": "scanWeightKg",
             "affinity": "REAL",
             "notNull": true
           },
           {
-            "fieldPath": "inBodyFatPercent",
-            "columnName": "inBodyFatPercent",
-            "affinity": "REAL",
-            "notNull": false
+            "fieldPath": "scanFatPercent",
+            "columnName": "scanFatPercent",
+            "affinity": "REAL"
           },
           {
-            "fieldPath": "inBodyMuscleKg",
-            "columnName": "inBodyMuscleKg",
-            "affinity": "REAL",
-            "notNull": false
+            "fieldPath": "scanMuscleKg",
+            "columnName": "scanMuscleKg",
+            "affinity": "REAL"
           },
           {
-            "fieldPath": "inBodyWaterLiters",
-            "columnName": "inBodyWaterLiters",
-            "affinity": "REAL",
-            "notNull": false
+            "fieldPath": "scanWaterLiters",
+            "columnName": "scanWaterLiters",
+            "affinity": "REAL"
           },
           {
-            "fieldPath": "inBodyBoneKg",
-            "columnName": "inBodyBoneKg",
-            "affinity": "REAL",
-            "notNull": false
+            "fieldPath": "scanBoneKg",
+            "columnName": "scanBoneKg",
+            "affinity": "REAL"
           },
           {
-            "fieldPath": "inBodyVisceralFat",
-            "columnName": "inBodyVisceralFat",
-            "affinity": "REAL",
-            "notNull": false
+            "fieldPath": "scanVisceralFat",
+            "columnName": "scanVisceralFat",
+            "affinity": "REAL"
           },
           {
-            "fieldPath": "inBodyProteinKg",
-            "columnName": "inBodyProteinKg",
-            "affinity": "REAL",
-            "notNull": false
+            "fieldPath": "scanProteinKg",
+            "columnName": "scanProteinKg",
+            "affinity": "REAL"
           },
           {
             "fieldPath": "offsetFfmKg",
             "columnName": "offsetFfmKg",
-            "affinity": "REAL",
-            "notNull": false
+            "affinity": "REAL"
           },
           {
             "fieldPath": "offsetMuscleKg",
             "columnName": "offsetMuscleKg",
-            "affinity": "REAL",
-            "notNull": false
+            "affinity": "REAL"
           },
           {
             "fieldPath": "offsetWaterKg",
             "columnName": "offsetWaterKg",
-            "affinity": "REAL",
-            "notNull": false
+            "affinity": "REAL"
           },
           {
             "fieldPath": "offsetBoneKg",
             "columnName": "offsetBoneKg",
-            "affinity": "REAL",
-            "notNull": false
+            "affinity": "REAL"
           },
           {
             "fieldPath": "offsetVisceralFat",
             "columnName": "offsetVisceralFat",
-            "affinity": "REAL",
-            "notNull": false
+            "affinity": "REAL"
           },
           {
             "fieldPath": "offsetProteinKg",
             "columnName": "offsetProteinKg",
-            "affinity": "REAL",
-            "notNull": false
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -542,13 +528,13 @@
         },
         "indices": [
           {
-            "name": "index_inbody_calibration_userId",
+            "name": "index_body_scan_calibration_userId",
             "unique": true,
             "columnNames": [
               "userId"
             ],
             "orders": [],
-            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_inbody_calibration_userId` ON `${TABLE_NAME}` (`userId`)"
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_body_scan_calibration_userId` ON `${TABLE_NAME}` (`userId`)"
           }
         ],
         "foreignKeys": [
@@ -568,7 +554,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6014292d77c511a03ed2d4573173a5c8')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6eee9139bd25f539c926d5cbd294dc70')"
     ]
   }
 }

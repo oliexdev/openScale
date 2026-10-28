@@ -19,11 +19,11 @@ package com.health.openscale.ui.screen.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.health.openscale.core.data.InBodyCalibration
+import com.health.openscale.core.data.BodyScanCalibration
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.model.MeasurementWithValues
-import com.health.openscale.core.usecase.InBodyCalibrationUseCases
-import com.health.openscale.core.usecase.InBodyFormInput
+import com.health.openscale.core.usecase.BodyScanCalibrationUseCases
+import com.health.openscale.core.usecase.BodyScanFormInput
 import com.health.openscale.core.utils.LogManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -38,17 +38,17 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * ViewModel managing InBody calibration state, wizard flow, and persistence.
+ * ViewModel managing body scan calibration state, wizard flow, and persistence.
  */
 @HiltViewModel
 class CalibrationViewModel @Inject constructor(
-    private val calibrationUseCases: InBodyCalibrationUseCases,
+    private val calibrationUseCases: BodyScanCalibrationUseCases,
     private val settingsFacade: SettingsFacade
 ) : ViewModel() {
 
     private val TAG = "CalibrationViewModel"
 
-    val isCalibrationEnabled: StateFlow<Boolean> = settingsFacade.isInBodyCalibrationEnabled
+    val isCalibrationEnabled: StateFlow<Boolean> = settingsFacade.isBodyScanCalibrationEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
     val savedDeviceName: StateFlow<String?> = settingsFacade.observeSavedDevice()
@@ -57,11 +57,11 @@ class CalibrationViewModel @Inject constructor(
 
     fun setCalibrationEnabled(enabled: Boolean) {
         viewModelScope.launch {
-            settingsFacade.setInBodyCalibrationEnabled(enabled)
+            settingsFacade.setBodyScanCalibrationEnabled(enabled)
         }
     }
 
-    fun observeActiveCalibration(userId: Int): Flow<InBodyCalibration?> =
+    fun observeActiveCalibration(userId: Int): Flow<BodyScanCalibration?> =
         calibrationUseCases.observeCalibrationForUser(userId)
 
     fun getEligibleBaselineMeasurements(userId: Int): Flow<List<MeasurementWithValues>> =
@@ -74,32 +74,32 @@ class CalibrationViewModel @Inject constructor(
     private val _selectedBaseline = MutableStateFlow<MeasurementWithValues?>(null)
     val selectedBaseline: StateFlow<MeasurementWithValues?> = _selectedBaseline.asStateFlow()
 
-    private val _inBodyWeight = MutableStateFlow("")
-    val inBodyWeight: StateFlow<String> = _inBodyWeight.asStateFlow()
+    private val _scanWeight = MutableStateFlow("")
+    val scanWeight: StateFlow<String> = _scanWeight.asStateFlow()
 
     private val _isFatInKg = MutableStateFlow(true)
     val isFatInKg: StateFlow<Boolean> = _isFatInKg.asStateFlow()
 
-    private val _inBodyFat = MutableStateFlow("")
-    val inBodyFat: StateFlow<String> = _inBodyFat.asStateFlow()
+    private val _scanFat = MutableStateFlow("")
+    val scanFat: StateFlow<String> = _scanFat.asStateFlow()
 
-    private val _inBodyMuscle = MutableStateFlow("")
-    val inBodyMuscle: StateFlow<String> = _inBodyMuscle.asStateFlow()
+    private val _scanMuscle = MutableStateFlow("")
+    val scanMuscle: StateFlow<String> = _scanMuscle.asStateFlow()
 
-    private val _inBodyWater = MutableStateFlow("")
-    val inBodyWater: StateFlow<String> = _inBodyWater.asStateFlow()
+    private val _scanWater = MutableStateFlow("")
+    val scanWater: StateFlow<String> = _scanWater.asStateFlow()
 
-    private val _inBodyBone = MutableStateFlow("")
-    val inBodyBone: StateFlow<String> = _inBodyBone.asStateFlow()
+    private val _scanBone = MutableStateFlow("")
+    val scanBone: StateFlow<String> = _scanBone.asStateFlow()
 
-    private val _inBodyVisceralFat = MutableStateFlow("")
-    val inBodyVisceralFat: StateFlow<String> = _inBodyVisceralFat.asStateFlow()
+    private val _scanVisceralFat = MutableStateFlow("")
+    val scanVisceralFat: StateFlow<String> = _scanVisceralFat.asStateFlow()
 
-    private val _inBodyProtein = MutableStateFlow("")
-    val inBodyProtein: StateFlow<String> = _inBodyProtein.asStateFlow()
+    private val _scanProtein = MutableStateFlow("")
+    val scanProtein: StateFlow<String> = _scanProtein.asStateFlow()
 
-    private val _calculatedCalibration = MutableStateFlow<InBodyCalibration?>(null)
-    val calculatedCalibration: StateFlow<InBodyCalibration?> = _calculatedCalibration.asStateFlow()
+    private val _calculatedCalibration = MutableStateFlow<BodyScanCalibration?>(null)
+    val calculatedCalibration: StateFlow<BodyScanCalibration?> = _calculatedCalibration.asStateFlow()
 
     private val _validationError = MutableStateFlow<String?>(null)
     val validationError: StateFlow<String?> = _validationError.asStateFlow()
@@ -115,14 +115,14 @@ class CalibrationViewModel @Inject constructor(
         _selectedBaseline.value = measurement
     }
 
-    fun setInBodyWeight(value: String) { _inBodyWeight.value = value }
+    fun setScanWeight(value: String) { _scanWeight.value = value }
     fun setIsFatInKg(inKg: Boolean) { _isFatInKg.value = inKg }
-    fun setInBodyFat(value: String) { _inBodyFat.value = value }
-    fun setInBodyMuscle(value: String) { _inBodyMuscle.value = value }
-    fun setInBodyWater(value: String) { _inBodyWater.value = value }
-    fun setInBodyBone(value: String) { _inBodyBone.value = value }
-    fun setInBodyVisceralFat(value: String) { _inBodyVisceralFat.value = value }
-    fun setInBodyProtein(value: String) { _inBodyProtein.value = value }
+    fun setScanFat(value: String) { _scanFat.value = value }
+    fun setScanMuscle(value: String) { _scanMuscle.value = value }
+    fun setScanWater(value: String) { _scanWater.value = value }
+    fun setScanBone(value: String) { _scanBone.value = value }
+    fun setScanVisceralFat(value: String) { _scanVisceralFat.value = value }
+    fun setScanProtein(value: String) { _scanProtein.value = value }
 
     private fun String.toFloatLocaleSafe(): Float? = trim().replace(',', '.').toFloatOrNull()
 
@@ -141,31 +141,31 @@ class CalibrationViewModel @Inject constructor(
             return
         }
 
-        val weight = _inBodyWeight.value.toFloatLocaleSafe()
+        val weight = _scanWeight.value.toFloatLocaleSafe()
         if (weight == null || weight <= 10f || weight > 350f) {
-            _validationError.value = "InBody weight must be between 10 kg and 350 kg."
+            _validationError.value = "Body scan weight must be between 10 kg and 350 kg."
             return
         }
 
-        val fatVal = _inBodyFat.value.toFloatLocaleSafe()
+        val fatVal = _scanFat.value.toFloatLocaleSafe()
         val fatPercent = if (!_isFatInKg.value) fatVal else null
         val fatKg = if (_isFatInKg.value) fatVal else null
 
-        val muscleKg = _inBodyMuscle.value.toFloatLocaleSafe()
-        val waterLiters = _inBodyWater.value.toFloatLocaleSafe()
-        val boneKg = _inBodyBone.value.toFloatLocaleSafe()
-        val vfVal = _inBodyVisceralFat.value.toFloatLocaleSafe()
-        val proteinKg = _inBodyProtein.value.toFloatLocaleSafe()
+        val muscleKg = _scanMuscle.value.toFloatLocaleSafe()
+        val waterLiters = _scanWater.value.toFloatLocaleSafe()
+        val boneKg = _scanBone.value.toFloatLocaleSafe()
+        val vfVal = _scanVisceralFat.value.toFloatLocaleSafe()
+        val proteinKg = _scanProtein.value.toFloatLocaleSafe()
 
-        val input = InBodyFormInput(
-            inBodyWeightKg = weight,
-            inBodyFatPercent = fatPercent,
-            inBodyFatKg = fatKg,
-            inBodyMuscleKg = muscleKg,
-            inBodyWaterLiters = waterLiters,
-            inBodyBoneKg = boneKg,
-            inBodyVisceralFat = vfVal,
-            inBodyProteinKg = proteinKg
+        val input = BodyScanFormInput(
+            scanWeightKg = weight,
+            scanFatPercent = fatPercent,
+            scanFatKg = fatKg,
+            scanMuscleKg = muscleKg,
+            scanWaterLiters = waterLiters,
+            scanBoneKg = boneKg,
+            scanVisceralFat = vfVal,
+            scanProteinKg = proteinKg
         )
 
         val error = calibrationUseCases.validateInputs(input, baseline)
@@ -227,17 +227,16 @@ class CalibrationViewModel @Inject constructor(
     fun resetWizard() {
         _wizardStep.value = 1
         _selectedBaseline.value = null
-        _inBodyWeight.value = ""
+        _scanWeight.value = ""
         _isFatInKg.value = true
-        _inBodyFat.value = ""
-        _inBodyMuscle.value = ""
-        _inBodyWater.value = ""
-        _inBodyBone.value = ""
-        _inBodyVisceralFat.value = ""
-        _inBodyProtein.value = ""
+        _scanFat.value = ""
+        _scanMuscle.value = ""
+        _scanWater.value = ""
+        _scanBone.value = ""
+        _scanVisceralFat.value = ""
+        _scanProtein.value = ""
         _calculatedCalibration.value = null
         _validationError.value = null
         _isSaving.value = false
     }
 }
-

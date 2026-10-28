@@ -21,8 +21,8 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
+import com.health.openscale.core.data.BodyScanCalibration
 import com.health.openscale.core.data.GenderType
-import com.health.openscale.core.data.InBodyCalibration
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
@@ -45,11 +45,10 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.io.File
-import kotlin.math.abs
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
-class InBodyCalibrationUseCasesTest {
+class BodyScanCalibrationUseCasesTest {
 
     private val app: Application get() = ApplicationProvider.getApplicationContext()
     private lateinit var db: AppDatabase
@@ -57,7 +56,7 @@ class InBodyCalibrationUseCasesTest {
     private lateinit var settings: SettingsFacade
     private lateinit var query: MeasurementQueryUseCases
     private lateinit var transformation: MeasurementTransformationUseCase
-    private lateinit var calibrationUseCases: InBodyCalibrationUseCases
+    private lateinit var calibrationUseCases: BodyScanCalibrationUseCases
 
     private var userId = 0
     private var weightType: MeasurementType? = null
@@ -84,7 +83,7 @@ class InBodyCalibrationUseCasesTest {
         val sync = SyncUseCases(app, MeasurementTypeCrudUseCases(repo, ApplicationProvider.getApplicationContext()))
         val userUseCases = UserUseCases(ApplicationProvider.getApplicationContext(), repo, settings, sync)
         transformation = MeasurementTransformationUseCase(settings, userUseCases, query, repo)
-        calibrationUseCases = InBodyCalibrationUseCases(repo, settings, query, transformation)
+        calibrationUseCases = BodyScanCalibrationUseCases(repo, settings, query, transformation)
 
         val types = repo.getAllMeasurementTypes().first()
         weightType = types.find { it.key == MeasurementType.WEIGHT }
@@ -140,7 +139,7 @@ class InBodyCalibrationUseCasesTest {
             m,
             listOf(MeasurementValueWithType(MeasurementValue(1, 1, weightType!!.id, floatValue = 80f), weightType!!))
         )
-        val input = InBodyFormInput(inBodyWeightKg = 80f)
+        val input = BodyScanFormInput(scanWeightKg = 80f)
         val error = calibrationUseCases.validateInputs(input, noImpedance)
         assertThat(error).contains("impedance")
     }
@@ -155,7 +154,7 @@ class InBodyCalibrationUseCasesTest {
                 MeasurementValueWithType(MeasurementValue(2, 1, impedanceType!!.id, floatValue = 500f), impedanceType!!)
             )
         )
-        val input = InBodyFormInput(inBodyWeightKg = 80f)
+        val input = BodyScanFormInput(scanWeightKg = 80f)
         val error = calibrationUseCases.validateInputs(input, partialMeasurement)
         assertThat(error).contains("body composition")
     }
@@ -163,9 +162,9 @@ class InBodyCalibrationUseCasesTest {
     @Test
     fun validateInputs_rejectsOutOfRangeWeights() {
         val baseline = createBaseline()
-        assertThat(calibrationUseCases.validateInputs(InBodyFormInput(inBodyWeightKg = 5f), baseline)).isNotNull()
-        assertThat(calibrationUseCases.validateInputs(InBodyFormInput(inBodyWeightKg = 400f), baseline)).isNotNull()
-        assertThat(calibrationUseCases.validateInputs(InBodyFormInput(inBodyWeightKg = 80f), baseline)).isNull()
+        assertThat(calibrationUseCases.validateInputs(BodyScanFormInput(scanWeightKg = 5f), baseline)).isNotNull()
+        assertThat(calibrationUseCases.validateInputs(BodyScanFormInput(scanWeightKg = 400f), baseline)).isNotNull()
+        assertThat(calibrationUseCases.validateInputs(BodyScanFormInput(scanWeightKg = 80f), baseline)).isNull()
     }
 
     @Test
@@ -181,21 +180,21 @@ class InBodyCalibrationUseCasesTest {
             impedanceOhm = 500f
         )
 
-        // InBody scan weight is 80.8 kg (clothing/timing difference)
-        // Ratio W0 / W_InBody = 80.0 / 80.8 = 0.990099
-        val inBodyInput = InBodyFormInput(
-            inBodyWeightKg = 80.8f,
-            inBodyFatPercent = 15.0f, // FFM = 80.8 * 0.85 = 68.68 kg -> normalized = 68.68 * (80.0/80.8) = 68.0 kg
-            inBodyMuscleKg = 35.0f,   // normalized = 35.0 * (80.0/80.8) = 34.653 kg
-            inBodyWaterLiters = 46.0f,// 46.0 * 0.995 = 45.77 kg -> normalized = 45.77 * (80.0/80.8) = 45.316 kg
-            inBodyBoneKg = 3.5f,      // normalized = 3.5 * (80.0/80.8) = 3.465 kg
-            inBodyVisceralFat = 7.0f  // dimensionless level
+        // Body scan weight is 80.8 kg (clothing/timing difference)
+        // Ratio W0 / W_Scan = 80.0 / 80.8 = 0.990099
+        val scanInput = BodyScanFormInput(
+            scanWeightKg = 80.8f,
+            scanFatPercent = 15.0f, // FFM = 80.8 * 0.85 = 68.68 kg -> normalized = 68.68 * (80.0/80.8) = 68.0 kg
+            scanMuscleKg = 35.0f,   // normalized = 35.0 * (80.0/80.8) = 34.653 kg
+            scanWaterLiters = 46.0f,// 46.0 * 0.995 = 45.77 kg -> normalized = 45.77 * (80.0/80.8) = 45.316 kg
+            scanBoneKg = 3.5f,      // normalized = 3.5 * (80.0/80.8) = 3.465 kg
+            scanVisceralFat = 7.0f  // dimensionless level
         )
 
         val cal = calibrationUseCases.calculateCalibration(
             userId = userId,
             baseline = baseline,
-            input = inBodyInput,
+            input = scanInput,
             scaleName = "Test Smart Scale"
         )
 
@@ -221,19 +220,19 @@ class InBodyCalibrationUseCasesTest {
     }
 
     @Test
-    fun applyInBodyCalibration_preservesMassConservation_andDerivesFatFromCalibratedFFM() = runBlocking {
+    fun applyBodyScanCalibration_preservesMassConservation_andDerivesFatFromCalibratedFFM() = runBlocking {
         // Active calibration with offsetFfmKg = +3.0 kg
-        val calibration = InBodyCalibration(
+        val calibration = BodyScanCalibration(
             userId = userId,
             scaleMeasurementTimestamp = 10_000L,
-            inBodyWeightKg = 80.0f,
+            scanWeightKg = 80.0f,
             offsetFfmKg = 3.0f,
             offsetMuscleKg = 1.5f,
             offsetWaterKg = 2.0f,
             offsetBoneKg = 0.3f,
             offsetVisceralFat = -2.0f
         )
-        repo.insertOrUpdateInBodyCalibration(calibration)
+        repo.insertOrUpdateBodyScanCalibration(calibration)
 
         // Future weigh-in at timestamp 20_000L (weight = 80.0 kg, uncalibrated FFM = 64.0 kg, uncalibrated fat = 20.0%)
         val measurement = Measurement(id = 2, userId = userId, timestamp = 20_000L)
@@ -248,7 +247,7 @@ class InBodyCalibrationUseCasesTest {
             MeasurementValue(typeId = vfType!!.id, floatValue = 10.0f, measurementId = 2)
         )
 
-        val calibrated = transformation.applyInBodyCalibration(measurement, incomingValues)
+        val calibrated = transformation.applyBodyScanCalibration(measurement, incomingValues)
 
         // Calibrated FFM should be 64.0 + 3.0 = 67.0 kg
         val calLbm = calibrated.find { it.typeId == lbmType!!.id }?.floatValue
@@ -278,14 +277,14 @@ class InBodyCalibrationUseCasesTest {
     }
 
     @Test
-    fun applyInBodyCalibration_ignoresMeasurementsWithoutImpedance() = runBlocking {
-        val calibration = InBodyCalibration(
+    fun applyBodyScanCalibration_ignoresMeasurementsWithoutImpedance() = runBlocking {
+        val calibration = BodyScanCalibration(
             userId = userId,
             scaleMeasurementTimestamp = 10_000L,
-            inBodyWeightKg = 80.0f,
+            scanWeightKg = 80.0f,
             offsetFfmKg = 3.0f
         )
-        repo.insertOrUpdateInBodyCalibration(calibration)
+        repo.insertOrUpdateBodyScanCalibration(calibration)
 
         // Measurement without impedance (e.g. manual entry or non-impedance scale)
         val measurement = Measurement(id = 3, userId = userId, timestamp = 20_000L)
@@ -295,21 +294,21 @@ class InBodyCalibrationUseCasesTest {
             MeasurementValue(typeId = fatType!!.id, floatValue = 20.0f, measurementId = 3)
         )
 
-        val result = transformation.applyInBodyCalibration(measurement, incomingValues)
+        val result = transformation.applyBodyScanCalibration(measurement, incomingValues)
         // Values should be untouched
         assertThat(result.find { it.typeId == lbmType!!.id }?.floatValue).isEqualTo(64.0f)
         assertThat(result.find { it.typeId == fatType!!.id }?.floatValue).isEqualTo(20.0f)
     }
 
     @Test
-    fun applyInBodyCalibration_ignoresHistoricalMeasurementsPriorToCalibrationDate() = runBlocking {
-        val calibration = InBodyCalibration(
+    fun applyBodyScanCalibration_ignoresHistoricalMeasurementsPriorToCalibrationDate() = runBlocking {
+        val calibration = BodyScanCalibration(
             userId = userId,
             scaleMeasurementTimestamp = 10_000L, // calibration date
-            inBodyWeightKg = 80.0f,
+            scanWeightKg = 80.0f,
             offsetFfmKg = 3.0f
         )
-        repo.insertOrUpdateInBodyCalibration(calibration)
+        repo.insertOrUpdateBodyScanCalibration(calibration)
 
         // Historical measurement at timestamp 5_000L (before calibration)
         val measurement = Measurement(id = 4, userId = userId, timestamp = 5_000L)
@@ -320,24 +319,24 @@ class InBodyCalibrationUseCasesTest {
             MeasurementValue(typeId = fatType!!.id, floatValue = 20.0f, measurementId = 4)
         )
 
-        val result = transformation.applyInBodyCalibration(measurement, incomingValues)
+        val result = transformation.applyBodyScanCalibration(measurement, incomingValues)
         // Historical values strictly preserved!
         assertThat(result.find { it.typeId == lbmType!!.id }?.floatValue).isEqualTo(64.0f)
         assertThat(result.find { it.typeId == fatType!!.id }?.floatValue).isEqualTo(20.0f)
     }
 
     @Test
-    fun applyInBodyCalibration_respectsDisabledToggleInSettings() = runBlocking {
-        val calibration = InBodyCalibration(
+    fun applyBodyScanCalibration_respectsDisabledToggleInSettings() = runBlocking {
+        val calibration = BodyScanCalibration(
             userId = userId,
             scaleMeasurementTimestamp = 10_000L,
-            inBodyWeightKg = 80.0f,
+            scanWeightKg = 80.0f,
             offsetFfmKg = 3.0f
         )
-        repo.insertOrUpdateInBodyCalibration(calibration)
+        repo.insertOrUpdateBodyScanCalibration(calibration)
 
         // Disable calibration toggle in settings
-        settings.setInBodyCalibrationEnabled(false)
+        settings.setBodyScanCalibrationEnabled(false)
 
         val measurement = Measurement(id = 5, userId = userId, timestamp = 20_000L)
         val incomingValues = listOf(
@@ -346,7 +345,7 @@ class InBodyCalibrationUseCasesTest {
             MeasurementValue(typeId = lbmType!!.id, floatValue = 64.0f, measurementId = 5)
         )
 
-        val result = transformation.applyInBodyCalibration(measurement, incomingValues)
+        val result = transformation.applyBodyScanCalibration(measurement, incomingValues)
         // Disabled -> values untouched
         assertThat(result.find { it.typeId == lbmType!!.id }?.floatValue).isEqualTo(64.0f)
     }
@@ -361,9 +360,9 @@ class InBodyCalibrationUseCasesTest {
         repo.insertMeasurementValue(MeasurementValue(measurementId = mId, typeId = fatType!!.id, floatValue = 20.0f))
 
         val baseline1 = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mId }
-        val input = InBodyFormInput(
-            inBodyWeightKg = 80.0f,
-            inBodyFatKg = 13.0f // FFM = 80 - 13 = 67.0 kg. Offset should be 67 - 64 = +3.0 kg
+        val input = BodyScanFormInput(
+            scanWeightKg = 80.0f,
+            scanFatKg = 13.0f // FFM = 80 - 13 = 67.0 kg. Offset should be 67 - 64 = +3.0 kg
         )
 
         // 2. First calibration
@@ -400,9 +399,9 @@ class InBodyCalibrationUseCasesTest {
         repo.insertMeasurementValue(MeasurementValue(measurementId = mId, typeId = fatType!!.id, floatValue = 20.0f))
 
         val baseline = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mId }
-        val input = InBodyFormInput(
-            inBodyWeightKg = 80.0f,
-            inBodyFatKg = 13.0f // FFM = 67.0 kg
+        val input = BodyScanFormInput(
+            scanWeightKg = 80.0f,
+            scanFatKg = 13.0f // FFM = 67.0 kg
         )
         val cal = calibrationUseCases.calculateCalibration(userId, baseline, input)
         calibrationUseCases.saveCalibration(cal, baseline)
@@ -443,9 +442,9 @@ class InBodyCalibrationUseCasesTest {
             )
         )
 
-        val input = InBodyFormInput(
-            inBodyWeightKg = 82.55f,
-            inBodyFatKg = 15.35f // FFM = 67.20 kg
+        val input = BodyScanFormInput(
+            scanWeightKg = 82.55f,
+            scanFatKg = 15.35f // FFM = 67.20 kg
         )
 
         val cal = calibrationUseCases.calculateCalibration(userId, baseline, input)
@@ -478,13 +477,13 @@ class InBodyCalibrationUseCasesTest {
         repo.insertMeasurementValue(MeasurementValue(measurementId = mFutureId, typeId = lbmType!!.id, floatValue = 64.0f))
 
         val baseline = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mBaseId }
-        val input = InBodyFormInput(inBodyWeightKg = 80.0f, inBodyFatKg = 13.0f) // FFM = 67.0 kg
+        val input = BodyScanFormInput(scanWeightKg = 80.0f, scanFatKg = 13.0f) // FFM = 67.0 kg
         val cal = calibrationUseCases.calculateCalibration(userId, baseline, input)
         calibrationUseCases.saveCalibration(cal, baseline)
 
         // Apply calibration to future measurement as well
         val futureMwv = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mFutureId }
-        val calFutureValues = transformation.applyInBodyCalibration(futureMwv.measurement, futureMwv.values.map { it.value }, cal)
+        val calFutureValues = transformation.applyBodyScanCalibration(futureMwv.measurement, futureMwv.values.map { it.value }, cal)
         calFutureValues.forEach { repo.updateMeasurementValue(it) }
 
         // Verify both baseline and future are calibrated to 67.0 kg
@@ -510,17 +509,17 @@ class InBodyCalibrationUseCasesTest {
     @Test
     fun dampedHybridScaling_exactAtDayZero_scalesWithMuscleGain_andRespectsClampLimits() = runBlocking {
         // Calibration setup:
-        // W0 = 80.0 kg, InBody W = 80.0 kg, inBodyFatPercent = 16.25% (FFM = 67.0 kg)
+        // W0 = 80.0 kg, Scan W = 80.0 kg, scanFatPercent = 16.25% (FFM = 67.0 kg)
         // Raw scale FFM at baseline = 64.0 kg -> offsetFfmKg = +3.0 kg
-        // Raw scale Muscle at baseline = 32.0 kg, InBody Muscle = 35.0 kg -> offsetMuscleKg = +3.0 kg
-        val cal = InBodyCalibration(
+        // Raw scale Muscle at baseline = 32.0 kg, Scan Muscle = 35.0 kg -> offsetMuscleKg = +3.0 kg
+        val cal = BodyScanCalibration(
             userId = userId,
             scaleMeasurementTimestamp = 10_000L,
             scaleName = "Test Scale",
             scaleBaselineWeightKg = 80.0f,
-            inBodyWeightKg = 80.0f,
-            inBodyFatPercent = 16.25f,
-            inBodyMuscleKg = 35.0f,
+            scanWeightKg = 80.0f,
+            scanFatPercent = 16.25f,
+            scanMuscleKg = 35.0f,
             offsetFfmKg = 3.0f,
             offsetMuscleKg = 3.0f
         )
@@ -533,7 +532,7 @@ class InBodyCalibrationUseCasesTest {
             MeasurementValue(measurementId = 1, typeId = lbmType!!.id, floatValue = 64.0f),
             MeasurementValue(measurementId = 1, typeId = muscleType!!.id, floatValue = 40.0f) // 40% of 80 kg = 32 kg
         )
-        val calDay0 = transformation.applyInBodyCalibration(mDay0, valuesDay0, cal)
+        val calDay0 = transformation.applyBodyScanCalibration(mDay0, valuesDay0, cal)
         val lbmDay0 = calDay0.find { it.typeId == lbmType!!.id }?.floatValue
         val muscleDay0 = calDay0.find { it.typeId == muscleType!!.id }?.floatValue
         // S_FFM = 1.0 -> 64.0 + 3.0 = 67.0 kg
@@ -542,7 +541,7 @@ class InBodyCalibrationUseCasesTest {
         assertThat(muscleDay0).isWithin(0.01f).of(43.75f)
 
         // Reversion test at Day 0:
-        val revDay0 = transformation.revertInBodyCalibration(mDay0, calDay0, cal)
+        val revDay0 = transformation.revertBodyScanCalibration(mDay0, calDay0, cal)
         assertThat(revDay0.find { it.typeId == lbmType!!.id }?.floatValue).isWithin(0.01f).of(64.0f)
         assertThat(revDay0.find { it.typeId == muscleType!!.id }?.floatValue).isWithin(0.01f).of(40.0f)
 
@@ -555,12 +554,12 @@ class InBodyCalibrationUseCasesTest {
             MeasurementValue(measurementId = 2, typeId = impedanceType!!.id, floatValue = 480.0f),
             MeasurementValue(measurementId = 2, typeId = lbmType!!.id, floatValue = 70.0f)
         )
-        val calGain = transformation.applyInBodyCalibration(mGain, valuesGain, cal)
+        val calGain = transformation.applyBodyScanCalibration(mGain, valuesGain, cal)
         val lbmGain = calGain.find { it.typeId == lbmType!!.id }?.floatValue
         assertThat(lbmGain).isWithin(0.01f).of(73.14f)
 
         // Reversion test for muscle gain:
-        val revGain = transformation.revertInBodyCalibration(mGain, calGain, cal)
+        val revGain = transformation.revertBodyScanCalibration(mGain, calGain, cal)
         assertThat(revGain.find { it.typeId == lbmType!!.id }?.floatValue).isWithin(0.05f).of(70.0f)
 
         // Case C: Clamped at upper limit (1.30)
@@ -572,7 +571,7 @@ class InBodyCalibrationUseCasesTest {
             MeasurementValue(measurementId = 3, typeId = impedanceType!!.id, floatValue = 450.0f),
             MeasurementValue(measurementId = 3, typeId = lbmType!!.id, floatValue = 120.0f)
         )
-        val calUpper = transformation.applyInBodyCalibration(mUpper, valuesUpper, cal)
+        val calUpper = transformation.applyBodyScanCalibration(mUpper, valuesUpper, cal)
         val lbmUpper = calUpper.find { it.typeId == lbmType!!.id }?.floatValue
         assertThat(lbmUpper).isWithin(0.01f).of(123.90f)
 
@@ -585,7 +584,7 @@ class InBodyCalibrationUseCasesTest {
             MeasurementValue(measurementId = 4, typeId = impedanceType!!.id, floatValue = 550.0f),
             MeasurementValue(measurementId = 4, typeId = lbmType!!.id, floatValue = 20.0f)
         )
-        val calLower = transformation.applyInBodyCalibration(mLower, valuesLower, cal)
+        val calLower = transformation.applyBodyScanCalibration(mLower, valuesLower, cal)
         val lbmLower = calLower.find { it.typeId == lbmType!!.id }?.floatValue
         assertThat(lbmLower).isWithin(0.01f).of(22.10f)
     }
@@ -593,16 +592,16 @@ class InBodyCalibrationUseCasesTest {
     @Test
     fun fatMassDrivenVisceralFat_neutralizesFalseVFIncreaseFromMuscleGain() = runBlocking {
         // Setup:
-        // W0 = 80.0 kg, inBodyFatPercent = 15.0% (BFM_cal_0 = 12.0 kg, FFM_cal_0 = 68.0 kg)
+        // W0 = 80.0 kg, scanFatPercent = 15.0% (BFM_cal_0 = 12.0 kg, FFM_cal_0 = 68.0 kg)
         // Baseline scale raw FFM = 65.0 kg -> offsetFfmKg = +3.0 kg (calibrated FFM at t0 = 68.0 kg)
-        // Baseline scale raw VF = 8.0, InBody VF = 7.0 -> offsetVisceralFat = -1.0
-        val cal = InBodyCalibration(
+        // Baseline scale raw VF = 8.0, Body Scan VF = 7.0 -> offsetVisceralFat = -1.0
+        val cal = BodyScanCalibration(
             userId = userId,
             scaleMeasurementTimestamp = 10_000L,
             scaleName = "Test Scale",
             scaleBaselineWeightKg = 80.0f,
-            inBodyWeightKg = 80.0f,
-            inBodyFatPercent = 15.0f,
+            scanWeightKg = 80.0f,
+            scanFatPercent = 15.0f,
             offsetFfmKg = 3.0f,
             offsetVisceralFat = -1.0f
         )
@@ -615,7 +614,7 @@ class InBodyCalibrationUseCasesTest {
             MeasurementValue(measurementId = 1, typeId = lbmType!!.id, floatValue = 65.0f),
             MeasurementValue(measurementId = 1, typeId = vfType!!.id, floatValue = 8.0f)
         )
-        val calDay0 = transformation.applyInBodyCalibration(mDay0, valuesDay0, cal)
+        val calDay0 = transformation.applyBodyScanCalibration(mDay0, valuesDay0, cal)
         // Day 0: deltaBfmActual = 0, deltaBfmAssumed = 0 -> VF = 8.0 - 1.0 = 7.0
         assertThat(calDay0.find { it.typeId == vfType!!.id }?.floatValue).isWithin(0.01f).of(7.0f)
 
@@ -629,7 +628,7 @@ class InBodyCalibrationUseCasesTest {
             MeasurementValue(measurementId = 2, typeId = lbmType!!.id, floatValue = 68.835f),
             MeasurementValue(measurementId = 2, typeId = vfType!!.id, floatValue = 8.6f)
         )
-        val calGain = transformation.applyInBodyCalibration(mGain, valuesGain, cal)
+        val calGain = transformation.applyBodyScanCalibration(mGain, valuesGain, cal)
         // Calibrated FFM is ~72.0 kg.
         // Current calibrated fat mass BFM_cal_n = 84.0 - 72.0 = 12.0 kg.
         // deltaBfmActual = 12.0 - 12.0 = 0.0 kg.
@@ -639,7 +638,7 @@ class InBodyCalibrationUseCasesTest {
         assertThat(calGain.find { it.typeId == vfType!!.id }?.floatValue).isWithin(0.05f).of(7.0f)
 
         // Verify reversion recovers original uncalibrated VF (8.6):
-        val revGain = transformation.revertInBodyCalibration(mGain, calGain, cal)
+        val revGain = transformation.revertBodyScanCalibration(mGain, calGain, cal)
         assertThat(revGain.find { it.typeId == vfType!!.id }?.floatValue).isWithin(0.05f).of(8.6f)
     }
 }

@@ -20,7 +20,7 @@ package com.health.openscale.core.usecase
 import com.health.openscale.core.data.BodyFatFormulaOption
 import com.health.openscale.core.data.BodyWaterFormulaOption
 import com.health.openscale.core.data.GenderType
-import com.health.openscale.core.data.InBodyCalibration
+import com.health.openscale.core.data.BodyScanCalibration
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.LbmFormulaOption
 import com.health.openscale.core.data.Measurement
@@ -489,10 +489,10 @@ class MeasurementTransformationUseCase @Inject constructor(
     }
 
     /**
-     * Applies InBody calibration offsets to an incoming measurement.
+     * Applies professional scale calibration offsets (Δ) to incoming measurement values.
      *
-     * InBody calibration uses per-compartment additive intercept offsets (Δ in kilograms)
-     * computed from a same-day clinical InBody/DEXA reference scan.
+     * Offsets represent additive intercepts for each body composition compartment,
+     * computed from a same-day professional reference scan (e.g. InBody, Tanita, DEXA).
      *
      * Rules:
      * - Only applied if calibration is enabled globally in settings.
@@ -504,18 +504,18 @@ class MeasurementTransformationUseCase @Inject constructor(
      *
      * @return [values] with calibrated values replacing or augmenting uncalibrated ones.
      */
-    suspend fun applyInBodyCalibration(
+    suspend fun applyBodyScanCalibration(
         measurement: Measurement,
         values: List<MeasurementValue>,
-        calibration: InBodyCalibration? = null
+        calibration: BodyScanCalibration? = null
     ): List<MeasurementValue> {
-        val isEnabled = settings.isInBodyCalibrationEnabled.first()
+        val isEnabled = settings.isBodyScanCalibrationEnabled.first()
         if (!isEnabled) {
             return values
         }
 
         val activeCalibration = calibration
-            ?: databaseRepository.getInBodyCalibrationForUser(measurement.userId)
+            ?: databaseRepository.getBodyScanCalibrationForUser(measurement.userId)
             ?: return values
 
         if (measurement.timestamp < activeCalibration.scaleMeasurementTimestamp) {
@@ -564,14 +564,14 @@ class MeasurementTransformationUseCase @Inject constructor(
         }
 
         // Reference masses at t0 for damped hybrid allometric scaling (gamma = 0.5)
-        val hasValidBaseline = activeCalibration.scaleBaselineWeightKg > 0f && activeCalibration.inBodyWeightKg > 0f
-        val normRatio = if (hasValidBaseline) activeCalibration.scaleBaselineWeightKg / activeCalibration.inBodyWeightKg else null
+        val hasValidBaseline = activeCalibration.scaleBaselineWeightKg > 0f && activeCalibration.scanWeightKg > 0f
+        val normRatio = if (hasValidBaseline) activeCalibration.scaleBaselineWeightKg / activeCalibration.scanWeightKg else null
         val refFfmKg0 = if (hasValidBaseline) {
-            activeCalibration.inBodyFatPercent?.let { activeCalibration.scaleBaselineWeightKg * (1f - it / 100f) }
+            activeCalibration.scanFatPercent?.let { activeCalibration.scaleBaselineWeightKg * (1f - it / 100f) }
         } else null
-        val refMuscleKg0 = if (normRatio != null) activeCalibration.inBodyMuscleKg?.let { it * normRatio } else null
-        val refWaterKg0 = if (normRatio != null) activeCalibration.inBodyWaterLiters?.let { (it * 0.995f) * normRatio } else null
-        val refProteinKg0 = if (normRatio != null) activeCalibration.inBodyProteinKg?.let { it * normRatio } else null
+        val refMuscleKg0 = if (normRatio != null) activeCalibration.scanMuscleKg?.let { it * normRatio } else null
+        val refWaterKg0 = if (normRatio != null) activeCalibration.scanWaterLiters?.let { (it * 0.995f) * normRatio } else null
+        val refProteinKg0 = if (normRatio != null) activeCalibration.scanProteinKg?.let { it * normRatio } else null
 
         var calibratedFfmKgForVf: Float? = null
 
@@ -717,10 +717,10 @@ class MeasurementTransformationUseCase @Inject constructor(
                 if (uncalibratedVal != null) {
                     val calibratedVf = if (
                         calibratedFfmKgForVf != null &&
-                        activeCalibration.inBodyFatPercent != null &&
+                        activeCalibration.scanFatPercent != null &&
                         activeCalibration.scaleBaselineWeightKg > 0f
                     ) {
-                        val bfmCal0 = activeCalibration.scaleBaselineWeightKg * (activeCalibration.inBodyFatPercent / 100f)
+                        val bfmCal0 = activeCalibration.scaleBaselineWeightKg * (activeCalibration.scanFatPercent / 100f)
                         val bfmCalN = weightKg - calibratedFfmKgForVf
                         val deltaBfmActual = bfmCalN - bfmCal0
                         val deltaBfmAssumed = 0.75f * (weightKg - activeCalibration.scaleBaselineWeightKg)
@@ -765,13 +765,13 @@ class MeasurementTransformationUseCase @Inject constructor(
 
         LogManager.i(
             "MeasurementTransformation",
-            "InBody calibration applied for user ${measurement.userId} on measurement ${measurement.id}."
+            "Professional scale calibration applied for user ${measurement.userId} on measurement ${measurement.id}."
         )
         return out
     }
 
     /**
-     * Reverts InBody calibration offsets on measurement values, returning them to their
+     * Reverts professional scale calibration offsets on measurement values, returning them to their
      * uncalibrated state.
      *
      * @param measurement Target measurement.
@@ -779,13 +779,13 @@ class MeasurementTransformationUseCase @Inject constructor(
      * @param calibration Optional explicit calibration profile to revert. If null, the active
      *                    calibration for [measurement.userId] is fetched from the database.
      */
-    suspend fun revertInBodyCalibration(
+    suspend fun revertBodyScanCalibration(
         measurement: Measurement,
         values: List<MeasurementValue>,
-        calibration: InBodyCalibration? = null
+        calibration: BodyScanCalibration? = null
     ): List<MeasurementValue> {
         val activeCalibration = calibration
-            ?: databaseRepository.getInBodyCalibrationForUser(measurement.userId)
+            ?: databaseRepository.getBodyScanCalibrationForUser(measurement.userId)
             ?: return values
 
         val types = query.getAllMeasurementTypes().first()
@@ -830,14 +830,14 @@ class MeasurementTransformationUseCase @Inject constructor(
         }
 
         // Reference masses at t0 for reverting damped hybrid allometric scaling (gamma = 0.5)
-        val hasValidBaseline = activeCalibration.scaleBaselineWeightKg > 0f && activeCalibration.inBodyWeightKg > 0f
-        val normRatio = if (hasValidBaseline) activeCalibration.scaleBaselineWeightKg / activeCalibration.inBodyWeightKg else null
+        val hasValidBaseline = activeCalibration.scaleBaselineWeightKg > 0f && activeCalibration.scanWeightKg > 0f
+        val normRatio = if (hasValidBaseline) activeCalibration.scaleBaselineWeightKg / activeCalibration.scanWeightKg else null
         val refFfmKg0 = if (hasValidBaseline) {
-            activeCalibration.inBodyFatPercent?.let { activeCalibration.scaleBaselineWeightKg * (1f - it / 100f) }
+            activeCalibration.scanFatPercent?.let { activeCalibration.scaleBaselineWeightKg * (1f - it / 100f) }
         } else null
-        val refMuscleKg0 = if (normRatio != null) activeCalibration.inBodyMuscleKg?.let { it * normRatio } else null
-        val refWaterKg0 = if (normRatio != null) activeCalibration.inBodyWaterLiters?.let { (it * 0.995f) * normRatio } else null
-        val refProteinKg0 = if (normRatio != null) activeCalibration.inBodyProteinKg?.let { it * normRatio } else null
+        val refMuscleKg0 = if (normRatio != null) activeCalibration.scanMuscleKg?.let { it * normRatio } else null
+        val refWaterKg0 = if (normRatio != null) activeCalibration.scanWaterLiters?.let { (it * 0.995f) * normRatio } else null
+        val refProteinKg0 = if (normRatio != null) activeCalibration.scanProteinKg?.let { it * normRatio } else null
 
         var currentFfmKgForVf: Float? = null
 
@@ -980,10 +980,10 @@ class MeasurementTransformationUseCase @Inject constructor(
                 if (currentVal != null) {
                     val uncalibratedVf = if (
                         currentFfmKgForVf != null &&
-                        activeCalibration.inBodyFatPercent != null &&
+                        activeCalibration.scanFatPercent != null &&
                         activeCalibration.scaleBaselineWeightKg > 0f
                     ) {
-                        val bfmCal0 = activeCalibration.scaleBaselineWeightKg * (activeCalibration.inBodyFatPercent / 100f)
+                        val bfmCal0 = activeCalibration.scaleBaselineWeightKg * (activeCalibration.scanFatPercent / 100f)
                         val bfmCalN = weightKg - currentFfmKgForVf
                         val deltaBfmActual = bfmCalN - bfmCal0
                         val deltaBfmAssumed = 0.75f * (weightKg - activeCalibration.scaleBaselineWeightKg)
@@ -1027,7 +1027,7 @@ class MeasurementTransformationUseCase @Inject constructor(
 
         LogManager.i(
             "MeasurementTransformation",
-            "InBody calibration reverted for user ${measurement.userId} on measurement ${measurement.id}."
+            "Professional scale calibration reverted for user ${measurement.userId} on measurement ${measurement.id}."
         )
         return out
     }

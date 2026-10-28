@@ -17,7 +17,7 @@
  */
 package com.health.openscale.core.database
 
-import com.health.openscale.core.data.InBodyCalibration
+import com.health.openscale.core.data.BodyScanCalibration
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
@@ -45,7 +45,7 @@ class DatabaseRepository @Inject constructor(
     private val measurementDao: MeasurementDao,
     private val measurementTypeDao: MeasurementTypeDao,
     private val measurementValueDao: MeasurementValueDao,
-    private val inBodyCalibrationDao: InBodyCalibrationDao,
+    private val bodyScanCalibrationDao: BodyScanCalibrationDao,
     private val derivedValuesCalculator: DerivedValuesCalculator
 ) {
 
@@ -106,23 +106,23 @@ class DatabaseRepository @Inject constructor(
         return userGoalsDao.getAllForUser(userId)
     }
 
-    // --- InBody Calibration Operations ---
-    suspend fun insertOrUpdateInBodyCalibration(calibration: InBodyCalibration): Long {
-        LogManager.d(TAG, "Inserting/updating InBody calibration for userId: ${calibration.userId}")
-        return inBodyCalibrationDao.insertOrUpdate(calibration)
+    // --- Body Scan Calibration Operations ---
+    suspend fun insertOrUpdateBodyScanCalibration(calibration: BodyScanCalibration): Long {
+        LogManager.d(TAG, "Inserting/updating body scan calibration for userId: ${calibration.userId}")
+        return bodyScanCalibrationDao.insertOrUpdate(calibration)
     }
 
-    fun observeInBodyCalibrationForUser(userId: Int): Flow<InBodyCalibration?> {
-        return inBodyCalibrationDao.observeForUser(userId)
+    fun observeBodyScanCalibrationForUser(userId: Int): Flow<BodyScanCalibration?> {
+        return bodyScanCalibrationDao.observeForUser(userId)
     }
 
-    suspend fun getInBodyCalibrationForUser(userId: Int): InBodyCalibration? {
-        return inBodyCalibrationDao.getForUser(userId)
+    suspend fun getBodyScanCalibrationForUser(userId: Int): BodyScanCalibration? {
+        return bodyScanCalibrationDao.getForUser(userId)
     }
 
-    suspend fun deleteInBodyCalibrationForUser(userId: Int) {
-        LogManager.d(TAG, "Deleting InBody calibration for userId: $userId")
-        inBodyCalibrationDao.deleteForUser(userId)
+    suspend fun deleteBodyScanCalibrationForUser(userId: Int) {
+        LogManager.d(TAG, "Deleting body scan calibration for userId: $userId")
+        bodyScanCalibrationDao.deleteForUser(userId)
     }
 
     // --- Measurement Operations ---

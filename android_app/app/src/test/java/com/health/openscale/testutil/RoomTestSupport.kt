@@ -111,7 +111,7 @@ object RoomTestSupport {
         measurementDao = db.measurementDao(),
         measurementTypeDao = db.measurementTypeDao(),
         measurementValueDao = db.measurementValueDao(),
-        inBodyCalibrationDao = db.inBodyCalibrationDao(),
+        bodyScanCalibrationDao = db.bodyScanCalibrationDao(),
         derivedValuesCalculator = DerivedValuesCalculator(
             userDao = db.userDao(),
             measurementDao = db.measurementDao(),

@@ -21,21 +21,21 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.health.openscale.core.data.InBodyCalibration
+import com.health.openscale.core.data.BodyScanCalibration
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface InBodyCalibrationDao {
+interface BodyScanCalibrationDao {
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrUpdate(calibration: InBodyCalibration): Long
+    suspend fun insertOrUpdate(calibration: BodyScanCalibration): Long
 
-    @Query("SELECT * FROM inbody_calibration WHERE userId = :userId LIMIT 1")
-    fun observeForUser(userId: Int): Flow<InBodyCalibration?>
+    @Query("SELECT * FROM body_scan_calibration WHERE userId = :userId LIMIT 1")
+    fun observeForUser(userId: Int): Flow<BodyScanCalibration?>
 
-    @Query("SELECT * FROM inbody_calibration WHERE userId = :userId LIMIT 1")
-    suspend fun getForUser(userId: Int): InBodyCalibration?
+    @Query("SELECT * FROM body_scan_calibration WHERE userId = :userId LIMIT 1")
+    suspend fun getForUser(userId: Int): BodyScanCalibration?
 
-    @Query("DELETE FROM inbody_calibration WHERE userId = :userId")
-    suspend fun deleteForUser(userId: Int)
+    @Query("DELETE FROM body_scan_calibration WHERE userId = :userId")
+    suspend fun deleteForUser(userId: Int): Int
 }
-

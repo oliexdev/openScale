@@ -127,7 +127,7 @@ object SettingsPreferenceKeys {
     val BODY_WATER_FORMULA_OPTION = stringPreferencesKey("body_water_formula_option")
     val LBM_FORMULA_OPTION        = stringPreferencesKey("lbm_formula_option")
 
-    val INBODY_CALIBRATION_ENABLED = booleanPreferencesKey("inbody_calibration_enabled")
+    val BODY_SCAN_CALIBRATION_ENABLED = booleanPreferencesKey("body_scan_calibration_enabled")
 
     // Context strings for screen-specific settings (can be used as prefixes for dynamic keys)
     const val OVERVIEW_SCREEN_CONTEXT = "overview_screen"
@@ -297,8 +297,8 @@ interface SettingsFacade {
     val selectedLbmFormula: Flow<LbmFormulaOption>
     suspend fun setSelectedLbmFormula(option: LbmFormulaOption)
 
-    val isInBodyCalibrationEnabled: Flow<Boolean>
-    suspend fun setInBodyCalibrationEnabled(enabled: Boolean)
+    val isBodyScanCalibrationEnabled: Flow<Boolean>
+    suspend fun setBodyScanCalibrationEnabled(enabled: Boolean)
 
     val autoConnectOnStartup: Flow<Boolean>
     suspend fun setAutoConnectOnStartup(enabled: Boolean)
@@ -1098,14 +1098,14 @@ class SettingsFacadeImpl @Inject constructor(
         saveSetting(SettingsPreferenceKeys.LBM_FORMULA_OPTION.name, option.name)
     }
 
-    override val isInBodyCalibrationEnabled: Flow<Boolean> = observeSetting(
-        SettingsPreferenceKeys.INBODY_CALIBRATION_ENABLED.name,
+    override val isBodyScanCalibrationEnabled: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.BODY_SCAN_CALIBRATION_ENABLED.name,
         true
     )
 
-    override suspend fun setInBodyCalibrationEnabled(enabled: Boolean) {
-        LogManager.d(TAG, "Setting INBODY_CALIBRATION_ENABLED to: $enabled")
-        saveSetting(SettingsPreferenceKeys.INBODY_CALIBRATION_ENABLED.name, enabled)
+    override suspend fun setBodyScanCalibrationEnabled(enabled: Boolean) {
+        LogManager.d(TAG, "Setting BODY_SCAN_CALIBRATION_ENABLED to: $enabled")
+        saveSetting(SettingsPreferenceKeys.BODY_SCAN_CALIBRATION_ENABLED.name, enabled)
     }
 
     @Suppress("UNCHECKED_CAST")

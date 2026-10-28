@@ -17,7 +17,7 @@
  */
 package com.health.openscale.core.usecase
 
-import com.health.openscale.core.data.InBodyCalibration
+import com.health.openscale.core.data.BodyScanCalibration
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.WeightUnit
@@ -34,21 +34,21 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Data holder for inputs entered by the user from an InBody test result sheet.
+ * Data holder for inputs entered by the user from a clinical body scan sheet (e.g. InBody, Tanita, DEXA).
  */
-data class InBodyFormInput(
-    val inBodyWeightKg: Float,
-    val inBodyFatPercent: Float? = null,
-    val inBodyFatKg: Float? = null,
-    val inBodyMuscleKg: Float? = null,
-    val inBodyWaterLiters: Float? = null,
-    val inBodyBoneKg: Float? = null,
-    val inBodyVisceralFat: Float? = null,
-    val inBodyProteinKg: Float? = null
+data class BodyScanFormInput(
+    val scanWeightKg: Float,
+    val scanFatPercent: Float? = null,
+    val scanFatKg: Float? = null,
+    val scanMuscleKg: Float? = null,
+    val scanWaterLiters: Float? = null,
+    val scanBoneKg: Float? = null,
+    val scanVisceralFat: Float? = null,
+    val scanProteinKg: Float? = null
 )
 
 /**
- * Use cases managing InBody calibrations.
+ * Use cases managing body scan calibrations.
  *
  * Responsibilities:
  * - Validate user inputs and baseline smart scale measurements.
@@ -57,32 +57,32 @@ data class InBodyFormInput(
  * - Recalculate baseline measurements immediately upon calibration save.
  */
 @Singleton
-class InBodyCalibrationUseCases @Inject constructor(
+class BodyScanCalibrationUseCases @Inject constructor(
     private val databaseRepository: DatabaseRepository,
     private val settings: SettingsFacade,
     private val query: MeasurementQueryUseCases,
     private val transformation: MeasurementTransformationUseCase
 ) {
-    private val TAG = "InBodyCalibrationUseCases"
+    private val TAG = "BodyScanCalibrationUseCases"
 
     /** Observes the active calibration record for a user. */
-    fun observeCalibrationForUser(userId: Int): Flow<InBodyCalibration?> =
-        databaseRepository.observeInBodyCalibrationForUser(userId)
+    fun observeCalibrationForUser(userId: Int): Flow<BodyScanCalibration?> =
+        databaseRepository.observeBodyScanCalibrationForUser(userId)
 
     /** Gets the active calibration record for a user. */
-    suspend fun getCalibrationForUser(userId: Int): InBodyCalibration? =
-        databaseRepository.getInBodyCalibrationForUser(userId)
+    suspend fun getCalibrationForUser(userId: Int): BodyScanCalibration? =
+        databaseRepository.getBodyScanCalibrationForUser(userId)
 
     /** Deletes the calibration record for a user and reverts calibration offsets on all affected measurements. */
     suspend fun deleteCalibrationForUser(userId: Int) {
-        LogManager.i(TAG, "Deleting InBody calibration for user $userId")
-        val existingCal = databaseRepository.getInBodyCalibrationForUser(userId)
+        LogManager.i(TAG, "Deleting body scan calibration for user $userId")
+        val existingCal = databaseRepository.getBodyScanCalibrationForUser(userId)
         if (existingCal != null) {
             val measurements = databaseRepository.getMeasurementsWithValuesForUser(userId).first()
             val forwardMeasurements = measurements.filter { it.measurement.timestamp >= existingCal.scaleMeasurementTimestamp }
             forwardMeasurements.forEach { mwv ->
                 LogManager.i(TAG, "Reverting measurement ${mwv.measurement.id} to uncalibrated values")
-                val revertedValues = transformation.revertInBodyCalibration(
+                val revertedValues = transformation.revertBodyScanCalibration(
                     mwv.measurement,
                     mwv.values.map { it.value },
                     existingCal
@@ -95,7 +95,7 @@ class InBodyCalibrationUseCases @Inject constructor(
                 databaseRepository.recalculateDerivedValuesForMeasurement(mwv.measurement.id)
             }
         }
-        databaseRepository.deleteInBodyCalibrationForUser(userId)
+        databaseRepository.deleteBodyScanCalibrationForUser(userId)
     }
 
     /**
@@ -115,7 +115,7 @@ class InBodyCalibrationUseCases @Inject constructor(
      *
      * @return Error description if invalid, or null if inputs are valid.
      */
-    fun validateInputs(input: InBodyFormInput, baseline: MeasurementWithValues?): String? {
+    fun validateInputs(input: BodyScanFormInput, baseline: MeasurementWithValues?): String? {
         if (baseline == null) {
             return "Please select a baseline scale measurement."
         }
@@ -127,28 +127,28 @@ class InBodyCalibrationUseCases @Inject constructor(
         if (!hasBodyFat) {
             return "The selected scale measurement is missing body composition data (fat/muscle). Please select a complete weigh-in taken with bare feet."
         }
-        if (input.inBodyWeightKg <= 10f || input.inBodyWeightKg > 350f) {
-            return "InBody weight must be between 10 kg and 350 kg."
+        if (input.scanWeightKg <= 10f || input.scanWeightKg > 350f) {
+            return "Body scan weight must be between 10 kg and 350 kg."
         }
-        if (input.inBodyFatPercent != null && (input.inBodyFatPercent < 1f || input.inBodyFatPercent > 70f)) {
+        if (input.scanFatPercent != null && (input.scanFatPercent < 1f || input.scanFatPercent > 70f)) {
             return "Body fat percentage must be between 1% and 70%."
         }
-        if (input.inBodyFatKg != null && (input.inBodyFatKg <= 0f || input.inBodyFatKg >= input.inBodyWeightKg)) {
+        if (input.scanFatKg != null && (input.scanFatKg <= 0f || input.scanFatKg >= input.scanWeightKg)) {
             return "Body fat mass must be positive and less than total weight."
         }
-        if (input.inBodyMuscleKg != null && (input.inBodyMuscleKg <= 0f || input.inBodyMuscleKg >= input.inBodyWeightKg)) {
+        if (input.scanMuscleKg != null && (input.scanMuscleKg <= 0f || input.scanMuscleKg >= input.scanWeightKg)) {
             return "Skeletal muscle mass must be positive and less than total weight."
         }
-        if (input.inBodyWaterLiters != null && (input.inBodyWaterLiters <= 0f || input.inBodyWaterLiters >= input.inBodyWeightKg)) {
+        if (input.scanWaterLiters != null && (input.scanWaterLiters <= 0f || input.scanWaterLiters >= input.scanWeightKg)) {
             return "Total body water must be positive and less than total weight."
         }
-        if (input.inBodyBoneKg != null && (input.inBodyBoneKg <= 0.1f || input.inBodyBoneKg > 15f)) {
+        if (input.scanBoneKg != null && (input.scanBoneKg <= 0.1f || input.scanBoneKg > 15f)) {
             return "Bone mass must be between 0.1 kg and 15 kg."
         }
-        if (input.inBodyVisceralFat != null && input.inBodyVisceralFat < 1f) {
+        if (input.scanVisceralFat != null && input.scanVisceralFat < 1f) {
             return "Visceral fat level must be at least 1."
         }
-        if (input.inBodyProteinKg != null && (input.inBodyProteinKg <= 0f || input.inBodyProteinKg >= input.inBodyWeightKg)) {
+        if (input.scanProteinKg != null && (input.scanProteinKg <= 0f || input.scanProteinKg >= input.scanWeightKg)) {
             return "Protein mass must be positive and less than total weight."
         }
         return null
@@ -158,23 +158,23 @@ class InBodyCalibrationUseCases @Inject constructor(
      * Calculates the additive intercept offsets (Δ in Kg) for each compartment.
      *
      * Normalization:
-     * Due to potential clothing or minor hydration differences between the clinical test
-     * and the home scale weigh-in on calibration day, all InBody reference mass inputs
-     * are normalized by the ratio (W_scale / W_InBody) before computing offsets.
+     * Due to potential clothing or minor hydration differences between the reference body scan
+     * and the home scale weigh-in on calibration day, all reference scan mass inputs
+     * are normalized by the ratio (W_scale / W_scan) before computing offsets.
      */
     suspend fun calculateCalibration(
         userId: Int,
         baseline: MeasurementWithValues,
-        input: InBodyFormInput,
+        input: BodyScanFormInput,
         scaleName: String? = null
-    ): InBodyCalibration {
+    ): BodyScanCalibration {
         // If an active calibration was already applied to baseline, reverse it first to recover
         // original uncalibrated values so recalibrating does not double-offset or zero out.
         val existingCal = getCalibrationForUser(userId)
         val effectiveBaseline = if (existingCal != null &&
             baseline.measurement.timestamp >= existingCal.scaleMeasurementTimestamp
         ) {
-            val revertedValues = transformation.revertInBodyCalibration(
+            val revertedValues = transformation.revertBodyScanCalibration(
                 baseline.measurement,
                 baseline.values.map { it.value },
                 existingCal
@@ -204,18 +204,18 @@ class InBodyCalibrationUseCases @Inject constructor(
             else -> scaleWeightVal
         }
         require(scaleWeightKg > 0f) { "Scale weight must be positive." }
-        require(input.inBodyWeightKg > 0f) { "InBody weight must be positive." }
+        require(input.scanWeightKg > 0f) { "Body scan weight must be positive." }
 
-        // Normalization ratio: W0 / W_InBody
-        val ratio = scaleWeightKg / input.inBodyWeightKg
+        // Normalization ratio: W0 / W_scan
+        val ratio = scaleWeightKg / input.scanWeightKg
 
         // --- A. FFM Offset (Kg) ---
-        val inBodyFfmKg: Float? = when {
-            input.inBodyFatPercent != null -> input.inBodyWeightKg * (1f - input.inBodyFatPercent / 100f)
-            input.inBodyFatKg != null -> input.inBodyWeightKg - input.inBodyFatKg
+        val scanFfmKg: Float? = when {
+            input.scanFatPercent != null -> input.scanWeightKg * (1f - input.scanFatPercent / 100f)
+            input.scanFatKg != null -> input.scanWeightKg - input.scanFatKg
             else -> null
         }
-        val offsetFfmKg: Float? = inBodyFfmKg?.let { rawFfm ->
+        val offsetFfmKg: Float? = scanFfmKg?.let { rawFfm ->
             val normalizedFfm = rawFfm * ratio
             val scaleFfmKg: Float? = run {
                 val lbmItem = effectiveBaseline.values.find { it.type.key == MeasurementType.LBM }
@@ -236,7 +236,7 @@ class InBodyCalibrationUseCases @Inject constructor(
         }
 
         // --- B. Muscle Offset (Kg) ---
-        val offsetMuscleKg: Float? = input.inBodyMuscleKg?.let { rawMuscle ->
+        val offsetMuscleKg: Float? = input.scanMuscleKg?.let { rawMuscle ->
             val normalizedMuscle = rawMuscle * ratio
             val muscleItem = effectiveBaseline.values.find { it.type.key == MeasurementType.MUSCLE }
             val muscleVal = muscleItem?.value?.floatValue
@@ -253,8 +253,8 @@ class InBodyCalibrationUseCases @Inject constructor(
         }
 
         // --- C. Water Offset (Kg) ---
-        // InBody measures TBW in Liters. Water at 36.5°C body temp is ~0.995 kg/L.
-        val offsetWaterKg: Float? = input.inBodyWaterLiters?.let { rawLiters ->
+        // TBW is typically measured in Liters. Water at 36.5°C body temp is ~0.995 kg/L.
+        val offsetWaterKg: Float? = input.scanWaterLiters?.let { rawLiters ->
             val rawWaterKg = rawLiters * 0.995f
             val normalizedWater = rawWaterKg * ratio
             val waterItem = effectiveBaseline.values.find { it.type.key == MeasurementType.WATER }
@@ -272,7 +272,7 @@ class InBodyCalibrationUseCases @Inject constructor(
         }
 
         // --- D. Bone Mass Offset (Kg) ---
-        val offsetBoneKg: Float? = input.inBodyBoneKg?.let { rawBone ->
+        val offsetBoneKg: Float? = input.scanBoneKg?.let { rawBone ->
             val normalizedBone = rawBone * ratio
             val boneItem = effectiveBaseline.values.find { it.type.key == MeasurementType.BONE }
             val boneVal = boneItem?.value?.floatValue
@@ -288,13 +288,13 @@ class InBodyCalibrationUseCases @Inject constructor(
         }
 
         // --- E. Visceral Fat Offset (dimensionless level) ---
-        val offsetVisceralFat: Float? = input.inBodyVisceralFat?.let { rawVf ->
+        val offsetVisceralFat: Float? = input.scanVisceralFat?.let { rawVf ->
             val vfVal = effectiveBaseline.values.find { it.type.key == MeasurementType.VISCERAL_FAT }?.value?.floatValue
             vfVal?.let { rawVf - it }
         }
 
         // --- F. Protein Offset (Kg) ---
-        val offsetProteinKg: Float? = input.inBodyProteinKg?.let { rawProtein ->
+        val offsetProteinKg: Float? = input.scanProteinKg?.let { rawProtein ->
             val normalizedProtein = rawProtein * ratio
             val proteinItem = effectiveBaseline.values.find { it.type.key == MeasurementType.PROTEIN }
             val proteinVal = proteinItem?.value?.floatValue
@@ -310,21 +310,21 @@ class InBodyCalibrationUseCases @Inject constructor(
             scaleProteinKg?.let { normalizedProtein - it }
         }
 
-        val resolvedFatPercent = input.inBodyFatPercent
-            ?: input.inBodyFatKg?.let { (it / input.inBodyWeightKg) * 100f }
+        val resolvedFatPercent = input.scanFatPercent
+            ?: input.scanFatKg?.let { (it / input.scanWeightKg) * 100f }
 
-        return InBodyCalibration(
+        return BodyScanCalibration(
             userId = userId,
             scaleMeasurementTimestamp = baseline.measurement.timestamp,
             scaleName = scaleName,
             scaleBaselineWeightKg = scaleWeightKg,
-            inBodyWeightKg = input.inBodyWeightKg,
-            inBodyFatPercent = resolvedFatPercent?.let { CalculationUtils.roundTo(it) },
-            inBodyMuscleKg = input.inBodyMuscleKg?.let { CalculationUtils.roundTo(it) },
-            inBodyWaterLiters = input.inBodyWaterLiters?.let { CalculationUtils.roundTo(it) },
-            inBodyBoneKg = input.inBodyBoneKg?.let { CalculationUtils.roundTo(it) },
-            inBodyVisceralFat = input.inBodyVisceralFat?.let { CalculationUtils.roundTo(it) },
-            inBodyProteinKg = input.inBodyProteinKg?.let { CalculationUtils.roundTo(it) },
+            scanWeightKg = input.scanWeightKg,
+            scanFatPercent = resolvedFatPercent?.let { CalculationUtils.roundTo(it) },
+            scanMuscleKg = input.scanMuscleKg?.let { CalculationUtils.roundTo(it) },
+            scanWaterLiters = input.scanWaterLiters?.let { CalculationUtils.roundTo(it) },
+            scanBoneKg = input.scanBoneKg?.let { CalculationUtils.roundTo(it) },
+            scanVisceralFat = input.scanVisceralFat?.let { CalculationUtils.roundTo(it) },
+            scanProteinKg = input.scanProteinKg?.let { CalculationUtils.roundTo(it) },
             offsetFfmKg = offsetFfmKg,
             offsetMuscleKg = offsetMuscleKg,
             offsetWaterKg = offsetWaterKg,
@@ -339,21 +339,20 @@ class InBodyCalibrationUseCases @Inject constructor(
      * the baseline measurement so that changes are visible right away.
      */
     suspend fun saveCalibration(
-        calibration: InBodyCalibration,
+        calibration: BodyScanCalibration,
         baselineMeasurement: MeasurementWithValues? = null
     ): Long {
-        LogManager.i(TAG, "Saving InBody calibration for user ${calibration.userId}")
-        val existingCal = databaseRepository.getInBodyCalibrationForUser(calibration.userId)
-        val isCalEnabled = settings.isInBodyCalibrationEnabled.first()
+        LogManager.i(TAG, "Saving body scan calibration for user ${calibration.userId}")
+        val existingCal = databaseRepository.getBodyScanCalibrationForUser(calibration.userId)
 
-        val id = databaseRepository.insertOrUpdateInBodyCalibration(calibration)
+        val id = databaseRepository.insertOrUpdateBodyScanCalibration(calibration)
 
         if (baselineMeasurement != null) {
             LogManager.i(TAG, "Immediately recalibrating baseline measurement ${baselineMeasurement.measurement.id}")
             val rawValues = if (existingCal != null &&
                 baselineMeasurement.measurement.timestamp >= existingCal.scaleMeasurementTimestamp
             ) {
-                transformation.revertInBodyCalibration(
+                transformation.revertBodyScanCalibration(
                     baselineMeasurement.measurement,
                     baselineMeasurement.values.map { it.value },
                     existingCal
@@ -362,7 +361,7 @@ class InBodyCalibrationUseCases @Inject constructor(
                 baselineMeasurement.values.map { it.value }
             }
 
-            val calibratedValues = transformation.applyInBodyCalibration(
+            val calibratedValues = transformation.applyBodyScanCalibration(
                 baselineMeasurement.measurement,
                 rawValues,
                 calibration

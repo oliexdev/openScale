@@ -63,7 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.health.openscale.R
-import com.health.openscale.core.data.InBodyCalibration
+import com.health.openscale.core.data.BodyScanCalibration
 import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.shared.SharedViewModel
 import java.text.DateFormat
@@ -180,7 +180,7 @@ fun CalibrationSettingsScreen(
 
 @Composable
 private fun ActiveCalibrationCard(
-    calibration: InBodyCalibration,
+    calibration: BodyScanCalibration,
     onRecalibrate: () -> Unit,
     onReset: () -> Unit
 ) {
@@ -231,7 +231,7 @@ private fun ActiveCalibrationCard(
                 }
                 MetadataRow(
                     label = stringResource(R.string.calibration_field_weight),
-                    value = "${calibration.inBodyWeightKg} kg"
+                    value = "${calibration.scanWeightKg} kg"
                 )
             }
 
@@ -260,7 +260,7 @@ private fun ActiveCalibrationCard(
                         modifier = Modifier.weight(1.5f)
                     )
                     Text(
-                        text = stringResource(R.string.calibration_summary_header_inbody),
+                        text = stringResource(R.string.calibration_summary_header_scan),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1.2f)
@@ -279,16 +279,16 @@ private fun ActiveCalibrationCard(
                 calibration.offsetFfmKg?.let { offset ->
                     OffsetTableRow(
                         metric = "Fat-Free Mass (FFM)",
-                        inBodyValue = "Anchor",
+                        proValue = "Anchor",
                         offsetValue = formatOffset(offset, "kg")
                     )
                 }
 
                 // Row: Body Fat %
-                calibration.inBodyFatPercent?.let { bf ->
+                calibration.scanFatPercent?.let { bf ->
                     OffsetTableRow(
                         metric = "Body Fat",
-                        inBodyValue = "$bf %",
+                        proValue = "$bf %",
                         offsetValue = "Mass Balance"
                     )
                 }
@@ -297,7 +297,7 @@ private fun ActiveCalibrationCard(
                 calibration.offsetMuscleKg?.let { offset ->
                     OffsetTableRow(
                         metric = "Skeletal Muscle (SMM)",
-                        inBodyValue = "${calibration.inBodyMuscleKg ?: "—"} kg",
+                        proValue = "${calibration.scanMuscleKg ?: "—"} kg",
                         offsetValue = formatOffset(offset, "kg")
                     )
                 }
@@ -306,7 +306,7 @@ private fun ActiveCalibrationCard(
                 calibration.offsetWaterKg?.let { offset ->
                     OffsetTableRow(
                         metric = "Body Water (TBW)",
-                        inBodyValue = "${calibration.inBodyWaterLiters ?: "—"} L",
+                        proValue = "${calibration.scanWaterLiters ?: "—"} L",
                         offsetValue = formatOffset(offset, "kg")
                     )
                 }
@@ -315,7 +315,7 @@ private fun ActiveCalibrationCard(
                 calibration.offsetBoneKg?.let { offset ->
                     OffsetTableRow(
                         metric = "Bone Mass (Minerals)",
-                        inBodyValue = "${calibration.inBodyBoneKg ?: "—"} kg",
+                        proValue = "${calibration.scanBoneKg ?: "—"} kg",
                         offsetValue = formatOffset(offset, "kg")
                     )
                 }
@@ -324,7 +324,7 @@ private fun ActiveCalibrationCard(
                 calibration.offsetVisceralFat?.let { offset ->
                     OffsetTableRow(
                         metric = "Visceral Fat",
-                        inBodyValue = "${calibration.inBodyVisceralFat ?: "—"}",
+                        proValue = "${calibration.scanVisceralFat ?: "—"}",
                         offsetValue = formatOffset(offset, "")
                     )
                 }
@@ -333,7 +333,7 @@ private fun ActiveCalibrationCard(
                 calibration.offsetProteinKg?.let { offset ->
                     OffsetTableRow(
                         metric = "Protein Mass",
-                        inBodyValue = "${calibration.inBodyProteinKg ?: "—"} kg",
+                        proValue = "${calibration.scanProteinKg ?: "—"} kg",
                         offsetValue = formatOffset(offset, "kg")
                     )
                 }
@@ -414,14 +414,14 @@ private fun MetadataRow(label: String, value: String) {
 }
 
 @Composable
-private fun OffsetTableRow(metric: String, inBodyValue: String, offsetValue: String) {
+private fun OffsetTableRow(metric: String, proValue: String, offsetValue: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(text = metric, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1.5f))
-        Text(text = inBodyValue, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1.2f))
+        Text(text = proValue, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1.2f))
         Text(
             text = offsetValue,
             style = MaterialTheme.typography.bodySmall,
