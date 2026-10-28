@@ -19,12 +19,17 @@ package com.health.openscale.ui.screen.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.health.openscale.R
 import com.health.openscale.core.data.BodyScanCalibration
 import com.health.openscale.core.data.CalibrationScope
+import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.UnitType
+import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.usecase.BodyScanCalibrationUseCases
 import com.health.openscale.core.usecase.BodyScanFormInput
+import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -36,6 +41,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.Locale
 import javax.inject.Inject
 
 /**
@@ -59,12 +65,6 @@ class CalibrationViewModel @Inject constructor(
     fun setCalibrationEnabled(userId: Int, enabled: Boolean) {
         viewModelScope.launch {
             calibrationUseCases.setCalibrationEnabledForUser(userId, enabled)
-        }
-    }
-
-    fun setCalibrationEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsFacade.setBodyScanCalibrationEnabled(enabled)
         }
     }
 
@@ -146,6 +146,14 @@ class CalibrationViewModel @Inject constructor(
     fun setScanProtein(value: String) { _scanProtein.value = value }
 
     private fun String.toFloatLocaleSafe(): Float? = trim().replace(',', '.').toFloatOrNull()
+
+    private fun toKilograms(value: Float, unit: UnitType, totalWeightKg: Float): Float = when (unit) {
+        UnitType.PERCENT -> (value / 100f) * totalWeightKg
+        UnitType.KG -> value
+        UnitType.LB -> ConverterUtils.toKilogram(value, WeightUnit.LB)
+        UnitType.ST -> ConverterUtils.toKilogram(value, WeightUnit.ST)
+        else -> if (value <= 100f && totalWeightKg > 30f) (value / 100f) * totalWeightKg else value
+    }
 
     fun clearValidationError() {
         _validationError.value = null
@@ -265,4 +273,110 @@ class CalibrationViewModel @Inject constructor(
         _validationError.value = null
         _isSaving.value = false
     }
+
+    fun getComparisonRows(): List<CalibrationComparisonRow> {
+        val calibration = _calculatedCalibration.value ?: return emptyList()
+        val baseline = _effectiveBaseline.value ?: _selectedBaseline.value ?: return emptyList()
+
+        val scaleWeight = calibration.scaleBaselineWeightKg
+        val scaleFat = baseline.values.find { it.type.key == MeasurementType.BODY_FAT }?.value?.floatValue
+        val scaleFfmKg: Float? = run {
+            val lbmItem = baseline.values.find { it.type.key == MeasurementType.LBM }
+            val lbmVal = lbmItem?.value?.floatValue
+            if (lbmVal != null) {
+                toKilograms(lbmVal, lbmItem.type.unit, scaleWeight)
+            } else {
+                scaleFat?.let { scaleWeight * (1f - it / 100f) }
+            }
+        }
+
+        val scaleMuscleItem = baseline.values.find { it.type.key == MeasurementType.MUSCLE }
+        val scaleMuscleKg = scaleMuscleItem?.value?.floatValue?.let { toKilograms(it, scaleMuscleItem.type.unit, scaleWeight) }
+
+        val scaleWaterItem = baseline.values.find { it.type.key == MeasurementType.WATER }
+        val scaleWaterKg = scaleWaterItem?.value?.floatValue?.let { toKilograms(it, scaleWaterItem.type.unit, scaleWeight) }
+
+        val scaleBoneItem = baseline.values.find { it.type.key == MeasurementType.BONE }
+        val scaleBoneKg = scaleBoneItem?.value?.floatValue?.let { toKilograms(it, scaleBoneItem.type.unit, scaleWeight) }
+
+        val scaleVisceralFat = baseline.values.find { it.type.key == MeasurementType.VISCERAL_FAT }?.value?.floatValue
+        val scaleProteinItem = baseline.values.find { it.type.key == MeasurementType.PROTEIN }
+        val scaleProteinKg = scaleProteinItem?.value?.floatValue?.let { toKilograms(it, scaleProteinItem.type.unit, scaleWeight) }
+
+        fun formatOffset(offset: Float, unit: String): String {
+            val sign = if (offset > 0) "+" else ""
+            val u = if (unit.isNotBlank()) " $unit" else ""
+            val formatted = String.format(Locale.US, "%.2f", offset)
+            return "$sign$formatted$u"
+        }
+
+        return listOfNotNull(
+            calibration.scanFatPercent?.let {
+                val diff = scaleFat?.let { sf -> it - sf }
+                CalibrationComparisonRow(
+                    labelResId = R.string.measurement_type_body_fat,
+                    scaleText = scaleFat?.let { sf -> String.format(Locale.US, "%.1f %%", sf) } ?: "-",
+                    scanText = String.format(Locale.US, "%.1f %%", it),
+                    adjustmentText = diff?.let { d -> formatOffset(d, "%") } ?: "-"
+                )
+            },
+            calibration.scanMuscleKg?.let {
+                CalibrationComparisonRow(
+                    labelResId = R.string.calibration_metric_skeletal_muscle,
+                    scaleText = scaleMuscleKg?.let { sm -> String.format(Locale.US, "%.1f kg", sm) } ?: "-",
+                    scanText = String.format(Locale.US, "%.1f kg", it),
+                    adjustmentText = calibration.offsetMuscleKg?.let { om -> formatOffset(om, "kg") } ?: "-"
+                )
+            },
+            calibration.offsetFfmKg?.let {
+                val scanFfm = calibration.scanFatPercent?.let { fp -> scaleWeight * (1f - fp / 100f) }
+                    ?: scaleFfmKg?.plus(it)
+                CalibrationComparisonRow(
+                    labelResId = R.string.calibration_metric_fat_free_mass,
+                    scaleText = scaleFfmKg?.let { sf -> String.format(Locale.US, "%.1f kg", sf) } ?: "-",
+                    scanText = scanFfm?.let { sf -> String.format(Locale.US, "%.1f kg", sf) } ?: "-",
+                    adjustmentText = formatOffset(it, "kg")
+                )
+            },
+            calibration.scanWaterLiters?.let {
+                CalibrationComparisonRow(
+                    labelResId = R.string.calibration_metric_total_body_water,
+                    scaleText = scaleWaterKg?.let { sw -> String.format(Locale.US, "%.1f kg", sw) } ?: "-",
+                    scanText = String.format(Locale.US, "%.1f L", it),
+                    adjustmentText = calibration.offsetWaterKg?.let { ow -> formatOffset(ow, "kg") } ?: "-"
+                )
+            },
+            calibration.scanVisceralFat?.let {
+                CalibrationComparisonRow(
+                    labelResId = R.string.measurement_type_visceral_fat,
+                    scaleText = scaleVisceralFat?.let { svf -> String.format(Locale.US, "%.1f", svf) } ?: "-",
+                    scanText = String.format(Locale.US, "%.1f", it),
+                    adjustmentText = calibration.offsetVisceralFat?.let { ovf -> formatOffset(ovf, "") } ?: "-"
+                )
+            },
+            calibration.scanBoneKg?.let {
+                CalibrationComparisonRow(
+                    labelResId = R.string.measurement_type_bone,
+                    scaleText = scaleBoneKg?.let { sb -> String.format(Locale.US, "%.1f kg", sb) } ?: "-",
+                    scanText = String.format(Locale.US, "%.1f kg", it),
+                    adjustmentText = calibration.offsetBoneKg?.let { ob -> formatOffset(ob, "kg") } ?: "-"
+                )
+            },
+            calibration.scanProteinKg?.let {
+                CalibrationComparisonRow(
+                    labelResId = R.string.measurement_type_protein,
+                    scaleText = scaleProteinKg?.let { sp -> String.format(Locale.US, "%.1f kg", sp) } ?: "-",
+                    scanText = String.format(Locale.US, "%.1f kg", it),
+                    adjustmentText = calibration.offsetProteinKg?.let { op -> formatOffset(op, "kg") } ?: "-"
+                )
+            }
+        )
+    }
 }
+
+data class CalibrationComparisonRow(
+    val labelResId: Int,
+    val scaleText: String,
+    val scanText: String,
+    val adjustmentText: String
+)

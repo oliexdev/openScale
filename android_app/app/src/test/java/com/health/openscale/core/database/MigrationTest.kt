@@ -185,6 +185,7 @@ class MigrationTest {
         val calibration = com.health.openscale.core.data.BodyScanCalibration(
             userId = 1,
             scaleMeasurementTimestamp = 1751328000000L,
+            applyFromTimestamp = 1751328000000L,
             scaleName = "Test Scale",
             scaleBaselineWeightKg = 79.5f,
             scanWeightKg = 80.0f,
@@ -200,40 +201,14 @@ class MigrationTest {
         assertThat(loaded?.scaleBaselineWeightKg).isEqualTo(79.5f)
         assertThat(loaded?.scanWeightKg).isEqualTo(80.0f)
         assertThat(loaded?.offsetFfmKg).isEqualTo(1.5f)
+        assertThat(loaded?.applyFromTimestamp).isEqualTo(1751328000000L)
 
         // Unique constraint test: updating for same user updates instead of duplicating
-        val updated = calibration.copy(scanWeightKg = 81.0f, offsetFfmKg = 2.0f)
+        val updated = calibration.copy(scanWeightKg = 81.0f, offsetFfmKg = 2.0f, applyFromTimestamp = 0L)
         repo.insertOrUpdateBodyScanCalibration(updated)
         val reloaded = repo.getBodyScanCalibrationForUser(1)
         assertThat(reloaded?.scanWeightKg).isEqualTo(81.0f)
         assertThat(reloaded?.offsetFfmKg).isEqualTo(2.0f)
-    }
-
-    /** MIGRATION_19_20 adds applyFromTimestamp to body_scan_calibration defaulting to 0L. */
-    @Test
-    fun migration19To20_addsApplyFromTimestamp_defaultingToZero() = runBlocking {
-        val dbFile = context.getDatabasePath(AppDatabase.DATABASE_NAME)
-        dbFile.parentFile?.mkdirs()
-        if (dbFile.exists()) dbFile.delete()
-
-        RoomTestSupport.writeV19Database(dbFile)
-
-        val opened = RoomTestSupport.onDisk(context).also { db = it }
-        val repo = RoomTestSupport.repositoryFor(opened)
-
-        // Verify existing v19 calibration survived and applyFromTimestamp defaulted to 0L
-        val loaded = repo.getBodyScanCalibrationForUser(1)
-        assertThat(loaded).isNotNull()
-        assertThat(loaded?.scaleName).isEqualTo("Test Scale v19")
-        assertThat(loaded?.scaleBaselineWeightKg).isEqualTo(80.0f)
-        assertThat(loaded?.scanFatPercent).isEqualTo(15.0f)
-        assertThat(loaded?.offsetFfmKg).isEqualTo(2.0f)
-        assertThat(loaded?.applyFromTimestamp).isEqualTo(0L)
-
-        // Verify updating calibration with custom applyFromTimestamp works cleanly
-        val updated = loaded!!.copy(applyFromTimestamp = 1740816000000L)
-        repo.insertOrUpdateBodyScanCalibration(updated)
-        val reloaded = repo.getBodyScanCalibrationForUser(1)
-        assertThat(reloaded?.applyFromTimestamp).isEqualTo(1740816000000L)
+        assertThat(reloaded?.applyFromTimestamp).isEqualTo(0L)
     }
 }

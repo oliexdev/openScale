@@ -124,7 +124,6 @@ fun CalibrationSettingsScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // --- 0. About / Explainer Card ---
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
@@ -155,7 +154,6 @@ fun CalibrationSettingsScreen(
             }
         }
 
-        // --- 1. Master Toggle Card ---
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
@@ -187,7 +185,6 @@ fun CalibrationSettingsScreen(
             }
         }
 
-        // --- 2. Active Calibration Card or Empty State ---
         val activeCalibration = calibration
         if (activeCalibration != null) {
             ActiveCalibrationCard(
@@ -320,8 +317,8 @@ private fun ActiveCalibrationCard(
                 // Row: FFM / Fat-Free Mass
                 calibration.offsetFfmKg?.let { offset ->
                     OffsetTableRow(
-                        metric = "Fat-Free Mass (FFM)",
-                        proValue = "Anchor",
+                        metric = stringResource(R.string.calibration_metric_fat_free_mass),
+                        proValue = stringResource(R.string.calibration_offset_anchor),
                         offsetValue = formatOffset(offset, "kg")
                     )
                 }
@@ -329,17 +326,17 @@ private fun ActiveCalibrationCard(
                 // Row: Body Fat %
                 calibration.scanFatPercent?.let { bf ->
                     OffsetTableRow(
-                        metric = "Body Fat",
+                        metric = stringResource(R.string.measurement_type_body_fat),
                         proValue = "$bf %",
-                        offsetValue = "Mass Balance"
+                        offsetValue = stringResource(R.string.calibration_offset_mass_balance)
                     )
                 }
 
                 // Row: Muscle Mass
                 calibration.offsetMuscleKg?.let { offset ->
                     OffsetTableRow(
-                        metric = "Skeletal Muscle (SMM)",
-                        proValue = "${calibration.scanMuscleKg ?: "—"} kg",
+                        metric = stringResource(R.string.calibration_metric_skeletal_muscle),
+                        proValue = "${calibration.scanMuscleKg ?: "-"} kg",
                         offsetValue = formatOffset(offset, "kg")
                     )
                 }
@@ -347,8 +344,8 @@ private fun ActiveCalibrationCard(
                 // Row: Water
                 calibration.offsetWaterKg?.let { offset ->
                     OffsetTableRow(
-                        metric = "Body Water (TBW)",
-                        proValue = "${calibration.scanWaterLiters ?: "—"} L",
+                        metric = stringResource(R.string.calibration_metric_total_body_water),
+                        proValue = "${calibration.scanWaterLiters ?: "-"} L",
                         offsetValue = formatOffset(offset, "kg")
                     )
                 }
@@ -356,8 +353,8 @@ private fun ActiveCalibrationCard(
                 // Row: Bone
                 calibration.offsetBoneKg?.let { offset ->
                     OffsetTableRow(
-                        metric = "Bone Mass (Minerals)",
-                        proValue = "${calibration.scanBoneKg ?: "—"} kg",
+                        metric = stringResource(R.string.measurement_type_bone),
+                        proValue = "${calibration.scanBoneKg ?: "-"} kg",
                         offsetValue = formatOffset(offset, "kg")
                     )
                 }
@@ -365,8 +362,8 @@ private fun ActiveCalibrationCard(
                 // Row: Visceral Fat
                 calibration.offsetVisceralFat?.let { offset ->
                     OffsetTableRow(
-                        metric = "Visceral Fat",
-                        proValue = "${calibration.scanVisceralFat ?: "—"}",
+                        metric = stringResource(R.string.measurement_type_visceral_fat),
+                        proValue = "${calibration.scanVisceralFat ?: "-"}",
                         offsetValue = formatOffset(offset, "")
                     )
                 }
@@ -374,8 +371,8 @@ private fun ActiveCalibrationCard(
                 // Row: Protein
                 calibration.offsetProteinKg?.let { offset ->
                     OffsetTableRow(
-                        metric = "Protein Mass",
-                        proValue = "${calibration.scanProteinKg ?: "—"} kg",
+                        metric = stringResource(R.string.measurement_type_protein),
+                        proValue = "${calibration.scanProteinKg ?: "-"} kg",
                         offsetValue = formatOffset(offset, "kg")
                     )
                 }

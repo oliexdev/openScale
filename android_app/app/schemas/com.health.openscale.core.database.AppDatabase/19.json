@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 19,
-    "identityHash": "6eee9139bd25f539c926d5cbd294dc70",
+    "identityHash": "56917f2fe952b18f171d62423336d244",
     "entities": [
       {
         "tableName": "User",
@@ -416,7 +416,7 @@
       },
       {
         "tableName": "body_scan_calibration",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` INTEGER NOT NULL, `scaleMeasurementTimestamp` INTEGER NOT NULL, `scaleName` TEXT, `scaleBaselineWeightKg` REAL NOT NULL, `scanWeightKg` REAL NOT NULL, `scanFatPercent` REAL, `scanMuscleKg` REAL, `scanWaterLiters` REAL, `scanBoneKg` REAL, `scanVisceralFat` REAL, `scanProteinKg` REAL, `offsetFfmKg` REAL, `offsetMuscleKg` REAL, `offsetWaterKg` REAL, `offsetBoneKg` REAL, `offsetVisceralFat` REAL, `offsetProteinKg` REAL, `createdAt` INTEGER NOT NULL, FOREIGN KEY(`userId`) REFERENCES `User`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` INTEGER NOT NULL, `scaleMeasurementTimestamp` INTEGER NOT NULL, `applyFromTimestamp` INTEGER NOT NULL, `scaleName` TEXT, `scaleBaselineWeightKg` REAL NOT NULL, `scanWeightKg` REAL NOT NULL, `scanFatPercent` REAL, `scanMuscleKg` REAL, `scanWaterLiters` REAL, `scanBoneKg` REAL, `scanVisceralFat` REAL, `scanProteinKg` REAL, `offsetFfmKg` REAL, `offsetMuscleKg` REAL, `offsetWaterKg` REAL, `offsetBoneKg` REAL, `offsetVisceralFat` REAL, `offsetProteinKg` REAL, `createdAt` INTEGER NOT NULL, FOREIGN KEY(`userId`) REFERENCES `User`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -433,6 +433,12 @@
           {
             "fieldPath": "scaleMeasurementTimestamp",
             "columnName": "scaleMeasurementTimestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "applyFromTimestamp",
+            "columnName": "applyFromTimestamp",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -554,7 +560,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6eee9139bd25f539c926d5cbd294dc70')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '56917f2fe952b18f171d62423336d244')"
     ]
   }
 }

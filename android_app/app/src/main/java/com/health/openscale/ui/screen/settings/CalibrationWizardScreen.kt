@@ -17,9 +17,18 @@
  */
 package com.health.openscale.ui.screen.settings
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +49,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Warning
@@ -62,7 +73,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -78,10 +93,7 @@ import com.health.openscale.R
 import com.health.openscale.core.data.BodyScanCalibration
 import com.health.openscale.core.data.CalibrationScope
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.UnitType
-import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.model.MeasurementWithValues
-import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.ui.shared.SharedViewModel
 import java.text.DateFormat
 import java.util.Date
@@ -99,7 +111,6 @@ fun CalibrationWizardScreen(
 
     val step by viewModel.wizardStep.collectAsState()
     val baseline by viewModel.selectedBaseline.collectAsState()
-    val effectiveBaseline by viewModel.effectiveBaseline.collectAsState()
     val validationError by viewModel.validationError.collectAsState()
     val isSaving by viewModel.isSaving.collectAsState()
     val calculatedCalibration by viewModel.calculatedCalibration.collectAsState()
@@ -148,6 +159,9 @@ fun CalibrationWizardScreen(
             }
         }
 
+        val step3ScrollState = rememberScrollState()
+        val coroutineScope = rememberCoroutineScope()
+
         // Scrollable Content area
         Box(
             modifier = Modifier
@@ -169,10 +183,53 @@ fun CalibrationWizardScreen(
                 )
                 3 -> Step3ReviewAndSave(
                     calibration = calculatedCalibration,
-                    baseline = effectiveBaseline ?: baseline,
+                    comparisonRows = viewModel.getComparisonRows(),
                     selectedScope = calibrationScope,
-                    onSelectScope = { viewModel.setCalibrationScope(it) }
+                    onSelectScope = { viewModel.setCalibrationScope(it) },
+                    scrollState = step3ScrollState
                 )
+            }
+
+            if (step == 3) {
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = step3ScrollState.canScrollForward,
+                    enter = fadeIn() + slideInVertically { it / 2 },
+                    exit = fadeOut() + slideOutVertically { it / 2 },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 8.dp)
+                ) {
+                    Surface(
+                        onClick = {
+                            coroutineScope.launch {
+                                step3ScrollState.animateScrollTo(step3ScrollState.maxValue)
+                            }
+                        },
+                        shape = MaterialTheme.shapes.extraLarge,
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.95f),
+                        shadowElevation = 4.dp,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.calibration_scroll_more_hint),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -284,11 +341,11 @@ private fun StepIndicator(currentStep: Int) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        StepDot(step = 1, label = "1. Baseline", isActive = currentStep >= 1, isCurrent = currentStep == 1)
+        StepDot(step = 1, label = stringResource(R.string.calibration_step_baseline), isActive = currentStep >= 1, isCurrent = currentStep == 1)
         HorizontalDivider(modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
-        StepDot(step = 2, label = "2. Body Scan", isActive = currentStep >= 2, isCurrent = currentStep == 2)
+        StepDot(step = 2, label = stringResource(R.string.calibration_step_scan), isActive = currentStep >= 2, isCurrent = currentStep == 2)
         HorizontalDivider(modifier = Modifier.weight(1f).padding(horizontal = 4.dp))
-        StepDot(step = 3, label = "3. Review", isActive = currentStep >= 3, isCurrent = currentStep == 3)
+        StepDot(step = 3, label = stringResource(R.string.calibration_step_review), isActive = currentStep >= 3, isCurrent = currentStep == 3)
     }
 }
 
@@ -322,9 +379,6 @@ private fun StepDot(step: Int, label: String, isActive: Boolean, isCurrent: Bool
     }
 }
 
-// ---------------------------------------------------------------------------
-// Step 1: Baseline Weigh-In Selection
-// ---------------------------------------------------------------------------
 @Composable
 private fun Step1BaselineSelection(
     userId: Int,
@@ -420,7 +474,7 @@ private fun Step1BaselineSelection(
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                     Text(
-                                        text = "Weight: ${weight ?: "—"} kg",
+                                        text = "Weight: ${weight ?: "-"} kg",
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                     if (fat != null) {
@@ -438,7 +492,7 @@ private fun Step1BaselineSelection(
                                 }
                                 if (impedance != null) {
                                     Text(
-                                        text = "Impedance: ${impedance.toInt()} Ω",
+                                        text = stringResource(R.string.calibration_impedance_label, impedance.toInt()),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.primary
                                     )
@@ -484,9 +538,6 @@ private fun Step1BaselineSelection(
     }
 }
 
-// ---------------------------------------------------------------------------
-// Step 2: Enter Body Scan Values Form
-// ---------------------------------------------------------------------------
 @Composable
 private fun Step2BodyScanInputs(
     viewModel: CalibrationViewModel
@@ -606,27 +657,19 @@ private fun Step2BodyScanInputs(
     }
 }
 
-// ---------------------------------------------------------------------------
-// Step 3: Review Calibration & Confirm
-// ---------------------------------------------------------------------------
-private data class ComparisonMetricRow(
-    val label: String,
-    val scaleText: String,
-    val scanText: String,
-    val adjustmentText: String
-)
-
 @Composable
 private fun Step3ReviewAndSave(
     calibration: BodyScanCalibration?,
-    baseline: MeasurementWithValues?,
+    comparisonRows: List<CalibrationComparisonRow>,
     selectedScope: CalibrationScope,
-    onSelectScope: (CalibrationScope) -> Unit
+    onSelectScope: (CalibrationScope) -> Unit,
+    scrollState: ScrollState
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(scrollState)
+            .padding(bottom = 36.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
@@ -640,65 +683,24 @@ private fun Step3ReviewAndSave(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        if (calibration != null && baseline != null) {
-            val scaleWeight = baseline.values.find { it.type.key == MeasurementType.WEIGHT }?.value?.floatValue ?: 0f
+        if (calibration != null) {
+            val scaleWeight = calibration.scaleBaselineWeightKg
 
-            val scaleFat = baseline.values.find { it.type.key == MeasurementType.BODY_FAT }?.value?.floatValue
-
-            val scaleMuscleItem = baseline.values.find { it.type.key == MeasurementType.MUSCLE }
-            val scaleMuscleKg: Float? = scaleMuscleItem?.value?.floatValue?.let { v ->
-                when (scaleMuscleItem.type.unit) {
-                    UnitType.PERCENT -> (v / 100f) * scaleWeight
-                    UnitType.KG -> v
-                    UnitType.LB -> ConverterUtils.toKilogram(v, WeightUnit.LB)
-                    UnitType.ST -> ConverterUtils.toKilogram(v, WeightUnit.ST)
-                    else -> if (v <= 100f && scaleWeight > 30f) (v / 100f) * scaleWeight else v
-                }
-            }
-
-            val scaleFfmKg: Float? = run {
-                val lbmItem = baseline.values.find { it.type.key == MeasurementType.LBM }
-                val lbmVal = lbmItem?.value?.floatValue
-                if (lbmVal != null) {
-                    when (lbmItem.type.unit) {
-                        UnitType.KG -> lbmVal
-                        UnitType.LB -> ConverterUtils.toKilogram(lbmVal, WeightUnit.LB)
-                        UnitType.ST -> ConverterUtils.toKilogram(lbmVal, WeightUnit.ST)
-                        else -> lbmVal
-                    }
-                } else {
-                    scaleFat?.let { scaleWeight * (1f - it / 100f) }
-                }
-            }
-
-            val scaleWaterItem = baseline.values.find { it.type.key == MeasurementType.WATER }
-            val scaleWaterKg: Float? = scaleWaterItem?.value?.floatValue?.let { v ->
-                when (scaleWaterItem.type.unit) {
-                    UnitType.PERCENT -> (v / 100f) * scaleWeight
-                    UnitType.KG -> v
-                    else -> if (v <= 100f && scaleWeight > 30f) (v / 100f) * scaleWeight else v
-                }
-            }
-
-            val scaleBone = baseline.values.find { it.type.key == MeasurementType.BONE }?.value?.floatValue
-            val scaleVisceralFat = baseline.values.find { it.type.key == MeasurementType.VISCERAL_FAT }?.value?.floatValue
-            val scaleProtein = baseline.values.find { it.type.key == MeasurementType.PROTEIN }?.value?.floatValue
-
-            // Weight Alignment Card
+            // Unified Review & Adjustment Card
             ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                    // Top: Baseline vs Scan Weight Alignment
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 6.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
                             Text(
-                                text = "Home Scale",
-                                style = MaterialTheme.typography.labelMedium,
+                                text = stringResource(R.string.calibration_comparison_scale),
+                                style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
@@ -708,14 +710,14 @@ private fun Step3ReviewAndSave(
                             )
                         }
                         Text(
-                            text = "vs",
+                            text = stringResource(R.string.calibration_comparison_vs),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.outline
                         )
                         Column(horizontalAlignment = Alignment.End) {
                             Text(
-                                text = "Reference Scan",
-                                style = MaterialTheme.typography.labelMedium,
+                                text = stringResource(R.string.calibration_comparison_scan),
+                                style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
@@ -727,85 +729,19 @@ private fun Step3ReviewAndSave(
                     }
 
                     if (kotlin.math.abs(scaleWeight - calibration.scanWeightKg) > 0.05f) {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                         Text(
                             text = stringResource(
                                 R.string.calibration_weight_alignment_desc,
                                 String.format(Locale.US, "%.1f", scaleWeight)
                             ),
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
                         )
                     }
-                }
-            }
 
-            // Comparison Rows
-            val rows = listOfNotNull(
-                calibration.scanFatPercent?.let {
-                    val diff = scaleFat?.let { sf -> it - sf }
-                    ComparisonMetricRow(
-                        label = "Body Fat",
-                        scaleText = scaleFat?.let { sf -> String.format(Locale.US, "%.1f %%", sf) } ?: "—",
-                        scanText = String.format(Locale.US, "%.1f %%", it),
-                        adjustmentText = diff?.let { d -> formatOffset(d, "%") } ?: "—"
-                    )
-                },
-                calibration.scanMuscleKg?.let {
-                    ComparisonMetricRow(
-                        label = "Skeletal Muscle (SMM)",
-                        scaleText = scaleMuscleKg?.let { sm -> String.format(Locale.US, "%.1f kg", sm) } ?: "—",
-                        scanText = String.format(Locale.US, "%.1f kg", it),
-                        adjustmentText = calibration.offsetMuscleKg?.let { om -> formatOffset(om, "kg") } ?: "—"
-                    )
-                },
-                calibration.offsetFfmKg?.let {
-                    val scanFfm = calibration.scanFatPercent?.let { fp -> scaleWeight * (1f - fp / 100f) }
-                        ?: scaleFfmKg?.plus(it)
-                    ComparisonMetricRow(
-                        label = "Fat-Free Mass (FFM)",
-                        scaleText = scaleFfmKg?.let { sf -> String.format(Locale.US, "%.1f kg", sf) } ?: "—",
-                        scanText = scanFfm?.let { sf -> String.format(Locale.US, "%.1f kg", sf) } ?: "—",
-                        adjustmentText = formatOffset(it, "kg")
-                    )
-                },
-                calibration.scanWaterLiters?.let {
-                    ComparisonMetricRow(
-                        label = "Total Body Water",
-                        scaleText = scaleWaterKg?.let { sw -> String.format(Locale.US, "%.1f kg", sw) } ?: "—",
-                        scanText = String.format(Locale.US, "%.1f L", it),
-                        adjustmentText = calibration.offsetWaterKg?.let { ow -> formatOffset(ow, "kg") } ?: "—"
-                    )
-                },
-                calibration.scanVisceralFat?.let {
-                    ComparisonMetricRow(
-                        label = "Visceral Fat",
-                        scaleText = scaleVisceralFat?.let { svf -> String.format(Locale.US, "%.1f", svf) } ?: "—",
-                        scanText = String.format(Locale.US, "%.1f", it),
-                        adjustmentText = calibration.offsetVisceralFat?.let { ovf -> formatOffset(ovf, "") } ?: "—"
-                    )
-                },
-                calibration.scanBoneKg?.let {
-                    ComparisonMetricRow(
-                        label = "Bone Mass",
-                        scaleText = scaleBone?.let { sb -> String.format(Locale.US, "%.1f kg", sb) } ?: "—",
-                        scanText = String.format(Locale.US, "%.1f kg", it),
-                        adjustmentText = calibration.offsetBoneKg?.let { ob -> formatOffset(ob, "kg") } ?: "—"
-                    )
-                },
-                calibration.scanProteinKg?.let {
-                    ComparisonMetricRow(
-                        label = "Protein Mass",
-                        scaleText = scaleProtein?.let { sp -> String.format(Locale.US, "%.1f kg", sp) } ?: "—",
-                        scanText = String.format(Locale.US, "%.1f kg", it),
-                        adjustmentText = calibration.offsetProteinKg?.let { op -> formatOffset(op, "kg") } ?: "—"
-                    )
-                }
-            )
+                    HorizontalDivider(modifier = Modifier.padding(top = 4.dp))
 
-            // Side-by-side Table Card
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(vertical = 8.dp)) {
                     // Header Row
                     Row(
                         modifier = Modifier
@@ -848,15 +784,15 @@ private fun Step3ReviewAndSave(
 
                     HorizontalDivider()
 
-                    rows.forEachIndexed { index, row ->
+                    comparisonRows.forEachIndexed { index, row ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                                .padding(horizontal = 14.dp, vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = row.label,
+                                text = stringResource(row.labelResId),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Medium,
                                 modifier = Modifier.weight(1.4f)
@@ -884,8 +820,84 @@ private fun Step3ReviewAndSave(
                                 modifier = Modifier.weight(1.0f)
                             )
                         }
-                        if (index < rows.lastIndex) {
+                        if (index < comparisonRows.lastIndex) {
                             HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp))
+                        }
+                    }
+
+                    HorizontalDivider()
+
+                    // Dynamic adaptation footnote directly under the adjustments table
+                    var isExplainerExpanded by remember { mutableStateOf(false) }
+
+                    Surface(
+                        onClick = { isExplainerExpanded = !isExplainerExpanded },
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(10.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f, fill = false)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.calibration_dynamic_adaptation_title),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(
+                                            if (isExplainerExpanded) R.string.calibration_dynamic_adaptation_hide
+                                            else R.string.calibration_dynamic_adaptation_how_it_works
+                                        ),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Icon(
+                                        imageVector = if (isExplainerExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = isExplainerExpanded,
+                                enter = fadeIn() + expandVertically(),
+                                exit = fadeOut() + shrinkVertically()
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.calibration_dynamic_adaptation_desc),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(top = 8.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -965,46 +977,6 @@ private fun Step3ReviewAndSave(
                     }
                 }
             }
-
-            // Explainer Card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                )
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(
-                            text = stringResource(R.string.calibration_dynamic_adaptation_title),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = stringResource(R.string.calibration_dynamic_adaptation_desc),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
         }
     }
-}
-
-private fun formatOffset(offset: Float, unit: String): String {
-    val sign = if (offset > 0) "+" else ""
-    val u = if (unit.isNotBlank()) " $unit" else ""
-    val formatted = String.format(Locale.US, "%.2f", offset)
-    return "$sign$formatted$u"
 }

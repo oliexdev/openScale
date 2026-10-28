@@ -85,80 +85,23 @@ data class BodyScanCalibration(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val userId: Int,
-
-    /** The timestamp of the home scale measurement used as baseline. */
     val scaleMeasurementTimestamp: Long,
-
-    /**
-     * Timestamp (epoch millis) from which calibration offsets should be applied.
-     * E.g., 0L for ALL_HISTORY, or the start of the baseline day, or 30 days prior.
-     */
     val applyFromTimestamp: Long = 0L,
-
-    /** Optional name/model of the home scale used for calibration. */
     val scaleName: String? = null,
-
-    /** Uncalibrated total body weight on the home scale at calibration baseline (W0). */
     val scaleBaselineWeightKg: Float = 0f,
-
-    /** Total body weight recorded during the reference body scan (kg). */
     val scanWeightKg: Float,
-
-    /** Body fat percentage recorded on the reference scan (%). */
     val scanFatPercent: Float? = null,
-
-    /** Skeletal muscle mass recorded on the reference scan (kg). */
     val scanMuscleKg: Float? = null,
-
-    /** Total body water recorded on the reference scan (liters / kg). */
     val scanWaterLiters: Float? = null,
-
-    /** Bone / osseous mineral mass recorded on the reference scan (kg). */
     val scanBoneKg: Float? = null,
-
-    /** Visceral fat level/rating recorded on the reference scan. */
     val scanVisceralFat: Float? = null,
-
-    /** Protein mass recorded on the reference scan (kg). */
     val scanProteinKg: Float? = null,
-
-    /**
-     * Additive offset in kg for Fat-Free Mass:
-     * FFM_offset = Reference_FFM_normalized - Scale_FFM
-     */
     val offsetFfmKg: Float? = null,
-
-    /**
-     * Additive offset in kg for Skeletal Muscle Mass:
-     * Muscle_offset = Reference_Muscle_normalized - Scale_Muscle
-     */
     val offsetMuscleKg: Float? = null,
-
-    /**
-     * Additive offset in kg for Total Body Water:
-     * Water_offset = Reference_Water_normalized - Scale_Water
-     */
     val offsetWaterKg: Float? = null,
-
-    /**
-     * Additive offset in kg for Bone Mass:
-     * Bone_offset = Reference_Bone_normalized - Scale_Bone
-     */
     val offsetBoneKg: Float? = null,
-
-    /**
-     * Additive offset for Visceral Fat rating:
-     * VF_offset = Reference_VF - Scale_VF
-     */
     val offsetVisceralFat: Float? = null,
-
-    /**
-     * Additive offset in kg for Protein Mass:
-     * Protein_offset = Reference_Protein_normalized - Scale_Protein
-     */
     val offsetProteinKg: Float? = null,
-
-    /** Timestamp when this calibration was created or updated. */
     val createdAt: Long = System.currentTimeMillis()
 )
 

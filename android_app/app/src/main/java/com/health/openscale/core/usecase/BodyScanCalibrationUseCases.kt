@@ -26,7 +26,6 @@ import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.model.MeasurementWithValues
-import com.health.openscale.core.utils.CalculationUtils
 import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.flow.Flow
@@ -54,7 +53,7 @@ data class BodyScanFormInput(
  *
  * Responsibilities:
  * - Validate user inputs and baseline smart scale measurements.
- * - Calculate per-compartment additive intercept offsets (Δ in Kg) with weight normalization.
+ * - Calculate per-compartment additive intercept offsets (delta in kg) with weight normalization.
  * - Persist and observe active user calibrations.
  * - Recalculate baseline measurements immediately upon calibration save.
  */
@@ -213,14 +212,6 @@ class BodyScanCalibrationUseCases @Inject constructor(
     }
 
     /**
-     * Calculates the additive intercept offsets (Δ in Kg) for each compartment.
-     *
-     * Normalization:
-     * Due to potential clothing or minor hydration differences between the reference body scan
-     * and the home scale weigh-in on calibration day, all reference scan mass inputs
-     * are normalized by the ratio (W_scale / W_scan) before computing offsets.
-     */
-    /**
      * Returns an uncalibrated version of [baseline]. If an active calibration was already
      * applied to [baseline], its offsets are reverted to restore original home scale readings.
      */
@@ -260,6 +251,14 @@ class BodyScanCalibrationUseCases @Inject constructor(
         }
     }
 
+    /**
+     * Calculates the additive intercept offsets (delta in kg) for each compartment.
+     *
+     * Normalization:
+     * Due to potential clothing or minor hydration differences between the reference body scan
+     * and the home scale weigh-in on calibration day, all reference scan mass inputs
+     * are normalized by the ratio (W_scale / W_scan) before computing offsets.
+     */
     suspend fun calculateCalibration(
         userId: Int,
         baseline: MeasurementWithValues,
@@ -271,27 +270,18 @@ class BodyScanCalibrationUseCases @Inject constructor(
         // original uncalibrated values so recalibrating does not double-offset or zero out.
         val effectiveBaseline = getEffectiveUncalibratedBaseline(userId, baseline)
 
-        val types = query.getAllMeasurementTypes().first()
-        val byKey = types.associateBy { it.key }
-
-        // 1. Baseline home scale weight (W0) in kg
         val weightItem = effectiveBaseline.values.find { it.type.key == MeasurementType.WEIGHT }
             ?: throw IllegalArgumentException("Baseline measurement lacks weight.")
         val scaleWeightVal = weightItem.value.floatValue
             ?: throw IllegalArgumentException("Baseline weight value is missing.")
-        val scaleWeightKg = when (weightItem.type.unit) {
-            UnitType.KG -> scaleWeightVal
-            UnitType.LB -> ConverterUtils.toKilogram(scaleWeightVal, WeightUnit.LB)
-            UnitType.ST -> ConverterUtils.toKilogram(scaleWeightVal, WeightUnit.ST)
-            else -> scaleWeightVal
-        }
+        val scaleWeightKg = toKilograms(scaleWeightVal, weightItem.type.unit, scaleWeightVal)
         require(scaleWeightKg > 0f) { "Scale weight must be positive." }
         require(input.scanWeightKg > 0f) { "Body scan weight must be positive." }
 
         // Normalization ratio: W0 / W_scan
         val ratio = scaleWeightKg / input.scanWeightKg
 
-        // --- A. FFM Offset (Kg) ---
+        // FFM Offset (kg)
         val scanFfmKg: Float? = when {
             input.scanFatPercent != null -> input.scanWeightKg * (1f - input.scanFatPercent / 100f)
             input.scanFatKg != null -> input.scanWeightKg - input.scanFatKg
@@ -303,12 +293,7 @@ class BodyScanCalibrationUseCases @Inject constructor(
                 val lbmItem = effectiveBaseline.values.find { it.type.key == MeasurementType.LBM }
                 val lbmVal = lbmItem?.value?.floatValue
                 if (lbmVal != null) {
-                    when (lbmItem.type.unit) {
-                        UnitType.KG -> lbmVal
-                        UnitType.LB -> ConverterUtils.toKilogram(lbmVal, WeightUnit.LB)
-                        UnitType.ST -> ConverterUtils.toKilogram(lbmVal, WeightUnit.ST)
-                        else -> lbmVal
-                    }
+                    toKilograms(lbmVal, lbmItem.type.unit, scaleWeightKg)
                 } else {
                     val bfVal = effectiveBaseline.values.find { it.type.key == MeasurementType.BODY_FAT }?.value?.floatValue
                     bfVal?.let { scaleWeightKg * (1f - it / 100f) }
@@ -317,78 +302,43 @@ class BodyScanCalibrationUseCases @Inject constructor(
             scaleFfmKg?.let { normalizedFfm - it }
         }
 
-        // --- B. Muscle Offset (Kg) ---
+        // Muscle Offset (kg)
         val offsetMuscleKg: Float? = input.scanMuscleKg?.let { rawMuscle ->
             val normalizedMuscle = rawMuscle * ratio
             val muscleItem = effectiveBaseline.values.find { it.type.key == MeasurementType.MUSCLE }
-            val muscleVal = muscleItem?.value?.floatValue
-            val scaleMuscleKg: Float? = if (muscleVal != null) {
-                when (muscleItem.type.unit) {
-                    UnitType.PERCENT -> (muscleVal / 100f) * scaleWeightKg
-                    UnitType.KG -> muscleVal
-                    UnitType.LB -> ConverterUtils.toKilogram(muscleVal, WeightUnit.LB)
-                    UnitType.ST -> ConverterUtils.toKilogram(muscleVal, WeightUnit.ST)
-                    else -> (muscleVal / 100f) * scaleWeightKg
-                }
-            } else null
+            val scaleMuscleKg = muscleItem?.value?.floatValue?.let { toKilograms(it, muscleItem.type.unit, scaleWeightKg) }
             scaleMuscleKg?.let { normalizedMuscle - it }
         }
 
-        // --- C. Water Offset (Kg) ---
-        // TBW is typically measured in Liters. Water at 36.5°C body temp is ~0.995 kg/L.
+        // Water Offset (kg)
+        // TBW is typically measured in liters. Water at 36.5 C body temp is ~0.995 kg/L.
         val offsetWaterKg: Float? = input.scanWaterLiters?.let { rawLiters ->
             val rawWaterKg = rawLiters * 0.995f
             val normalizedWater = rawWaterKg * ratio
             val waterItem = effectiveBaseline.values.find { it.type.key == MeasurementType.WATER }
-            val waterVal = waterItem?.value?.floatValue
-            val scaleWaterKg: Float? = if (waterVal != null) {
-                when (waterItem.type.unit) {
-                    UnitType.PERCENT -> (waterVal / 100f) * scaleWeightKg
-                    UnitType.KG -> waterVal
-                    UnitType.LB -> ConverterUtils.toKilogram(waterVal, WeightUnit.LB)
-                    UnitType.ST -> ConverterUtils.toKilogram(waterVal, WeightUnit.ST)
-                    else -> (waterVal / 100f) * scaleWeightKg
-                }
-            } else null
+            val scaleWaterKg = waterItem?.value?.floatValue?.let { toKilograms(it, waterItem.type.unit, scaleWeightKg) }
             scaleWaterKg?.let { normalizedWater - it }
         }
 
-        // --- D. Bone Mass Offset (Kg) ---
+        // Bone Mass Offset (kg)
         val offsetBoneKg: Float? = input.scanBoneKg?.let { rawBone ->
             val normalizedBone = rawBone * ratio
             val boneItem = effectiveBaseline.values.find { it.type.key == MeasurementType.BONE }
-            val boneVal = boneItem?.value?.floatValue
-            val scaleBoneKg: Float? = if (boneVal != null) {
-                when (boneItem.type.unit) {
-                    UnitType.KG -> boneVal
-                    UnitType.LB -> ConverterUtils.toKilogram(boneVal, WeightUnit.LB)
-                    UnitType.ST -> ConverterUtils.toKilogram(boneVal, WeightUnit.ST)
-                    else -> boneVal
-                }
-            } else null
+            val scaleBoneKg = boneItem?.value?.floatValue?.let { toKilograms(it, boneItem.type.unit, scaleWeightKg) }
             scaleBoneKg?.let { normalizedBone - it }
         }
 
-        // --- E. Visceral Fat Offset (dimensionless level) ---
+        // Visceral Fat Offset (dimensionless rating)
         val offsetVisceralFat: Float? = input.scanVisceralFat?.let { rawVf ->
             val vfVal = effectiveBaseline.values.find { it.type.key == MeasurementType.VISCERAL_FAT }?.value?.floatValue
             vfVal?.let { rawVf - it }
         }
 
-        // --- F. Protein Offset (Kg) ---
+        // Protein Offset (kg)
         val offsetProteinKg: Float? = input.scanProteinKg?.let { rawProtein ->
             val normalizedProtein = rawProtein * ratio
             val proteinItem = effectiveBaseline.values.find { it.type.key == MeasurementType.PROTEIN }
-            val proteinVal = proteinItem?.value?.floatValue
-            val scaleProteinKg: Float? = if (proteinVal != null) {
-                when (proteinItem.type.unit) {
-                    UnitType.PERCENT -> (proteinVal / 100f) * scaleWeightKg
-                    UnitType.KG -> proteinVal
-                    UnitType.LB -> ConverterUtils.toKilogram(proteinVal, WeightUnit.LB)
-                    UnitType.ST -> ConverterUtils.toKilogram(proteinVal, WeightUnit.ST)
-                    else -> (proteinVal / 100f) * scaleWeightKg
-                }
-            } else null
+            val scaleProteinKg = proteinItem?.value?.floatValue?.let { toKilograms(it, proteinItem.type.unit, scaleWeightKg) }
             scaleProteinKg?.let { normalizedProtein - it }
         }
 
@@ -467,6 +417,14 @@ class BodyScanCalibrationUseCases @Inject constructor(
         }
 
         return id
+    }
+
+    private fun toKilograms(value: Float, unit: UnitType, totalWeightKg: Float): Float = when (unit) {
+        UnitType.PERCENT -> (value / 100f) * totalWeightKg
+        UnitType.KG -> value
+        UnitType.LB -> ConverterUtils.toKilogram(value, WeightUnit.LB)
+        UnitType.ST -> ConverterUtils.toKilogram(value, WeightUnit.ST)
+        else -> value
     }
 }
 
