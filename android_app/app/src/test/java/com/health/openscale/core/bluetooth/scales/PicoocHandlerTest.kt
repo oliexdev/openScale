@@ -21,6 +21,7 @@ import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.service.ScannedDeviceInfo
 import kotlinx.coroutines.CoroutineScope
@@ -191,6 +192,45 @@ class PicoocHandlerTest {
         // exactly 71.7 kg. The top bit is a separate, still unexplained flag.
         assertThat(frame.weightLb).isWithin(0.0001f).of(158.0f)
         assertThat(frame.poundFlag).isTrue()
+    }
+
+    @Test
+    fun `parses both captured Mini Pro frames without phase or completion fields`() {
+        for ((packet, weight, impedance) in miniProReadings) {
+            val frame = PicoocHandler.parseLiveFrame(hex(packet))!!
+
+            assertThat(frame.timestamp).isEqualTo(
+                if (weight == 69f) 0x6AE2_5E89L else 0x6AE2_60C7L
+            )
+            assertThat(frame.weightKg).isWithin(0.0001f).of(weight)
+            assertThat(frame.impedance).isWithin(0.0001).of(impedance)
+            assertThat(frame.weightLb).isWithin(0.0001f).of(if (weight == 69f) 152.2f else 152.4f)
+            assertThat(frame.poundFlag).isTrue()
+            assertThat(frame.unit).isEqualTo(0)
+            assertThat(frame.phaseAngle).isEqualTo(0f)
+            assertThat(frame.complete).isTrue()
+        }
+    }
+
+    @Test
+    fun `retains fractional weight and impedance in the Mini Pro layout`() {
+        // Synthetic values exercise the protocol's 0.05 kg and 0.1 ohm resolution.
+        val frame = PicoocHandler.parseLiveFrame(hex("39 0D 6A E2 60 C7 05 67 15 41 85 F4 02"))!!
+
+        assertThat(frame.weightKg).isWithin(0.0001f).of(69.15f)
+        assertThat(frame.impedance).isWithin(0.0001).of(544.1)
+        // Byte 12 is the display unit, not a completion flag; kg remains the stored unit.
+        assertThat(frame.unit).isEqualTo(2)
+        assertThat(frame.complete).isTrue()
+    }
+
+    @Test
+    fun `rejects every truncation of a Mini Pro frame and a long frame cut to 13 bytes`() {
+        val packet = hex(miniProReadings.first().first)
+        for (length in 0 until packet.size) {
+            assertThat(PicoocHandler.parseLiveFrame(packet.copyOf(length))).isNull()
+        }
+        assertThat(PicoocHandler.parseLiveFrame(liveFrame(complete = true).copyOf(13))).isNull()
     }
 
     /** Captured from a PICOOC-CC weighing 82.3 kg; this model sends a 10-byte live frame. */
@@ -385,6 +425,81 @@ class PicoocHandlerTest {
     }
 
     // --- measurement session ---------------------------------------------------------------
+
+    @Test
+    fun `replays Mini Pro sessions across reconnects with one complete record per weighing`() = runTest {
+        val setup = attachedHandler(user = user(GenderType.MALE, 177f, 26), scope = this)
+
+        for ((packet, weight, impedance) in miniProReadings) {
+            setup.handler.handleConnected(setup.user)
+            setup.transport.clearWrites()
+            setup.handler.handleNotification(notifyCharacteristic, hex("3A 02"))
+            advanceTimeBy(PicoocHandler.PROFILE_DELAY_MS)
+            runCurrent()
+            assertThat(setup.transport.writes[0].payload.copyOf(3)).isEqualTo(hex("F1 0A 3A"))
+            assertThat(setup.transport.writes[1].payload).isEqualTo(hex("31 06 01 01 9A 1A"))
+
+            val previousCount = setup.callbacks.published.size
+            // A retransmission must still be acknowledged without creating a duplicate record.
+            repeat(2) { setup.handler.handleNotification(notifyCharacteristic, hex(packet)) }
+            assertThat(setup.transport.writes.takeLast(2).map { it.payload.toList() })
+                .containsExactly(hex("F1 03 39").toList(), hex("F1 03 39").toList())
+            advanceTimeBy(350)
+            runCurrent()
+            assertThat(setup.callbacks.published).hasSize(previousCount)
+            setup.handler.handleDisconnected()
+            advanceTimeBy(PicoocHandler.SETTLE_WAIT_MS)
+            runCurrent()
+            assertThat(setup.callbacks.published).hasSize(previousCount + 1)
+
+            val measurement = setup.callbacks.published.last()
+            assertThat(measurement.userId).isEqualTo(setup.user.id)
+            assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(weight)
+            assertThat(measurement[MeasurementType.IMPEDANCE]?.value).isWithin(0.0001f).of(impedance.toFloat())
+            val lib = StandardImpedanceLib(setup.user.gender, setup.user.age, weight.toDouble(), 1.77, impedance)
+            assertThat(measurement[MeasurementType.BODY_FAT]?.value).isWithin(0.0001f).of(lib.totalFatPercentage.toFloat())
+            assertThat(measurement[MeasurementType.WATER]?.value).isWithin(0.0001f).of(lib.totalBodyWaterPercentage.toFloat())
+            assertThat(measurement[MeasurementType.MUSCLE]?.value).isWithin(0.0001f).of(lib.skeletalMusclePercentage.toFloat())
+            assertThat(measurement[MeasurementType.BONE]?.value).isWithin(0.0001f).of(lib.boneMassKg.toFloat())
+            assertThat(measurement[MeasurementType.LBM]?.value).isWithin(0.0001f).of(lib.fatFreeMassKg.toFloat())
+            assertThat(measurement[MeasurementType.BMR]?.value).isWithin(0.001f).of(lib.basalMetabolicRate.toFloat())
+            assertThat(measurement[MeasurementType.HEART_RATE]).isNull()
+            assertThat(measurement[MeasurementType.VISCERAL_FAT]).isNull()
+            assertThat(measurement[PicoocHandler.METABOLIC_AGE]).isNull()
+        }
+        assertThat(setup.transport.disconnectCount).isEqualTo(0)
+    }
+
+    @Test
+    fun `Mini Pro settle fallback publishes once if the link stays open`() = runTest {
+        val setup = attachedHandler(scope = this)
+        setup.handler.handleConnected(setup.user)
+        setup.handler.handleNotification(notifyCharacteristic, hex(miniProReadings.first().first))
+
+        advanceTimeBy(PicoocHandler.SETTLE_WAIT_MS - 1)
+        runCurrent()
+        assertThat(setup.callbacks.published).isEmpty()
+        advanceTimeBy(1)
+        runCurrent()
+        assertThat(setup.callbacks.published).hasSize(1)
+        setup.handler.handleDisconnected()
+        assertThat(setup.callbacks.published).hasSize(1)
+    }
+
+    @Test
+    fun `Mini Pro with no impedance stores only weight`() = runTest {
+        val setup = attachedHandler(scope = this)
+        setup.handler.handleConnected(setup.user)
+        setup.handler.handleNotification(notifyCharacteristic, hex("39 0D 6A E2 60 C7 05 66 00 00 85 F4 00"))
+        setup.handler.handleDisconnected()
+
+        val measurement = setup.callbacks.published.single()
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(0.0001f).of(69.1f)
+        for (type in listOf(MeasurementType.IMPEDANCE, MeasurementType.BODY_FAT, MeasurementType.WATER,
+            MeasurementType.MUSCLE, MeasurementType.BONE, MeasurementType.LBM, MeasurementType.BMR)) {
+            assertThat(measurement[type]).isNull()
+        }
+    }
 
     @Test
     fun `streams live weight without writing a record`() = runTest {
@@ -605,6 +720,12 @@ class PicoocHandlerTest {
     }
 
     // --- helpers ---------------------------------------------------------------------------
+
+    /** Real Mini Pro (PICOOC-CQ) captures: packet, weight in kg, impedance in ohms. */
+    private val miniProReadings = listOf(
+        Triple("39 0D 6A E2 5E 89 05 64 15 36 85 F2 00", 69f, 543.0),
+        Triple("39 0D 6A E2 60 C7 05 66 15 40 85 F4 00", 69.1f, 544.0),
+    )
 
     /** The 0x3A handshake a PICOOC-CQ actually sent, BOM block and all. */
     private val capturedHandshake =
