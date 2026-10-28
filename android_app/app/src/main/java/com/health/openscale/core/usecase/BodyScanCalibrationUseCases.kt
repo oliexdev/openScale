@@ -18,6 +18,8 @@
 package com.health.openscale.core.usecase
 
 import com.health.openscale.core.data.BodyScanCalibration
+import com.health.openscale.core.data.CalibrationScope
+import com.health.openscale.core.data.startOfDay
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.WeightUnit
@@ -73,14 +75,14 @@ class BodyScanCalibrationUseCases @Inject constructor(
     suspend fun getCalibrationForUser(userId: Int): BodyScanCalibration? =
         databaseRepository.getBodyScanCalibrationForUser(userId)
 
-    /** Reverts calibration offsets from all forward measurements for [calibration]. */
+    /** Reverts calibration offsets from all affected measurements for [calibration]. */
     private suspend fun revertMeasurements(
         userId: Int,
         calibration: BodyScanCalibration
     ) {
         val measurements = databaseRepository.getMeasurementsWithValuesForUser(userId).first()
-        val forwardMeasurements = measurements.filter { it.measurement.timestamp >= calibration.scaleMeasurementTimestamp }
-        forwardMeasurements.forEach { mwv ->
+        val affectedMeasurements = measurements.filter { it.measurement.timestamp >= calibration.applyFromTimestamp }
+        affectedMeasurements.forEach { mwv ->
             LogManager.i(TAG, "Reverting measurement ${mwv.measurement.id} to uncalibrated values")
             val revertedValues = transformation.revertBodyScanCalibration(
                 mwv.measurement,
@@ -96,14 +98,14 @@ class BodyScanCalibrationUseCases @Inject constructor(
         }
     }
 
-    /** Applies calibration offsets to all forward measurements for [calibration]. */
+    /** Applies calibration offsets to all affected measurements for [calibration]. */
     private suspend fun applyMeasurements(
         userId: Int,
         calibration: BodyScanCalibration
     ) {
         val measurements = databaseRepository.getMeasurementsWithValuesForUser(userId).first()
-        val forwardMeasurements = measurements.filter { it.measurement.timestamp >= calibration.scaleMeasurementTimestamp }
-        forwardMeasurements.forEach { mwv ->
+        val affectedMeasurements = measurements.filter { it.measurement.timestamp >= calibration.applyFromTimestamp }
+        affectedMeasurements.forEach { mwv ->
             LogManager.i(TAG, "Applying calibration to measurement ${mwv.measurement.id}")
             val calibratedValues = transformation.applyBodyScanCalibration(
                 mwv.measurement,
@@ -240,7 +242,7 @@ class BodyScanCalibrationUseCases @Inject constructor(
         existingCalibration: BodyScanCalibration?
     ): MeasurementWithValues {
         return if (existingCalibration != null &&
-            baseline.measurement.timestamp >= existingCalibration.scaleMeasurementTimestamp
+            baseline.measurement.timestamp >= existingCalibration.applyFromTimestamp
         ) {
             val revertedValues = transformation.revertBodyScanCalibration(
                 baseline.measurement,
@@ -262,7 +264,8 @@ class BodyScanCalibrationUseCases @Inject constructor(
         userId: Int,
         baseline: MeasurementWithValues,
         input: BodyScanFormInput,
-        scaleName: String? = null
+        scaleName: String? = null,
+        scope: CalibrationScope = CalibrationScope.ALL_HISTORY
     ): BodyScanCalibration {
         // If an active calibration was already applied to baseline, reverse it first to recover
         // original uncalibrated values so recalibrating does not double-offset or zero out.
@@ -392,9 +395,16 @@ class BodyScanCalibrationUseCases @Inject constructor(
         val resolvedFatPercent = input.scanFatPercent
             ?: input.scanFatKg?.let { (it / input.scanWeightKg) * 100f }
 
+        val applyFromTimestamp = when (scope) {
+            CalibrationScope.ALL_HISTORY -> 0L
+            CalibrationScope.BASELINE_DAY_ONWARDS -> startOfDay(baseline.measurement.timestamp)
+            CalibrationScope.LAST_30_DAYS -> startOfDay(baseline.measurement.timestamp) - 30L * 86_400_000L
+        }
+
         return BodyScanCalibration(
             userId = userId,
             scaleMeasurementTimestamp = baseline.measurement.timestamp,
+            applyFromTimestamp = applyFromTimestamp,
             scaleName = scaleName,
             scaleBaselineWeightKg = scaleWeightKg,
             scanWeightKg = input.scanWeightKg,

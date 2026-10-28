@@ -518,7 +518,7 @@ class MeasurementTransformationUseCase @Inject constructor(
             ?: databaseRepository.getBodyScanCalibrationForUser(measurement.userId)
             ?: return values
 
-        if (measurement.timestamp < activeCalibration.scaleMeasurementTimestamp) {
+        if (measurement.timestamp < activeCalibration.applyFromTimestamp) {
             return values
         }
 
@@ -787,6 +787,10 @@ class MeasurementTransformationUseCase @Inject constructor(
         val activeCalibration = calibration
             ?: databaseRepository.getBodyScanCalibrationForUser(measurement.userId)
             ?: return values
+
+        if (measurement.timestamp < activeCalibration.applyFromTimestamp) {
+            return values
+        }
 
         val types = query.getAllMeasurementTypes().first()
         val byKey = types.associateBy { it.key }

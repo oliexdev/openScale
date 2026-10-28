@@ -36,6 +36,7 @@ import com.health.openscale.core.database.MIGRATION_15_16
 import com.health.openscale.core.database.MIGRATION_16_17
 import com.health.openscale.core.database.MIGRATION_17_18
 import com.health.openscale.core.database.MIGRATION_18_19
+import com.health.openscale.core.database.MIGRATION_19_20
 import com.health.openscale.core.database.MIGRATION_1_2
 import com.health.openscale.core.database.MIGRATION_2_3
 import com.health.openscale.core.database.MIGRATION_3_4
@@ -88,6 +89,7 @@ object RoomTestSupport {
         MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11,
         MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15,
         MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19,
+        MIGRATION_19_20,
     )
 
     /** On-disk database at the real [AppDatabase.DATABASE_NAME] path, with all migrations applied. */
@@ -273,6 +275,64 @@ object RoomTestSupport {
                     "VALUES (1, 1, 78.0, 1751328000000)"
             )
             database.execSQL("PRAGMA user_version = 16")
+        } finally {
+            database.close()
+        }
+    }
+
+    /**
+     * Writes a schema-version-19 database with an existing body_scan_calibration row (without
+     * applyFromTimestamp), so MIGRATION_19_20 can be verified for preserving existing calibration
+     * data and defaulting applyFromTimestamp to 0L.
+     */
+    fun writeV19Database(file: File) {
+        writeV16Database(file)
+        val database = SQLiteDatabase.openDatabase(file.path, null, SQLiteDatabase.OPEN_READWRITE)
+        try {
+            database.execSQL("ALTER TABLE `user_goals` ADD COLUMN `startDate` INTEGER NOT NULL DEFAULT 0")
+            database.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `body_scan_calibration` (
+                    `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    `userId` INTEGER NOT NULL,
+                    `scaleMeasurementTimestamp` INTEGER NOT NULL,
+                    `scaleName` TEXT,
+                    `scaleBaselineWeightKg` REAL NOT NULL,
+                    `scanWeightKg` REAL NOT NULL,
+                    `scanFatPercent` REAL,
+                    `scanMuscleKg` REAL,
+                    `scanWaterLiters` REAL,
+                    `scanBoneKg` REAL,
+                    `scanVisceralFat` REAL,
+                    `scanProteinKg` REAL,
+                    `offsetFfmKg` REAL,
+                    `offsetMuscleKg` REAL,
+                    `offsetWaterKg` REAL,
+                    `offsetBoneKg` REAL,
+                    `offsetVisceralFat` REAL,
+                    `offsetProteinKg` REAL,
+                    `createdAt` INTEGER NOT NULL,
+                    FOREIGN KEY(`userId`) REFERENCES `User`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+                )
+                """.trimIndent()
+            )
+            database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_body_scan_calibration_userId` ON `body_scan_calibration` (`userId`)")
+            database.execSQL(
+                """
+                INSERT INTO `body_scan_calibration` (
+                    id, userId, scaleMeasurementTimestamp, scaleName, scaleBaselineWeightKg,
+                    scanWeightKg, scanFatPercent, scanMuscleKg, scanWaterLiters, scanBoneKg,
+                    scanVisceralFat, scanProteinKg, offsetFfmKg, offsetMuscleKg, offsetWaterKg,
+                    offsetBoneKg, offsetVisceralFat, offsetProteinKg, createdAt
+                ) VALUES (
+                    1, 1, 1740816000000, 'Test Scale v19', 80.0,
+                    80.0, 15.0, 35.0, 45.0, 3.2,
+                    5.0, 12.0, 2.0, 1.0, 1.5,
+                    0.2, 0.0, 0.5, 1740816000000
+                )
+                """.trimIndent()
+            )
+            database.execSQL("PRAGMA user_version = 19")
         } finally {
             database.close()
         }

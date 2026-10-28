@@ -233,6 +233,17 @@ private fun ActiveCalibrationCard(
                     label = stringResource(R.string.calibration_field_weight),
                     value = "${calibration.scanWeightKg} kg"
                 )
+                val scopeDescription = when {
+                    calibration.applyFromTimestamp == 0L -> stringResource(R.string.calibration_scope_applied_all)
+                    else -> stringResource(
+                        R.string.calibration_scope_applied_since,
+                        dateFormatter.format(Date(calibration.applyFromTimestamp))
+                    )
+                }
+                MetadataRow(
+                    label = stringResource(R.string.calibration_scope_label),
+                    value = scopeDescription
+                )
             }
 
             HorizontalDivider()

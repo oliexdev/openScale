@@ -1103,6 +1103,14 @@
     <string name="calibration_dynamic_adaptation_desc">Future weigh-ins will automatically apply these reference corrections, dynamically adapting as your body composition changes over time.</string>
     <string name="calibration_baseline_missing_body_comp_warning">Incomplete: body fat not recorded. Barefoot skin contact required.</string>
     <string name="calibration_error_baseline_missing_body_comp">The selected scale measurement lacks body composition data (fat/muscle). Please select a complete weigh-in taken with bare feet.</string>
+    <string name="calibration_scope_title">Apply Calibration To</string>
+    <string name="calibration_scope_description">Choose how far back to apply calibration offsets in your history.</string>
+    <string name="calibration_scope_all_history">All measurements with impedance (Recommended for smooth charts)</string>
+    <string name="calibration_scope_baseline_onwards">From baseline date onwards</string>
+    <string name="calibration_scope_last_30_days">Last 30 days &amp; future</string>
+    <string name="calibration_scope_label">Calibration Scope</string>
+    <string name="calibration_scope_applied_all">All history</string>
+    <string name="calibration_scope_applied_since">Since %1$s</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_next">Next</string>
     <string name="action_back">Back</string>

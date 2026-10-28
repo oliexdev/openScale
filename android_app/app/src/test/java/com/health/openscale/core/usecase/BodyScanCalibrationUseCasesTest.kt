@@ -22,11 +22,13 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.BodyScanCalibration
+import com.health.openscale.core.data.CalibrationScope
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.startOfDay
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacade
@@ -307,6 +309,7 @@ class BodyScanCalibrationUseCasesTest {
         val calibration = BodyScanCalibration(
             userId = userId,
             scaleMeasurementTimestamp = 10_000L, // calibration date
+            applyFromTimestamp = 10_000L,
             scanWeightKg = 80.0f,
             offsetFfmKg = 3.0f
         )
@@ -325,6 +328,54 @@ class BodyScanCalibrationUseCasesTest {
         // Historical values strictly preserved!
         assertThat(result.find { it.typeId == lbmType!!.id }?.floatValue).isEqualTo(64.0f)
         assertThat(result.find { it.typeId == fatType!!.id }?.floatValue).isEqualTo(20.0f)
+    }
+
+    @Test
+    fun applyBodyScanCalibration_withAllHistoryScope_calibratesHistoricalMeasurements() = runBlocking {
+        val calibration = BodyScanCalibration(
+            userId = userId,
+            scaleMeasurementTimestamp = 10_000L,
+            applyFromTimestamp = 0L, // ALL_HISTORY scope
+            scanWeightKg = 80.0f,
+            offsetFfmKg = 3.0f
+        )
+        repo.insertOrUpdateBodyScanCalibration(calibration)
+
+        // Historical measurement at timestamp 5_000L (before baseline weigh-in)
+        val measurement = Measurement(id = 4, userId = userId, timestamp = 5_000L)
+        val incomingValues = listOf(
+            MeasurementValue(typeId = weightType!!.id, floatValue = 80.0f, measurementId = 4),
+            MeasurementValue(typeId = impedanceType!!.id, floatValue = 500.0f, measurementId = 4),
+            MeasurementValue(typeId = lbmType!!.id, floatValue = 64.0f, measurementId = 4),
+            MeasurementValue(typeId = fatType!!.id, floatValue = 20.0f, measurementId = 4)
+        )
+
+        val result = transformation.applyBodyScanCalibration(measurement, incomingValues)
+        // With ALL_HISTORY, historical measurement IS calibrated smoothly
+        assertThat(result.find { it.typeId == lbmType!!.id }?.floatValue).isEqualTo(67.0f)
+    }
+
+    @Test
+    fun calculateCalibration_computesApplyFromTimestampAccordingToSelectedScope() = runBlocking {
+        val baselineTimestamp = 1740816000000L
+        val mId = repo.insertMeasurement(Measurement(userId = userId, timestamp = baselineTimestamp)).toInt()
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mId, typeId = weightType!!.id, floatValue = 80.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mId, typeId = impedanceType!!.id, floatValue = 500.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mId, typeId = lbmType!!.id, floatValue = 64.0f))
+        val baseline = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mId }
+        val input = BodyScanFormInput(scanWeightKg = 80.0f, scanFatPercent = 15.0f)
+
+        // Scope 1: ALL_HISTORY -> applyFromTimestamp = 0L
+        val calAll = calibrationUseCases.calculateCalibration(userId, baseline, input, scope = CalibrationScope.ALL_HISTORY)
+        assertThat(calAll.applyFromTimestamp).isEqualTo(0L)
+
+        // Scope 2: BASELINE_DAY_ONWARDS -> applyFromTimestamp = startOfDay(baselineTimestamp)
+        val calDay = calibrationUseCases.calculateCalibration(userId, baseline, input, scope = CalibrationScope.BASELINE_DAY_ONWARDS)
+        assertThat(calDay.applyFromTimestamp).isEqualTo(startOfDay(baselineTimestamp))
+
+        // Scope 3: LAST_30_DAYS -> applyFromTimestamp = startOfDay(baselineTimestamp) - 30 days
+        val cal30 = calibrationUseCases.calculateCalibration(userId, baseline, input, scope = CalibrationScope.LAST_30_DAYS)
+        assertThat(cal30.applyFromTimestamp).isEqualTo(startOfDay(baselineTimestamp) - 30L * 86_400_000L)
     }
 
     @Test
@@ -552,11 +603,13 @@ class BodyScanCalibrationUseCasesTest {
 
         val baseline = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mBaseId }
         val input = BodyScanFormInput(scanWeightKg = 80.0f, scanFatKg = 13.0f) // FFM = 67.0 kg
-        val cal = calibrationUseCases.calculateCalibration(userId, baseline, input)
+        val cal = calibrationUseCases.calculateCalibration(userId, baseline, input).copy(applyFromTimestamp = 10_000L)
         calibrationUseCases.saveCalibration(cal, baseline)
 
-        // Verify both baseline and future are calibrated to 67.0 kg
+        // Verify past was not touched, but baseline and future are calibrated to 67.0 kg
         val allAfterCal = repo.getMeasurementsWithValuesForUser(userId).first()
+        assertThat(allAfterCal.first { it.measurement.id == mPastId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue)
+            .isWithin(0.01f).of(64.0f)
         assertThat(allAfterCal.first { it.measurement.id == mBaseId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue)
             .isWithin(0.01f).of(67.0f)
         assertThat(allAfterCal.first { it.measurement.id == mFutureId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue)
@@ -565,13 +618,50 @@ class BodyScanCalibrationUseCasesTest {
         // Delete calibration
         calibrationUseCases.deleteCalibrationForUser(userId)
 
-        // Verify both baseline and future are reverted to uncalibrated 64.0 kg, past was never touched
+        // Verify all measurements are at uncalibrated 64.0 kg
         val allReverted = repo.getMeasurementsWithValuesForUser(userId).first()
         assertThat(allReverted.first { it.measurement.id == mPastId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue)
             .isWithin(0.01f).of(64.0f)
         assertThat(allReverted.first { it.measurement.id == mBaseId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue)
             .isWithin(0.01f).of(64.0f)
         assertThat(allReverted.first { it.measurement.id == mFutureId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue)
+            .isWithin(0.01f).of(64.0f)
+    }
+
+    @Test
+    fun deleteCalibrationForUser_withAllHistoryScope_calibratesAndRevertsAllMeasurements() = runBlocking {
+        // Measurement at t = 5_000 (past)
+        val mPastId = repo.insertMeasurement(Measurement(userId = userId, timestamp = 5_000L)).toInt()
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mPastId, typeId = weightType!!.id, floatValue = 80.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mPastId, typeId = impedanceType!!.id, floatValue = 500.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mPastId, typeId = lbmType!!.id, floatValue = 64.0f))
+
+        // Baseline at t = 10_000
+        val mBaseId = repo.insertMeasurement(Measurement(userId = userId, timestamp = 10_000L)).toInt()
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mBaseId, typeId = weightType!!.id, floatValue = 80.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mBaseId, typeId = impedanceType!!.id, floatValue = 500.0f))
+        repo.insertMeasurementValue(MeasurementValue(measurementId = mBaseId, typeId = lbmType!!.id, floatValue = 64.0f))
+
+        val baseline = repo.getMeasurementsWithValuesForUser(userId).first().first { it.measurement.id == mBaseId }
+        val input = BodyScanFormInput(scanWeightKg = 80.0f, scanFatKg = 13.0f) // FFM = 67.0 kg
+        val cal = calibrationUseCases.calculateCalibration(userId, baseline, input, scope = CalibrationScope.ALL_HISTORY)
+        calibrationUseCases.saveCalibration(cal, baseline)
+
+        // Verify ALL measurements (past and baseline) are calibrated to 67.0 kg
+        var all = repo.getMeasurementsWithValuesForUser(userId).first()
+        assertThat(all.first { it.measurement.id == mPastId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue)
+            .isWithin(0.01f).of(67.0f)
+        assertThat(all.first { it.measurement.id == mBaseId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue)
+            .isWithin(0.01f).of(67.0f)
+
+        // Delete calibration
+        calibrationUseCases.deleteCalibrationForUser(userId)
+
+        // Verify ALL measurements are cleanly reverted to uncalibrated 64.0 kg
+        all = repo.getMeasurementsWithValuesForUser(userId).first()
+        assertThat(all.first { it.measurement.id == mPastId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue)
+            .isWithin(0.01f).of(64.0f)
+        assertThat(all.first { it.measurement.id == mBaseId }.values.find { it.type.key == MeasurementType.LBM }?.value?.floatValue)
             .isWithin(0.01f).of(64.0f)
     }
 

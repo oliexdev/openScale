@@ -20,6 +20,7 @@ package com.health.openscale.ui.screen.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.health.openscale.core.data.BodyScanCalibration
+import com.health.openscale.core.data.CalibrationScope
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.usecase.BodyScanCalibrationUseCases
@@ -103,6 +104,17 @@ class CalibrationViewModel @Inject constructor(
 
     private val _scanProtein = MutableStateFlow("")
     val scanProtein: StateFlow<String> = _scanProtein.asStateFlow()
+
+    private val _calibrationScope = MutableStateFlow(CalibrationScope.ALL_HISTORY)
+    val calibrationScope: StateFlow<CalibrationScope> = _calibrationScope.asStateFlow()
+
+    fun setCalibrationScope(scope: CalibrationScope) {
+        _calibrationScope.value = scope
+        _selectedBaseline.value?.let { baseline ->
+            val applyFrom = scope.calculateApplyFromTimestamp(baseline.measurement.timestamp)
+            _calculatedCalibration.value = _calculatedCalibration.value?.copy(applyFromTimestamp = applyFrom)
+        }
+    }
 
     private val _calculatedCalibration = MutableStateFlow<BodyScanCalibration?>(null)
     val calculatedCalibration: StateFlow<BodyScanCalibration?> = _calculatedCalibration.asStateFlow()
@@ -191,7 +203,8 @@ class CalibrationViewModel @Inject constructor(
                     userId = userId,
                     baseline = baseline,
                     input = input,
-                    scaleName = effectiveScaleName
+                    scaleName = effectiveScaleName,
+                    scope = _calibrationScope.value
                 )
                 _calculatedCalibration.value = calibration
                 _effectiveBaseline.value = uncalibratedBaseline
@@ -247,6 +260,7 @@ class CalibrationViewModel @Inject constructor(
         _scanVisceralFat.value = ""
         _scanProtein.value = ""
         _calculatedCalibration.value = null
+        _calibrationScope.value = CalibrationScope.ALL_HISTORY
         _effectiveBaseline.value = null
         _validationError.value = null
         _isSaving.value = false

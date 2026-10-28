@@ -17,6 +17,7 @@
  */
 package com.health.openscale.ui.screen.settings
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,11 +33,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
@@ -53,6 +56,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -65,6 +69,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -72,8 +77,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.health.openscale.R
-import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.BodyScanCalibration
+import com.health.openscale.core.data.CalibrationScope
+import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.model.MeasurementWithValues
@@ -101,6 +107,7 @@ fun CalibrationWizardScreen(
     val calculatedCalibration by viewModel.calculatedCalibration.collectAsState()
     val savedScaleName by viewModel.savedDeviceName.collectAsState()
     val scanWeight by viewModel.scanWeight.collectAsState()
+    val calibrationScope by viewModel.calibrationScope.collectAsState()
 
     val screenTitle = stringResource(R.string.calibration_wizard_title)
     LaunchedEffect(Unit) {
@@ -271,7 +278,9 @@ fun CalibrationWizardScreen(
                     )
                     3 -> Step3ReviewAndSave(
                         calibration = calculatedCalibration,
-                        baseline = effectiveBaseline ?: baseline
+                        baseline = effectiveBaseline ?: baseline,
+                        selectedScope = calibrationScope,
+                        onSelectScope = { viewModel.setCalibrationScope(it) }
                     )
                 }
             }
@@ -621,7 +630,9 @@ private data class ComparisonMetricRow(
 @Composable
 private fun Step3ReviewAndSave(
     calibration: BodyScanCalibration?,
-    baseline: MeasurementWithValues?
+    baseline: MeasurementWithValues?,
+    selectedScope: CalibrationScope,
+    onSelectScope: (CalibrationScope) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -886,6 +897,81 @@ private fun Step3ReviewAndSave(
                         }
                         if (index < rows.lastIndex) {
                             HorizontalDivider(modifier = Modifier.padding(horizontal = 14.dp))
+                        }
+                    }
+                }
+            }
+
+            // Calibration Scope Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.calibration_scope_title),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Text(
+                        text = stringResource(R.string.calibration_scope_description),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    CalibrationScope.entries.forEach { scope ->
+                        val isSelected = scope == selectedScope
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .selectable(
+                                    selected = isSelected,
+                                    onClick = { onSelectScope(scope) },
+                                    role = Role.RadioButton
+                                ),
+                            shape = MaterialTheme.shapes.small,
+                            color = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+                            else MaterialTheme.colorScheme.surface,
+                            border = BorderStroke(
+                                width = if (isSelected) 1.5.dp else 1.dp,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.outlineVariant
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                RadioButton(
+                                    selected = isSelected,
+                                    onClick = null
+                                )
+                                Text(
+                                    text = stringResource(scope.labelResId),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                                    else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                         }
                     }
                 }

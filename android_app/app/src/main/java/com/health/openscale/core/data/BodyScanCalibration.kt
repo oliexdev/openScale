@@ -21,6 +21,40 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.health.openscale.R
+import java.util.Calendar
+
+/**
+ * Defines the historical scope of a body scan calibration profile:
+ * - [ALL_HISTORY]: Applies offsets across all historical measurements with impedance (0L).
+ * - [BASELINE_DAY_ONWARDS]: Applies offsets starting from the beginning of the baseline weigh-in day.
+ * - [LAST_30_DAYS]: Applies offsets starting 30 days prior to the baseline weigh-in day.
+ */
+enum class CalibrationScope(val labelResId: Int) {
+    ALL_HISTORY(R.string.calibration_scope_all_history),
+    BASELINE_DAY_ONWARDS(R.string.calibration_scope_baseline_onwards),
+    LAST_30_DAYS(R.string.calibration_scope_last_30_days);
+
+    fun calculateApplyFromTimestamp(baselineTimestamp: Long): Long = when (this) {
+        ALL_HISTORY -> 0L
+        BASELINE_DAY_ONWARDS -> startOfDay(baselineTimestamp)
+        LAST_30_DAYS -> startOfDay(baselineTimestamp) - 30L * 86_400_000L
+    }
+}
+
+/**
+ * Returns epoch millis for the start of the day (00:00:00.000) of [timestamp].
+ */
+fun startOfDay(timestamp: Long): Long {
+    val calendar = Calendar.getInstance().apply {
+        timeInMillis = timestamp
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+    return calendar.timeInMillis
+}
 
 /**
  * Stores calibration offsets computed from a high-accuracy reference body scan
@@ -30,7 +64,7 @@ import androidx.room.PrimaryKey
  * after normalizing for day-to-day bodyweight and clothing differences via the ratio
  * W_scale / W_scan.
  *
- * Measurements taken on or after [scaleMeasurementTimestamp] will have these offsets applied
+ * Measurements taken on or after [applyFromTimestamp] will have these offsets applied
  * when body scan calibration is enabled.
  */
 @Entity(
@@ -54,6 +88,12 @@ data class BodyScanCalibration(
 
     /** The timestamp of the home scale measurement used as baseline. */
     val scaleMeasurementTimestamp: Long,
+
+    /**
+     * Timestamp (epoch millis) from which calibration offsets should be applied.
+     * E.g., 0L for ALL_HISTORY, or the start of the baseline day, or 30 days prior.
+     */
+    val applyFromTimestamp: Long = 0L,
 
     /** Optional name/model of the home scale used for calibration. */
     val scaleName: String? = null,
