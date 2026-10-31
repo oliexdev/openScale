@@ -19,7 +19,6 @@ package com.health.openscale.core.bluetooth.scales
 
 import android.os.Handler
 import android.os.Looper
-import android.bluetooth.le.ScanResult
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
@@ -146,6 +145,11 @@ class QNHandler : ScaleDeviceHandler() {
         if (!(hasQN && (nameIsQnFamily || hasAe00))) return null
 
         isRenphoDevice = nameLc == "renpho-scale"
+        // Saved scan metadata retains this static per-device resistance encoding flag.
+        val manufacturer = device.manufacturerData
+        val payload = if (manufacturer != null && manufacturer.size() > 0) manufacturer.valueAt(0) else null
+        usesEncryptedResistance = payload != null && payload.size > 15 &&
+            (payload[15].toInt() and 0x04) != 0
         likelyUseType1 = uuids.contains(uuid16(0xFFE0)) && !uuids.contains(uuid16(0xFFF0))
 
         val caps = setOf(
@@ -162,16 +166,6 @@ class QNHandler : ScaleDeviceHandler() {
     }
 
     // ---- Connection sequencing -------------------------------------------------
-
-    override fun onGattAdvertisement(result: ScanResult) {
-        result.scanRecord?.deviceName?.let { isRenphoDevice = it.equals("Renpho-Scale", ignoreCase = true) }
-        // VA manufacturer payload byte 15, bit 2 advertises the resistance bit permutation.
-        // Missing/short metadata uses the original, unencrypted whole-ohm encoding.
-        val manufacturer = result.scanRecord?.manufacturerSpecificData
-        val payload = if (manufacturer != null && manufacturer.size() > 0) manufacturer.valueAt(0) else null
-        usesEncryptedResistance = payload != null && payload.size > 15 &&
-            (payload[15].toInt() and 0x04) != 0
-    }
 
     override fun onConnected(user: ScaleUser) {
         hasPublishedForThisSession = false
@@ -442,7 +436,10 @@ class QNHandler : ScaleDeviceHandler() {
         val rawWeight = u16be(data[10], data[11])
         val weightKg = rawWeight / 100.0f
         val recordScaleSeconds = u32le(data[6], data[7], data[8], data[9])
-        if (isRenphoVa && (data.size < 19 || data[3] == 0.toByte())) return
+        if (isRenphoVa && (data.size < 19 || data[3] == 0.toByte())) {
+            scheduleStoredDataRetry("empty or incomplete Renpho stored record")
+            return
+        }
         val r1 = if (isRenphoVa) resistance(data[12], data[13]) else u16le(data[13], data[14])
         val r2 = if (isRenphoVa) resistance(data[14], data[15]) else u16le(data[15], data[16])
         val deviceFat = if (isRenphoVa)
@@ -621,7 +618,7 @@ class QNHandler : ScaleDeviceHandler() {
         ((a.toInt() and 0xFF) or ((b.toInt() and 0xFF) shl 8)).toFloat()
 
     private fun resistance(high: Byte, low: Byte): Float {
-        if (!isCapturedUniversalVariant || !usesEncryptedResistance) return u16be(high, low)
+        if (!isRenphoVa || !usesEncryptedResistance) return u16be(high, low)
         // Swap bits 0/4 and 3/5 within EACH byte; this is not a decimal scale factor.
         fun decode(value: Byte): Byte {
             val v = value.toInt() and 0xFF
@@ -638,9 +635,9 @@ class QNHandler : ScaleDeviceHandler() {
         ((d.toLong() and 0xFFL) shl 24)
 
     private fun publishQnMeasurement(user: ScaleUser, weightKg: Float, r1: Float, source: String, deviceFat: Float? = null) {
-        // Four-electrode VA resistance is whole ohms after optional wire decoding. Dividing
-        // all 0xFF readings by ten turns the ES-CS20M's real ~500 ohms into ~50 ohms.
-        val impedanceOhm = r1
+        // Preserve the captured Fit Plus deci-ohm path. Only Renpho VA uses whole ohms
+        // after optional wire decoding; protocolType 0xFF alone does not select the units.
+        val impedanceOhm = if (isCapturedUniversalVariant && !isRenphoVa) r1 / 10f else r1
 
         val m = ScaleMeasurement().apply {
             userId = user.id

@@ -86,29 +86,6 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
             val secondsAgo = ConverterUtils.fromUnsignedInt32Be(data, 11)
             return OfflineRecord(weightX100, resistance, secondsAgo)
         }
-
-        // --- Body composition (renpho-escs20m algorithm 0x04, non-athlete) ---------------
-        //
-        // All formulas ported from renpho-escs20m/body_metrics.py (commit 5b74ab4).
-        // They approximate the proprietary Renpho native library (libICBodyFatAlgorithms.so)
-        // used by the official app for 4-electrode scales that stream a single impedance
-        // value over the 0x55aa basic-flavor protocol (ES-26BB-B, R-A012, R-A016, R-A020).
-        //
-        // Parameters: weight (kg), height (m), age (years), sex, resistance (Ω).
-        // All outputs are clamped to physiologically plausible ranges.
-
-        fun bodyFatPercent(weightKg: Float, heightM: Float, age: Int, isMale: Boolean, resistance: Int): Float =
-            RenphoBodyComposition.bodyFatPercent(weightKg, heightM, age, isMale, resistance)
-
-        fun waterPercent(bf: Float, isMale: Boolean): Float = RenphoBodyComposition.waterPercent(bf, isMale)
-
-        fun skeletalMusclePercent(bf: Float, isMale: Boolean): Float =
-            RenphoBodyComposition.skeletalMusclePercent(bf, isMale)
-
-        fun boneMass(weightKg: Float, bf: Float, isMale: Boolean): Float =
-            RenphoBodyComposition.boneMass(weightKg, bf, isMale)
-
-        fun proteinPercent(bf: Float, isMale: Boolean): Float = RenphoBodyComposition.proteinPercent(bf, isMale)
     }
 
     private val SVC get() = uuid16(0x1A10)
@@ -244,12 +221,12 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
                 val user = currentAppUser()
                 val isMale = user.gender.isMale()
                 val heightM = user.bodyHeight / 100f
-                val fat = bodyFatPercent(weightKg, heightM, user.age, isMale, resistance)
+                val fat = RenphoBodyComposition.bodyFatPercent(weightKg, heightM, user.age, isMale, resistance)
                 this[MeasurementType.BODY_FAT] = Percent(fat)
-                this[MeasurementType.WATER] = Percent(waterPercent(fat, isMale))
-                this[MeasurementType.MUSCLE] = Percent(skeletalMusclePercent(fat, isMale))
-                this[MeasurementType.BONE] = Kg(boneMass(weightKg, fat, isMale))
-                this[MeasurementType.PROTEIN] = Percent(proteinPercent(fat, isMale))
+                this[MeasurementType.WATER] = Percent(RenphoBodyComposition.waterPercent(fat, isMale))
+                this[MeasurementType.MUSCLE] = Percent(RenphoBodyComposition.skeletalMusclePercent(fat, isMale))
+                this[MeasurementType.BONE] = Kg(RenphoBodyComposition.boneMass(weightKg, fat, isMale))
+                this[MeasurementType.PROTEIN] = Percent(RenphoBodyComposition.proteinPercent(fat, isMale))
                 this[MeasurementType.LBM] = Kg(weightKg * (100f - fat) / 100f)
             }
         }
