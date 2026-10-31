@@ -89,6 +89,8 @@ import com.health.openscale.core.bluetooth.scales.TaylorBIAHandler
 import com.health.openscale.core.bluetooth.scales.TrisaBodyAnalyzeHandler
 import com.health.openscale.core.bluetooth.scales.VitafitVT701Handler
 import com.health.openscale.core.bluetooth.scales.WeightGurusA3Handler
+import com.health.openscale.core.bluetooth.scales.WyzeScaleXHandler
+import com.health.openscale.core.bluetooth.libs.WyzeScaleXLib
 import com.health.openscale.core.bluetooth.scales.XiaomiS800Handler
 import com.health.openscale.core.bluetooth.scales.YunmaiHandler
 import com.health.openscale.core.bluetooth.scales.YunmaiXHandler
@@ -290,6 +292,9 @@ object ScaleCatalog {
         device("WHSCL1", IHealthHs2sLib.Variant.WYZE_WHSCL1.service) claimedBy IHealthHs2sHandler::class.java,
         device("HS2S PRO", IHealthHs2sLib.Variant.HS2S_PRO.service) claimedBy IHealthHs2sHandler::class.java,
         device("HS2S", IHealthHs2sLib.Variant.HS2S.service) claimedBy IHealthHs2sHandler::class.java,
+        device(WyzeScaleXLib.ADVERTISED_NAME, WyzeScaleXLib.SERVICE) claimedBy WyzeScaleXHandler::class.java,
+        device(WyzeScaleXLib.ADVERTISED_NAME) claimedBy WyzeScaleXHandler::class.java,
+        advertisement(services = listOf(WyzeScaleXLib.SERVICE), manufacturerData = listOf(WyzeScaleXLib.MANUFACTURER_ID to hex("07 02 00 00 00 00"))) claimedBy WyzeScaleXHandler::class.java,
         device("HUAWEI AH100") claimedBy HuaweiAhCh100Handler::class.java,
         device("HUAWEI CH100") claimedBy HuaweiAhCh100Handler::class.java,
         device("CH100S") claimedBy HuaweiCH100SHandler::class.java,

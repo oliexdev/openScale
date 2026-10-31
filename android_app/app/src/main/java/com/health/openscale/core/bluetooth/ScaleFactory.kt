@@ -95,6 +95,7 @@ import com.health.openscale.core.bluetooth.scales.TrisaBodyAnalyzeHandler
 import com.health.openscale.core.bluetooth.scales.TuningProfile
 import com.health.openscale.core.bluetooth.scales.VitafitVT701Handler
 import com.health.openscale.core.bluetooth.scales.WeightGurusA3Handler
+import com.health.openscale.core.bluetooth.scales.WyzeScaleXHandler
 import com.health.openscale.core.bluetooth.scales.YunmaiHandler
 import com.health.openscale.core.bluetooth.scales.YunmaiXHandler
 import com.health.openscale.core.facade.MeasurementFacade
@@ -190,6 +191,7 @@ class ScaleFactory @Inject constructor(
             InlifeHandler(),
             IHealthHS3Handler(),
             IHealthHs2sHandler(),
+            WyzeScaleXHandler(),
             HuaweiAhCh100Handler(),
             HuaweiCH100SHandler(),
             HuaweiHagridWspHandler(),
