@@ -29,8 +29,8 @@ android {
         applicationId = "com.health.openscale"
         minSdk = 31
         targetSdk = 37
-        versionCode = 77
-        versionName = "3.1.3"
+        versionCode = 78
+        versionName = "3.1.4"
 
         manifestPlaceholders["appName"] = "openScale"
         manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"

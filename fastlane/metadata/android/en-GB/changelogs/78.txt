@@ -1,0 +1,7 @@
+* New scale support: QardioBase, Hume Body Pod 2, Redmond SkyBalance, Samsung Smart Scale, iHealth HS2S, Wyze Scale, Xiaomi S200, Renpho Elis Solar, Fitdays, FITINDEX and more.
+* Photo measurements with before/after comparison, exported as ZIP with the CSV.
+* Compare two measurements side by side.
+* Adaptive layout for tablets and foldables.
+* Goals with a start date.
+* Xiaomi S400: improved body composition.
+* Many Bluetooth fixes.
