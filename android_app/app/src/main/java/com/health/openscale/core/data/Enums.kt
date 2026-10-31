@@ -99,7 +99,7 @@ enum class SupportedLanguage(val code: String, val nativeDisplayName: String) {
     CHINESE_SIMPLIFIED("zh-CN", "Chinese (simplified; 中文 (汉语))"),
     CHINESE_TRADITIONAL("zh-TW", "Chinese (traditional; 中文 (繁體))"),
     //CROATIAN("hr", "Croatian (hrvatski jezik)"),
-    //CZECH("cs", "Czech (čeština)"),
+    CZECH("cs", "Czech (čeština)"),
     //DANISH("da", "Danish (dansk)"),
     DUTCH("nl", "Dutch (Nederlands)"),
     ENGLISH("en", "English"),
