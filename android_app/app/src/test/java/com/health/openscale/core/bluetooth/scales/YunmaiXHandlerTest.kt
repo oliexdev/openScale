@@ -30,10 +30,10 @@ import com.health.openscale.core.bluetooth.ScaleCatalog.uuid16
 /**
  * Tests for [YunmaiXAdv] frame parsing and [YunmaiXHandler.supportFor] matching.
  *
- * Fixtures are synthetic frames built to the reverse-engineered YMBS-M268 layout via
- * [frame] (matching the shape observed on real hardware), not personal captures. The
- * frames use a placeholder device address; Android parses the first two AD bytes as the
- * manufacturer id, so [frame] returns the remaining 14-byte payload.
+ * Most fixtures are synthetic frames built to the reverse-engineered YMBS-M268 layout via
+ * [frame]; [capturedChineseFrame] holds a real M1827CH advertisement. Frames use a
+ * placeholder device address; Android parses the first two AD bytes as the manufacturer id,
+ * so [frame] returns the remaining 14-byte payload.
  *
  * Robolectric is required for android.util.SparseArray in ScannedDeviceInfo.
  */
@@ -53,19 +53,16 @@ class YunmaiXHandlerTest {
      * @param weightRaw   weight in units of 0.01 kg (u16 BE)
      * @param impedance   impedance in Ω (u16 BE); 0 until the final frame
      * @param sessionByte the per-weigh-in byte at offset [7]; varies between sessions
-     * @param signature   the three signature bytes at offsets [4..6]; defaults to the
-     *                    international 0B 74 17, the Chinese M1827CH uses 06 52 11
      */
     private fun frame(
         state: Int,
         weightRaw: Int,
         impedance: Int = 0,
-        sessionByte: Int = 0x04,
-        signature: ByteArray = byteArrayOf(0x0B, 0x74, 0x17)
+        sessionByte: Int = 0x04
     ): ByteArray {
         val body = byteArrayOf(
             0x12.toByte(), 0xEE.toByte(), 0xFF.toByte(), 0xC0.toByte(), // MAC bytes 2..5, reversed
-            signature[0], signature[1], signature[2],                    // signature
+            0x0B, 0x74, 0x17,                                           // signature
             sessionByte.toByte(),
             state.toByte(),
             (weightRaw shr 8).toByte(), weightRaw.toByte(),
@@ -75,6 +72,27 @@ class YunmaiXHandlerTest {
         for (i in 7..12) xor = xor xor (body[i].toInt() and 0xFF)
         return body + xor.toByte()
     }
+
+    /**
+     * Final (state 03) advertisement captured from a Chinese M1827CH (好轻 mini 2S) with
+     * nRF Connect during a barefoot weigh-in.
+     *
+     * The MAC-echo bytes (the manufacturer id plus payload bytes 0..3) are zeroed — they are
+     * outside the checksum range — and [CAPTURED_ADDRESS] matches them. Every other byte is
+     * verbatim: signature 06 52 11, session 0x7F, 87.65 kg, 354 Ω, XOR 0x00.
+     */
+    private fun capturedChineseFrame(): ByteArray = byteArrayOf(
+        0x00, 0x00, 0x00, 0x00, // MAC echo, zeroed
+        0x06, 0x52, 0x11,       // Chinese M1827CH signature
+        0x7F,                   // per-session byte
+        0x03,                   // final
+        0x22, 0x3D,             // 87.65 kg
+        0x01, 0x62,             // 354 Ω
+        0x00,                   // XOR
+    )
+
+    private val CAPTURED_ADDRESS = "00:00:00:00:00:00"
+    private val CAPTURED_MFR_ID = 0x0000
 
 
     private fun device(
@@ -118,22 +136,11 @@ class YunmaiXHandlerTest {
     }
 
     @Test
-    fun `parses Chinese M1827CH final frame with alternate signature`() {
-        // Frame layout observed on a 好轻 mini 2S (M1827CH); values are synthetic.
-        val f = YunmaiXAdv.parse(
-            MFR_ID,
-            frame(
-                0x03,
-                weightRaw = 6540,
-                impedance = 480,
-                sessionByte = 0x10,
-                signature = byteArrayOf(0x06, 0x52, 0x11),
-            ),
-            ADDRESS,
-        )!!
+    fun `parses a captured Chinese M1827CH final frame`() {
+        val f = YunmaiXAdv.parse(CAPTURED_MFR_ID, capturedChineseFrame(), CAPTURED_ADDRESS)!!
         assertThat(f.state).isEqualTo(YunmaiXAdv.STATE_FINAL)
-        assertThat(f.weightKg).isWithin(1e-3f).of(65.40f)
-        assertThat(f.impedanceOhm).isEqualTo(480)
+        assertThat(f.weightKg).isWithin(1e-3f).of(87.65f)
+        assertThat(f.impedanceOhm).isEqualTo(354)
     }
 
     @Test
@@ -187,15 +194,13 @@ class YunmaiXHandlerTest {
     }
 
     @Test
-    fun `claims nameless Chinese scale with alternate signature`() {
-        val payload = frame(
-            0x03,
-            weightRaw = 6540,
-            impedance = 480,
-            sessionByte = 0x10,
-            signature = byteArrayOf(0x06, 0x52, 0x11),
-        )
-        assertThat(YunmaiXHandler().supportFor(device(payload))).isNotNull()
+    fun `claims nameless Chinese scale advertising a captured frame`() {
+        val payload = capturedChineseFrame()
+        assertThat(
+            YunmaiXHandler().supportFor(
+                device(payload, CAPTURED_MFR_ID, CAPTURED_ADDRESS)
+            )
+        ).isNotNull()
     }
 
     @Test
