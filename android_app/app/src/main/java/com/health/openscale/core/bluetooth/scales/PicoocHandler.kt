@@ -288,7 +288,7 @@ class PicoocHandler : ScaleDeviceHandler() {
 
         val frame = parseLiveFrame(data)
         if (frame == null) {
-            logW("Picooc live frame 0x%02X too short to decode (len=%d)".format(opcode, data.size))
+            logW("Picooc live frame 0x%02X has unsupported or truncated layout (len=%d)".format(opcode, data.size))
             return
         }
         logI("Picooc live: $frame")
@@ -487,6 +487,8 @@ class PicoocHandler : ScaleDeviceHandler() {
 
         /** Length of the PICOOC-CC live frame, which stops after the impedance field. */
         private const val SHORT_LIVE_FRAME_SIZE = 10
+        /** Mini Pro (PICOOC-CQ): includes pounds and unit, but no phase angle or flag. */
+        private const val MINI_PRO_LIVE_FRAME_SIZE = 13
         private const val KG_TO_LB = 2.20462f
 
         private const val MIN_WEIGHT_KG = 2.0f
@@ -557,7 +559,7 @@ class PicoocHandler : ScaleDeviceHandler() {
         )
 
         /**
-         * Decode a 0x39 / 0x52 streaming frame, or `null` if it is too short.
+         * Decode a 0x39 / 0x52 streaming frame, or `null` if its layout is unsupported or truncated.
          *
          * Layout: `[op][len][ts BE 4B][weight/20][impedance/10][lb/10][unit][phase/100][flag]`,
          * where `flag == 0` marks the reading as settled and reportable.
@@ -571,8 +573,16 @@ class PicoocHandler : ScaleDeviceHandler() {
          * [weight/20][impedance/10]`, with no pound, unit, phase or flag fields. It arrives once,
          * after the profile exchange, with the settled reading, so it is treated as complete. The
          * impedance is 0 when the user weighs with socks on.
+         *
+         * Mini Pro (also named PICOOC-CQ) sends a 13-byte variant ending at the unit field.
+         * Captured readings of 69.0 / 69.1 kg give 543 / 544 ohms and 152.2 / 152.4 lb with
+         * the same scaling and pound mask as the long frame. There is no phase angle or
+         * completion flag. Like the 10-byte variant, the result is treated as complete;
+         * publication still waits for the settle window or the scale's disconnect after ACK.
          */
         fun parseLiveFrame(data: ByteArray): LiveFrame? {
+            val isMiniPro = data.size >= MINI_PRO_LIVE_FRAME_SIZE &&
+                u8(data, 1) == MINI_PRO_LIVE_FRAME_SIZE
             // Keyed on the length byte, so a truncated long frame is still rejected below.
             if (data.size >= SHORT_LIVE_FRAME_SIZE && u8(data, 1) == SHORT_LIVE_FRAME_SIZE) {
                 val weightKg = u16be(data, 6) / 20.0f
@@ -588,7 +598,7 @@ class PicoocHandler : ScaleDeviceHandler() {
                     poundFlag = false,
                 )
             }
-            if (data.size < 16) return null
+            if (!isMiniPro && data.size < 16) return null
             return LiveFrame(
                 timestamp = ((u8(data, 2).toLong() shl 24) or (u8(data, 3).toLong() shl 16) or
                     (u8(data, 4).toLong() shl 8) or u8(data, 5).toLong()),
@@ -596,8 +606,8 @@ class PicoocHandler : ScaleDeviceHandler() {
                 impedance = u16be(data, 8) / 10.0,
                 weightLb = (u16be(data, 10) and 0x7FFF) / 10.0f,
                 unit = u8(data, 12),
-                phaseAngle = u16be(data, 13) / 100.0f,
-                complete = u8(data, 15) == 0,
+                phaseAngle = if (isMiniPro) 0f else u16be(data, 13) / 100.0f,
+                complete = isMiniPro || u8(data, 15) == 0,
                 poundFlag = (u8(data, 10) and 0x80) != 0,
             )
         }
