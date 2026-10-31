@@ -17,6 +17,8 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
+import com.health.openscale.core.bluetooth.libs.RenphoBodyComposition
+
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
@@ -84,46 +86,6 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
             val secondsAgo = ConverterUtils.fromUnsignedInt32Be(data, 11)
             return OfflineRecord(weightX100, resistance, secondsAgo)
         }
-
-        // --- Body composition (renpho-escs20m algorithm 0x04, non-athlete) ---------------
-        //
-        // All formulas ported from renpho-escs20m/body_metrics.py (commit 5b74ab4).
-        // They approximate the proprietary Renpho native library (libICBodyFatAlgorithms.so)
-        // used by the official app for 4-electrode scales that stream a single impedance
-        // value over the 0x55aa basic-flavor protocol (ES-26BB-B, R-A012, R-A016, R-A020).
-        //
-        // Parameters: weight (kg), height (m), age (years), sex, resistance (Ω).
-        // All outputs are clamped to physiologically plausible ranges.
-
-        /** Body fat % — linear regression on BMI, age and impedance. */
-        fun bodyFatPercent(weightKg: Float, heightM: Float, age: Int, isMale: Boolean, resistance: Int): Float {
-            val bmi = weightKg / (heightM * heightM)
-            return if (isMale)
-                (1.524f * bmi + 0.103f * age - 21.992f - 500f / resistance).coerceIn(1f, 60f)
-            else
-                (1.545f * bmi + 0.097f * age - 12.689f - 500f / resistance).coerceIn(1f, 60f)
-        }
-
-        /** Water % — derived from body fat via sex-specific linear coefficients. */
-        fun waterPercent(bf: Float, isMale: Boolean) =
-            (if (isMale) 72.202f - 0.72223f * bf else 68.651f - 0.68725f * bf).coerceIn(20f, 80f)
-
-        /** Skeletal muscle % — derived from body fat. */
-        fun skeletalMusclePercent(bf: Float, isMale: Boolean) =
-            (if (isMale) 64.713f - 0.65508f * bf else 58.390f - 0.58654f * bf).coerceIn(17.5f, 70f)
-
-        /** Bone mass (kg) — weight minus soft-lean mass minus fat mass. */
-        fun boneMass(weightKg: Float, bf: Float, isMale: Boolean): Float {
-            val softLeanPct =
-                (if (isMale) 94.992f - 0.94969f * bf else 93.988f - 0.93960f * bf).coerceIn(0f, 100f)
-            val softLeanKg = (weightKg * softLeanPct / 100f).coerceIn(3.75f, 110f)
-            val bfKg = bf * weightKg / 100f
-            return (weightKg - softLeanKg - bfKg).coerceIn(1f, 7f)
-        }
-
-        /** Protein % — derived from body fat. */
-        fun proteinPercent(bf: Float, isMale: Boolean) =
-            (if (isMale) 22.787f - 0.22735f * bf else 25.340f - 0.30245f * bf).coerceIn(5f, 24f)
     }
 
     private val SVC get() = uuid16(0x1A10)
@@ -259,12 +221,12 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
                 val user = currentAppUser()
                 val isMale = user.gender.isMale()
                 val heightM = user.bodyHeight / 100f
-                val fat = bodyFatPercent(weightKg, heightM, user.age, isMale, resistance)
+                val fat = RenphoBodyComposition.bodyFatPercent(weightKg, heightM, user.age, isMale, resistance)
                 this[MeasurementType.BODY_FAT] = Percent(fat)
-                this[MeasurementType.WATER] = Percent(waterPercent(fat, isMale))
-                this[MeasurementType.MUSCLE] = Percent(skeletalMusclePercent(fat, isMale))
-                this[MeasurementType.BONE] = Kg(boneMass(weightKg, fat, isMale))
-                this[MeasurementType.PROTEIN] = Percent(proteinPercent(fat, isMale))
+                this[MeasurementType.WATER] = Percent(RenphoBodyComposition.waterPercent(fat, isMale))
+                this[MeasurementType.MUSCLE] = Percent(RenphoBodyComposition.skeletalMusclePercent(fat, isMale))
+                this[MeasurementType.BONE] = Kg(RenphoBodyComposition.boneMass(weightKg, fat, isMale))
+                this[MeasurementType.PROTEIN] = Percent(RenphoBodyComposition.proteinPercent(fat, isMale))
                 this[MeasurementType.LBM] = Kg(weightKg * (100f - fat) / 100f)
             }
         }

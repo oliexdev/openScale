@@ -17,9 +17,14 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
+import android.util.SparseArray
+import android.os.Looper
+import org.robolectric.Shadows.shadowOf
+import java.time.Duration
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -34,36 +39,13 @@ import kotlin.coroutines.EmptyCoroutineContext
 import com.health.openscale.core.bluetooth.ScaleCatalog.uuid16
 
 /**
- * Ground-truth regression tests for [QNHandler]'s Type-2 (0xFFF0) protocol handling, verified
- * against the decompiled Qing Niu vendor SDK (QNDecoderImpl.decodeData / CmdBuilder) and a real
- * BTSnoop capture of the official "Fit Profile" app talking to a GE CS 10 G "Fit Plus"
- * (2026-08-31, device address anonymized in the frames below).
- *
- * Four behaviors are verified against that capture, but only hold for the *captured* family —
- * which always reports protocolType 0xFF (see [QNHandler.isCapturedUniversalVariant]) — and are
- * gated accordingly so they can't change behavior for the many other QN/Yolanda/Renpho devices
- * this handler already served before this capture existed:
- *
- *  - The 0x13 config command carries the real user height/age/gender
- *    (CmdBuilder.buildCmd(0x13, scaleType, [unit, lightInterval, height, age, gender])) instead
- *    of zeros.
- *  - Every stable 0x10 weight frame is acknowledged with
- *    [0x1F, 0x05, protocolType, 0x10, checksum] (CmdBuilder.buildOverCmd).
- *  - In the ES-30M byte layout, only state==2 (not state==1) is treated as stable — state==1
- *    always carried R1=R2=0 in the capture.
- *  - r1/r2 are stored/used as tenths of an ohm (divided by 10) for impedance, since raw values
- *    landed ~10x above the ~300-1000 Ohm range TrisaBodyAnalyzeLib's formula is documented
- *    against, and the vendor SDK's own two-byte combine (MeasureDecoder.h) applies no scaling of
- *    its own — see `publishQnMeasurement`'s comment for the caveat that this is inferred, not
- *    confirmed against the vendor's own (unavailable) body-composition algorithm.
- *
- * Each gated test has a companion proving the *other* protocolTypes keep their original,
- * longer-serving behavior — including [classic factor-100 frame with weight low byte 0x00 is not
- * misclassified as ES-30M], which is a direct regression test for a real bug: an earlier version
- * of this fix used a length-byte-based "long frame" heuristic that turned out to be true for
- * essentially every well-formed frame (byte[1] is the frame's own length in this protocol), which
- * would have silently corrupted roughly 1 in 85 weigh-ins on every classic QN/Yolanda/Renpho
- * device by misreading the weight's low byte as an ES-30M state/impedance field.
+ * QN protocol regressions using anonymized GE "Fit Plus" and RENPHO ES-CS20M frames.
+ * VA/0xFF devices must finish BIA before publishing, receive the 0x1F completion ACK, and
+ * enable BIA in the 0x13 configuration. Renpho VA resistance is whole ohms after decoding
+ * the optional bit permutation advertised in manufacturer payload byte 15, bit 2.
+ * Fit Plus retains the captured deci-ohm conversion, without assuming an encryption flag.
+ * Classic QN configuration, frame selection and resistance calibration
+ * retain their previous behavior. Missing resistance must never generate composition.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -91,10 +73,12 @@ class QNHandlerProtocolTest {
     private fun newHandler(
         user: ScaleUser,
         available: Set<Pair<UUID, UUID>> = setOf(SVC_T2 to CHR_T2_NOTIFY, SVC_T2 to CHR_T2_WRITE),
+        device: ScannedDeviceInfo? = null,
     ): Triple<QNHandler, CapturingTransport, CapturingCallbacks> {
         val transport = CapturingTransport(available)
         val callbacks = CapturingCallbacks()
         val handler = QNHandler()
+        device?.let { assertThat(handler.supportFor(it)).isNotNull() }
         handler.attach(
             transport = transport,
             callbacks = callbacks,
@@ -116,9 +100,212 @@ class QNHandlerProtocolTest {
         return f
     }
 
+    private fun advertisement(payload: ByteArray?, name: String = "Renpho-Scale"): ScannedDeviceInfo =
+        ScannedDeviceInfo(
+            name = name,
+            address = "00:11:22:33:44:55",
+            rssi = -50,
+            serviceUuids = listOf(SVC_T2),
+            manufacturerData = payload?.let { SparseArray<ByteArray>().apply { put(0xFFFF, it) } },
+        )
+
+    private fun completedVaFrame(r1High: Byte, r1Low: Byte, protocolType: Byte = 0xFF.toByte()): ByteArray {
+        // ES-CS20M layout with synthetic 70 kg weight and resistance, no personal data.
+        val frame = byteArrayOf(0x10, 0x0E, protocolType, 0x01, 0x02, 0x1B, 0x58,
+            r1High, r1Low, r1High, r1Low, 0x00, 0x00, 0x00)
+        frame[frame.lastIndex] = checksum(frame, 0, frame.lastIndex - 1)
+        return frame
+    }
+
+    private fun renphoHandler(user: ScaleUser = testUser()) =
+        newHandler(user, device = advertisement(null, "Renpho-Scale"))
+
+    private fun fatFrame(resistance: Int = 500, fatTenths: Int = 200): ByteArray =
+        completedVaFrame((resistance shr 8).toByte(), resistance.toByte()).also {
+            it[11] = (fatTenths shr 8).toByte()
+            it[12] = fatTenths.toByte()
+            it[it.lastIndex] = checksum(it, 0, it.lastIndex - 1)
+        }
+
     @Test
-    fun `0x13 config command carries real height, age and gender for the captured protocolType 0xFF family`() {
-        val user = testUser()
+    fun `Renpho VA profile uses real user data in guest mode without deleting a user`() {
+        val user = testUser().copy(bodyHeight = 183.9f, gender = GenderType.FEMALE)
+        val (handler, transport, _) = renphoHandler(user)
+        handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+        handler.handleNotification(CHR_T2_NOTIFY, byteArrayOf(0x21, 0x05, 0xFF.toByte(), 0x00, 0x25))
+        val profiles = transport.writes.map { it.payload }.filter { it[0] == 0xA0.toByte() }
+        assertThat(profiles).hasSize(1)
+        val profile = profiles.single()
+        assertThat(profile.take(7)).containsExactlyElementsIn(
+            listOf(0xA0, 0x0D, 0x02, 0xFE, 0xFF, 0xEE, 0x01).map { it.toByte() }).inOrder()
+        assertThat(profile[7]).isEqualTo(user.age.toByte())
+        assertThat(profile[8]).isEqualTo(0x07.toByte()) // 1830 mm, big-endian
+        assertThat(profile[9]).isEqualTo(0x26.toByte())
+        assertThat(profile[10]).isEqualTo(0x04.toByte())
+        assertThat(profile.last()).isEqualTo(checksum(profile, 0, profile.lastIndex - 1))
+    }
+
+    @Test
+    fun `Renpho extreme activity requests the firmware athlete algorithm`() {
+        val (handler, transport, _) = renphoHandler(testUser().copy(activityLevel = ActivityLevel.EXTREME))
+        handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+        handler.handleNotification(CHR_T2_NOTIFY, byteArrayOf(0x21, 0x05, 0xFF.toByte(), 0x00, 0x25))
+        assertThat(transport.writes.single { it.payload[0] == 0xA0.toByte() }.payload[10]).isEqualTo(0x0E.toByte())
+    }
+
+    @Test
+    fun `Renpho VA keeps firmware fat and derives the Renpho composition panel`() {
+        val (handler, _, callbacks) = renphoHandler()
+        handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+        handler.handleNotification(CHR_T2_NOTIFY, fatFrame())
+        val m = callbacks.published.single()
+        assertThat(m[MeasurementType.WEIGHT]?.value).isEqualTo(70f)
+        assertThat(m[MeasurementType.IMPEDANCE]?.value).isEqualTo(500f)
+        assertThat(m[MeasurementType.BODY_FAT]?.value).isEqualTo(20f)
+        assertThat(m[MeasurementType.WATER]?.value).isWithin(0.01f).of(57.7574f)
+        assertThat(m[MeasurementType.MUSCLE]?.value).isWithin(0.01f).of(51.6114f)
+        assertThat(m[MeasurementType.BONE]?.value).isWithin(0.01f).of(2.8013f)
+        assertThat(m[MeasurementType.BMR]?.value).isEqualTo(1580f)
+        assertThat(m[MeasurementType.LBM]?.value).isEqualTo(56f)
+        assertThat(m[MeasurementType.PROTEIN]?.value).isWithin(0.01f).of(18.24f)
+        assertThat(m[QNHandler.TOTAL_MUSCLE]?.value).isWithin(0.01f).of(75.9982f)
+    }
+
+    @Test
+    fun `Renpho missing or invalid firmware fat is not silently replaced with Trisa`() {
+        for (fat in listOf(0, 1001, 65535)) {
+            val (handler, _, callbacks) = renphoHandler()
+            handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+            handler.handleNotification(CHR_T2_NOTIFY, fatFrame(fatTenths = fat))
+            val m = callbacks.published.single()
+            assertThat(m[MeasurementType.IMPEDANCE]?.value).isEqualTo(500f)
+            assertThat(m[MeasurementType.BODY_FAT]).isNull()
+            assertThat(m[MeasurementType.WATER]).isNull()
+        }
+    }
+
+    @Test
+    fun `Renpho short packet cannot treat a checksum byte as firmware fat`() {
+        val (handler, _, callbacks) = renphoHandler()
+        handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+        val short = fatFrame().copyOf(13)
+        short[12] = checksum(short, 0, 11)
+        handler.handleNotification(CHR_T2_NOTIFY, short)
+        assertThat(callbacks.published.single()[MeasurementType.IMPEDANCE]?.value).isEqualTo(500f)
+        assertThat(callbacks.published.single()[MeasurementType.BODY_FAT]).isNull()
+    }
+
+    @Test
+    fun `Renpho zero resistance still produces weight only even if a fat field is present`() {
+        val (handler, _, callbacks) = renphoHandler()
+        handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+        handler.handleNotification(CHR_T2_NOTIFY, fatFrame(resistance = 0))
+        assertThat(callbacks.published.single()[MeasurementType.BODY_FAT]).isNull()
+        assertThat(callbacks.published.single()[MeasurementType.IMPEDANCE]).isNull()
+    }
+
+    @Test
+    fun `firmware composition change is restricted to the Renpho name and VA protocol`() {
+        for ((name, proto) in listOf("Fit Plus" to 0xFF.toByte(), "Renpho-Scale" to 0x07.toByte())) {
+            val user = testUser()
+            val (handler, _, callbacks) = newHandler(user, device = advertisement(null, name))
+            handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(proto, 0))
+            handler.handleNotification(CHR_T2_NOTIFY, fatFrame().also {
+                it[2] = proto; it[it.lastIndex] = checksum(it, 0, it.lastIndex - 1)
+            })
+            assertThat(callbacks.published.single()[MeasurementType.BODY_FAT]?.value).isNotEqualTo(20f)
+            assertThat(callbacks.published.single()[QNHandler.TOTAL_MUSCLE]).isNull()
+        }
+    }
+
+    @Test
+    fun `Renpho extended stored record uses big endian resistance and firmware fat`() {
+        val (handler, _, callbacks) = renphoHandler()
+        handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+        val frame = byteArrayOf(0x23, 0x13, 0xFF.toByte(), 1, 1, 0xFE.toByte(),
+            0, 0, 0, 0, 0x1B, 0x58, 0x01, 0xF4.toByte(), 0x01, 0xF2.toByte(), 0, 0xC8.toByte(), 0)
+        val timestamp = System.currentTimeMillis() / 1000L - 946_702_800L
+        for (i in 0..3) frame[6 + i] = (timestamp shr (8 * i)).toByte()
+        frame[frame.lastIndex] = checksum(frame, 0, frame.lastIndex - 1)
+        handler.handleNotification(CHR_T2_NOTIFY, frame)
+        val m = callbacks.published.single()
+        assertThat(m[MeasurementType.WEIGHT]?.value).isEqualTo(70f)
+        assertThat(m[MeasurementType.IMPEDANCE]?.value).isEqualTo(500f)
+        assertThat(m[MeasurementType.BODY_FAT]?.value).isEqualTo(20f)
+    }
+
+    @Test
+    fun `Renpho VA resistance is whole ohms with absent short or unencrypted advertisement metadata`() {
+        for (payload in listOf(null, ByteArray(15), ByteArray(16))) {
+            val (handler, _, callbacks) = newHandler(testUser(), device = advertisement(payload))
+            handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+            handler.handleNotification(CHR_T2_NOTIFY, completedVaFrame(0x01, 0xF4.toByte()))
+            assertThat(callbacks.published.single()[MeasurementType.IMPEDANCE]?.value).isEqualTo(500f)
+        }
+    }
+
+    @Test
+    fun `Renpho VA advertised resistance encryption swaps bits in each byte instead of dividing by ten`() {
+        val (handler, _, callbacks) = newHandler(testUser(),
+            device = advertisement(ByteArray(16).also { it[15] = 0x04 }))
+        handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+        // 0x10FE on the wire decodes to 0x01EF = 495 ohms, rather than 435 ohms.
+        handler.handleNotification(CHR_T2_NOTIFY, completedVaFrame(0x10, 0xFE.toByte()))
+        assertThat(callbacks.published.single()[MeasurementType.IMPEDANCE]?.value).isEqualTo(495f)
+    }
+
+    @Test
+    fun `Fit Plus resistance keeps its original conversion even with the Renpho encryption flag`() {
+        for (payload in listOf(null, ByteArray(16).also { it[15] = 0x04 })) {
+            val (handler, _, callbacks) = newHandler(testUser(), device = advertisement(payload, "Fit Plus"))
+            handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+            handler.handleNotification(CHR_T2_NOTIFY, completedVaFrame(0x10, 0xFE.toByte()))
+            assertThat(callbacks.published.single()[MeasurementType.IMPEDANCE]?.value).isEqualTo(435f)
+        }
+    }
+
+    @Test
+    fun `Renpho empty and incomplete stored slots keep querying until a valid record arrives`() {
+        for ((size, status) in listOf(17 to 1, 18 to 1, 19 to 0)) {
+            val (handler, transport, callbacks) = renphoHandler()
+            handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+            handler.handleNotification(CHR_T2_NOTIFY, byteArrayOf(0x21, 0x03, 0xFF.toByte()))
+            fun queries() = transport.writes.count { it.payload[0] == 0x22.toByte() }
+            assertThat(queries()).isEqualTo(1)
+            val empty = ByteArray(size).also {
+                it[0] = 0x23
+                it[1] = size.toByte()
+                it[2] = 0xFF.toByte()
+                it[3] = status.toByte()
+            }
+            handler.handleNotification(CHR_T2_NOTIFY, empty)
+            assertThat(callbacks.published).isEmpty()
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(5))
+            assertThat(queries()).isEqualTo(2)
+
+            // An empty response must not mark the session complete or block a later result.
+            handler.handleNotification(CHR_T2_NOTIFY, fatFrame())
+            assertThat(callbacks.published.single()[MeasurementType.BODY_FAT]?.value).isEqualTo(20f)
+            shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(5))
+            assertThat(queries()).isEqualTo(2)
+            handler.handleDisconnected()
+        }
+    }
+
+    @Test
+    fun `VA encryption flag does not change classic QN resistance`() {
+        val (handler, _, callbacks) = newHandler(testUser(),
+            device = advertisement(ByteArray(16).also { it[15] = 0x04 }))
+        handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0x07, 0))
+        handler.handleNotification(CHR_T2_NOTIFY, completedVaFrame(0x01, 0xF4.toByte(), 0x07))
+        assertThat(callbacks.published.single()[MeasurementType.IMPEDANCE]?.value).isEqualTo(500f)
+    }
+
+    @Test
+    fun `VA 0x13 configuration must not encode the user profile as measurement switches`() {
+        // In the ES-CS20M VA protocol, byte 5 is a flags field: bit 0 disables BIA and bit 1 persists
+        // that setting. Byte 6 bit 0 selects baby weighing. These are NOT height/age.
+        val user = testUser() // Odd height: copying it into byte 5 disables BIA.
         val (handler, transport, _) = newHandler(user)
 
         handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(protocolType = 0xFF.toByte(), weightScaleFlag = 1))
@@ -131,15 +318,38 @@ class QNHandlerProtocolTest {
         assertThat(cfg[8]).isEqualTo(expectedChecksum)
         assertThat(cfg[2]).isEqualTo(0xFF.toByte()) // echoed protocol type
         assertThat(cfg[4]).isEqualTo(0x10.toByte()) // lightInterval default
-        assertThat(cfg[5]).isEqualTo(181.toByte()) // height (unsigned 181 == signed -75 in two's complement)
-        assertThat(cfg[6]).isEqualTo(user.age.toByte())
-        assertThat(cfg[7]).isEqualTo(0x00.toByte()) // male == 0 per vendor wire encoding
+        assertThat(cfg[5]).isEqualTo(0x00.toByte()) // BIA enabled; no persistent mode change
+        assertThat(cfg[6]).isEqualTo(0x00.toByte()) // normal adult weighing
+        assertThat(cfg[7]).isEqualTo(0x00.toByte()) // reserved
     }
 
     @Test
-    fun `0x13 config command still sends zeroed height, age and gender for a classic protocolType`() {
-        // Regression guard: only the captured protocolType 0xFF family is verified to want real
-        // profile bytes here. Every other QN device keeps the pre-existing (zeroed) behavior.
+    fun `weight-only ES-CS20M result does not fabricate composition from zero resistance`() {
+        val user = testUser()
+        val (handler, transport, callbacks) = newHandler(user)
+        // Captured weight-only ES-CS20M packet; weight and checksum anonymized (70 kg).
+        val frame = byteArrayOf(
+            0x10, 0x0E, 0xFF.toByte(), 0x01, 0x02, 0x1B, 0x58,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x93.toByte(),
+        )
+        handler.handleNotification(CHR_T2_NOTIFY, classicScaleInfoFrame(0xFF.toByte(), 0))
+        handler.handleNotification(CHR_T2_NOTIFY, frame)
+
+        assertThat(callbacks.published).hasSize(1)
+        val measurement = callbacks.published.single()
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(0.001f).of(70f)
+        assertThat(measurement[MeasurementType.IMPEDANCE]).isNull()
+        assertThat(measurement[MeasurementType.BODY_FAT]).isNull()
+        assertThat(measurement[MeasurementType.WATER]).isNull()
+        assertThat(measurement[MeasurementType.MUSCLE]).isNull()
+        assertThat(measurement[MeasurementType.BONE]).isNull()
+        assertThat(transport.writes.map { it.payload.toList() })
+            .contains(listOf(0x1F, 0x05, 0xFF, 0x10, 0x33).map { it.toByte() })
+    }
+
+    @Test
+    fun `classic 0x13 configuration keeps its zeroed extension bytes`() {
+        // Regression guard: classic devices keep their pre-existing configuration.
         val user = testUser()
         val (handler, transport, _) = newHandler(user)
 
@@ -148,9 +358,9 @@ class QNHandlerProtocolTest {
         val cfg = transport.writes.map { it.payload }.firstOrNull { it.size == 9 && it[0] == 0x13.toByte() }
         assertThat(cfg).isNotNull()
         cfg!!
-        assertThat(cfg[5]).isEqualTo(0x00.toByte()) // height
-        assertThat(cfg[6]).isEqualTo(0x00.toByte()) // age
-        assertThat(cfg[7]).isEqualTo(0x00.toByte()) // gender
+        assertThat(cfg[5]).isEqualTo(0x00.toByte())
+        assertThat(cfg[6]).isEqualTo(0x00.toByte())
+        assertThat(cfg[7]).isEqualTo(0x00.toByte())
     }
 
     @Test
@@ -255,7 +465,7 @@ class QNHandlerProtocolTest {
     }
 
     @Test
-    fun `real hardware frames - state 1 is not published, state 2 publishes correct weight and impedance`() {
+    fun `Fit Plus frame replay waits for state 2 and preserves captured deci-ohm resistance`() {
         // Byte-for-byte from a BTSnoop capture of the official app driving a real
         // GE CS 10 G "Fit Plus" (protocolType 0xFF, weightScaleFactor 100, long-frame 0x12),
         // except bytes[3..8] (the device's BD_ADDR, embedded in this frame per the vendor
@@ -278,8 +488,9 @@ class QNHandlerProtocolTest {
         )
 
         val user = testUser()
-        val (handler, transport, callbacks) = newHandler(user)
-
+        // The original capture has no manufacturer metadata proving an encryption flag.
+        val (handler, transport, callbacks) = newHandler(user,
+            device = advertisement(null, "Fit Plus"))
         handler.handleNotification(CHR_T2_NOTIFY, scaleInfoFrame)
         handler.handleNotification(CHR_T2_NOTIFY, state0)
         assertThat(callbacks.published).isEmpty()
@@ -291,8 +502,7 @@ class QNHandlerProtocolTest {
         assertThat(callbacks.published).hasSize(1)
         val published = callbacks.published.single()
         assertThat(published[MeasurementType.WEIGHT]?.value).isWithin(0.01f).of(85.35f)
-        // Raw r1 = 4350; the captured protocolType 0xFF family reports resistance in tenths of an
-        // ohm (see the class doc comment), so the stored/derived impedance is 435.0, not 4350.0.
+        // Captured 0x10FE = 4350 deci-ohms, preserving the original Fit Plus behavior.
         assertThat(published[MeasurementType.IMPEDANCE]?.value).isWithin(0.01f).of(435.0f)
 
         val expectedAck = byteArrayOf(0x1F, 0x05, 0xFF.toByte(), 0x10, 0x00)
