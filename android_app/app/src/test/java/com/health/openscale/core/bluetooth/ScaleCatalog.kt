@@ -229,6 +229,7 @@ object ScaleCatalog {
         device("Body Pod 2", uuid16(0xFFF0)) claimedBy BodyPod2Handler::class.java,
         device("realme Smart Scale") claimedBy RealmeSmartScaleHandler::class.java,
         device("RS-73S") claimedBy RedmondSkybalanceHandler::class.java,
+        device("RS-78S") claimedBy RedmondSkybalanceHandler::class.java,
         device("RS-744S") claimedBy RedmondSkybalanceHandler::class.java,
         device("RS-745S") claimedBy RedmondSkybalanceHandler::class.java,
         device("RS-762S") claimedBy RedmondSkybalanceHandler::class.java,

@@ -22,7 +22,7 @@ class RedmondSkybalanceHandlerTest {
 
     @Test
     fun recognizesOnlySupportedSkyBalanceModels() {
-        listOf("RS-73S", "RS-744S", "RS-745S", "RS-762S", "RS-773S").forEach { name ->
+        listOf("RS-73S", "RS-78S", "RS-744S", "RS-745S", "RS-762S", "RS-773S").forEach { name ->
             val support = handler.supportFor(ScaleCatalog.device(name))
             assertThat(support).isNotNull()
             assertThat(support!!.capabilities).containsExactly(
