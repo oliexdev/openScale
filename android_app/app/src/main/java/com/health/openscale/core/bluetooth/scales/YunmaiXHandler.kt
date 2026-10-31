@@ -40,7 +40,8 @@ import com.health.openscale.core.data.Percent
  * YMBS-M268 advertisement capture and confirmed against a live measurement):
  *
  *   [0..5]   device MAC, byte-reversed
- *   [6..8]   constant signature 0B 74 17
+ *   [6..8]   constant signature; 0B 74 17 on the international YMBS-M268,
+ *            06 52 11 on the Chinese M1827CH (好轻 mini 2S). Everything else is identical.
  *   [9]      per-session byte, constant within a weigh-in but varying between them
  *            (observed 0x04, 0x0F, 0x10); purpose unknown, so it is ignored
  *   [10]     state: 01 = measuring (live weight), 02 = weight stable,
@@ -51,7 +52,7 @@ import com.health.openscale.core.data.Percent
  *
  * Android peels the first two bytes off as the manufacturer id, so the payload seen here is
  * the last 14 bytes (offsets above shift by -2). That id is just part of the reversed MAC,
- * so matching relies on the MAC echo, the 0B 74 17 signature and the checksum.
+ * so matching relies on the MAC echo, a known signature and the checksum.
  */
 internal object YunmaiXAdv {
     const val STATE_LIVE = 0x01
@@ -67,8 +68,13 @@ internal object YunmaiXAdv {
     fun parse(manufacturerId: Int, payload: ByteArray?, address: String?): Frame? {
         if (payload == null || payload.size != 14) return null
 
-        // Constant signature
-        if (payload[4] != 0x0B.toByte() || payload[5] != 0x74.toByte() || payload[6] != 0x17.toByte()) {
+        // Constant signature. International YMBS-M268 units use 0B 74 17; the
+        // Chinese M1827CH (好轻 mini 2S) uses 06 52 11 with an otherwise identical frame.
+        val isInternationalSignature =
+            payload[4] == 0x0B.toByte() && payload[5] == 0x74.toByte() && payload[6] == 0x17.toByte()
+        val isChineseSignature =
+            payload[4] == 0x06.toByte() && payload[5] == 0x52.toByte() && payload[6] == 0x11.toByte()
+        if (!isInternationalSignature && !isChineseSignature) {
             return null
         }
 
