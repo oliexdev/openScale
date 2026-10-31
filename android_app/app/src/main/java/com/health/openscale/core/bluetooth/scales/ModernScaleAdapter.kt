@@ -32,6 +32,7 @@ import com.health.openscale.core.bluetooth.ScaleCommunicator
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
@@ -522,25 +523,8 @@ abstract class ModernScaleAdapter(
             }
         }
 
-    protected fun mapMeasurement(mwv: MeasurementWithValues?): ScaleMeasurement? {
-        if (mwv == null) return null
-        val m = ScaleMeasurement()
-        runCatching { m.userId = mwv.measurement.userId }
-        runCatching { m.dateTime = Date(mwv.measurement.timestamp) }
-
-        fun valueOf(key: com.health.openscale.core.data.MeasurementType.Key<*>): MeasurementValue? =
-            mwv.values.firstOrNull { it.type.key == key }?.value
-
-        valueOf(MeasurementType.WEIGHT)?.let { m[MeasurementType.WEIGHT] = Kg(it.floatValue ?: 0f) }
-        valueOf(MeasurementType.BODY_FAT)?.let { m[MeasurementType.BODY_FAT] = Percent(it.floatValue ?: 0f) }
-        valueOf(MeasurementType.WATER)?.let { m[MeasurementType.WATER] = Percent(it.floatValue ?: 0f) }
-        valueOf(MeasurementType.MUSCLE)?.let { m[MeasurementType.MUSCLE] = Percent(it.floatValue ?: 0f) }
-        valueOf(MeasurementType.VISCERAL_FAT)?.let { m[MeasurementType.VISCERAL_FAT] = it.floatValue ?: 0f }
-        valueOf(MeasurementType.LBM)?.let { m[MeasurementType.LBM] = Kg(it.floatValue ?: 0f) }
-        valueOf(MeasurementType.BONE)?.let { m[MeasurementType.BONE] = Kg(it.floatValue ?: 0f) }
-
-        return m
-    }
+    protected fun mapMeasurement(mwv: MeasurementWithValues?): ScaleMeasurement? =
+        mapPreviousMeasurement(mwv)
 
     /** Pretty print a few leading bytes of a payload for logs. */
     fun ByteArray.toHexPreview(limit: Int): String {
@@ -555,4 +539,26 @@ abstract class ModernScaleAdapter(
         sb.append(']')
         return sb.toString()
     }
+}
+
+internal fun mapPreviousMeasurement(mwv: MeasurementWithValues?): ScaleMeasurement? {
+    if (mwv == null) return null
+    val m = ScaleMeasurement()
+    runCatching { m.userId = mwv.measurement.userId }
+    runCatching { m.dateTime = Date(mwv.measurement.timestamp) }
+
+    fun valueOf(key: com.health.openscale.core.data.MeasurementType.Key<*>): MeasurementValue? =
+        mwv.values.firstOrNull { it.type.key == key }?.value
+
+    valueOf(MeasurementType.WEIGHT)?.let { m[MeasurementType.WEIGHT] = Kg(it.floatValue ?: 0f) }
+    valueOf(MeasurementType.BODY_FAT)?.let { m[MeasurementType.BODY_FAT] = Percent(it.floatValue ?: 0f) }
+    valueOf(MeasurementType.WATER)?.let { m[MeasurementType.WATER] = Percent(it.floatValue ?: 0f) }
+    valueOf(MeasurementType.MUSCLE)?.let { m[MeasurementType.MUSCLE] = Percent(it.floatValue ?: 0f) }
+    valueOf(MeasurementType.VISCERAL_FAT)?.let { m[MeasurementType.VISCERAL_FAT] = it.floatValue ?: 0f }
+    valueOf(MeasurementType.LBM)?.let { m[MeasurementType.LBM] = Kg(it.floatValue ?: 0f) }
+    valueOf(MeasurementType.BONE)?.let { m[MeasurementType.BONE] = Kg(it.floatValue ?: 0f) }
+    valueOf(MeasurementType.IMPEDANCE)?.floatValue?.let { m[MeasurementType.IMPEDANCE] = Ohm(it) }
+    valueOf(MeasurementType.IMPEDANCE_LOW)?.floatValue?.let { m[MeasurementType.IMPEDANCE_LOW] = Ohm(it) }
+
+    return m
 }
