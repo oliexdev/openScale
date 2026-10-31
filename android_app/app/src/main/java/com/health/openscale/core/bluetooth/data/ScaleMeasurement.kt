@@ -40,7 +40,7 @@ import com.health.openscale.core.data.Percent
  *
  * Absence is absence: a quantity the scale did not report is simply not in the map — there
  * is no 0f sentinel. [set] therefore drops values that never describe a real measurement
- * (non-finite or non-positive numbers, blank text), which keeps [mergeWith]'s
+ * (non-finite numbers, numbers outside the key's numeric policy, and blank text), which keeps [mergeWith]'s
  * first-value-wins semantics sound without every handler guarding its writes.
  */
 class ScaleMeasurement(
@@ -58,10 +58,10 @@ class ScaleMeasurement(
      */
     operator fun <T : Any> set(key: MeasurementType.Key<T>, value: T) {
         val usable = when (value) {
-            is UnitValue -> value.value.isFinite() && value.value > 0f
-            is Float -> value.isFinite() && value > 0f
-            is Bpm -> value.value > 0
-            is Int -> value > 0
+            is UnitValue -> key.numericPolicy.accepts(value.value)
+            is Float -> key.numericPolicy.accepts(value)
+            is Bpm -> key.numericPolicy.accepts(value.value)
+            is Int -> key.numericPolicy.accepts(value)
             is String -> value.isNotBlank()
             is Date -> true
             else -> false   // Unit (the USER column key) carries no value
