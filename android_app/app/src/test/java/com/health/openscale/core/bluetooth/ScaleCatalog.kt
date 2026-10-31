@@ -246,6 +246,7 @@ object ScaleCatalog {
         device("Beurer BF950") claimedBy StandardBeurerSanitasHandler::class.java,
         device("Shape200") claimedBy SoehnleHandler::class.java,
         device("Weight Scale") claimedBy SinocareHandler::class.java,
+        device("IFIT") claimedBy SinocareHandler::class.java,
         device("SENSSUN FAT") claimedBy SenssunHandler::class.java,
         device("RENPHO-SCALE-1234") claimedBy RenphoHandler::class.java,
         device("QN-Scale", uuid16(0xFFE0)) claimedBy QNHandler::class.java,
