@@ -23,6 +23,7 @@ import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
 import com.health.openscale.core.data.Bpm
 import com.health.openscale.core.data.Kg
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.Percent
 import org.junit.Test
 
@@ -118,6 +119,24 @@ class ScaleMeasurementTest {
         first.mergeWith(later)
         assertThat(first[deviceKey]?.value).isEqualTo(22.4f)
         assertThat(first[rating]).isEqualTo(0)
+    }
+
+    @Test
+    fun `signed impedance keeps zero and negative values but rejects nonfinite values`() {
+        val reactance = MeasurementType.deviceOhm(
+            "test.reactance", R.string.measurement_type_impedance,
+            numericPolicy = MeasurementType.NumericPolicy.SIGNED
+        )
+        for (value in listOf(-20f, 0f, 20f)) {
+            val measurement = ScaleMeasurement()
+            measurement[reactance] = Ohm(value)
+            assertThat(measurement[reactance]?.value).isEqualTo(value)
+        }
+        for (value in listOf(Float.NaN, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY)) {
+            val measurement = ScaleMeasurement()
+            measurement[reactance] = Ohm(value)
+            assertThat(measurement.values).isEmpty()
+        }
     }
 
     private val deviceKey = MeasurementType.devicePercent(

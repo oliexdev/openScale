@@ -375,6 +375,19 @@ data class MeasurementType(
             numericPolicy: NumericPolicy = NumericPolicy.POSITIVE
         ): Key<Float> = deviceFloatKey(path, nameResId, UnitType.NONE, icon, color, enabled, pinned, rightAxis, isInternal, numericPolicy)
 
+        /** Electrical impedance; reactance may explicitly allow signed and zero values. */
+        fun deviceOhm(
+            path: String,
+            @StringRes nameResId: Int,
+            icon: MeasurementTypeIcon = MeasurementTypeIcon.IC_DEFAULT,
+            color: Int = DEVICE_DEFAULT_COLOR,
+            enabled: Boolean = true,
+            pinned: Boolean = false,
+            rightAxis: Boolean = false,
+            isInternal: Boolean = false,
+            numericPolicy: NumericPolicy = NumericPolicy.POSITIVE
+        ): Key<Ohm> = deviceFloatKey(path, nameResId, UnitType.OHM, icon, color, enabled, pinned, rightAxis, isInternal, numericPolicy)
+
         private fun <T : Any> deviceFloatKey(
             path: String, @StringRes nameResId: Int, wireUnit: UnitType,
             icon: MeasurementTypeIcon, color: Int, enabled: Boolean, pinned: Boolean,
