@@ -46,6 +46,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -412,10 +413,35 @@ abstract class ModernScaleAdapter(
 
     // ---- callbacks & data provider for handlers ------------------------------------------------
 
+    private enum class SaveState { WAITING, SAVING, FINISHED }
+
     protected val appCallbacks = object : ScaleDeviceHandler.Callbacks {
         override fun onPublish(measurement: ScaleMeasurement) {
             val addr = targetAddress ?: "unknown"
             _events.tryEmit(BluetoothEvent.MeasurementReceived(measurement, addr))
+        }
+
+        override fun onPublish(measurement: ScaleMeasurement, appUserId: Int, onSaved: (Boolean) -> Unit) {
+            val addr = targetAddress ?: "unknown"
+            val state = java.util.concurrent.atomic.AtomicReference(SaveState.WAITING)
+            val notifySaved: (Boolean) -> Unit = { saved ->
+                try {
+                    onSaved(saved)
+                } catch (e: Exception) {
+                    LogManager.e(TAG, "Measurement save callback failed", e)
+                }
+            }
+            val report: (Boolean) -> Unit = { saved ->
+                if (state.getAndSet(SaveState.FINISHED) != SaveState.FINISHED) notifySaved(saved)
+            }
+            val beginSave = { state.compareAndSet(SaveState.WAITING, SaveState.SAVING) }
+            val delivery = scope.launch(start = kotlinx.coroutines.CoroutineStart.UNDISPATCHED) {
+                ensureActive()
+                _events.emit(BluetoothEvent.MeasurementReceived(measurement, addr, appUserId, report, beginSave))
+            }
+            delivery.invokeOnCompletion { cause ->
+                if (cause != null && state.compareAndSet(SaveState.WAITING, SaveState.FINISHED)) notifySaved(false)
+            }
         }
 
         override fun onInfo(@StringRes resId: Int, vararg args: Any) {

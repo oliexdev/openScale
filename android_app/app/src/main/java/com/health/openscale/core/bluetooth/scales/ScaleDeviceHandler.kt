@@ -169,8 +169,8 @@ abstract class ScaleDeviceHandler {
     }
 
     internal fun handleNotification(characteristic: UUID, data: ByteArray) {
-        val u = currentAppUser()
         try {
+            val u = currentAppUser()
             onNotification(characteristic, data, u)
         } catch (t: Throwable) {
             logE("onNotification failed for $characteristic: ${t.message}", t)
@@ -249,6 +249,11 @@ abstract class ScaleDeviceHandler {
         logI("\u2190 publish measurement to app")
         callbacks?.onPublish(measurement)
             ?: logW("publish called without callbacks")
+    }
+
+    /** Publish for a device profile bound to an app user, with confirmation after saving. */
+    protected fun publish(measurement: ScaleMeasurement, appUserId: Int, onSaved: (Boolean) -> Unit) {
+        callbacks?.onPublish(measurement, appUserId, onSaved) ?: onSaved(false)
     }
 
     /** Ask the adapter to terminate the link. */
@@ -369,6 +374,10 @@ abstract class ScaleDeviceHandler {
     /** App callbacks to emit parsed results and user-visible messages. */
     interface Callbacks {
         fun onPublish(measurement: ScaleMeasurement)
+        /** Hosts without confirmed persistence must not report an asynchronous publish as saved. */
+        fun onPublish(measurement: ScaleMeasurement, appUserId: Int, onSaved: (Boolean) -> Unit) {
+            onSaved(false)
+        }
         fun onInfo(@StringRes resId: Int, vararg args: Any) { /* optional */ }
         fun onWarn(@StringRes resId: Int, vararg args: Any) { /* optional */ }
         fun onError(@StringRes resId: Int, t: Throwable? = null, vararg args: Any) { /* optional */ }

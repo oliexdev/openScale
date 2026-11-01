@@ -54,7 +54,13 @@ sealed class BluetoothEvent {
     /** Emitted when a parsed measurement is available. */
     data class MeasurementReceived(
         val measurement: ScaleMeasurement,
-        val deviceAddress: String
+        val deviceAddress: String,
+        /** Explicit app owner; legacy handlers may use measurement.userId for device slots. */
+        val appUserId: Int? = null,
+        /** Called after persistence completes; absent for the legacy publish path. */
+        val onSaved: ((Boolean) -> Unit)? = null,
+        /** Claim before saving; false means this publication was cancelled or already handled. */
+        val beginSave: (() -> Boolean)? = null,
     ) : BluetoothEvent()
 
     /** Emitted for generic device-related errors. */
