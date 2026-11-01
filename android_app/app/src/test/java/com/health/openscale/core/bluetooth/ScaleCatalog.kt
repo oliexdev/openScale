@@ -211,6 +211,7 @@ object ScaleCatalog {
      */
     val fixtures: List<Fixture> = listOf(
         // --- Matched by advertised name ---
+        device("TNT_PAIR", UUID.fromString("273e5100-6b90-4779-83b8-b8bf1dadac35")) claimedBy com.health.openscale.core.bluetooth.scales.TanitaRD545Handler::class.java,
         device("A&D_UC-352BLE_123456", uuid16(0x181D)) claimedBy PlainSigScaleHandler::class.java,
         device("LEFU_SCALE CF376", uuid16(0x181D), uuid16(0x181C)) claimedBy PlainSigScaleHandler::class.java,
         device("HEALTHKEEP 280") claimedBy HealthKeep280Handler::class.java,

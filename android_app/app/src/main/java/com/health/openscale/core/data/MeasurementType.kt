@@ -99,6 +99,25 @@ data class MeasurementType(
         }
     }
 
+    /** Allowed numeric values for a measurement; floating-point values must always be finite. */
+    enum class NumericPolicy {
+        POSITIVE,
+        NON_NEGATIVE,
+        SIGNED;
+
+        fun accepts(value: Float): Boolean = value.isFinite() && when (this) {
+            POSITIVE -> value > 0f
+            NON_NEGATIVE -> value >= 0f
+            SIGNED -> true
+        }
+
+        fun accepts(value: Int): Boolean = when (this) {
+            POSITIVE -> value > 0
+            NON_NEGATIVE -> value >= 0
+            SIGNED -> true
+        }
+    }
+
     /**
      * One vocabulary entry — a quantity the app can track, identified by a namespaced
      * identity string. [T] is bound to [inputType] by the factories, so the value a
@@ -129,7 +148,9 @@ data class MeasurementType(
         val defaultEnabled: Boolean,
         val defaultPinned: Boolean,
         val defaultOnRightYAxis: Boolean,
-        val isInternal: Boolean
+        val isInternal: Boolean,
+        /** Allowed numeric domain for values reported under this key. */
+        val numericPolicy: NumericPolicy = NumericPolicy.POSITIVE
     ) {
         override fun equals(other: Any?): Boolean =
             this === other || (other is Key<*> && other.identity == identity)
@@ -325,8 +346,9 @@ data class MeasurementType(
             enabled: Boolean = true,
             pinned: Boolean = false,
             rightAxis: Boolean = false,
-            isInternal: Boolean = false
-        ): Key<Percent> = deviceFloatKey(path, nameResId, UnitType.PERCENT, icon, color, enabled, pinned, rightAxis, isInternal)
+            isInternal: Boolean = false,
+            numericPolicy: NumericPolicy = NumericPolicy.POSITIVE
+        ): Key<Percent> = deviceFloatKey(path, nameResId, UnitType.PERCENT, icon, color, enabled, pinned, rightAxis, isInternal, numericPolicy)
 
         /** See [devicePercent]; raw values arrive as [Kg]. */
         fun deviceKg(
@@ -349,17 +371,31 @@ data class MeasurementType(
             enabled: Boolean = true,
             pinned: Boolean = false,
             rightAxis: Boolean = false,
-            isInternal: Boolean = false
-        ): Key<Float> = deviceFloatKey(path, nameResId, UnitType.NONE, icon, color, enabled, pinned, rightAxis, isInternal)
+            isInternal: Boolean = false,
+            numericPolicy: NumericPolicy = NumericPolicy.POSITIVE
+        ): Key<Float> = deviceFloatKey(path, nameResId, UnitType.NONE, icon, color, enabled, pinned, rightAxis, isInternal, numericPolicy)
+
+        /** Electrical impedance; reactance may explicitly allow signed and zero values. */
+        fun deviceOhm(
+            path: String,
+            @StringRes nameResId: Int,
+            icon: MeasurementTypeIcon = MeasurementTypeIcon.IC_DEFAULT,
+            color: Int = DEVICE_DEFAULT_COLOR,
+            enabled: Boolean = true,
+            pinned: Boolean = false,
+            rightAxis: Boolean = false,
+            isInternal: Boolean = false,
+            numericPolicy: NumericPolicy = NumericPolicy.POSITIVE
+        ): Key<Ohm> = deviceFloatKey(path, nameResId, UnitType.OHM, icon, color, enabled, pinned, rightAxis, isInternal, numericPolicy)
 
         private fun <T : Any> deviceFloatKey(
             path: String, @StringRes nameResId: Int, wireUnit: UnitType,
             icon: MeasurementTypeIcon, color: Int, enabled: Boolean, pinned: Boolean,
-            rightAxis: Boolean, isInternal: Boolean
+            rightAxis: Boolean, isInternal: Boolean, numericPolicy: NumericPolicy = NumericPolicy.POSITIVE
         ): Key<T> = Key(
             DEVICE_PREFIX + path, nameResId, InputFieldType.FLOAT, wireUnit,
             wireUnit.convertibleUnits(), listOf(InputFieldType.FLOAT),
-            wireUnit, color, icon, false, enabled, pinned, rightAxis, isInternal
+            wireUnit, color, icon, false, enabled, pinned, rightAxis, isInternal, numericPolicy
         )
 
         /** A whole number a scale handler contributes, e.g. a count or a score. */
@@ -371,11 +407,12 @@ data class MeasurementType(
             color: Int = DEVICE_DEFAULT_COLOR,
             enabled: Boolean = true,
             pinned: Boolean = false,
-            isInternal: Boolean = false
+            isInternal: Boolean = false,
+            numericPolicy: NumericPolicy = NumericPolicy.POSITIVE
         ): Key<Int> = Key(
             DEVICE_PREFIX + path, nameResId, InputFieldType.INT, wireUnit,
             listOf(wireUnit), listOf(InputFieldType.INT),
-            wireUnit, color, icon, false, enabled, pinned, false, isInternal
+            wireUnit, color, icon, false, enabled, pinned, false, isInternal, numericPolicy
         )
 
         /** Free text a scale handler contributes, e.g. a body-type classification code. */

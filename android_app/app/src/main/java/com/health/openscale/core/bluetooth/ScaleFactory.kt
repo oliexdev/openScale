@@ -22,6 +22,7 @@ import androidx.annotation.VisibleForTesting
 import com.health.openscale.core.bluetooth.scales.HealthKeep280Handler
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
 import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
+import com.health.openscale.core.bluetooth.scales.TanitaRD545Handler
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
 import com.health.openscale.core.bluetooth.scales.AfuB1Handler
 import com.health.openscale.core.bluetooth.scales.AiLinkBroadcastHandler
@@ -141,6 +142,7 @@ class ScaleFactory @Inject constructor(
          */
         @VisibleForTesting
         internal fun createHandlers(): List<ScaleDeviceHandler> = listOf(
+            TanitaRD545Handler(),
             PlainSigScaleHandler(),
             HealthKeep280Handler(),
             PicoocHandler(),

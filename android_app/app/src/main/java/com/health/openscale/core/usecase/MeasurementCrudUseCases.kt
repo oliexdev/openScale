@@ -27,9 +27,11 @@ import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacade
+import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.widget.MeasurementWidget
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import java.util.Date
 import javax.inject.Inject
@@ -65,6 +67,7 @@ class MeasurementCrudUseCases @Inject constructor(
      * @return [Result.success] with the final measurement id (new or existing) on success,
      * [Result.success] with `-1` if the (userId, timestamp) slot is already taken (duplicate),
      * or [Result.failure] on an unexpected error.
+     * Insert notifications run after persistence; their errors do not undo a saved reading.
      */
     suspend fun saveMeasurement(
         measurement: Measurement,
@@ -90,14 +93,19 @@ class MeasurementCrudUseCases @Inject constructor(
             // Sync what was stored, not finalValues: the derived values (BMI, BMR, …) only exist
             // after the recalculation each value insert runs, and the sync app must see the same
             // measurement here as through the ContentProvider.
-            val syncValues = databaseRepository.getValuesForMeasurement(newId).first()
-            sync.triggerSyncInsert(measurementWithId, syncValues,"com.health.openscale.sync")
-            sync.triggerSyncInsert(measurementWithId, syncValues,"com.health.openscale.sync.oss")
-            sync.triggerSyncInsert(measurementWithId, syncValues,"com.health.openscale.sync.debug")
+            try {
+                val syncValues = databaseRepository.getValuesForMeasurement(newId).first()
+                sync.triggerSyncInsert(measurementWithId, syncValues,"com.health.openscale.sync")
+                sync.triggerSyncInsert(measurementWithId, syncValues,"com.health.openscale.sync.oss")
+                sync.triggerSyncInsert(measurementWithId, syncValues,"com.health.openscale.sync.debug")
 
-            MeasurementWidget.refreshAll(appContext)
-
-            maybeVibrateOnMeasurement()
+                MeasurementWidget.refreshAll(appContext)
+                maybeVibrateOnMeasurement()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                LogManager.w("MeasurementCrud", "Measurement $newId saved, but a post-save notification failed", e)
+            }
 
             newId
         } else {

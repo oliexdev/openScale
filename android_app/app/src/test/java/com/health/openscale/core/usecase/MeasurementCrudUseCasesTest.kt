@@ -18,6 +18,7 @@
 package com.health.openscale.core.usecase
 
 import android.app.Application
+import android.content.Context
 import android.content.pm.PackageInfo
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
@@ -30,6 +31,7 @@ import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.User
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
+import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -59,6 +61,7 @@ class MeasurementCrudUseCasesTest {
     private lateinit var db: AppDatabase
     private lateinit var repo: DatabaseRepository
     private lateinit var crud: MeasurementCrudUseCases
+    private lateinit var settings: SettingsFacade
     private var userId = 0
     private var weightId = 0
     private var waistId = 0
@@ -69,7 +72,7 @@ class MeasurementCrudUseCasesTest {
         db = RoomTestSupport.inMemory(app)
         repo = RoomTestSupport.repositoryFor(db)
         repo.insertAllMeasurementTypes(MeasurementType.seedRows())
-        val settings = RoomTestSupport.settingsFacadeFor(
+        settings = RoomTestSupport.settingsFacadeFor(
             CoroutineScope(SupervisorJob() + Dispatchers.IO),
             File(app.cacheDir, "crud-${System.nanoTime()}.preferences_pb"),
         )
@@ -339,5 +342,32 @@ class MeasurementCrudUseCasesTest {
         assertThat(MeasurementCrudUseCases.imageFile(app, "../openScale.db")).isNull()
         assertThat(MeasurementCrudUseCases.imageFile(app, "notes.txt")).isNull()
         assertThat(MeasurementCrudUseCases.imageFile(app, null)).isNull()
+    }
+
+    class UnavailableVibratorApplication : Application() {
+        var vibrationRequests = 0
+        override fun getSystemService(name: String): Any? {
+            if (name == Context.VIBRATOR_MANAGER_SERVICE) {
+                vibrationRequests++
+                error("Synthetic vibration failure")
+            }
+            return super.getSystemService(name)
+        }
+    }
+
+    @Test
+    @Config(application = UnavailableVibratorApplication::class)
+    fun saveMeasurement_insert_reportsSuccessWhenVibrationFailsAfterPersistence() = runBlocking {
+        settings.setHapticOnMeasurement(true)
+        val result = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 9_001L),
+            listOf(MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 70f)),
+        )
+
+        val stored = repo.getMeasurementsWithValuesForUser(userId).first().single().measurement
+        assertThat((app as UnavailableVibratorApplication).vibrationRequests).isEqualTo(1)
+        assertThat(repo.getValuesForMeasurement(stored.id).first()
+            .any { it.typeId == weightId && it.floatValue == 70f }).isTrue()
+        assertThat(result.getOrThrow()).isEqualTo(stored.id)
     }
 }
