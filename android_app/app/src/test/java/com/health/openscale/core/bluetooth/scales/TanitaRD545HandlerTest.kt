@@ -17,6 +17,8 @@
  */
 package com.health.openscale.core.bluetooth.scales
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
@@ -24,7 +26,10 @@ import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.TanitaLib
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.service.ScannedDeviceInfo
+import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
+import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
@@ -264,6 +269,28 @@ class TanitaRD545HandlerTest {
         assertThat(m[TanitaRD545Handler.OHM_METRICS.getValue(TanitaLib.Metric.LEFT_ARM_50KHZ_REACTANCE)]?.value).isEqualTo(-20f)
         assertThat(h.errors).isEmpty()
         assertThat(h.disconnected).isTrue()
+    }
+
+    @Test
+    fun `raw muscle mass and percentage keep separate stored types in either discovery order`() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val percentKey = QNHandler.TOTAL_MUSCLE
+        val massKey = TanitaRD545Handler.TOTAL_MUSCLE
+        for (keys in listOf(listOf(percentKey, massKey), listOf(massKey, percentKey))) {
+            val db = RoomTestSupport.inMemory(context)
+            try {
+                val types = MeasurementTypeCrudUseCases(RoomTestSupport.repositoryFor(db), context)
+                keys.forEach { assertThat(types.resolveOrCreate(it)).isNotNull() }
+
+                val percent = types.resolveOrCreate(percentKey)!!
+                val mass = types.resolveOrCreate(massKey)!!
+                assertThat(mass.id).isNotEqualTo(percent.id)
+                assertThat(percent.unit).isEqualTo(UnitType.PERCENT)
+                assertThat(mass.unit).isEqualTo(UnitType.KG)
+            } finally {
+                db.close()
+            }
+        }
     }
 
     @Test

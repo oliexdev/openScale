@@ -63,7 +63,7 @@ class TanitaRD545Handler : ScaleDeviceHandler() {
         internal const val KEY_LINKS = "tanita/user-slots"
 
         internal val KG_METRICS: Map<TanitaLib.Metric, MeasurementType.Key<Kg>> = mapOf(
-            TanitaLib.Metric.MUSCLE_MASS to MeasurementType.deviceKg("total_muscle", R.string.measurement_type_total_muscle, enabled = false, isInternal = true),
+            TanitaLib.Metric.MUSCLE_MASS to MeasurementType.deviceKg("total_muscle_mass", R.string.measurement_type_total_muscle, enabled = false, isInternal = true),
             TanitaLib.Metric.WATER_MASS to MeasurementType.deviceKg("water_mass", R.string.tanita_metric_water_mass, enabled = false, isInternal = true),
             TanitaLib.Metric.RIGHT_LEG_FAT_MASS to MeasurementType.deviceKg("segmental.fat_mass.right_leg", R.string.tanita_metric_right_leg_fat_mass, enabled = false, isInternal = true),
             TanitaLib.Metric.RIGHT_LEG_LEAN_MASS to MeasurementType.deviceKg("segmental.lean_mass.right_leg", R.string.tanita_metric_right_leg_lean_mass, enabled = false, isInternal = true),
