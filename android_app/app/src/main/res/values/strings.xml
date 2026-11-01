@@ -1169,4 +1169,6 @@
     <string name="dialog_message_export_photos">Export only the CSV, or a ZIP file with the CSV and all photos? The ZIP can be imported again, photos included.</string>
     <string name="action_export_csv_only">CSV only</string>
     <string name="action_export_zip_with_photos">ZIP with photos</string>
+    <string name="tanita_save_failed">Could not save the measurement. History import stopped.</string>
+    <string name="tanita_assisted_unsupported">Assisted weighing is not supported by the RD-545. Select a user without assisted weighing.</string>
 </resources>

@@ -301,6 +301,12 @@ class BleConnectorSaveTest {
         assertThat(weight).isEqualTo(5f)
     }
 
+    @Test
+    fun `app assisted preference reaches the scale session`() = runBlocking {
+        val user = facades.userFacade.observeAllUsers().first().single { it.id == 1 }
+        assertThat(adapter.appUser(user.copy(useAssistedWeighing = true)).useAssistedWeighing).isTrue()
+    }
+
     private class TestAdapter(app: Application, settings: SettingsFacade, facades: RoomTestSupport.Facades) : ModernScaleAdapter(
         app, settings, facades.measurementFacade, facades.userFacade,
         object : ScaleDeviceHandler() { override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? = null },
@@ -311,6 +317,7 @@ class BleConnectorSaveTest {
         fun publishOwned(value: ScaleMeasurement, userId: Int, onSaved: (Boolean) -> Unit) =
             appCallbacks.onPublish(value, userId, onSaved)
         fun publishLegacy(value: ScaleMeasurement) = appCallbacks.onPublish(value)
+        fun appUser(user: User) = mapUser(user)
         fun message() = _events.tryEmit(BluetoothEvent.DeviceMessage("Synthetic", "unknown"))
         suspend fun closeAndJoin() {
             val job = scope.coroutineContext[kotlinx.coroutines.Job]

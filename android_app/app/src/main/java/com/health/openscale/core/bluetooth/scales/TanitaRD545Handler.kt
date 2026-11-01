@@ -182,11 +182,12 @@ class TanitaRD545Handler : ScaleDeviceHandler() {
     private enum class Stage(val response: Int) {
         IDLE(0), MODEL(0), VERIFY(0x8003), CLOCK(0x8010), INFO(0x8020),
         PROFILES(0x9000), CHOICE(0x9000), EXCHANGE(0x9002), REGISTER(0x8002),
-        MEASURING(0xa010), COUNT(0xb000), READING(0xb010), FINISHED(0),
+        MEASURING(0xa010), COUNT(0xb000), READING(0xb010), SAVING(0), FINISHED(0),
     }
 
     private val assembler = TanitaLib.Assembler()
     @Volatile private var stage = Stage.IDLE
+    private var pendingSaveToken: Any? = null
     private var timeoutJob: Job? = null
     private var choiceJob: Job? = null
     private var sessionUserId = -1
@@ -229,11 +230,16 @@ class TanitaRD545Handler : ScaleDeviceHandler() {
 
     @Synchronized
     override fun onConnected(user: ScaleUser) {
+        pendingSaveToken = null
         assembler.reset()
         profiles.clear()
         sessionUserId = user.id
         registering = settingsGetInt(KEY_REGISTER, 0) == 1
         selectedSlot = userLinks()[user.id] ?: -1
+        if (user.useAssistedWeighing) {
+            fail(R.string.tanita_assisted_unsupported)
+            return
+        }
         if (!hasCharacteristic(SERVICE, WRITE) || !hasCharacteristic(SERVICE, NOTIFY)) {
             fail(R.string.tanita_invalid_response)
             return
@@ -337,13 +343,25 @@ class TanitaRD545Handler : ScaleDeviceHandler() {
                 reading.bodyFatPercent?.let { measurement[MeasurementType.BODY_FAT] = Percent(it) }
                 addCompositionMetrics(measurement, reading)
                 measurement.dateTime = Date.from(measuredAt.atZone(ZoneId.systemDefault()).toInstant())
-                publish(measurement)
-                if (recordIndex > 1) {
-                    recordIndex--
-                    readMeasurement()
-                } else {
-                    enter(Stage.FINISHED)
-                    requestDisconnect()
+                enter(Stage.SAVING)
+                val token = Any()
+                pendingSaveToken = token
+                publish(measurement, sessionUserId) { saved ->
+                    synchronized(this) {
+                        if (stage != Stage.SAVING || pendingSaveToken !== token) return@publish
+                        pendingSaveToken = null
+                        if (!saved) {
+                            fail(R.string.tanita_save_failed)
+                        } else if (runCatching { currentAppUser().id }.getOrNull() != sessionUserId) {
+                            fail(R.string.tanita_user_changed)
+                        } else if (recordIndex > 1) {
+                            recordIndex--
+                            readMeasurement()
+                        } else {
+                            enter(Stage.FINISHED)
+                            requestDisconnect()
+                        }
+                    }
                 }
             }
             else -> Unit
@@ -479,6 +497,7 @@ class TanitaRD545Handler : ScaleDeviceHandler() {
 
     @Synchronized
     private fun fail(message: Int, vararg args: Any) {
+        pendingSaveToken = null
         enter(Stage.FINISHED)
         choiceJob?.cancel()
         userError(message, *args)
@@ -494,6 +513,7 @@ class TanitaRD545Handler : ScaleDeviceHandler() {
 
     @Synchronized
     override fun onDisconnected() {
+        pendingSaveToken = null
         timeoutJob?.cancel()
         choiceJob?.cancel()
         assembler.reset()

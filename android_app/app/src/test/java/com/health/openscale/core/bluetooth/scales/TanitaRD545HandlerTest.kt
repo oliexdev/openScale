@@ -80,6 +80,15 @@ class TanitaRD545HandlerTest {
     }
 
     @Test
+    fun `assisted weighing is rejected before any Tanita commands`() {
+        val h = harness(assisted = true)
+        assertThat(h.commands()).isEmpty()
+        assertThat(h.published).isEmpty()
+        assertThat(h.errors).containsExactly(R.string.tanita_assisted_unsupported)
+        assertThat(h.disconnected).isTrue()
+    }
+
+    @Test
     fun `rejected identifier never silently registers or writes a profile`() {
         val h = harness()
         h.model()
@@ -260,7 +269,6 @@ class TanitaRD545HandlerTest {
         }
     }
 
-
     @Test
     fun `reads all history even when reading consumes and renumbers records`() {
         val h = harness(links = "1:0")
@@ -288,6 +296,142 @@ class TanitaRD545HandlerTest {
         assertThat(history).isEmpty()
         assertThat(h.published).hasSize(3)
         assertThat(h.errors).isEmpty()
+        assertThat(h.disconnected).isTrue()
+    }
+
+    @Test
+    fun `history waits for successful saving before requesting another record`() {
+        val h = harness(links = "1:0")
+        h.saveResult = null
+        h.toMeasuring()
+        h.reply(0xa010)
+        h.reply(0xb000, byteArrayOf(2))
+        h.reply(0xb010, record.copyOf().also { it[0] = 2 })
+        assertThat(h.commands().last()[4]).isEqualTo(2.toByte())
+        assertThat(h.disconnected).isFalse()
+
+        h.pendingSave!!(true)
+        assertThat(h.commands().last()[4]).isEqualTo(1.toByte())
+        h.reply(0xb010, record)
+        assertThat(h.disconnected).isFalse()
+        h.pendingSave!!(true)
+        assertThat(h.disconnected).isTrue()
+        assertThat(h.errors).isEmpty()
+    }
+
+    @Test
+    fun `failed saving stops history without reading another record`() {
+        val h = harness(links = "1:0")
+        h.saveResult = false
+        h.toMeasuring()
+        h.reply(0xa010)
+        h.reply(0xb000, byteArrayOf(2))
+        h.reply(0xb010, record.copyOf().also { it[0] = 2 })
+        assertThat(h.commands().last()[4]).isEqualTo(2.toByte())
+        assertThat(h.disconnected).isTrue()
+        assertThat(h.errors).isNotEmpty()
+    }
+
+    @Test
+    fun `a completed save cannot finish a newer pending record`() {
+        val h = harness(links = "1:0")
+        h.saveResult = null
+        h.toMeasuring()
+        h.reply(0xa010)
+        h.reply(0xb000, byteArrayOf(2))
+        h.reply(0xb010, record.copyOf().also { it[0] = 2 })
+        val firstSave = h.pendingSave!!
+        firstSave(true)
+        h.reply(0xb010, record)
+        val secondSave = h.pendingSave!!
+        firstSave(true)
+        assertThat(h.disconnected).isFalse()
+        secondSave(true)
+        assertThat(h.disconnected).isTrue()
+    }
+
+    @Test
+    fun `a late save result cannot advance a reconnected session`() {
+        val h = harness(links = "1:0")
+        h.saveResult = null
+        h.toMeasuring()
+        h.reply(0xa010)
+        h.reply(0xb000, byteArrayOf(1))
+        h.reply(0xb010, record)
+        val previousSave = h.pendingSave!!
+        h.handler.handleDisconnected()
+        h.handler.handleConnected(h.activeUser)
+        h.toMeasuring()
+        h.reply(0xa010)
+        h.reply(0xb000, byteArrayOf(1))
+        h.reply(0xb010, record)
+        val currentSave = h.pendingSave!!
+        previousSave(true)
+        assertThat(h.disconnected).isFalse()
+        currentSave(true)
+        assertThat(h.disconnected).isTrue()
+    }
+
+    @Test
+    fun `switching users while saving stops before another history read`() {
+        val h = harness(links = "1:0")
+        h.saveResult = null
+        h.toMeasuring()
+        h.reply(0xa010)
+        h.reply(0xb000, byteArrayOf(2))
+        h.reply(0xb010, record.copyOf().also { it[0] = 2 })
+        h.activeUser = ScaleUser(id = 2)
+        h.pendingSave!!(true)
+        assertThat(h.commands().last()[4]).isEqualTo(2.toByte())
+        assertThat(h.published.single().userId).isEqualTo(1)
+        assertThat(h.errors).containsExactly(R.string.tanita_user_changed)
+        assertThat(h.disconnected).isTrue()
+    }
+
+    @Test
+    fun `missing active user at async save completion fails safely`() {
+        val h = harness(links = "1:0")
+        h.saveResult = null
+        h.toMeasuring()
+        h.reply(0xa010)
+        h.reply(0xb000, byteArrayOf(2))
+        h.reply(0xb010, record.copyOf().also { it[0] = 2 })
+        h.activeUserAvailable = false
+        val executor = Executors.newSingleThreadExecutor()
+        try {
+            executor.submit { h.pendingSave!!(true) }.get(10, TimeUnit.SECONDS)
+        } finally {
+            executor.shutdownNow()
+        }
+        assertThat(h.commands().last()[4]).isEqualTo(2.toByte())
+        assertThat(h.errors).containsExactly(R.string.tanita_user_changed)
+        assertThat(h.disconnected).isTrue()
+    }
+
+    @Test
+    fun `missing active user at notification is reported instead of throwing`() {
+        val h = harness()
+        h.activeUserAvailable = false
+        assertThat(runCatching { h.model() }.isSuccess).isTrue()
+        assertThat(h.errors).containsExactly(R.string.bt_error_handler_parse_error)
+        assertThat(h.published).isEmpty()
+    }
+
+    @Test
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun `saving timeout ignores a late success`() {
+        val h = harness(links = "1:0")
+        h.saveResult = null
+        h.toMeasuring()
+        h.reply(0xa010)
+        h.reply(0xb000, byteArrayOf(2))
+        h.reply(0xb010, record.copyOf().also { it[0] = 2 })
+        h.dispatcher.scheduler.runCurrent()
+        h.dispatcher.scheduler.advanceTimeBy(20_001)
+        h.dispatcher.scheduler.runCurrent()
+        h.pendingSave!!(true)
+        assertThat(h.commands().last()[4]).isEqualTo(2.toByte())
+        assertThat(h.errors).containsExactly(R.string.tanita_timeout)
         assertThat(h.disconnected).isTrue()
     }
 
@@ -498,21 +642,24 @@ class TanitaRD545HandlerTest {
         assertThat(h.disconnected).isTrue()
     }
 
-    private fun harness(userId: Int = 1, links: String = "", register: Boolean = false) = Harness(userId, links, register).also {
+    private fun harness(userId: Int = 1, links: String = "", register: Boolean = false, assisted: Boolean = false) = Harness(userId, links, register, assisted).also {
         harnesses.add(it)
         it.handler.handleConnected(it.activeUser)
     }
 
-    private inner class Harness(userId: Int, links: String, register: Boolean) {
+    private inner class Harness(userId: Int, links: String, register: Boolean, assisted: Boolean) {
         val settings = Settings().apply {
             strings[TanitaRD545Handler.KEY_LINKS] = links
             ints[TanitaRD545Handler.KEY_REGISTER] = if (register) 1 else 0
         }
         val dispatcher = StandardTestDispatcher()
         val scope = CoroutineScope(SupervisorJob() + dispatcher)
-        var activeUser = ScaleUser(id = userId, userName = "Synthetic")
+        var activeUser = ScaleUser(id = userId, userName = "Synthetic", useAssistedWeighing = assisted)
+        var activeUserAvailable = true
         var disconnected = false
         val published = mutableListOf<ScaleMeasurement>()
+        var saveResult: Boolean? = true
+        var pendingSave: ((Boolean) -> Unit)? = null
         val errors = mutableListOf<Int>()
         val choices = mutableListOf<Any?>()
         private val writes = CopyOnWriteArrayList<ByteArray>()
@@ -536,13 +683,22 @@ class TanitaRD545HandlerTest {
                 },
                 object : ScaleDeviceHandler.Callbacks {
                     override fun onPublish(measurement: ScaleMeasurement) { published.add(measurement) }
+                    override fun onPublish(measurement: ScaleMeasurement, appUserId: Int, onSaved: (Boolean) -> Unit) {
+                        assertThat(appUserId).isEqualTo(measurement.userId)
+                        published.add(measurement)
+                        pendingSave = onSaved
+                        saveResult?.let(onSaved)
+                    }
                     override fun onError(resId: Int, t: Throwable?, vararg args: Any) { errors.add(resId) }
                     override fun resolveString(resId: Int, vararg args: Any) = args.joinToString(" ")
                     override fun onUserInteractionRequired(interactionType: UserInteractionType, data: Any?) { choices.add(data) }
                 },
                 settings,
                 object : ScaleDeviceHandler.DataProvider {
-                    override fun currentUser() = activeUser
+                    override fun currentUser(): ScaleUser {
+                        check(activeUserAvailable) { "No selected app user" }
+                        return activeUser
+                    }
                     override fun usersForDevice() = listOf(activeUser)
                     override fun lastMeasurementFor(userId: Int): ScaleMeasurement? = null
                 },
