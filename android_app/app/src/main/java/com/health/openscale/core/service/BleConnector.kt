@@ -463,16 +463,8 @@ class BleConnector(
             // which is also why resolving (and thus creating) a device type only happens
             // for values that survived: a broken packet must not leave an empty type
             // behind.
-            //
-            // BMR goes in first so its presence guards the per-value recalc that runs
-            // after WEIGHT lands; otherwise DerivedValuesProcess would write its
-            // Mifflin-St Jeor BMR before the device's BIA-based BMR arrives, leaving two
-            // rows for the same typeId.
             val values = mutableListOf<MeasurementValue>()
-            val reported = measurementData.values.entries
-                .sortedByDescending { it.key == MeasurementType.BMR }
-
-            for ((key, raw) in reported) {
+            for ((key, raw) in measurementData.values) {
                 val type = typesByIdentity[key.identity]
                     ?: measurementFacade.resolveOrCreateMeasurementType(key)
                     ?: run {

@@ -508,14 +508,6 @@ class ImportExportUseCases @Inject constructor(
                     ids.second.flatMap { importedPhotosByTimestamp[it].orEmpty() }
                 )
 
-                // Recalc derived values for each inserted measurement (like in your VM)
-                ids.first.forEach { id ->
-                    try { repository.recalculateDerivedValuesForMeasurement(id.toInt()) }
-                    catch (e: Exception) {
-                        LogManager.e(TAG, "Derived recalculation failed for measurementId=$id", e)
-                    }
-                }
-
                 // Bulk import: one coalesced "changed" wake-up instead of N per-measurement events.
                 sync.triggerSyncChangedAll()
             }

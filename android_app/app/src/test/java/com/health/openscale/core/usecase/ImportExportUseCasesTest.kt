@@ -151,6 +151,29 @@ class ImportExportUseCasesTest {
         ShadowLog.getLogs().filter { it.type == Log.WARN }.joinToString("\n") { it.msg }
 
     @Test
+    fun import_reportedDerivedValues_arePreserved() = runBlocking {
+        val report = useCases.importUserFromCsv(
+            userId,
+            csvUri("DATE,TIME,WEIGHT,WAIST,HIPS,BMI,BMR,WHR,WHTR,TDEE,CALIPER\n" +
+                   "2025-04-07,08:30,70,80,100,22.9,1500,0.9,0.55,2700,18.7\n"),
+            context.contentResolver,
+        ).getOrThrow()
+        assertThat(report.importedMeasurementsCount).isEqualTo(1)
+        val imported = repo.getMeasurementsWithValuesForUser(userId).first().single {
+            Instant.ofEpochMilli(it.measurement.timestamp).atZone(ZoneId.systemDefault()).toLocalDate() ==
+                LocalDate.of(2025, 4, 7)
+        }
+        val reported = mapOf(
+            MeasurementType.BMI to 22.9f, MeasurementType.BMR to 1_500f,
+            MeasurementType.WHR to 0.9f, MeasurementType.WHTR to 0.55f,
+            MeasurementType.TDEE to 2_700f, MeasurementType.CALIPER to 18.7f,
+        )
+        for ((key, value) in reported) {
+            assertThat(imported.values.single { it.type.key == key }.value.floatValue).isEqualTo(value)
+        }
+    }
+
+    @Test
     fun import_separateDateAndTimeColumns_isParsed() = runBlocking {
         val report = useCases.importUserFromCsv(
             userId, csvUri("DATE,TIME,WEIGHT\n2025-04-07,08:30,72.5\n"), context.contentResolver

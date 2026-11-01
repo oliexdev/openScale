@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.database
 
+import androidx.room.withTransaction
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
@@ -129,6 +130,22 @@ class DatabaseRepository @Inject constructor(
     }
 
     /**
+     * Saves all reported values before calculating fallbacks, so a calculation cannot
+     * insert a second row for a value that is still waiting to be saved.
+     */
+    suspend fun insertMeasurementWithValues(measurement: Measurement, values: List<MeasurementValue>): Long =
+        database.withTransaction {
+            val id = measurementDao.insert(measurement)
+            if (id != -1L) {
+                measurementValueDao.insertAll(values.map { it.copy(measurementId = id.toInt()) })
+                derivedValuesCalculator.recalculateDerivedValuesForMeasurement(
+                    id.toInt(), mode = DerivedValuesCalculator.CalculationMode.FILL_MISSING
+                )
+            }
+            id
+        }
+
+    /**
      * Updates an existing measurement and recalculates derived values.
      */
     suspend fun updateMeasurement(measurement: Measurement) {
@@ -176,7 +193,7 @@ class DatabaseRepository @Inject constructor(
         withContext(Dispatchers.IO) {
             measurementsData.forEachIndexed { index, (measurement, values) ->
                 try {
-                    val newMeasurementId = measurementDao.insertSingleMeasurementWithItsValues(measurement, values)
+                    val newMeasurementId = insertMeasurementWithValues(measurement, values)
                     if (newMeasurementId != -1L) {
                         insertedIds.add(newMeasurementId)
                         LogManager.d(TAG,"Inserting measurement ${index + 1}/${measurementsData.size}, userId: ${measurement.userId}, with ${values.size} values.")

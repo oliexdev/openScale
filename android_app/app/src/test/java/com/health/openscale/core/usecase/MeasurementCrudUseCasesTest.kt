@@ -36,6 +36,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import org.json.JSONArray
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -63,6 +64,10 @@ class MeasurementCrudUseCasesTest {
     private var weightId = 0
     private var waistId = 0
     private var neckId = 0
+    private val derivedKeys: List<MeasurementType.Key<*>> = listOf(
+        MeasurementType.BMI, MeasurementType.BMR, MeasurementType.WHR,
+        MeasurementType.WHTR, MeasurementType.TDEE, MeasurementType.CALIPER,
+    )
 
     @Before
     fun setUp() = runBlocking {
@@ -91,6 +96,20 @@ class MeasurementCrudUseCasesTest {
     @After
     fun tearDown() = db.close()
 
+    private suspend fun formulaInputs(): List<MeasurementValue> {
+        val types = repo.getAllMeasurementTypes().first().associateBy { it.key }
+        return mapOf<MeasurementType.Key<*>, Float>(
+            MeasurementType.WEIGHT to 70f,
+            MeasurementType.WAIST to 80f,
+            MeasurementType.HIPS to 100f,
+            MeasurementType.CALIPER_1 to 1f,
+            MeasurementType.CALIPER_2 to 1.2f,
+            MeasurementType.CALIPER_3 to 1.4f,
+        ).map { (key, value) ->
+            MeasurementValue(measurementId = 0, typeId = types.getValue(key).id, floatValue = value)
+        }
+    }
+
     @Test
     fun saveMeasurement_insert_persistsValues() = runBlocking {
         val id = crud.saveMeasurement(
@@ -101,6 +120,272 @@ class MeasurementCrudUseCasesTest {
         assertThat(id).isGreaterThan(0)
         val values = repo.getValuesForMeasurement(id).first()
         assertThat(values.any { it.typeId == weightId && it.floatValue == 70f }).isTrue()
+    }
+
+    @Test
+    fun saveMeasurement_reportedBmi_isStoredOnceAndPreserved() = runBlocking {
+        val bmiId = repo.getAllMeasurementTypes().first().first { it.key == MeasurementType.BMI }.id
+        val reportedValues = listOf(
+            MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 70f),
+            // Deliberately differs from openScale's 22.85 calculation.
+            MeasurementValue(measurementId = 0, typeId = bmiId, floatValue = 22.9f),
+        )
+
+        for ((index, values) in listOf(reportedValues, reportedValues.reversed()).withIndex()) {
+            val id = crud.saveMeasurement(
+                Measurement(userId = userId, timestamp = 20_000L + index),
+                values,
+            ).getOrThrow()
+
+            val bmiValues = repo.getValuesForMeasurement(id).first().filter { it.typeId == bmiId }
+            assertThat(bmiValues).hasSize(1)
+            assertThat(bmiValues.single().floatValue).isEqualTo(22.9f)
+        }
+    }
+
+    @Test
+    fun saveMeasurement_reportedBmr_isStoredOnceAndUsedForTdeeAndSync() = runBlocking {
+        installSyncApp()
+        val types = repo.getAllMeasurementTypes().first()
+        val bmiId = types.first { it.key == MeasurementType.BMI }.id
+        val bmrId = types.first { it.key == MeasurementType.BMR }.id
+        val tdeeId = types.first { it.key == MeasurementType.TDEE }.id
+        val id = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 21_000L),
+            listOf(
+                MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 70f),
+                MeasurementValue(measurementId = 0, typeId = bmiId, floatValue = 22.9f),
+                // BMR deliberately arrives after weight, without the BLE ordering workaround.
+                MeasurementValue(measurementId = 0, typeId = bmrId, floatValue = 1_500f),
+            ),
+        ).getOrThrow()
+
+        val stored = repo.getValuesForMeasurement(id).first()
+        assertThat(stored.groupBy { it.typeId }.values.all { it.size == 1 }).isTrue()
+        assertThat(stored.single { it.typeId == bmiId }.floatValue).isEqualTo(22.9f)
+        assertThat(stored.single { it.typeId == bmrId }.floatValue).isEqualTo(1_500f)
+        assertThat(stored.single { it.typeId == tdeeId }.floatValue).isWithin(0.01f).of(2_325f)
+
+        val payload = JSONArray(nextSyncValues("insert"))
+        val synced = (0 until payload.length()).map { payload.getJSONObject(it) }
+        assertThat(synced.groupBy { it.getString("identity") }.values.all { it.size == 1 }).isTrue()
+        assertThat(synced.single { it.getString("identity") == "builtin.bmi" }.getDouble("value"))
+            .isWithin(0.0001).of(22.9)
+        assertThat(synced.single { it.getString("identity") == "builtin.bmr" }.getDouble("value"))
+            .isWithin(0.01).of(1_500.0)
+        assertThat(synced.single { it.getString("identity") == "builtin.tdee" }.getDouble("value"))
+            .isWithin(0.01).of(2_325.0)
+    }
+
+    @Test
+    fun saveMeasurement_reportedDerivedValues_arePreservedAndSynced() = runBlocking {
+        installSyncApp()
+        val types = repo.getAllMeasurementTypes().first()
+        val reported = linkedMapOf(
+            MeasurementType.BMI to 22.9f,
+            MeasurementType.BMR to 1_500f,
+            MeasurementType.WHR to 0.9f,
+            MeasurementType.WHTR to 0.55f,
+            MeasurementType.TDEE to 2_700f,
+            MeasurementType.CALIPER to 18.7f,
+        )
+        val provided = reported.map { (key, value) ->
+            MeasurementValue(measurementId = 0, typeId = types.first { it.key == key }.id, floatValue = value)
+        }
+        val hipsId = types.first { it.key == MeasurementType.HIPS }.id
+        val id = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 28_000L),
+            listOf(
+                MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 70f),
+                MeasurementValue(measurementId = 0, typeId = waistId, floatValue = 80f),
+                MeasurementValue(measurementId = 0, typeId = hipsId, floatValue = 100f),
+            ) + provided,
+        ).getOrThrow()
+
+        val stored = repo.getValuesForMeasurement(id).first()
+        for (value in provided) {
+            assertThat(stored.single { it.typeId == value.typeId }.floatValue).isEqualTo(value.floatValue)
+        }
+        // The supplied caliper result must also survive when its formula inputs are absent.
+        val payload = JSONArray(nextSyncValues("insert"))
+        val synced = (0 until payload.length()).map { payload.getJSONObject(it) }
+        for ((key, value) in reported) {
+            assertThat(synced.single { it.getString("identity") == key.identity }.getDouble("value"))
+                .isWithin(0.0001).of(value.toDouble())
+        }
+
+        // The batch path used by CSV and ContentProvider must apply the same rule.
+        val whtrId = types.first { it.key == MeasurementType.WHTR }.id
+        val batchValues = listOf(
+            MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 70f),
+            MeasurementValue(measurementId = 0, typeId = waistId, floatValue = 80f),
+            MeasurementValue(measurementId = 0, typeId = hipsId, floatValue = 100f),
+        ) + provided.filter { it.typeId != whtrId }
+        val (inserted, ignored) = repo.insertMeasurementsWithValues(
+            listOf(Measurement(userId = userId, timestamp = 28_001L) to batchValues)
+        )
+        assertThat(ignored).isEmpty()
+        val batch = repo.getValuesForMeasurement(inserted.single().toInt()).first()
+        for (value in provided.filter { it.typeId != whtrId }) {
+            assertThat(batch.single { it.typeId == value.typeId }.floatValue).isEqualTo(value.floatValue)
+        }
+        assertThat(batch.single { it.typeId == whtrId }.floatValue).isWithin(0.01f).of(0.45f)
+    }
+
+    @Test
+    fun saveMeasurement_missingDerivedValues_areCalculatedOnce() = runBlocking {
+        val types = repo.getAllMeasurementTypes().first()
+        val bmiId = types.first { it.key == MeasurementType.BMI }.id
+        val bmrId = types.first { it.key == MeasurementType.BMR }.id
+        val tdeeId = types.first { it.key == MeasurementType.TDEE }.id
+        val id = crud.saveMeasurement(
+            // Use an adult age: the BMR fallback intentionally rejects age zero.
+            Measurement(userId = userId, timestamp = 1_735_689_600_000L),
+            formulaInputs(),
+        ).getOrThrow()
+
+        val stored = repo.getValuesForMeasurement(id).first()
+        assertThat(stored.groupBy { it.typeId }.values.all { it.size == 1 }).isTrue()
+        for (key in derivedKeys) {
+            val typeId = types.first { it.key == key }.id
+            assertThat(stored.single { it.typeId == typeId }.floatValue).isGreaterThan(0f)
+        }
+        assertThat(stored.single { it.typeId == bmiId }.floatValue).isWithin(0.01f).of(22.85f)
+        assertThat(stored.single { it.typeId == bmrId }.floatValue).isGreaterThan(0f)
+        assertThat(stored.single { it.typeId == tdeeId }.floatValue).isGreaterThan(0f)
+    }
+
+    @Test
+    fun saveMeasurement_invalidReportedDerivedValues_useCalculatedFallbacks() = runBlocking {
+        val types = repo.getAllMeasurementTypes().first()
+        val derivedIds = derivedKeys.map { key -> types.first { it.key == key }.id }
+        val invalid = listOf(0f, -1f, Float.NaN, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY)
+        for ((index, badValue) in invalid.withIndex()) {
+            val id = crud.saveMeasurement(
+                Measurement(userId = userId, timestamp = 1_735_689_600_000L + index),
+                formulaInputs() + derivedIds.map { typeId ->
+                    MeasurementValue(measurementId = 0, typeId = typeId, floatValue = badValue)
+                },
+            ).getOrThrow()
+
+            val stored = repo.getValuesForMeasurement(id).first()
+            for (typeId in derivedIds) {
+                val value = stored.single { it.typeId == typeId }.floatValue!!
+                assertThat(value.isFinite() && value > 0f).isTrue()
+            }
+            val bmiId = types.first { it.key == MeasurementType.BMI }.id
+            assertThat(stored.single { it.typeId == bmiId }.floatValue).isWithin(0.01f).of(22.85f)
+        }
+    }
+
+    @Test
+    fun saveMeasurement_editRecalculatesReportedRatiosAndTdee() = runBlocking {
+        val types = repo.getAllMeasurementTypes().first()
+        val reported = mapOf(
+            MeasurementType.WHR to 0.95f,
+            MeasurementType.WHTR to 0.55f,
+            MeasurementType.BMR to 1_500f,
+            MeasurementType.TDEE to 2_700f,
+        ).map { (key, value) ->
+            MeasurementValue(measurementId = 0, typeId = types.first { it.key == key }.id, floatValue = value)
+        }
+        val hipsId = types.first { it.key == MeasurementType.HIPS }.id
+        val id = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 29_000L),
+            listOf(
+                MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 70f),
+                MeasurementValue(measurementId = 0, typeId = waistId, floatValue = 80f),
+                MeasurementValue(measurementId = 0, typeId = hipsId, floatValue = 100f),
+            ) + reported,
+        ).getOrThrow()
+        val before = repo.getValuesForMeasurement(id).first()
+        val edit = before.filter { it.typeId in setOf(weightId, waistId, hipsId) }
+            .map { if (it.typeId == waistId) it.copy(floatValue = 90f) else it }
+
+        crud.saveMeasurement(Measurement(id = id, userId = userId, timestamp = 29_000L), edit).getOrThrow()
+
+        val after = repo.getValuesForMeasurement(id).first()
+        for ((key, expected) in mapOf(MeasurementType.WHR to 0.9f, MeasurementType.WHTR to 0.51f,
+                                     MeasurementType.BMR to 1_500f, MeasurementType.TDEE to 2_325f)) {
+            val typeId = types.first { it.key == key }.id
+            val updated = after.single { it.typeId == typeId }
+            assertThat(updated.id).isEqualTo(before.single { it.typeId == typeId }.id)
+            assertThat(updated.floatValue).isWithin(0.01f).of(expected)
+        }
+    }
+
+    @Test
+    fun saveMeasurement_editAfterReportedBmi_recalculatesWithoutDuplicateOrIdChurn() = runBlocking {
+        val bmiId = repo.getAllMeasurementTypes().first().first { it.key == MeasurementType.BMI }.id
+        val id = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 24_000L),
+            listOf(
+                MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 70f),
+                MeasurementValue(measurementId = 0, typeId = bmiId, floatValue = 22.9f),
+            ),
+        ).getOrThrow()
+        val before = repo.getValuesForMeasurement(id).first()
+        val bmiBefore = before.single { it.typeId == bmiId }
+        val weight = before.single { it.typeId == weightId }
+        assertThat(bmiBefore.floatValue).isEqualTo(22.9f)
+
+        crud.saveMeasurement(
+            Measurement(id = id, userId = userId, timestamp = 24_000L),
+            listOf(weight.copy(floatValue = 80f)),
+        ).getOrThrow()
+
+        val bmiAfter = repo.getValuesForMeasurement(id).first().single { it.typeId == bmiId }
+        assertThat(bmiAfter.id).isEqualTo(bmiBefore.id)
+        assertThat(bmiAfter.floatValue).isWithin(0.01f).of(26.12f)
+
+        val user = db.userDao().getById(userId).first()!!
+        db.userDao().update(user.copy(heightCm = 180f))
+        crud.saveMeasurement(
+            Measurement(id = id, userId = userId, timestamp = 24_000L),
+            listOf(weight.copy(floatValue = 80f)),
+        ).getOrThrow()
+        val bmiAfterHeightEdit = repo.getValuesForMeasurement(id).first().single { it.typeId == bmiId }
+        assertThat(bmiAfterHeightEdit.id).isEqualTo(bmiBefore.id)
+        assertThat(bmiAfterHeightEdit.floatValue).isWithin(0.01f).of(24.69f)
+    }
+
+    @Test
+    fun saveMeasurement_invalidValue_rollsBackEntireMeasurementAndDoesNotSync() = runBlocking {
+        installSyncApp()
+        val result = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 25_000L),
+            listOf(
+                MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 70f),
+                MeasurementValue(measurementId = 0, typeId = Int.MAX_VALUE, floatValue = 1f),
+            ),
+        )
+
+        assertThat(result.isFailure).isTrue()
+        assertThat(repo.getMeasurementsWithValuesForUser(userId).first()).isEmpty()
+        assertThat(db.openHelper.readableDatabase.query("SELECT COUNT(*) FROM MeasurementValue").use {
+            it.moveToFirst()
+            it.getInt(0)
+        }).isEqualTo(0)
+        assertThat(Shadows.shadowOf(app).nextStartedService).isNull()
+    }
+
+    @Test
+    fun saveMeasurement_conflictingValueId_leavesExistingMeasurementUntouched() = runBlocking {
+        val firstId = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 26_000L),
+            listOf(MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 70f)),
+        ).getOrThrow()
+        val originalValues = repo.getValuesForMeasurement(firstId).first()
+        val weight = originalValues.single { it.typeId == weightId }
+
+        val result = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 27_000L),
+            listOf(weight.copy(measurementId = 0, floatValue = 90f)),
+        )
+
+        assertThat(result.isFailure).isTrue()
+        assertThat(repo.getValuesForMeasurement(firstId).first()).containsExactlyElementsIn(originalValues)
+        assertThat(repo.getMeasurementsWithValuesForUser(userId).first()).hasSize(1)
     }
 
     @Test
@@ -148,6 +433,7 @@ class MeasurementCrudUseCasesTest {
         assertThat(result.getOrThrow()).isEqualTo(-1)
         // Original untouched, and no orphan values (e.g. measurementId = -1) were written.
         assertThat(repo.getValuesForMeasurement(firstId).first()).hasSize(valuesBefore.size)
+        assertThat(repo.getValuesForMeasurement(firstId).first()).containsExactlyElementsIn(valuesBefore)
         assertThat(repo.getValuesForMeasurement(-1).first()).isEmpty()
     }
 

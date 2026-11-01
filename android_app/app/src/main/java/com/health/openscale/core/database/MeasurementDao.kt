@@ -25,7 +25,6 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.health.openscale.core.data.Measurement
-import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.model.MeasurementValueWithType
 import com.health.openscale.core.model.MeasurementWithValues
 import kotlinx.coroutines.flow.Flow
@@ -45,46 +44,6 @@ interface MeasurementDao {
      */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(measurement: Measurement): Long
-
-    /**
-     * Inserts a list of measurement values.
-     * The `measurementId` in each [MeasurementValue] object MUST be correctly set beforehand.
-     * Existing values with the same primary key will be replaced.
-     *
-     * @param values The list of measurement values to insert.
-     */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMeasurementValues(values: List<MeasurementValue>)
-
-    /**
-     * Inserts a single measurement and its associated values within a transaction.
-     * This method ensures that the correct `measurementId` is set for each value
-     * after the main measurement has been inserted and its ID is available.
-     *
-     * @param measurement The measurement to insert.
-     * @param values The list of associated measurement values.
-     * @return The row ID of the newly inserted measurement.
-     */
-    @Transaction
-    suspend fun insertSingleMeasurementWithItsValues(measurement: Measurement, values: List<MeasurementValue>) : Long {
-        val measurementId = insert(measurement) // Insert the main measurement to get its ID
-
-        if (measurementId == -1L) {
-            return -1L
-        }
-
-        // Update each MeasurementValue with the correct measurementId
-        val updatedValues = values.map { value ->
-            // Important: Create a new instance if MeasurementValue is a data class to ensure immutability.
-            value.copy(measurementId = measurementId.toInt())
-        }
-
-        if (updatedValues.isNotEmpty()) {
-            insertMeasurementValues(updatedValues) // Insert the updated measurement values
-        }
-
-        return measurementId
-    }
 
     /**
      * Updates an existing measurement.

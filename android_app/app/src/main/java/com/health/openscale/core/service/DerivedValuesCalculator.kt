@@ -51,7 +51,13 @@ class DerivedValuesCalculator @Inject constructor(
 
     private val DERIVED_VALUES_TAG = "DerivedValues" // Specific tag for this complex logic
 
-    suspend fun recalculateDerivedValuesForMeasurement(measurementId: Int) {
+    /** New measurements fill gaps; later recalculations use the existing edit rules. */
+    enum class CalculationMode { RECALCULATE, FILL_MISSING }
+
+    suspend fun recalculateDerivedValuesForMeasurement(
+        measurementId: Int,
+        mode: CalculationMode = CalculationMode.RECALCULATE,
+    ) {
         val startTime = System.nanoTime()
         LogManager.i(DERIVED_VALUES_TAG, "Starting recalculation of derived values for measurementId: $measurementId")
 
@@ -87,45 +93,35 @@ class DerivedValuesCalculator @Inject constructor(
         }
 
         // Helper to save or update a derived measurement value
-        val saveOrUpdateDerivedValue: suspend (value: Float?, typeKey: MeasurementType.Key<*>) -> Unit =
-            save@{ derivedValue, derivedValueTypeKey ->
-                val derivedTypeObject = allGlobalTypes.find { it.key == derivedValueTypeKey }
+        suspend fun saveOrUpdateDerivedValue(typeKey: MeasurementType.Key<*>, calculate: () -> Float?) {
+            val type = allGlobalTypes.find { it.key == typeKey }
+            if (type == null) {
+                LogManager.w(DERIVED_VALUES_TAG, "Cannot save/update derived value: Type for key '$typeKey' not found.")
+                return
+            }
 
-                if (derivedTypeObject == null) {
-                    LogManager.w(DERIVED_VALUES_TAG, "Cannot save/update derived value: Type for key '$derivedValueTypeKey' not found.")
-                    return@save
-                }
+            val existing = currentMeasurementValues.find { it.typeId == type.id }
+            val existingValue = existing?.floatValue
+            if (mode == CalculationMode.FILL_MISSING && existingValue != null &&
+                existingValue.isFinite() && existingValue > 0f
+            ) return
 
-                val existingDerivedValueObject = currentMeasurementValues.find { it.typeId == derivedTypeObject.id }
-
-                if (derivedValue == null) {
-                    // If derived value is null, delete any existing persisted value for it
-                    if (existingDerivedValueObject != null) {
-                        measurementValueDao.deleteById(existingDerivedValueObject.id)
-                        //LogManager.d(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} is null. Deleted existing value (ID: ${existingDerivedValueObject.id}).")
-                    } else {
+            val derivedValue = calculate()
+            if (derivedValue == null) {
+                if (existing != null) measurementValueDao.deleteById(existing.id)
+            } else {
+                val roundedValue = CalculationUtils.roundTo(derivedValue)
+                if (existing != null) {
+                    if (existing.floatValue != roundedValue) {
+                        measurementValueDao.update(existing.copy(floatValue = roundedValue))
                     }
                 } else {
-                    // If derived value is not null, insert or update it
-                    val roundedValue = CalculationUtils.roundTo(derivedValue) // Apply rounding
-                    if (existingDerivedValueObject != null) {
-                        if (existingDerivedValueObject.floatValue != roundedValue) {
-                            measurementValueDao.update(existingDerivedValueObject.copy(floatValue = roundedValue))
-                         //   LogManager.d(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} updated from ${existingDerivedValueObject.floatValue} to $roundedValue.")
-                        } else {
-                        }
-                    } else {
-                        measurementValueDao.insert(
-                            MeasurementValue(
-                                measurementId = measurementId,
-                                typeId = derivedTypeObject.id,
-                                floatValue = roundedValue
-                            )
-                        )
-                        //LogManager.d(DERIVED_VALUES_TAG, "New derived value for key ${derivedTypeObject.key} inserted: $roundedValue.")
-                    }
+                    measurementValueDao.insert(
+                        MeasurementValue(measurementId = measurementId, typeId = type.id, floatValue = roundedValue)
+                    )
                 }
             }
+        }
 
         // Fetch raw values and their original units
         val (weightValue, weightUnitType) = findValueAndUnit(MeasurementType.WEIGHT)
@@ -209,32 +205,34 @@ class DerivedValuesCalculator @Inject constructor(
         // --- PERFORM DERIVED VALUE CALCULATIONS ---
         // Pass the converted values (e.g., weightKg, waistCm) to the processing functions
 
-        processBmiCalculation(weightKg, userHeightCm).also { saveOrUpdateDerivedValue(it, MeasurementType.BMI) }
-        processWhrCalculation(waistCm, hipsCm).also { saveOrUpdateDerivedValue(it, MeasurementType.WHR) }
-        processWhtrCalculation(waistCm, userHeightCm).also { saveOrUpdateDerivedValue(it, MeasurementType.WHTR) }
+        saveOrUpdateDerivedValue(MeasurementType.BMI) { processBmiCalculation(weightKg, userHeightCm) }
+        saveOrUpdateDerivedValue(MeasurementType.WHR) { processWhrCalculation(waistCm, hipsCm) }
+        saveOrUpdateDerivedValue(MeasurementType.WHTR) { processWhtrCalculation(waistCm, userHeightCm) }
         // BMR: when the source device already supplied one (e.g. S400 BIA-based BMR
         // via FFM), keep it. Mifflin-St Jeor is an anthropometric fallback used
-        // only when no BMR landed on the row. TDEE always derives from whichever
-        // BMR is actually persisted.
+        // only when no valid BMR landed on the row. When TDEE needs calculating,
+        // it uses whichever BMR is actually persisted.
         val bmrTypeId = allGlobalTypes.find { it.key == MeasurementType.BMR }?.id
         val existingBmr = bmrTypeId?.let { id ->
-            currentMeasurementValues.find { it.typeId == id }?.floatValue
+            currentMeasurementValues.find { it.typeId == id }?.floatValue?.takeIf { it.isFinite() && it > 0f }
         }
         val bmr = existingBmr ?: processBmrCalculation(
             weightKg = weightKg,
             heightCm = user.heightCm,
             ageYears = ageAtMeasurementYears,
             gender = user.gender
-        )?.also { saveOrUpdateDerivedValue(it, MeasurementType.BMR) }
-        processTDEECalculation(bmr, user.activityLevel).also { saveOrUpdateDerivedValue(it, MeasurementType.TDEE) }
+        ).also { fallback -> saveOrUpdateDerivedValue(MeasurementType.BMR) { fallback } }
+        saveOrUpdateDerivedValue(MeasurementType.TDEE) { processTDEECalculation(bmr, user.activityLevel) }
 
-        processFatCaliperCalculation(
-            caliper1Cm = caliper1Cm,
-            caliper2Cm = caliper2Cm,
-            caliper3Cm = caliper3Cm,
-            ageYears = ageAtMeasurementYears,
-            gender = user.gender
-        ).also { saveOrUpdateDerivedValue(it, MeasurementType.CALIPER) }
+        saveOrUpdateDerivedValue(MeasurementType.CALIPER) {
+            processFatCaliperCalculation(
+                caliper1Cm = caliper1Cm,
+                caliper2Cm = caliper2Cm,
+                caliper3Cm = caliper3Cm,
+                ageYears = ageAtMeasurementYears,
+                gender = user.gender
+            )
+        }
 
         val endTime = System.nanoTime()
         val durationMillis = (endTime - startTime) / 1_000_000

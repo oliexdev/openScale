@@ -75,7 +75,7 @@ class MeasurementCrudUseCases @Inject constructor(
 
         if (measurement.id == 0) {
             // Insert path
-            val newId = databaseRepository.insertMeasurement(measurement).toInt()
+            val newId = databaseRepository.insertMeasurementWithValues(measurement, finalValues).toInt()
             // A (userId, timestamp) duplicate is ignored by the DAO and returns -1. Signal it via the
             // sentinel and abort, so we never insert orphan values referencing a non-existent id.
             if (newId == -1) {
@@ -83,12 +83,8 @@ class MeasurementCrudUseCases @Inject constructor(
             }
             val measurementWithId = measurement.copy(id = newId)
 
-            finalValues.forEach { v ->
-                databaseRepository.insertMeasurementValue(v.copy(measurementId = newId))
-            }
-
             // Sync what was stored, not finalValues: the derived values (BMI, BMR, …) only exist
-            // after the recalculation each value insert runs, and the sync app must see the same
+            // after recalculation, and the sync app must see the same
             // measurement here as through the ContentProvider.
             val syncValues = databaseRepository.getValuesForMeasurement(newId).first()
             sync.triggerSyncInsert(measurementWithId, syncValues,"com.health.openscale.sync")

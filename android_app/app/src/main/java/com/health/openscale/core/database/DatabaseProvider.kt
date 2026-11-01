@@ -311,7 +311,7 @@ class DatabaseProvider : ContentProvider() {
                     val insertedMeasurementId: Long? = runBlocking {
                         val pair = Pair(measurement, measurementValuesToInsert)
                         val ids = databaseRepository.insertMeasurementsWithValues(listOf(pair)) // Expects List<Pair<Measurement, List<MeasurementValue>>>
-                        ids.first.firstOrNull()?.also { databaseRepository.recalculateDerivedValuesForMeasurement(it.toInt()) }
+                        ids.first.firstOrNull()
                     }
 
                     if (insertedMeasurementId != null && insertedMeasurementId > 0) {
