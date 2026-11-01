@@ -248,27 +248,35 @@ class MeasurementFacade @Inject constructor(
      * have reassigned it), so the gaps are filled from the history of the user the entry ends up on.
      * It also runs before CRUD applies the body-composition formulas, which lets an inherited
      * waist/neck/hips feed e.g. the US-Navy body fat formula.
+     *
+     * [profileBased] readings bypass assisted weighing and smart assignment: the device
+     * profile already identifies the person whose measurements were reported.
+     * Returns false when smart assignment rejects the reading; true when saving succeeds
+     * or the user already has a measurement at that timestamp (the existing duplicate policy).
      */
     suspend fun saveMeasurementFromBleDevice(
         measurement: Measurement,
         values: List<MeasurementValue>,
-    ) {
-        val ref = pendingReferenceUser
+        profileBased: Boolean = false,
+    ): Boolean {
+        val ref = pendingReferenceUser.takeUnless { profileBased }
         if (ref != null) {
             val finalValues = transformation.applyAssistedWeighing(measurement, values, ref)
             crud.saveMeasurement(
                 measurement,
                 transformation.applyValueInheritance(measurement, finalValues)
-            )
+            ).getOrThrow()
         } else {
-            val finalMeasurement = transformation.applySmartUserAssignment(measurement, values)
-            if (finalMeasurement != null) {
-                crud.saveMeasurement(
-                    finalMeasurement,
-                    transformation.applyValueInheritance(finalMeasurement, values)
-                )
+            val finalMeasurement = if (profileBased) measurement else {
+                transformation.applySmartUserAssignment(measurement, values)
             }
+            if (finalMeasurement == null) return false
+            crud.saveMeasurement(
+                finalMeasurement,
+                transformation.applyValueInheritance(finalMeasurement, values)
+            ).getOrThrow()
         }
+        return true
     }
 
     fun setPendingReferenceUserForBle(referenceUser: User?) {
