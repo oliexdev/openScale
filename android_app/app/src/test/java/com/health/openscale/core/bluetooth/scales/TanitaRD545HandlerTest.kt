@@ -31,17 +31,25 @@ import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.util.UUID
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -124,10 +132,65 @@ class TanitaRD545HandlerTest {
         val choice = h.choices.single() as Pair<*, *>
         assertThat(choice.second as IntArray).isEqualTo(intArrayOf(1))
         assertThat(h.commands().map(::opcode)).doesNotContain(TanitaLib.EXCHANGE_USER_INFO)
-        runBlocking { h.handler.onUserInteractionFeedback(UserInteractionType.CHOOSE_USER, 1, 1) }
+        runTest(h.dispatcher) { h.handler.onUserInteractionFeedback(UserInteractionType.CHOOSE_USER, 1, 1) }
         assertThat(h.settings.strings[TanitaRD545Handler.KEY_LINKS]).contains("1:1")
         assertThat(h.settings.strings[TanitaRD545Handler.KEY_LINKS]).contains("2:0")
         assertThat(opcode(h.commands().last())).isEqualTo(TanitaLib.EXCHANGE_USER_INFO)
+    }
+
+    @Test
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun `profile selection waits for an in flight keepalive without mixing command fragments`() {
+        val h = harness()
+        h.toProfiles()
+        repeat(4) { h.reply(0x9000, profile) }
+        val commandCount = h.commands().size
+        val keepalive = TanitaLib.fragment(TanitaLib.command(TanitaLib.RETRIEVE_USER_INFO, byteArrayOf(0))).single()
+        val keepaliveEntered = CountDownLatch(1)
+        val releaseKeepalive = CountDownLatch(1)
+        val keepaliveQueued = CountDownLatch(1)
+        h.beforeWrite = { fragment ->
+            if (fragment.contentEquals(keepalive)) {
+                keepaliveEntered.countDown()
+                check(releaseKeepalive.await(10, TimeUnit.SECONDS))
+            }
+        }
+        h.afterWrite = { fragment ->
+            if (fragment.contentEquals(keepalive)) keepaliveQueued.countDown()
+            if (fragment[0] == 0.toByte() && fragment[1] == 0.toByte() &&
+                opcode(fragment.copyOfRange(4, fragment.size)) == TanitaLib.EXCHANGE_USER_INFO) {
+                // If profile selection overlaps the paused keepalive, enqueue it
+                // between the profile command's first and remaining fragments.
+                releaseKeepalive.countDown()
+                check(keepaliveQueued.await(10, TimeUnit.SECONDS))
+            }
+        }
+        h.dispatcher.scheduler.runCurrent()
+        h.dispatcher.scheduler.advanceTimeBy(2_000)
+        val executor = Executors.newSingleThreadExecutor()
+        val keepaliveTask = executor.submit { h.dispatcher.scheduler.runCurrent() }
+        try {
+            check(keepaliveEntered.await(10, TimeUnit.SECONDS))
+            runBlocking {
+                val feedback = launch(start = CoroutineStart.UNDISPATCHED) {
+                    h.handler.onUserInteractionFeedback(UserInteractionType.CHOOSE_USER, 1, 0)
+                }
+                releaseKeepalive.countDown()
+                keepaliveTask.get(10, TimeUnit.SECONDS)
+                withTimeout(10_000) { feedback.join() }
+            }
+            assertThat(h.commands().drop(commandCount).map(::opcode))
+                .containsExactly(TanitaLib.RETRIEVE_USER_INFO, TanitaLib.EXCHANGE_USER_INFO).inOrder()
+            // A delayed keepalive response must not advance the profile exchange.
+            h.reply(0x9000, profile)
+            assertThat(opcode(h.commands().last())).isEqualTo(TanitaLib.EXCHANGE_USER_INFO)
+            h.reply(0x9002, profile)
+            assertThat(opcode(h.commands().last())).isEqualTo(TanitaLib.MEASURE)
+            assertThat(h.errors).isEmpty()
+        } finally {
+            releaseKeepalive.countDown()
+            executor.shutdownNow()
+        }
     }
 
     @Test
@@ -169,7 +232,37 @@ class TanitaRD545HandlerTest {
     }
 
     @Test
-    fun `retrieves all history while reading consumes and renumbers records`() {
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun `expired timer cannot end a later protocol stage`() {
+        val h = harness()
+        h.dispatcher.scheduler.runCurrent()
+        h.dispatcher.scheduler.advanceTimeBy(20_000)
+        val runTimer = java.util.concurrent.FutureTask<Unit> { h.dispatcher.scheduler.runCurrent() }
+        val worker = Thread(runTimer)
+        try {
+            synchronized(h.handler) {
+                worker.start()
+                val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10)
+                while (worker.state != Thread.State.BLOCKED && !runTimer.isDone && System.nanoTime() < deadline) {
+                    Thread.yield()
+                }
+                check(worker.state == Thread.State.BLOCKED) { "Timer never reached the handler's state lock" }
+                // The timer has resumed, but its old stage is replaced before it takes the lock.
+                h.model()
+            }
+            runTimer.get(10, TimeUnit.SECONDS)
+            assertThat(h.disconnected).isFalse()
+            assertThat(h.errors).isEmpty()
+            h.reply(0x8003)
+            assertThat(opcode(h.commands().last())).isEqualTo(TanitaLib.WRITE_DATE)
+        } finally {
+            worker.join(10_000)
+        }
+    }
+
+
+    @Test
+    fun `reads all history even when reading consumes and renumbers records`() {
         val h = harness(links = "1:0")
         h.toProfiles()
         h.reply(0x9000, profile)
@@ -422,7 +515,9 @@ class TanitaRD545HandlerTest {
         val published = mutableListOf<ScaleMeasurement>()
         val errors = mutableListOf<Int>()
         val choices = mutableListOf<Any?>()
-        private val writes = mutableListOf<ByteArray>()
+        private val writes = CopyOnWriteArrayList<ByteArray>()
+        var beforeWrite: (ByteArray) -> Unit = {}
+        var afterWrite: (ByteArray) -> Unit = {}
         val handler = TanitaRD545Handler().apply {
             attach(
                 object : ScaleDeviceHandler.Transport {
@@ -431,7 +526,9 @@ class TanitaRD545HandlerTest {
                         assertThat(service).isEqualTo(TanitaRD545Handler.SERVICE)
                         assertThat(characteristic).isEqualTo(TanitaRD545Handler.WRITE)
                         assertThat(withResponse).isFalse()
+                        beforeWrite(payload)
                         writes.add(payload.copyOf())
+                        afterWrite(payload)
                     }
                     override fun read(service: UUID, characteristic: UUID) = Unit
                     override fun disconnect() { disconnected = true }

@@ -42,7 +42,9 @@ import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.Percent
 import com.health.openscale.core.service.ScannedDeviceInfo
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -184,7 +186,7 @@ class TanitaRD545Handler : ScaleDeviceHandler() {
     }
 
     private val assembler = TanitaLib.Assembler()
-    private var stage = Stage.IDLE
+    @Volatile private var stage = Stage.IDLE
     private var timeoutJob: Job? = null
     private var choiceJob: Job? = null
     private var sessionUserId = -1
@@ -225,6 +227,7 @@ class TanitaRD545Handler : ScaleDeviceHandler() {
         }
     }
 
+    @Synchronized
     override fun onConnected(user: ScaleUser) {
         assembler.reset()
         profiles.clear()
@@ -239,6 +242,7 @@ class TanitaRD545Handler : ScaleDeviceHandler() {
         readFrom(uuid16(0x1800), uuid16(0x2a00))
     }
 
+    @Synchronized
     override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
         if (stage in setOf(Stage.IDLE, Stage.FINISHED)) return
         if (user.id != sessionUserId) {
@@ -313,8 +317,7 @@ class TanitaRD545Handler : ScaleDeviceHandler() {
                     fail(R.string.tanita_no_measurements)
                     return
                 }
-                // Reading consumes a stored record. Start at the highest index
-                // so the next request remains valid as the history shrinks.
+                // Descending order also remains valid if reading consumes or renumbers records.
                 recordIndex = recordCount
                 readMeasurement()
             }
@@ -393,11 +396,19 @@ class TanitaRD545Handler : ScaleDeviceHandler() {
         val slot = feedbackData as? Int ?: return
         if (slot !in profiles) return
         if (userLinks().any { (user, linkedSlot) -> user != sessionUserId && linkedSlot == slot }) return
-        choiceJob?.cancel()
-        val links = userLinks().toMutableMap()
-        links[sessionUserId] = slot
-        settingsPutString(KEY_LINKS, links.entries.joinToString(",") { "${it.key}:${it.value}" })
-        selectProfile(slot)
+        val choice = choiceJob
+        choice?.cancelAndJoin()
+        synchronized(this) {
+            if (stage != Stage.CHOICE || choiceJob !== choice) return
+            if (appUserId != sessionUserId || currentAppUser().id != sessionUserId) {
+                fail(R.string.tanita_user_changed)
+                return
+            }
+            val links = userLinks().toMutableMap()
+            links[sessionUserId] = slot
+            settingsPutString(KEY_LINKS, links.entries.joinToString(",") { "${it.key}:${it.value}" })
+            selectProfile(slot)
+        }
     }
 
     private fun selectProfile(slot: Int) {
@@ -459,11 +470,14 @@ class TanitaRD545Handler : ScaleDeviceHandler() {
         if (next !in setOf(Stage.IDLE, Stage.FINISHED)) {
             timeoutJob = scope.launch {
                 delay(timeout)
-                fail(R.string.tanita_timeout)
+                synchronized(this@TanitaRD545Handler) {
+                    if (isActive) fail(R.string.tanita_timeout)
+                }
             }
         }
     }
 
+    @Synchronized
     private fun fail(message: Int, vararg args: Any) {
         enter(Stage.FINISHED)
         choiceJob?.cancel()
@@ -478,6 +492,7 @@ class TanitaRD545Handler : ScaleDeviceHandler() {
         if (pair.size == 2 && user != null && user > 0 && slot != null && slot in 0..3) user to slot else null
     }.toMap()
 
+    @Synchronized
     override fun onDisconnected() {
         timeoutJob?.cancel()
         choiceJob?.cancel()
