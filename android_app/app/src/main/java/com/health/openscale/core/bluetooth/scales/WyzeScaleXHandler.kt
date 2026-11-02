@@ -56,8 +56,7 @@ class WyzeScaleXHandler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val claimed = device.serviceUuids.contains(WyzeScaleXLib.SERVICE) ||
-            device.name.equals(WyzeScaleXLib.ADVERTISED_NAME, ignoreCase = true) ||
-            device.manufacturerData?.contains(WyzeScaleXLib.MANUFACTURER_ID) == true
+            device.name.equals(WyzeScaleXLib.ADVERTISED_NAME, ignoreCase = true)
         if (!claimed) return null
         val caps = setOf(
             DeviceCapability.BODY_COMPOSITION,
