@@ -17,6 +17,11 @@
  */
 package com.health.openscale.ui.screen.settings
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.PowerManager
+import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,6 +42,8 @@ import androidx.compose.material.icons.filled.BluetoothConnected
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -50,6 +57,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,6 +69,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -106,6 +115,11 @@ fun BluetoothDetailScreen(
     var showToleranceDialog by remember { mutableStateOf(false) }
     val autoConnectOnStartup by bluetoothViewModel.autoConnectOnStartup.collectAsStateWithLifecycle(false)
 
+    // --- Background sync state ---
+    val context = LocalContext.current
+    val backgroundSyncEnabled by bluetoothViewModel.backgroundSyncEnabled.collectAsStateWithLifecycle(false)
+    var showBatteryOptimizationDialog by remember { mutableStateOf(false) }
+
     if (showToleranceDialog) {
         NumberInputDialog(
             title = stringResource(R.string.tolerance_label),
@@ -120,6 +134,30 @@ fun BluetoothDetailScreen(
                     bluetoothViewModel.setSmartAssignmentTolerancePercent(newValue.toIntOrNull() ?: 10)
                 }
                 showToleranceDialog = false
+            }
+        )
+    }
+
+    if (showBatteryOptimizationDialog) {
+        AlertDialog(
+            onDismissRequest = { showBatteryOptimizationDialog = false },
+            title = { Text(stringResource(R.string.background_sync_battery_dialog_title)) },
+            text = { Text(stringResource(R.string.background_sync_battery_dialog_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showBatteryOptimizationDialog = false
+                        scope.launch { bluetoothViewModel.setBackgroundSyncEnabled(true) }
+                        requestIgnoreBatteryOptimizations(context)
+                    }
+                ) {
+                    Text(stringResource(R.string.background_sync_battery_dialog_proceed))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBatteryOptimizationDialog = false }) {
+                    Text(stringResource(R.string.background_sync_battery_dialog_cancel))
+                }
             }
         )
     }
@@ -202,6 +240,26 @@ fun BluetoothDetailScreen(
         ) {
             Switch(
                 checked         = autoConnectOnStartup,
+                onCheckedChange = null,
+            )
+        }
+        SettingsRow(
+            modifier    = Modifier.padding(horizontal = 16.dp),
+            label       = stringResource(R.string.background_sync_title),
+            description = stringResource(R.string.background_sync_desc),
+            icon        = Icons.Default.Sync,
+            onClick     = {
+                when {
+                    backgroundSyncEnabled ->
+                        scope.launch { bluetoothViewModel.setBackgroundSyncEnabled(false) }
+                    isIgnoringBatteryOptimizations(context) ->
+                        scope.launch { bluetoothViewModel.setBackgroundSyncEnabled(true) }
+                    else -> showBatteryOptimizationDialog = true
+                }
+            }
+        ) {
+            Switch(
+                checked         = backgroundSyncEnabled,
                 onCheckedChange = null,
             )
         }
@@ -380,5 +438,29 @@ private fun SettingsRow(
             }
             content()
         }
+    }
+}
+
+/**
+ * True when Android already exempts openScale from battery optimization (Doze would otherwise
+ * be allowed to defer the expedited sync work started on a scale advertisement).
+ */
+private fun isIgnoringBatteryOptimizations(context: Context): Boolean {
+    val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+    return powerManager?.isIgnoringBatteryOptimizations(context.packageName) ?: true
+}
+
+/**
+ * Opens the system dialog for exempting openScale from battery optimization. Best effort:
+ * some OEM builds drop the dialog, in which case the toggle still works and the vendor's own
+ * battery settings have to be adjusted manually (see the build guide).
+ */
+private fun requestIgnoreBatteryOptimizations(context: Context) {
+    runCatching {
+        context.startActivity(
+            Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                .setData(Uri.parse("package:" + context.packageName))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
     }
 }

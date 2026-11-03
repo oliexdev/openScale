@@ -74,6 +74,7 @@ class BluetoothViewModel @Inject constructor(
     val smartAssignmentIgnoreOutsideTolerance = settingsFacade.smartAssignmentIgnoreOutsideTolerance
     val autoConnectOnStartup = settingsFacade.autoConnectOnStartup
     val developerModeEnabled = settingsFacade.developerModeEnabled
+    val backgroundSyncEnabled = settingsFacade.backgroundSyncEnabled
 
     fun setSmartAssignmentEnabled(enabled: Boolean) = viewModelScope.launch {
         settingsFacade.setSmartAssignmentEnabled(enabled)
@@ -93,6 +94,12 @@ class BluetoothViewModel @Inject constructor(
 
     fun setDeveloperMode(enabled: Boolean) = viewModelScope.launch {
         settingsFacade.setDeveloperModeEnabled(enabled)
+    }
+
+    // The advertisement scan itself is kept up to date by BackgroundSyncRegistrar, which
+    // observes this setting — the UI only flips the flag.
+    fun setBackgroundSyncEnabled(enabled: Boolean) = viewModelScope.launch {
+        settingsFacade.setBackgroundSyncEnabled(enabled)
     }
     // --- Snackbar events for UI ---
     private val _snackbarEvents = MutableSharedFlow<SnackbarEvent>(replay = 0, extraBufferCapacity = 1)

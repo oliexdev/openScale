@@ -50,6 +50,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 import java.util.UUID
@@ -94,6 +95,16 @@ object SettingsPreferenceKeys {
     val SAVED_BLUETOOTH_IGNORE_OUTSIDE_TOLERANCE = booleanPreferencesKey("saved_bluetooth_ignore_outside_tolerance")
     val SAVED_BLUETOOTH_AUTO_CONNECT = booleanPreferencesKey("saved_bluetooth_auto_connect")
     val SAVED_BLUETOOTH_DEVELOPER_MODE = booleanPreferencesKey("saved_bluetooth_developer_mode")
+
+    // --- Background Bluetooth Sync ---
+    val BACKGROUND_SYNC_ENABLED = booleanPreferencesKey("background_sync_enabled")
+
+    /**
+     * One cooldown key per device address so that pairing a different scale never
+     * inherits the old scale's "last sync attempt" timestamp.
+     */
+    fun backgroundSyncLastAttemptKey(deviceAddress: String) =
+        longPreferencesKey("background_sync_last_attempt_" + deviceAddress.replace(":", "").lowercase())
 
     // Settings for chart
     val CHART_SHOW_DATA_POINTS = booleanPreferencesKey("chart_show_data_points")
@@ -308,6 +319,15 @@ interface SettingsFacade {
      */
     val developerModeEnabled: Flow<Boolean>
     suspend fun setDeveloperModeEnabled(enabled: Boolean)
+
+    // Background sync: when enabled, a system-side BLE advertisement scan wakes openScale
+    // whenever the saved scale is used, even if the app process is dead.
+    val backgroundSyncEnabled: Flow<Boolean>
+    suspend fun setBackgroundSyncEnabled(enabled: Boolean)
+
+    /** Wall-clock millis of the last background sync attempt for the given device (0 = never). */
+    suspend fun lastBackgroundSyncAttemptAt(deviceAddress: String): Long
+    suspend fun recordBackgroundSyncAttempt(deviceAddress: String, atMillis: Long)
 
     // Generic Settings Accessors
     /**
@@ -660,6 +680,24 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun setDeveloperModeEnabled(enabled: Boolean) {
         LogManager.i(TAG, "Bluetooth developer mode ${if (enabled) "enabled" else "disabled"}.")
         saveSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVELOPER_MODE.name, enabled)
+    }
+
+    override val backgroundSyncEnabled: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.BACKGROUND_SYNC_ENABLED.name,
+        false
+    )
+
+    override suspend fun setBackgroundSyncEnabled(enabled: Boolean) {
+        LogManager.i(TAG, "Background sync ${if (enabled) "enabled" else "disabled"}.")
+        saveSetting(SettingsPreferenceKeys.BACKGROUND_SYNC_ENABLED.name, enabled)
+    }
+
+    override suspend fun lastBackgroundSyncAttemptAt(deviceAddress: String): Long =
+        observeSetting(SettingsPreferenceKeys.backgroundSyncLastAttemptKey(deviceAddress).name, 0L)
+            .first()
+
+    override suspend fun recordBackgroundSyncAttempt(deviceAddress: String, atMillis: Long) {
+        saveSetting(SettingsPreferenceKeys.backgroundSyncLastAttemptKey(deviceAddress).name, atMillis)
     }
 
     override val isSmartAssignmentEnabled: Flow<Boolean> = observeSetting(

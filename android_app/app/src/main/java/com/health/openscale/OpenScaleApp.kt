@@ -24,6 +24,7 @@ import androidx.work.Configuration
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.SettingsFacade
+import com.health.openscale.core.service.BackgroundSyncRegistrar
 import com.health.openscale.core.utils.LogManager
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +46,10 @@ class OpenScaleApp : Application(), Configuration.Provider {
     lateinit var databaseRepository: DatabaseRepository
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
+    // Instantiated eagerly so the background-sync registrar clears a stale advertisement scan
+    // left over from a previous process run and re-applies the current setting.
+    @Inject
+    lateinit var backgroundSyncRegistrar: BackgroundSyncRegistrar
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 

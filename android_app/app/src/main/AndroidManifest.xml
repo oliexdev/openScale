@@ -7,6 +7,9 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Background sync: lets the user exempt openScale from battery optimization, so the
+         expedited sync work started on a scale advertisement is not deferred by Doze. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <!-- openScale works fully offline: strip network access even if a library declares it. -->
     <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
@@ -76,6 +79,25 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <!-- Background sync: receives the BLE scan deliveries for the saved scale. Non-exported
+             delivery works because the PendingIntent carries the app's own identity. -->
+        <receiver
+            android:name=".core.service.BackgroundSyncReceiver"
+            android:enabled="true"
+            android:exported="false" />
+        <!-- Background sync: re-registers the advertisement scan after reboot, app update and
+             Bluetooth on/off changes. All three actions are protected system broadcasts, so only
+             the system can deliver them. -->
+        <receiver
+            android:name=".core.service.BackgroundSyncBootstrapReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
             </intent-filter>
         </receiver>
         <receiver

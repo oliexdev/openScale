@@ -420,6 +420,16 @@
     <string name="danger_zone_title">Danger Zone</string>
     <string name="auto_connect_on_startup_title">Auto-connect on startup</string>
 
+    <!-- Background sync -->
+    <string name="background_sync_title">Background sync</string>
+    <string name="background_sync_desc">Automatically save measurements when the phone detects your scale nearby — even if openScale is closed. The scale is contacted for a few seconds whenever it wakes up.</string>
+    <string name="background_sync_battery_dialog_title">Disable battery optimization?</string>
+    <string name="background_sync_battery_dialog_message">For reliable background syncing, Android should not restrict openScale while it waits for your scale. On the next screen choose \"Allow\". Some vendors (e.g. Xiaomi, Samsung, Huawei) hide additional background restrictions in their own battery settings.</string>
+    <string name="background_sync_battery_dialog_proceed">Continue</string>
+    <string name="background_sync_battery_dialog_cancel">Not now</string>
+    <string name="background_sync_channel_name">Background scale sync</string>
+    <string name="background_sync_notification_title">Weight recorded</string>
+
     <!-- Scale Configuration (generic, shown when a handler declares config fields) -->
     <string name="scale_configuration_title">Scale Configuration</string>
     <string name="no_special_configuration_available">No additional special configuration available for this device.</string>
