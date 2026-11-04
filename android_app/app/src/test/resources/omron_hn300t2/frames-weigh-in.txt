@@ -1,0 +1,40 @@
+# Decoded ATT trace, weigh-in pass
+# Redacted: scale MAC -> DE:AD:BE:EF:00:01, alias -> BLESmart_EXAMPLE
+# Measurement example uses a SYNTHETIC weight: record bytes 0-1 (weight, 50 g units) were
+# replaced by 06 40 (1600 raw, 80.00 kg). Undecoded bytes were replaced by synthetic zeros for
+# privacy: 0x03E0 record bytes 8-15 and 0x01B8 bytes 6-15. Each changed frame's trailing BCC
+# was recomputed as XOR. Device Information serial-number reads were removed.
+# Only the weight and timestamp fields are confirmed; see docs/wld-protocol.md.
+
+03:18:02.355 host>ctrl hci=0x007 ReadByTypeReq start=0x0001 end=0xffff type=0x2b3a
+03:18:02.413 ctrl>host hci=0x007 ErrorRsp req=ReadByTypeReq h=0x0001 err=0x0a
+03:18:03.244 host>ctrl hci=0x007 ReadReq h=0x0014 len=0 val=
+03:18:03.282 ctrl>host hci=0x007 ReadRsp len=12 val=53572e5330312e30342e3034
+03:18:03.299 host>ctrl hci=0x007 ReadReq h=0x0016 len=0 val=
+03:18:03.343 ctrl>host hci=0x007 ReadRsp len=16 val=30303030303030303030313032313030
+03:18:03.358 host>ctrl hci=0x007 ReadReq h=0x0003 len=0 val=
+03:18:03.402 ctrl>host hci=0x007 ReadRsp len=8 val=484e2d3330305432
+03:18:03.460 host>ctrl hci=0x007 MtuReq mtu=517
+03:18:03.492 ctrl>host hci=0x007 MtuRsp mtu=67
+03:18:03.524 host>ctrl hci=0x007 WriteReq h=0x0021 len=2 val=0100
+03:18:03.583 ctrl>host hci=0x007 WriteRsp 
+03:18:03.613 host>ctrl hci=0x007 WriteReq h=0x001c len=2 val=0100
+03:18:03.673 ctrl>host hci=0x007 WriteRsp 
+03:18:04.213 host>ctrl hci=0x007 WriteCmd h=0x001b len=20 val=11dac74a42000000000000000000000000000000
+03:18:04.245 ctrl>host hci=0x007 Notify h=0x001b len=64 val=9100dac74a4200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+03:18:04.280 host>ctrl hci=0x007 WriteCmd h=0x001e len=8 val=0800000000100018
+03:18:04.468 ctrl>host hci=0x007 Notify h=0x0020 len=8 val=0880000000100098
+03:18:04.538 host>ctrl hci=0x007 WriteCmd h=0x001e len=8 val=08010001a00c00a4
+03:18:04.678 ctrl>host hci=0x007 Notify h=0x0020 len=20 val=14810001a00c1300000001000000001300000039
+03:18:04.700 host>ctrl hci=0x007 WriteCmd h=0x001e len=8 val=08010001ac0c00a8
+03:18:04.858 ctrl>host hci=0x007 Notify h=0x0020 len=20 val=14810001ac0cffffffffffffffffffffffff0034
+03:18:04.878 host>ctrl hci=0x007 WriteCmd h=0x001e len=8 val=08010001b81000a0
+03:18:05.040 ctrl>host hci=0x007 Notify h=0x0020 len=24 val=18810001b8101a0b04031127000000000000000000000010
+03:18:05.087 host>ctrl hci=0x007 WriteCmd h=0x001e len=8 val=08010003e01000fa
+03:18:05.250 ctrl>host hci=0x007 Notify h=0x0020 len=24 val=18810003e01006401a0b0403112200000000000000000009
+03:18:05.420 host>ctrl hci=0x007 WriteCmd h=0x001e len=20 val=1401c002300c130000008000000000130000006b
+03:18:05.593 ctrl>host hci=0x007 Notify h=0x0020 len=20 val=1481c002300c13000000800000000013000000eb
+03:18:05.604 host>ctrl hci=0x007 WriteCmd h=0x001e len=16 val=1001c00248081a0b0403120644ff002a
+03:18:05.757 ctrl>host hci=0x007 Notify h=0x0020 len=16 val=1081c00248081a0b0403120644ff00aa
+03:18:05.774 host>ctrl hci=0x007 WriteCmd h=0x001e len=8 val=080f000000000007
+03:18:05.939 ctrl>host hci=0x007 Notify h=0x0020 len=8 val=088f000000000087

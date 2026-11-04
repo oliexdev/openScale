@@ -65,6 +65,7 @@ import com.health.openscale.core.bluetooth.scales.BodyConnectHandler
 import com.health.openscale.core.bluetooth.scales.BodyPod2Handler
 import com.health.openscale.core.bluetooth.scales.OkOkHandler
 import com.health.openscale.core.bluetooth.scales.RedmondSkybalanceHandler
+import com.health.openscale.core.bluetooth.scales.OmronHn300t2Handler
 import com.health.openscale.core.bluetooth.scales.OmronWlcHandler
 import com.health.openscale.core.bluetooth.scales.PicoocHandler
 import com.health.openscale.core.bluetooth.scales.PlainSigScaleHandler
@@ -150,6 +151,7 @@ class ScaleFactory @Inject constructor(
             AfuB1Handler(),
             KeepS3Handler(),
             OmronWlcHandler(),
+            OmronHn300t2Handler(),
             BeurerBF450Handler(),
             TaylorBIAHandler(),
             RyFitHandler(),
