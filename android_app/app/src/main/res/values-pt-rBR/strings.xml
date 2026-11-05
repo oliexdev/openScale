@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_logo_content_description">Logo do App</string>
-    <string name="text_none">Nada</string>
+    <string name="text_none">Nenhum</string>
     <string name="not_available">N/D</string>
     <string name="placeholder_empty_value">-</string>
     <string name="theme_light">Claro</string>
@@ -14,7 +14,7 @@
     <string name="switch_off">Desligado</string>
     <string name="open_link_content_description">Abrir link</string>
     <string name="content_desc_warning_icon">Ícone de Aviso</string>
-    <string name="content_desc_restore_icon">Ícone de Restauração</string>
+    <string name="content_desc_restore_icon">Restaurar Ícone</string>
     <string name="content_desc_information">Informação</string>
     <string name="content_desc_open_menu">Abrir menu</string>
     <string name="content_desc_back">Voltar</string>
@@ -79,7 +79,7 @@
     <string name="error_assisted_weighing_reference_user_missing">Uma pessoa de referência deve ser selecionada para a pesagem assistida.</string>
     <string name="user_detail_label_birth_date">Data de Nascimento</string>
     <string name="user_detail_error_invalid_data">Por favor, insira dados válidos</string>
-    <string name="height_value_cm">%.1f cm</string>
+    <string name="height_value_cm">%.1fcm</string>
     <string name="user_settings_item_details_conditional">Idade: %1$d, Gênero: %2$s</string>
     <string name="user_settings_content_description_edit">Editar usuário</string>
     <string name="user_settings_content_description_delete">Excluir usuário</string>
@@ -270,7 +270,7 @@
     <string name="not_supported_label">Não Compatível</string>
     <string name="cap_state_supported_only">Compatível (não implementado): %1$s</string>
     <string name="bluetooth_connector_device_not_supported">%1$s não é compatível.</string>
-    <string name="rssi_format">%1$d dBm</string>
+    <string name="rssi_format">%1$ddBm</string>
     <string name="menu_save_as_preferred">Salvar como favorita</string>
     <string name="snackbar_saved_device_removed">Dispositivo salvo removido.</string>
     <string name="capabilities_header">Recursos</string>
@@ -295,7 +295,7 @@
     <string name="bluetooth_connector_measurement_user_missing">Não foi possível atribuir a medição de %1$s a um usuário.</string>
     <string name="bluetooth_connector_measurement_types_not_loaded">Erro: Não foi possível carregar os tipos de medição.</string>
     <string name="bluetooth_connector_measurement_no_values">Nenhum valor de medição válido recebido de %1$s.</string>
-    <string name="bluetooth_connector_measurement_saved">Salva medição de %2$s (%1$.1f kg).</string>
+    <string name="bluetooth_connector_measurement_saved">Medição (%1$.1fkg) de %2$s salva.</string>
     <string name="bluetooth_connector_measurement_save_error">Erro ao salvar medição de %1$s.</string>
     <string name="bluetooth_connector_device_message">%1$s: %2$s</string>
     <string name="bluetooth_connector_listening_for_device">Aguardando %1$s…</string>
@@ -587,7 +587,7 @@
     <string name="export_error_cannot_create_file">Falha na exportação: Não foi possível criar o arquivo.</string>
     <string name="export_error_generic">Erro durante a exportação: %1$s</string>
     <string name="export_no_users_available">Nenhum usuário disponível para exportar.</string>
-    <string name="eval_out_of_plausible_range_percent">Valor atípico: fora do intervalo plausível (%1$.0f–%2$.0f).</string>
+    <string name="eval_out_of_plausible_range_percent">Valor atípico: fora do intervalo plausível (%1$.0f–%2$.0f%%).</string>
     <string name="bluetooth_scale_trisa_message_not_paired_instruction">Esta balança não foi pareada!\n\nMantenha pressionado o botão na parte inferior da balança para entrar no modo de pareamento e, em seguida, reconecte para recuperar a senha do dispositivo.</string>
     <string name="bluetooth_scale_trisa_success_pairing">Pareamento bem-sucedido!\n\nReconecte para recuperar os dados de medição.</string>
     <string name="bluetooth_scale_info_create_user_instruction">Criar novo usuário na balança.</string>
@@ -786,8 +786,8 @@
     <string name="measurement_type_metabolic_age">Idade metabólica</string>
     <string name="picooc_calibration_description">O PICOOC estabelece uma referência estável de composição corporal a partir de quatro medições consecutivas de BIA.</string>
     <string name="picooc_calibration_no_measurements">A calibração ainda não começou.</string>
-    <string name="picooc_calibration_learning">%1$s: aprendendo %2$d de 4, beta preliminar %3$d, referência %4$d kg</string>
-    <string name="picooc_calibration_fixed">%1$s: calibrado, beta %2$d, referência %3$d kg</string>
+    <string name="picooc_calibration_learning">%1$s: aprendendo %2$d de 4, beta preliminar %3$d, referência %4$dkg</string>
+    <string name="picooc_calibration_fixed">%1$s: calibrado, beta %2$d, referência %3$dkg</string>
     <string name="picooc_calibration_reset">Redefinir calibração para %1$s</string>
     <string name="picooc_calibration_reset_generic">Redefinir calibração da PICOOC</string>
     <string name="measurement_type_from_scale">Adicionado pela balança</string>
@@ -831,7 +831,7 @@
     <string name="bt_info_omron_paired">Balança pareada com o openScale.</string>
     <string name="bt_info_omron_measurements_read">Lida(s) %1$d nova(s) medição(ões) da balança.</string>
     <string name="bt_info_omron_no_new_measurements">Nenhuma nova medição armazenada na balança.</string>
-    <string name="bt_omron_slot_with_measurement">Usuário da balança %1$d — %2$.1f kg em %3$s</string>
+    <string name="bt_omron_slot_with_measurement">Usuário da balança %1$d — %2$.1fkg em %3$s</string>
     <string name="bt_omron_slot_empty">Usuário da balança %1$d — sem medições</string>
     <string name="bt_error_omron_unknown_model">Modelo Omron incompatível \"%1$s\"; não é possível decodificar os registros de medição.</string>
     <string name="bt_error_omron_service_missing">Este dispositivo não disponibiliza o serviço de transferência da Omron.</string>
@@ -843,7 +843,7 @@
     <string name="bt_warn_low_battery_unknown">A bateria da balança está fraca.</string>
     <string name="goal_start_date_label">Data de início</string>
     <string name="label_optional">%1$s (opcional)</string>
-    <string name="content_description_goal_progress">Progresso da meta: %1$d %</string>
+    <string name="content_description_goal_progress">Progresso da meta: %1$d%%</string>
     <string name="progress_goal_reached">Meta atingida</string>
     <string name="progress_held_for">por %1$s</string>
     <string name="progress_remaining_to_go">faltam %1$s</string>
