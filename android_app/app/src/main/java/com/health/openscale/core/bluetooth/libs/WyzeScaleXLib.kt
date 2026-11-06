@@ -259,7 +259,8 @@ object WyzeScaleXLib {
     /**
      * The 21-byte block both weight messages end with. Weight is kg × 100; impedance and the body
      * composition fields are in tenths (verified against the Wyze app on a Scale X); a weight-only
-     * reading has impedance 0 and all composition fields 0.
+     * reading has impedance 0 and all composition fields 0. [muscleKg] is soft lean mass (LBM minus
+     * bone, as the Wyze app's "Muscle Mass"), not skeletal muscle.
      */
     data class Metrics(
         val weightKg: Float,

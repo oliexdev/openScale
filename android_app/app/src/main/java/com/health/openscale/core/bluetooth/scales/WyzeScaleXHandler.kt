@@ -20,7 +20,9 @@ package com.health.openscale.core.bluetooth.scales
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
 import com.health.openscale.core.bluetooth.libs.WyzeScaleXLib
+import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.Kcal
 import com.health.openscale.core.data.Kg
 import com.health.openscale.core.data.MeasurementType
@@ -45,6 +47,29 @@ class WyzeScaleXHandler : ScaleDeviceHandler() {
 
     companion object {
         private const val DISCONNECT_DELAY_MS = 1_000L
+
+        /**
+         * Skeletal muscle % from the scale's impedance (Janssen, via [StandardImpedanceLib]).
+         * The scale's own muscle field is soft lean mass (LBM minus bone), around 75 % of body
+         * weight, while openScale's Muscle % holds skeletal muscle like the other handlers do.
+         */
+        internal fun skeletalMusclePercent(
+            gender: GenderType,
+            age: Int,
+            heightCm: Float,
+            weightKg: Float,
+            impedanceOhm: Float,
+        ): Float? {
+            if (heightCm <= 0f || weightKg <= 0f || impedanceOhm <= 0f) return null
+            val pct = StandardImpedanceLib(
+                gender = gender,
+                age = age,
+                weightKg = weightKg.toDouble(),
+                heightM = heightCm / 100.0,
+                impedance = impedanceOhm.toDouble(),
+            ).skeletalMusclePercentage.toFloat()
+            return pct.takeIf { it > 0f && it < 100f }
+        }
     }
 
     private val random = SecureRandom()
@@ -182,7 +207,8 @@ class WyzeScaleXHandler : ScaleDeviceHandler() {
         if (r.hasBodyComposition && r.weightKg > 0f) {
             m[MeasurementType.BODY_FAT] = Percent(r.fatPercent)
             m[MeasurementType.WATER] = Percent(r.waterPercent)
-            m[MeasurementType.MUSCLE] = Percent(r.muscleKg / r.weightKg * 100f)
+            skeletalMusclePercent(user.gender, user.getAge(at), user.bodyHeight, r.weightKg, r.impedanceOhm)
+                ?.let { m[MeasurementType.MUSCLE] = Percent(it) }
             m[MeasurementType.BONE] = Kg(r.boneKg)
             m[MeasurementType.PROTEIN] = Percent(r.proteinPercent)
             m[MeasurementType.LBM] = Kg(r.lbmKg)
