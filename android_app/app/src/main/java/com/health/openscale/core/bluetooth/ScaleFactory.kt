@@ -57,6 +57,7 @@ import com.health.openscale.core.bluetooth.scales.InlifeHandler
 import com.health.openscale.core.bluetooth.scales.KeepS3Handler
 import com.health.openscale.core.bluetooth.scales.LinkMode
 import com.health.openscale.core.bluetooth.scales.MGBHandler
+import com.health.openscale.core.bluetooth.scales.SwanScaleHandler
 import com.health.openscale.core.bluetooth.scales.MedisanaBs44xHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleHandler
 import com.health.openscale.core.bluetooth.scales.MiScaleS400Handler
@@ -185,6 +186,9 @@ class ScaleFactory @Inject constructor(
             FitTrackDaraHandler(),
             DrTrustSSW532Handler(),
             AAAxHandler(),
+            // Owns "swan*" advertisements carrying company id 0x02AC (deci-kg streaming);
+            // registered before MGBHandler so they can't fall through to its service-only match.
+            SwanScaleHandler(),
             MGBHandler(),
             MedisanaBs44xHandler(),
             InlifeHandler(),

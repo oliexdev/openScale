@@ -33,6 +33,7 @@ import com.health.openscale.core.bluetooth.scales.PicoocBroadcastHandler
 import com.health.openscale.core.bluetooth.scales.QNHandlerBroadcast
 import com.health.openscale.core.bluetooth.scales.ScaleupHandler
 import com.health.openscale.core.bluetooth.scales.SinocareHandler
+import com.health.openscale.core.bluetooth.scales.SwanScaleHandler
 import com.health.openscale.core.bluetooth.scales.YunmaiXHandler
 import com.health.openscale.core.bluetooth.scales.RelaxmedicHandler
 import com.health.openscale.core.bluetooth.scales.RobiS9Handler
@@ -175,8 +176,16 @@ class ScaleFactoryTest {
         assertClaimedBy(device("robi", SERVICE_FFB0), RobiS9Handler::class.java)
         assertClaimedBy(device("SSW532", SERVICE_FFB0), DrTrustSSW532Handler::class.java)
 
-        // The generic member of the family keeps the devices nobody else claims.
-        assertClaimedBy(device("swan", SERVICE_FFB0), MGBHandler::class.java)
+        // The generic member of the family keeps the devices nobody else claims...
+        assertClaimedBy(device("icomon"), MGBHandler::class.java)
+        assertClaimedBy(device("yg"), MGBHandler::class.java)
+        // ...while a "swan*" advertisement carrying the OEM's 0x02AC manufacturer signature goes
+        // to the deci-kg variant, and one without it keeps the generic centi-kg path.
+        assertClaimedBy(
+            advertisement(name = "swan", services = listOf(SERVICE_FFB0), manufacturerData = listOf(0x02AC to byteArrayOf(0x12))),
+            SwanScaleHandler::class.java,
+        )
+        assertClaimedBy(device("SWAN", SERVICE_FFB0), MGBHandler::class.java)
 
         val order = ScaleFactory.createHandlers().map { it.javaClass.simpleName }
         val mgb = order.indexOf("MGBHandler")

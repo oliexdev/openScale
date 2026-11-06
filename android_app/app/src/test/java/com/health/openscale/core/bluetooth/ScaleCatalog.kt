@@ -75,6 +75,7 @@ import com.health.openscale.core.bluetooth.scales.RelaxmedicHandler
 import com.health.openscale.core.bluetooth.scales.RenphoES26BBHandler
 import com.health.openscale.core.bluetooth.scales.RenphoHandler
 import com.health.openscale.core.bluetooth.scales.RobiS9Handler
+import com.health.openscale.core.bluetooth.scales.SwanScaleHandler
 import com.health.openscale.core.bluetooth.scales.RunstarR5Handler
 import com.health.openscale.core.bluetooth.scales.RunstarR6Handler
 import com.health.openscale.core.bluetooth.scales.RyFitHandler
@@ -183,6 +184,9 @@ object ScaleCatalog {
     /** Etekcity's company id; with service 0xFFD0 the only fingerprint of the nameless Fit 8S. */
     private const val ETEKCITY_COMPANY_ID = 0x06D0
 
+    /** The (unlisted) company id the "SWAN" white-label scale advertises its manufacturer data under. */
+    private const val SWAN_COMPANY_ID = 0x02AC
+
     /** Not a registered company id at all: AiLink packs its CID (0x01) and VID (0x03) here. */
     private const val AILINK_COMPANY_ID = 0x0301
 
@@ -282,7 +286,14 @@ object ScaleCatalog {
         device("MY_SCALE", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
         device("Aero I", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
         device("MY_SCALE", SERVICE_FFB0, uuid16(0x1530)) claimedBy RunstarR6Handler::class.java,
-        device("swan", SERVICE_FFB0) claimedBy MGBHandler::class.java,
+        device("icomon") claimedBy MGBHandler::class.java,
+        advertisement(
+            name = "SWAN",
+            services = listOf(SERVICE_FFB0),
+            manufacturerData = listOf(SWAN_COMPANY_ID to hex("12 a2 91 ec b3 03")),
+        ) claimedBy SwanScaleHandler::class.java,
+        // A "SWAN"-named scale without the 0x02AC signature stays on the generic centi-kg path.
+        device("SWAN", SERVICE_FFB0) claimedBy MGBHandler::class.java,
         device("0203B1234") claimedBy MedisanaBs44xHandler::class.java,
         device("0131971234") claimedBy MedisanaBs44xHandler::class.java,
         device("000fatscale01") claimedBy InlifeHandler::class.java,
