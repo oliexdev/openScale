@@ -23,14 +23,10 @@ import java.util.Locale
 /**
  * "SWAN" white-label scale: MGB 8-byte streaming framing on 0xFFB0/0xFFB2, but its
  * weight field is in 0.1 kg units instead of the 0.01 kg units [MGBHandler] assumes.
- * Captured final frame `AC 02 03 2A 00 00 CA F7` (raw 810) equals 81.0 kg, verified
- * against the user's known body weight.
  *
  * Claiming requires the advertised name plus manufacturer data under company id
  * 0x02AC: the advertisement lists only service 0xFFB0, so services cannot tell this
- * variant apart from other vendors' centi-kg "SWAN" scales that work on the generic
- * [MGBHandler] path. The saved-device snapshot persists manufacturer data, so
- * reconnects carry the same key as live scans.
+ * variant apart from other vendors' centi-kg MGB scales.
  */
 class SwanScaleHandler : MGBHandler() {
 
