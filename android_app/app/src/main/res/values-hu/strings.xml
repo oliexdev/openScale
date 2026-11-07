@@ -1,3 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="sync_app_unreachable_hint">Az utolsó módosítás nem lett szinkronizálva. Nyisd meg az openScale-sync alkalmazást, és indíts egy kézi szinkronizálást.</string>
+    <string name="sync_app_open_action">Megnyitás</string>
+    <string name="app_logo_content_description">Az alkalmazás logója</string>
+    <string name="text_none">Nincs</string>
+    <string name="not_available">N/A</string>
+    <string name="placeholder_empty_value">-</string>
+    <string name="theme_light">Világos</string>
+    <string name="theme_dark">Sötét</string>
+    <string name="enable_button">Engedélyezés</string>
+    <string name="cancel_button">Mégsem</string>
+    <string name="clear_button">Törlés</string>
+    <string name="confirm_button">Megerősítés</string>
+    <string name="dialog_ok">OK</string>
+    <string name="saved">Mentve</string>
+    <string name="switch_on">Be</string>
+    <string name="switch_off">Ki</string>
+    <string name="open_link_content_description">Hivatkozás megnyitása</string>
+    <string name="content_desc_warning_icon">Figyelmeztető ikon</string>
+    <string name="content_desc_restore_icon">Visszaállítás ikon</string>
+    <string name="content_desc_information">Információ</string>
+    <string name="content_desc_open_menu">Menü megnyitása</string>
+    <string name="content_desc_back">Vissza</string>
+    <string name="content_desc_selected">Kiválasztva</string>
+    <string name="derived_backfill_start">Származtatott értékek számítása …</string>
+    <string name="derived_backfill_done">A származtatott értékek frissítése sikeres.</string>
 </resources>
