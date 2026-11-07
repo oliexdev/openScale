@@ -33,7 +33,7 @@ import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.Percent
 
 /**
- * SWAN / Icomon / YG (aka "MGB") handler.
+ * Icomon / YG (aka "MGB") handler.
  *
  * Protocol summary:
  * - Service 0xFFB0
@@ -67,12 +67,19 @@ import com.health.openscale.core.data.Percent
  *  impedance-unavailable; both are ignored). We latch weight and impedance as they stream in and
  *  publish once both are present.
  */
-class MGBHandler : ScaleDeviceHandler() {
+open class MGBHandler : ScaleDeviceHandler() {
 
     // -- UUIDs --
-    private val SERVICE: UUID = uuid16(0xFFB0)
+    protected val SERVICE: UUID = uuid16(0xFFB0)
     private val CHAR_CFG: UUID = uuid16(0xFFB1)   // write
     private val CHAR_CTRL: UUID = uuid16(0xFFB2)  // notify
+
+    /**
+     * Divisor turning a raw streaming-frame weight into kilograms. Most MGB-streaming scales
+     * report in 0.01 kg units; variants that use different steps (e.g. "SWAN" with 0.1 kg) override this.
+     */
+    protected open val streamingWeightDivisor: Float
+        get() = 100f
 
     // Pending measurement until 2nd composite frame arrives
     private var pending: ScaleMeasurement? = null
@@ -84,7 +91,7 @@ class MGBHandler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.lowercase(Locale.ROOT)
-        val nameMatch = name.startsWith("swan") || (name == "icomon") || (name == "yg")
+        val nameMatch = (name == "icomon") || (name == "yg")
 
         val serviceMatch = device.serviceUuids.any { it == SERVICE }
 
@@ -203,7 +210,7 @@ class MGBHandler : ScaleDeviceHandler() {
         val impedanceOhm = streamingImpedanceOhm ?: return
         streamingPublished = true
 
-        val weightKg = weightRaw / 100.0f
+        val weightKg = weightRaw / streamingWeightDivisor
         val m = ScaleMeasurement().apply {
             userId = user.id
             dateTime = Date()
