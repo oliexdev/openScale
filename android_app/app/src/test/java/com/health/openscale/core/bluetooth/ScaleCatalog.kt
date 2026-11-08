@@ -347,6 +347,12 @@ object ScaleCatalog {
             claimedBy OkOkHandler::class.java,
         advertisement(name = "ADV", manufacturerData = listOf(0xF0FF to ByteArray(16)))
             claimedBy OkOkHandler::class.java,
+        // OKOK C0 rebrand (e.g. "OMIYA-C39-HW"): claimed because the frame embeds the
+        // advertiser's own MAC (bytes 7..12), whatever the name.
+        advertisement(
+            name = "OMIYA-C39-HW",
+            manufacturerData = listOf(0x4AC0 to hex("02BC 1194 0000 21 C0FFEE123456")),
+        ) claimedBy OkOkHandler::class.java,
         // Chipsea-BLE: connectable GATT scale (service 0xFFF0), claimed by its exact name —
         // not by the service, which is Chipsea's generic UART service.
         device("Chipsea-BLE", uuid16(0xFFF0)) claimedBy ChipseaBleHandler::class.java,
