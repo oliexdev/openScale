@@ -873,4 +873,13 @@
     <string name="picooc_calibration_reset_generic">Réinitialiser le calibrage PICOOC</string>
     <string name="settings_pure_black_label">Noir pur</string>
     <string name="import_summary_skipped_unknown_columns">%1$d colonnes ne correspondaient à aucune mesure et ont été sautées.</string>
+    <string name="measurement_type_photo">Photo</string>
+    <string name="goal_start_date_label">Date de début</string>
+    <string name="label_optional">%1$s (optionnel)</string>
+    <string name="hs2s_device_key_label">Clé du périphérique/appareil</string>
+    <string name="hs2s_device_key_description">La balance originale Wyze Scale (WHSCL1) nécessite une clé d\'appareillage de 32 caractères provenant du cloud Wyze. Les balances HS2S et HS2S Pro ne nécessitent pas de clé.</string>
+    <string name="hs2s_device_key_error">La clé de l\'appareil doit comporter exactement 32 charactères hexadécimaux</string>
+    <string name="bt_hs2s_missing_device_key">Wyze Scale : clé de l\'appareil non configurée. Accédez aux paramètres Bluetooth pour la renseigner.</string>
+    <string name="bt_hs2s_wrong_device_key">Echec de l\'authentification de la balance: la clé de l\'appareil ne correspond pas à cette balance.</string>
+    <string name="bt_hs2s_auth_failed">Authentification rejetée par la balance.</string>
 </resources>
