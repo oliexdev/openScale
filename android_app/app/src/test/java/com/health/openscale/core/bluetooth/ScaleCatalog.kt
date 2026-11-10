@@ -40,6 +40,7 @@ import com.health.openscale.core.bluetooth.scales.EtekcityESF551Handler
 import com.health.openscale.core.bluetooth.scales.EtekcityFit8SHandler
 import com.health.openscale.core.bluetooth.scales.EufyC20Handler
 import com.health.openscale.core.bluetooth.scales.EufyP2Handler
+import com.health.openscale.core.bluetooth.scales.EufyT9140Handler
 import com.health.openscale.core.bluetooth.scales.ExcelvanCF36xHandler
 import com.health.openscale.core.bluetooth.scales.ExingtechY1Handler
 import com.health.openscale.core.bluetooth.scales.FitTrackDaraHandler
@@ -308,6 +309,7 @@ object ScaleCatalog {
         device("Etekcity Smart Fitness Scale") claimedBy EtekcityESF551Handler::class.java,
         device("EUFY C20") claimedBy EufyC20Handler::class.java,
         device("eufy T9148") claimedBy EufyP2Handler::class.java,
+        device("eufy T9140") claimedBy EufyT9140Handler::class.java,
         device("ES-CS20M") claimedBy ESCS20MHandler::class.java,
         device("ES-26BB-B") claimedBy RenphoES26BBHandler::class.java,
         device("R-A012") claimedBy RenphoES26BBHandler::class.java,

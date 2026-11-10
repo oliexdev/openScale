@@ -41,6 +41,7 @@ import com.health.openscale.core.bluetooth.scales.ExcelvanCF36xHandler
 import com.health.openscale.core.bluetooth.scales.ExingtechY1Handler
 import com.health.openscale.core.bluetooth.scales.EufyC20Handler
 import com.health.openscale.core.bluetooth.scales.EufyP2Handler
+import com.health.openscale.core.bluetooth.scales.EufyT9140Handler
 import com.health.openscale.core.bluetooth.scales.EbelterBodyFatB2Handler
 import com.health.openscale.core.bluetooth.scales.EtekcityESF551Handler
 import com.health.openscale.core.bluetooth.scales.EtekcityFit8SHandler
@@ -204,6 +205,7 @@ class ScaleFactory @Inject constructor(
             EtekcityFit8SHandler(),
             EufyC20Handler(),
             EufyP2Handler(),
+            EufyT9140Handler(),
             ESCS20MHandler(),
             RenphoES26BBHandler(),
             DigooDGSO38HHandler(),
