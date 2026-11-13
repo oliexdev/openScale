@@ -203,6 +203,9 @@ class RunstarR6HandlerTest {
         assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(1e-3f).of(72.4f)
         assertThat(measurement[MeasurementType.BODY_FAT]?.value).isWithin(1e-3f).of(15.8f)
         assertThat(measurement[MeasurementType.IMPEDANCE]).isNull()
+        // Left to openScale's derived values.
+        assertThat(measurement[MeasurementType.BMR]).isNull()
+        assertThat(measurement[MeasurementType.LBM]).isNull()
     }
 
     @Test

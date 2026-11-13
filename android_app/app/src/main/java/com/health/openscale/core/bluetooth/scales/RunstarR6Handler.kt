@@ -286,8 +286,8 @@ class RunstarR6Handler : ScaleDeviceHandler() {
         measurement[MeasurementType.BONE] = Kg(r.boneKg)
         measurement[MeasurementType.VISCERAL_FAT] = r.visceralFat.toFloat()
         measurement[MeasurementType.PROTEIN] = Percent(r.protein)
-        measurement[MeasurementType.BMR] = Kcal(r.bmrKcal.toFloat())
-        measurement[MeasurementType.LBM] = Kg(r.lbmKg)
+        // BMR and LBM are left to openScale's derived values (wiki: "do not compute what
+        // openScale already derives").
         logI("Runstar R6 body composition (WLA25): $r")
     }
 
