@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
@@ -282,10 +283,16 @@ class RunstarR6Handler : ScaleDeviceHandler() {
         }
         measurement[MeasurementType.BODY_FAT] = Percent(r.fat)
         measurement[MeasurementType.WATER] = Percent(r.water)
-        measurement[MeasurementType.MUSCLE] = Percent(r.musclePercent)
+        // MUSCLE is skeletal muscle in openScale (Fitdays' "Skeletal Muscle"); Fitdays' broader
+        // "Muscle Rate" (fat-free mass minus bone, ~80 %) goes to TOTAL_MUSCLE, as in KeepS3Handler.
+        measurement[MeasurementType.MUSCLE] = Percent(r.skeletalMuscle)
+        measurement[TOTAL_MUSCLE] = Percent(r.musclePercent)
         measurement[MeasurementType.BONE] = Kg(r.boneKg)
         measurement[MeasurementType.VISCERAL_FAT] = r.visceralFat.toFloat()
         measurement[MeasurementType.PROTEIN] = Percent(r.protein)
+        val sex = if (user.gender.isMale()) Wla25BodyComposition.SEX_MALE else Wla25BodyComposition.SEX_FEMALE
+        Wla25BodyComposition.bodyAge(user.age, r.fat.toDouble(), sex)
+            .takeIf { it in 10..99 }?.let { measurement[METABOLIC_AGE] = it }
         // BMR and LBM are left to openScale's derived values (wiki: "do not compute what
         // openScale already derives").
         logI("Runstar R6 body composition (WLA25): $r")
@@ -421,6 +428,16 @@ class RunstarR6Handler : ScaleDeviceHandler() {
     }
 
     companion object {
+        /** Shared identities with KeepS3/QN/Picooc and Relaxmedic, so histories stay continuous. */
+        val TOTAL_MUSCLE = MeasurementType.devicePercent(
+            "total_muscle", R.string.measurement_type_total_muscle,
+            icon = MeasurementTypeIcon.IC_M_WORKOUT, color = 0xFF2E7D32.toInt()
+        )
+        val METABOLIC_AGE = MeasurementType.deviceInt(
+            "metabolic_age", R.string.measurement_type_metabolic_age,
+            icon = MeasurementTypeIcon.IC_M_TIMER, color = 0xFF795548.toInt()
+        )
+
         private const val TYPE_DEVICE_INFO = 0xA1
         private const val TYPE_ACK = 0xA0
         private const val TYPE_LIVE_WEIGHT = 0xA2

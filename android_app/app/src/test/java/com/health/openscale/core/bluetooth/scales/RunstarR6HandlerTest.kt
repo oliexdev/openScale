@@ -22,6 +22,7 @@ import com.health.openscale.core.bluetooth.ScaleCatalog
 import com.health.openscale.core.bluetooth.ScaleCatalog.uuid16
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.bluetooth.libs.Wla25BodyComposition
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.WeightUnit
@@ -203,6 +204,15 @@ class RunstarR6HandlerTest {
         assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(1e-3f).of(72.4f)
         assertThat(measurement[MeasurementType.BODY_FAT]?.value).isWithin(1e-3f).of(15.8f)
         assertThat(measurement[MeasurementType.IMPEDANCE]).isNull()
+        // MUSCLE is skeletal muscle; the broad WLA25 "muscle rate" is TOTAL_MUSCLE.
+        val wla25 = Wla25BodyComposition.compute(
+            180, 72.4, doubleArrayOf(24.0, 340.0, 350.0, 280.0, 285.0, 19.0, 300.0, 310.0, 250.0, 255.0)
+        )!!
+        assertThat(measurement[MeasurementType.MUSCLE]?.value).isEqualTo(wla25.skeletalMuscle)
+        assertThat(measurement[RunstarR6Handler.TOTAL_MUSCLE]?.value).isEqualTo(wla25.musclePercent)
+        assertThat(wla25.skeletalMuscle).isLessThan(60f) // openScale's skeletal-muscle range
+        // 31-year-old woman at 15.8 % fat: WLA25 body age band "< 24 %" is age - 3.
+        assertThat(measurement[RunstarR6Handler.METABOLIC_AGE]).isEqualTo(28)
         // Left to openScale's derived values.
         assertThat(measurement[MeasurementType.BMR]).isNull()
         assertThat(measurement[MeasurementType.LBM]).isNull()
