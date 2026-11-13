@@ -178,11 +178,31 @@ class RunstarR6HandlerTest {
         val (handler, callbacks) = connected()
 
         handler.handleNotification(CHAR_RESULT, hex("05 1a 00 a3 25 00 28 64 00 00 32 00 0a 00 00 00 0a 00 00 1a"))
+        assertThat(callbacks.published).isEmpty() // part 1 waits for part 2
+        handler.handleNotification(CHAR_RESULT, hex("05 1a 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"))
 
         val measurement = callbacks.published.single()
         assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(1e-3f).of(10.34f)
         assertThat(measurement[MeasurementType.IMPEDANCE]).isNull()
         assertThat(measurement[MeasurementType.BODY_FAT]).isNull()
+    }
+
+    // Synthetic, in the layout of a captured Sacoma Ultra weigh-in (handlebar held): 72.40 kg,
+    // impedances 24.0, 340.0, 350.0, 280.0, 285.0 | 19.0, 300.0, 310.0, 250.0, 255.0 Ω.
+    private val sacomaPart1 = hex("02 1a 00 a3 25 01 1a d0 00 00 f0 0d 48 0d ac 0a f0 0b 22 18")
+    private val sacomaPart2 = hex("02 1a 01 00 be 0b b8 0c 1c 09 c4 09 f6 00 00 00 00 00 00 15")
+
+    @Test
+    fun `derives WLA25 body composition from a two-part A3`() {
+        val (handler, callbacks) = connected(heightCm = 180f)
+
+        handler.handleNotification(CHAR_RESULT, sacomaPart1)
+        handler.handleNotification(CHAR_RESULT, sacomaPart2)
+
+        val measurement = callbacks.published.single()
+        assertThat(measurement[MeasurementType.WEIGHT]?.value).isWithin(1e-3f).of(72.4f)
+        assertThat(measurement[MeasurementType.BODY_FAT]?.value).isWithin(1e-3f).of(15.8f)
+        assertThat(measurement[MeasurementType.IMPEDANCE]).isNull()
     }
 
     @Test
@@ -353,11 +373,11 @@ class RunstarR6HandlerTest {
     private val CHAR_RESULT: UUID = uuid16(0xFFB3)
 
     /** A connected handler and what it publishes; writes (acks) are discarded. */
-    private fun connected(): Pair<RunstarR6Handler, CapturingCallbacks> {
+    private fun connected(heightCm: Float = 165f): Pair<RunstarR6Handler, CapturingCallbacks> {
         val user = ScaleUser(
             id = 7,
             birthday = Calendar.getInstance().apply { add(Calendar.YEAR, -31); add(Calendar.DAY_OF_YEAR, -1) }.time,
-            bodyHeight = 165f,
+            bodyHeight = heightCm,
             gender = GenderType.FEMALE,
         )
         val handler = RunstarR6Handler()

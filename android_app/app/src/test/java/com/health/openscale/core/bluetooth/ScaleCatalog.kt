@@ -282,6 +282,7 @@ object ScaleCatalog {
         device("MY_SCALE", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
         device("Aero I", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
         device("MY_SCALE", SERVICE_FFB0, uuid16(0x1530)) claimedBy RunstarR6Handler::class.java,
+        device("SACOMA SCALE", SERVICE_FFB0, uuid16(0x1530)) claimedBy RunstarR6Handler::class.java,
         device("swan", SERVICE_FFB0) claimedBy MGBHandler::class.java,
         device("0203B1234") claimedBy MedisanaBs44xHandler::class.java,
         device("0131971234") claimedBy MedisanaBs44xHandler::class.java,
