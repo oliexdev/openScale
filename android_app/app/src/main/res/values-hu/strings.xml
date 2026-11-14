@@ -583,7 +583,7 @@
     <string name="settings_reminder_time_label">Időpont</string>
     <string name="reminder_enabled_snackbar">Emlékeztető bekapcsolva</string>
     <string name="reminder_disabled_snackbar">Emlékeztető kikapcsolva</string>
-    <string name="reminder_default_text">Ideje lemérni magad</string>
+    <string name="reminder_default_text">Ideje mérlegre állni</string>
     <string name="reminder_channel_name">Emlékeztetők</string>
     <string name="reminder_notification_title">openScale</string>
     <string name="settings_reminder_days_label">Napok</string>
@@ -911,4 +911,15 @@
     <string name="dialog_message_export_photos">Csak a CSV-t exportálod, vagy egy ZIP-fájlt a CSV-vel és az összes fotóval? A ZIP újra importálható, a fotókkal együtt.</string>
     <string name="action_export_csv_only">Csak CSV</string>
     <string name="action_export_zip_with_photos">ZIP fotókkal</string>
+    <string name="formula_label_bmr">Basal Metabolic Rate Formula</string>
+    <string name="formula_bmr_katch_mcardle">Katch-McArdle</string>
+    <string name="formula_bmr_harris_benedict_revised">Harris-Benedict, revised (1984)</string>
+    <string name="bmr_mifflin_st_jeor_short">Súly, magasság, életkor és nem alapján</string>
+    <string name="bmr_mifflin_st_jeor_long">Felnőttek számára ez a legszélesebb körben ajánlott becslési módszer. Figyelembe veszi a súlyt, a magasságot, az életkort és a nemet; a testösszetételt azonban nem veszi számításba, ezért nagyon izmos vagy éppen nagyon edzetlen személyek esetében nagyobb eltérések mutatkozhatnak.</string>
+    <string name="bmr_katch_mcardle_short">Sovány testtömegből</string>
+    <string name="bmr_katch_mcardle_long">A zsírmentes testtömegen alapul, így tükrözi a testösszetételt, és jobban illeszkedik az izmos testalkathoz. A méréshez szükség van a zsírmentes testtömeg értékére; ennek hiányában a Mifflin-St Jeor-képletet alkalmazzák.</string>
+    <string name="bmr_harris_benedict_revised_short">Classic Harris-Benedict</string>
+    <string name="bmr_harris_benedict_revised_long">A régóta ismert Harris–Benedict egyenlet átdolgozott változata (Roza és Shizgal). A testsúlyt, a testmagasságot, az életkort és a nemet veszi figyelembe; a Mifflin-St Jeor-egyenletnél jellemzően valamivel magasabb értékeket ad.</string>
+    <string name="bt_wyze_scale_x_user_rejected">Wyze Scale X: a mérleg elutasította a felhasználói profilt.</string>
+    <string name="formula_bmr_mifflin_st_jeor">Mifflin-St Jeor (1990)</string>
 </resources>
