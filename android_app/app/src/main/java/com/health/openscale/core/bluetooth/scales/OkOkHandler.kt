@@ -38,7 +38,9 @@ import com.health.openscale.core.data.Percent
  *  - "OKOK V20"  (manufacturer id 0x20CA): stable flag + XOR checksum
  *  - "OKOK V11"  (manufacturer id 0x11CA): XOR checksum, unit & resolution in body properties
  *  - "OKOK VF0"  (manufacturer id 0xF0FF): simple weight field
- *  - "OKOK C0" (any manufacturer id where low byte == 0xC0): MAC-embedded, unit & resolution in attrib
+ *  - "OKOK C0" (any manufacturer id where low byte == 0xC0): MAC-embedded, unit & resolution in attrib.
+ *    Rebranded scales advertise their own names (e.g. "OMIYA-C39-HW"), so a 0xC0 frame that
+ *    carries the advertiser's own MAC is accepted under any name.
  *
  * Link mode: BROADCAST_ONLY (no GATT connection).
  */
@@ -85,6 +87,8 @@ class OkOkHandler : ScaleDeviceHandler() {
     private val IDX_IMPEDANCE_MSB = 2
     private val IDX_IMPEDANCE_LSB = 3
     private val IDX_ATTRIB     = 6
+    private val IDX_MAC        = 7
+    private val C0_FRAME_SIZE  = 13
     private val UNIT_KG   = 0
     private val UNIT_JIN  = 1
     private val UNIT_LB   = 2
@@ -108,6 +112,7 @@ class OkOkHandler : ScaleDeviceHandler() {
                     || name.equals("Chipsea-BLE")
                     || name.startsWith("Yoda0", ignoreCase = true)
                     || name.startsWith("Yoda1", ignoreCase = true)
+                    || embedsOwnMac(m, device.address)
         if (!supports) return null
 
         val variantName = when {
@@ -260,7 +265,7 @@ class OkOkHandler : ScaleDeviceHandler() {
     private fun parseC0(m: SparseArray<ByteArray>): Pair<Float, Float>? {
         val key = firstKeyWithLowByteC0(m) ?: return null
         val data = m.get(key) ?: return null
-        if (data.size < 13) return null
+        if (data.size < C0_FRAME_SIZE) return null
 
         val attrib = data[IDX_ATTRIB].toInt() and 0xFF
         val isStable = (attrib and 0x01) != 0
@@ -314,6 +319,17 @@ class OkOkHandler : ScaleDeviceHandler() {
             if ((k and 0xFF) == 0xC0) return k
         }
         return null
+    }
+
+    /** True if the 0xC0 frame carries [address] (bytes 7..12, same order as the string). */
+    private fun embedsOwnMac(sa: SparseArray<ByteArray>, address: String): Boolean {
+        val data = firstKeyWithLowByteC0(sa)?.let { sa.get(it) } ?: return false
+        if (data.size < C0_FRAME_SIZE) return false
+        val mac = address.split(':')
+        if (mac.size != 6) return false
+        return mac.indices.all { i ->
+            mac[i].toIntOrNull(16) == (data[IDX_MAC + i].toInt() and 0xFF)
+        }
     }
 
     private fun u16be(msb: Byte, lsb: Byte): Int =
