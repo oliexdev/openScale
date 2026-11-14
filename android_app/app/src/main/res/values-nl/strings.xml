@@ -1,3 +1,1030 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- App & General -->
+
+    <string name="sync_app_unreachable_hint">De laatste wijziging is niet gesynchroniseerd. Open openScale-sync en synchroniseer handmatig.</string>
+    <string name="sync_app_open_action">Openen</string>
+    <string name="app_logo_content_description">App-logo</string>
+    <string name="text_none">Geen</string>
+    <string name="not_available">N.v.t.</string>
+    <string name="placeholder_empty_value">-</string>
+    <string name="theme_light">Licht</string>
+    <string name="theme_dark">Donker</string>
+
+    <!-- Generic UI Elements & Actions -->
+    <string name="enable_button">Inschakelen</string>
+    <string name="cancel_button">Annuleren</string>
+    <string name="clear_button">Wissen</string>
+    <string name="confirm_button">Bevestigen</string>
+    <string name="dialog_ok">OK</string>
+    <string name="saved">Opgeslagen</string>
+    <string name="switch_on">Aan</string>
+    <string name="switch_off">Uit</string>
+    <string name="open_link_content_description">Link openen</string>
+    <string name="content_desc_warning_icon">Waarschuwing</string>
+    <string name="content_desc_restore_icon">Database herstellen</string>
+    <string name="content_desc_information">Informatie</string>
+    <string name="content_desc_open_menu">Menu openen</string>
+    <string name="content_desc_back">Terug</string>
+    <string name="content_desc_selected">Geselecteerd</string>
+    <string name="derived_backfill_start">Afgeleide waarden berekenen …</string>
+    <string name="derived_backfill_done">Afgeleide waarden bijgewerkt.</string>
+
+    <!-- Generic error messages -->
+    <string name="error_generic">Er is een fout opgetreden.</string>
+    <string name="error_loading_data">Gegevens laden mislukt.</string>
+    <string name="error_try_again">Probeer het opnieuw.</string>
+
+    <!-- No data available messages -->
+    <string name="no_data_available">Geen gegevens beschikbaar.</string>
+    <string name="no_measurements_found">Geen metingen gevonden.</string>
+    <string name="no_entries_found">Geen gegevens gevonden.</string>
+
+    <!-- Route & Screen Titles -->
+    <string name="route_title_overview">Overzicht</string>
+    <string name="route_title_graph">Grafieken</string>
+    <string name="route_title_table">Tabel</string>
+    <string name="route_title_statistics">Statistieken</string>
+    <string name="route_title_insights">Inzichten</string>
+    <string name="route_title_settings">Instellingen</string>
+    <string name="route_title_table_drilldown">Details</string>
+    <string name="calendar_week_abbrev">Wk</string>
+    <string name="title_new_measurement">Nieuwe meting</string>
+    <string name="title_edit_measurement">Meting bewerken</string>
+    <string name="about_screen_title">Over</string>
+    <string name="measurement_type_detail_title_edit">Meettype bewerken</string>
+    <string name="measurement_type_detail_title_add">Meettype toevoegen</string>
+    <string name="measurement_type_settings_title">Meettypen</string>
+    <string name="user_detail_edit_user_title">Gebruiker bewerken</string>
+    <string name="user_detail_add_user_title">Gebruiker toevoegen</string>
+    <string name="user_settings_title">Gebruikers</string>
+
+    <!-- User Management & Details -->
+    <string name="manage_users">Gebruikers beheren</string>
+    <string name="content_desc_switch_user">Gebruiker wisselen. Geselecteerd: %1$s</string>
+    <string name="content_desc_selected_user_indicator">Geselecteerd</string>
+    <string name="action_add_user">Gebruiker toevoegen</string>
+    <string name="error_selecting_user">Gebruiker selecteren mislukt.</string>
+    <string name="toast_no_user_selected">Geen gebruiker geselecteerd.</string>
+    <string name="toast_select_user_first">Selecteer eerst een gebruiker.</string>
+    <string name="no_user_selected_title">Geen actieve gebruiker</string>
+    <string name="no_user_selected_message">Maak een gebruiker aan of kies een bestaande om je metingen te bekijken en te beheren.</string>
+    <string name="user_deleted_successfully">Gebruiker %1$s verwijderd.</string>
+    <string name="user_deleted_error">Fout bij het verwijderen van gebruiker %1$s.</string>
+    <string name="user_updated_successfully">Gebruiker %1$s bijgewerkt.</string>
+    <string name="user_added_successfully">Gebruiker %1$s toegevoegd.</string>
+    <string name="user_updated_error">Fout bij het bijwerken van gebruiker %1$s.</string>
+    <string name="user_detail_label_name">Naam</string>
+    <string name="user_detail_label_height">Lengte</string>
+    <string name="user_detail_label_gender">Geslacht</string>
+    <string name="gender_male">Man</string>
+    <string name="gender_female">Vrouw</string>
+    <string name="amputation_correction_label">Amputatiecorrectie</string>
+    <string name="amputation_none">Geen</string>
+    <string name="amputation_hand">Hand</string>
+    <string name="amputation_forearm">Onderarm</string>
+    <string name="amputation_full_arm">Hele arm</string>
+    <string name="amputation_foot">Voet</string>
+    <string name="amputation_lower_leg">Onderbeen</string>
+    <string name="amputation_full_leg">Volledig been</string>
+    <string name="amputation_dialog_description">Selecteer de betreffende ledematen en geef voor elk het amputatieniveau aan.</string>
+    <string name="amputation_left_arm">Linkerarm</string>
+    <string name="amputation_right_arm">Rechterarm</string>
+    <string name="amputation_left_leg">Linkerbeen</string>
+    <string name="amputation_right_leg">Rechterbeen</string>
+    <string name="user_detail_label_activity_level">Activiteitsniveau</string>
+    <string name="user_detail_label_assisted_weighting">Wegen met hulp</string>
+    <string name="dialog_title_select_reference_user_for">Referentiepersoon selecteren voor %1$s</string>
+    <string name="error_no_reference_users_available">Geen geschikte referentiepersoon. Maak een gebruiker aan met \'Wegen met hulp\' uitgeschakeld.</string>
+    <string name="error_assisted_weighing_reference_user_missing">Kies een referentiepersoon voor wegen met hulp.</string>
+    <string name="user_detail_label_birth_date">Geboortedatum</string>
+    <string name="user_detail_error_invalid_data">Voer geldige gegevens in</string>
+    <string name="height_value_cm">%.1f cm</string>
+    <string name="user_settings_item_details_conditional">Leeftijd: %1$d, geslacht: %2$s</string>
+    <string name="user_settings_content_description_edit">Gebruiker bewerken</string>
+    <string name="user_settings_content_description_delete">Gebruiker verwijderen</string>
+    <string name="user_settings_content_description_add_user">Gebruiker toevoegen</string>
+    <string name="user_detail_content_description_change_unit">Eenheid wijzigen</string>
+
+    <!-- Measurement CRUD & Operations -->
+    <string name="success_measurement_updated">Meting bijgewerkt (%1$s)</string> <!-- %1$s is date/time -->
+    <string name="success_measurement_saved">Meting opgeslagen (%1$s)</string> <!-- %1$s is date/time -->
+    <string name="error_saving_measurement">Meting opslaan mislukt. Probeer het opnieuw.</string>
+    <string name="error_duplicate_timestamp">Niet opgeslagen — er bestaat al een meting op %1$s.</string> <!-- %1$s is date/time -->
+    <string name="success_measurement_deleted">Meting verwijderd (%1$s)</string> <!-- %1$s is date/time -->
+    <string name="error_deleting_measurement">Meting verwijderen mislukt. Probeer het opnieuw.</string>
+    <string name="action_undo">Ongedaan maken</string>
+    <string name="cd_chart_handle_resize">Sleep om de grafiekgrootte aan te passen; tik om in te klappen</string>
+    <string name="cd_chart_handle_show">Tik om de grafiek te tonen</string>
+    <string name="dialog_title_discard_changes">Wijzigingen verwerpen?</string>
+    <string name="dialog_message_discard_changes">Je wijzigingen zijn niet opgeslagen en gaan verloren.</string>
+    <string name="action_discard">Verwerpen</string>
+    <string name="action_keep_editing">Verder bewerken</string>
+    <string name="action_save_measurement">Meting opslaan</string>
+    <string name="action_add_measurement">Meting toevoegen</string>
+    <string name="action_add_measurement_desc">Nieuwe meting toevoegen</string>
+    <string name="action_edit_measurement_desc">Meting van %1$s bewerken</string> <!-- %1$s is date -->
+    <string name="action_delete_measurement_desc">Meting van %1$s verwijderen</string> <!-- %1$s is date -->
+    <string name="toast_duplicate_timestamp">Dit is het tijdstip van je laatste meting. Kies een ander tijdstip.</string>
+    <string name="no_measurements_title">Nog geen metingen</string>
+    <string name="no_measurements_message">Voeg je eerste meting toe om je voortgang bij te houden.</string>
+    <string name="no_active_values_for_measurement">Geen actieve meetwaarden voor deze meting.</string>
+
+    <!-- Measurement Input & Validation Toasts -->
+    <string name="toast_invalid_number_format">Ongeldig getal voor %1$s: \'%2$s\'</string>
+    <string name="toast_invalid_integer_format">Ongeldig geheel getal voor %1$s: \'%2$s\'</string>
+    <string name="toast_invalid_number_format_short">Ongeldig getal voor %1$s</string>
+    <string name="toast_invalid_integer_format_short">Ongeldig geheel getal voor %1$s</string>
+    <string name="toast_enter_valid_data">Voer geldige gegevens in.</string>
+
+    <!-- Dialogs (General & Measurement Edit) -->
+    <string name="dialog_title_edit_value">%1$s bewerken</string>
+    <string name="dialog_title_change_value">%1$s wijzigen</string>
+    <string name="dialog_title_select_color">Kleur kiezen</string>
+    <string name="dialog_title_select_icon">Pictogram selecteren</string>
+    <string name="dialog_title_input_value">Waarde invoeren</string>
+    <string name="dialog_title_input_text">Tekst invoeren</string>
+    <string name="dialog_title_hour">Uur</string>
+    <string name="dialog_title_minute">Minuut</string>
+
+    <string name="label_date">Datum</string>
+    <string name="label_time">Tijd</string>
+
+    <!-- Content Descriptions for Editing & Trends -->
+    <string name="content_desc_increase_value">%1$s verhogen</string>
+    <string name="content_desc_decrease_value">%1$s verlagen</string>
+    <string name="content_desc_edit_value">%1$s bewerken</string>
+    <string name="action_show_less_desc">Minder tonen</string>
+    <string name="action_show_more_desc">Meer tonen</string>
+    <string name="trend_increased_desc">Waarde gestegen</string>
+    <string name="trend_decreased_desc">Waarde gedaald</string>
+    <string name="trend_stable_desc">Waarde stabiel of ongewijzigd</string>
+
+    <!-- Measurement Types -->
+    <string name="measurement_type_icon_desc">Pictogram voor %1$s</string>
+    <string name="measurement_type_icon_unknown_desc">Pictogram voor onbekend meettype: %1$s</string>
+    <string name="content_desc_unknown_type">Onbekend meettype: %1$s</string>
+    <string name="measurement_type_weight">Gewicht</string>
+    <string name="measurement_type_bmi">BMI</string>
+    <string name="measurement_type_body_fat">Lichaamsvet</string>
+    <string name="measurement_type_water">Lichaamswater</string>
+    <string name="measurement_type_muscle">Spiermassa</string>
+    <string name="measurement_type_lbm">Vetvrije massa</string>
+    <string name="measurement_type_bone">Botmassa</string>
+    <string name="measurement_type_waist">Taille</string>
+    <string name="measurement_type_whr">Taille-heupverhouding</string>
+    <string name="measurement_type_whtr">Taille-lengteverhouding</string>
+    <string name="measurement_type_hips">Heupen</string>
+    <string name="measurement_type_visceral_fat">Visceraal vet</string>
+    <string name="measurement_type_chest">Borst</string>
+    <string name="measurement_type_thigh">Bovenbeen</string>
+    <string name="measurement_type_biceps">Biceps</string>
+    <string name="measurement_type_neck">Nek</string>
+    <string name="measurement_type_caliper1">Huidplooi 1</string>
+    <string name="measurement_type_caliper2">Huidplooi 2</string>
+    <string name="measurement_type_caliper3">Huidplooi 3</string>
+    <string name="measurement_type_fat_caliper">Vetpercentage uit huidplooimeting</string>
+    <string name="measurement_type_bmr">BMR</string>
+    <string name="measurement_type_heart_rate">Hartslag</string>
+    <string name="measurement_type_impedance">Impedantie (hoge frequentie)</string>
+    <string name="measurement_type_impedance_low">Impedantie (lage frequentie)</string>
+    <string name="measurement_type_ecw">Extracellulair water</string>
+    <string name="measurement_type_icw">Intracellulair water</string>
+    <string name="measurement_type_protein">Eiwit</string>
+    <string name="measurement_type_total_muscle">Totale spiermassa</string>
+    <string name="measurement_type_metabolic_age">Metabole leeftijd</string>
+    <string name="picooc_calibration_description">PICOOC bepaalt een stabiele referentiewaarde voor je lichaamssamenstelling op basis van vier BIA-metingen met vergelijkbare gewichtswaarden.</string>
+    <string name="picooc_calibration_no_measurements">De kalibratie is nog niet gestart.</string>
+    <string name="picooc_calibration_learning">%1$s: kalibratiemeting %2$d van 4, voorlopige bèta %3$d, referentiegewicht %4$d kg</string>
+    <string name="picooc_calibration_fixed">%1$s: gekalibreerd, bèta %2$d, referentiegewicht %3$d kg</string>
+    <string name="picooc_calibration_reset">Kalibratie voor %1$s resetten</string>
+    <string name="picooc_calibration_reset_generic">PICOOC-kalibratie resetten</string>
+    <string name="measurement_type_bcm">Lichaamscelmassa</string>
+    <string name="measurement_type_hydration_shift">Hydratatieverschuiving</string>
+    <string name="measurement_type_from_scale">Toegevoegd door een weegschaal</string>
+    <string name="measurement_type_label_csv_column">CSV-kolom</string>
+    <string name="measurement_type_csv_column_taken">Deze CSV-kolom is al in gebruik.</string>
+    <string name="measurement_type_segmental_fat_left_arm">Lichaamsvet (linkerarm)</string>
+    <string name="measurement_type_segmental_fat_right_arm">Lichaamsvet (rechterarm)</string>
+    <string name="measurement_type_segmental_fat_torso">Lichaamsvet (romp)</string>
+    <string name="measurement_type_segmental_fat_left_leg">Lichaamsvet (linkerbeen)</string>
+    <string name="measurement_type_segmental_fat_right_leg">Lichaamsvet (rechterbeen)</string>
+    <string name="measurement_type_segmental_muscle_left_arm">Spiermassa (linkerarm)</string>
+    <string name="measurement_type_segmental_muscle_right_arm">Spiermassa (rechterarm)</string>
+    <string name="measurement_type_segmental_muscle_torso">Spiermassa (romp)</string>
+    <string name="measurement_type_segmental_muscle_left_leg">Spiermassa (linkerbeen)</string>
+    <string name="measurement_type_segmental_muscle_right_leg">Spiermassa (rechterbeen)</string>
+    <string name="s400_bone_formula_label">Formule voor botmassa</string>
+    <string name="s400_bone_formula_mi_legacy">Regressie op basis van impedantie (oud)</string>
+    <string name="s400_bone_formula_heymsfield">Heymsfield (antropometrisch)</string>
+    <string name="s400_bmr_formula_label">BMR-formule</string>
+    <string name="s400_bmr_formula_cun91">Cunningham 1991</string>
+    <string name="s400_bmr_formula_cun80">Cunningham 1980</string>
+    <string name="measurement_type_tdee">TDEE</string>
+    <string name="measurement_type_calories">Calorieën</string>
+    <string name="measurement_type_comment">Opmerking</string>
+    <string name="measurement_type_photo">Foto</string>
+    <string name="measurement_type_date">Datum</string>
+    <string name="measurement_type_time">Tijd</string>
+    <string name="measurement_type_user">Gebruiker</string>
+    <string name="measurement_type_custom_default_name">Eigen meettype</string>
+
+    <!-- Measurement Type Settings -->
+    <string name="measurement_type_label_enabled">Ingeschakeld</string>
+    <string name="measurement_type_label_name">Naam</string>
+    <string name="measurement_type_label_color">Kleur</string>
+    <string name="measurement_type_label_icon">Pictogram</string>
+    <string name="measurement_type_label_unit">Eenheid</string>
+    <string name="measurement_type_label_goal">Doel</string>
+    <string name="goal_target_date_label">Streefdatum</string>
+    <string name="goal_start_date_label">Startdatum</string>
+    <string name="label_optional">%1$s (optioneel)</string> <!-- %1$s is a field label -->
+    <string name="content_desc_select_date">Datum kiezen</string>
+    <string name="my_goals_label">Mijn doelen</string>
+    <string name="user_detail_goals">%d doelen</string>
+    <string name="user_detail_no_goals">Geen doelen</string>
+    <string name="delete_button_label">Verwijderen</string>
+    <string name="dialog_title_edit_goal">Doel bewerken: %1$s</string>
+    <string name="dialog_title_add_goal">Doel instellen: %1$s</string>
+    <string name="info_no_targetable_types">Geen meettypen waarvoor je doelen kunt instellen.</string>
+    <string name="placeholder_select_type">Meettype selecteren</string>
+    <string name="measurement_type_label_goal_value_for">Doelwaarde voor %1$s</string>
+    <string name="toast_select_measurement_type">Selecteer eerst een meettype.</string>
+    <string name="toast_goal_deleted">Doel verwijderd</string>
+    <string name="measurement_type_label_input_type">Invoertype</string>
+    <string name="measurement_type_label_pinned">Vastgezet</string>
+    <string name="measurement_type_label_on_right_y_axis">Rechter Y-as</string>
+    <string name="content_desc_selected_icon_preview">Voorbeeld van het geselecteerde pictogram</string>
+    <string name="content_desc_drag_handle_sort">Sorteren</string>
+    <string name="content_desc_edit_type">Bewerken</string>
+    <string name="content_desc_delete_type">Verwijderen</string>
+    <string name="measurement_type_added_successfully">Meettype \'%1$s\' toegevoegd.</string>
+    <string name="measurement_type_added_error">Fout bij het toevoegen van meettype \'%1$s\'.</string>
+    <string name="measurement_type_deleted_successfully">Meettype \'%1$s\' verwijderd.</string>
+    <string name="measurement_type_deleted_error">Fout bij het verwijderen van meettype \'%1$s\'.</string>
+    <string name="measurement_type_updated_error">Fout bij het bijwerken van meettype \'%1$s\'.</string>
+    <string name="measurement_type_updated_successfully">Meettype \'%1$s\' bijgewerkt.</string>
+    <string name="measurement_type_updated_and_values_converted_successfully">Meettype \'%1$s\' bijgewerkt en %2$s meetwaarde(n) omgerekend.</string>
+    <string name="measurement_type_update_error_conversion_failed">Fout bij het omrekenen van waarden voor meettype \'%1$s\'. De definitie van het meettype is niet bijgewerkt.</string>
+    <string name="measurement_type_updated_unit_changed_no_values_converted">Meettype \'%1$s\' bijgewerkt. De eenheid is gewijzigd, maar er hoefden geen bestaande waarden te worden omgerekend.</string>
+    <string name="measurement_type_dialog_confirm_unit_change_title">Eenheidswijziging bevestigen</string>
+    <string name="measurement_type_dialog_confirm_unit_change_message">Als je de eenheid voor \'%1$s\' van %2$s naar %3$s wijzigt, worden alle bestaande meetwaarden omgerekend. Dit kan even duren en is niet eenvoudig ongedaan te maken. Wil je doorgaan?</string>
+
+    <string name="formula_label_body_fat">Formule voor lichaamsvet</string>
+    <string name="formula_label_body_water">Formule voor lichaamswater</string>
+    <string name="formula_label_lbm">Formule voor vetvrije massa</string>
+    <string name="formula_warning_title">Berekening met formule</string>
+    <string name="formula_warning_message">Deze waarde wordt automatisch berekend en kan niet meer handmatig worden bewerkt. De waarde wordt bijgewerkt wanneer de basiswaarden veranderen. Dit geldt voor nieuwe of bewerkte metingen; bestaande metingen blijven ongewijzigd.</string>
+
+    <string name="formula_off">Uit</string>
+    <string name="formula_bf_deurenberg_1991">Deurenberg (1991)</string>
+    <string name="formula_bf_deurenberg_1992">Deurenberg (1992)</string>
+    <string name="formula_bf_eddy_1976">Eddy et al. (1976)</string>
+    <string name="formula_bf_gallagher_2000_non_asian">Gallagher (2000) – niet-Aziatisch</string>
+    <string name="formula_bf_gallagher_2000_asian">Gallagher (2000) – Aziatisch</string>
+    <string name="formula_bw_behnke_1963">Behnke et al. (1963)</string>
+    <string name="formula_bw_delwaide_crenier_1973">Delwaide &amp; Crenier (1973)</string>
+    <string name="formula_bw_hume_weyers_1971">Hume &amp; Weyers (1971)</string>
+    <string name="formula_bw_lee_song_kim_2001">Lee, Song &amp; Kim (2001)</string>
+    <string name="formula_lbm_boer_1984">Boer (1984)</string>
+    <string name="formula_lbm_hume_1966">Hume (1966)</string>
+    <string name="formula_lbm_weight_minus_body_fat">Gewicht − vetmassa</string>
+    <string name="formula_bf_us_navy">U.S. Navy</string>
+
+    <string name="formula_desc_off_short">Geen automatische berekening</string>
+    <string name="formula_desc_off_long">Deze waarde wordt niet automatisch berekend. Je kunt waarden handmatig invoeren.</string>
+    <string name="bf_deurenberg_1991_short">Klassieke regressie voor volwassenen</string>
+    <string name="bf_deurenberg_1991_long">Een veelgebruikte populatieformule uit 1991. Geschikt voor de algemene volwassen bevolking; mogelijk minder nauwkeurig bij zeer slanke of zeer gespierde personen.</string>
+    <string name="bf_deurenberg_1992_short">Aangepast voor tieners en volwassenen</string>
+    <string name="bf_deurenberg_1992_long">Variant die rekening houdt met jongere gebruikers. Een algemene schatting; bij een atletische of afwijkende lichaamsbouw kunnen de resultaten afwijken.</string>
+    <string name="bf_eddy_1976_short">Vroeg geslachtsspecifiek model</string>
+    <string name="bf_eddy_1976_long">Oudere regressie met afzonderlijke coëfficiënten voor mannen en vrouwen. Eenvoudig en snel, maar niet afgestemd op bijzondere bevolkingsgroepen.</string>
+    <string name="bf_gallagher_2000_non_asian_short">Gallagher (niet-Aziatisch)</string>
+    <string name="bf_gallagher_2000_non_asian_long">Referentiemodel uit 2000 voor niet-Aziatische bevolkingsgroepen. Een bruikbaar uitgangspunt; de nauwkeurigheid verschilt per lichaamstype.</string>
+    <string name="bf_gallagher_2000_asian_short">Gallagher (Aziatisch)</string>
+    <string name="bf_gallagher_2000_asian_long">Bijbehorend model dat is afgestemd op Aziatische bevolkingsgroepen. Gebruik dit als het beter aansluit bij de achtergrond van de gebruiker.</string>
+    <string name="bw_behnke_1963_short">Behnke-schatting van totaal lichaamswater</string>
+    <string name="bw_behnke_1963_long">Klassieke schatting van de totale hoeveelheid lichaamswater. Een eenvoudige aanpak; niet afgestemd op sporters of uitzonderlijke gevallen.</string>
+    <string name="bw_delwaide_crenier_1973_short">Delwaide &amp; Crenier</string>
+    <string name="bw_delwaide_crenier_1973_long">Formule voor totaal lichaamswater met nadruk op lichaamsmassa. Een redelijke algemene schatting; de nauwkeurigheid hangt af van de lichaamsbouw.</string>
+    <string name="bw_hume_weyers_1971_short">Hume–Weyers-lichaamswater</string>
+    <string name="bw_hume_weyers_1971_long">Veelgebruikt model voor totaal lichaamswater op basis van lengte en gewicht, met geslachtsspecifieke coëfficiënten.</string>
+    <string name="bw_lee_song_kim_2001_short">Lee–Song–Kim</string>
+    <string name="bw_lee_song_kim_2001_long">Recentere schatting van totaal lichaamswater, gekalibreerd op Koreaanse onderzoeksgroepen. Overweeg deze formule als de gebruiker tot die bevolkingsgroep behoort.</string>
+    <string name="lbm_boer_1984_short">Boer-vetvrije massa (klinisch)</string>
+    <string name="lbm_boer_1984_long">Schatting van vetvrije massa die veel wordt gebruikt in de klinische praktijk. Geslachtsspecifieke regressie op basis van lengte en gewicht.</string>
+    <string name="lbm_hume_1966_short">Hume-vetvrije massa</string>
+    <string name="lbm_hume_1966_long">Vroeg model voor vetvrije massa. Eenvoudig en veelgebruikt; niet afgestemd op een zeer atletische lichaamsbouw.</string>
+    <string name="lbm_weight_minus_bf_short">Gewicht − vetmassa</string>
+    <string name="lbm_weight_minus_bf_long">Berekent de vetvrije massa als het totale gewicht min de vetmassa die is afgeleid van de gekozen lichaamsvetformule. De nauwkeurigheid hangt af van de geschatte hoeveelheid lichaamsvet.</string>
+    <string name="bf_us_navy_short">U.S. Navy-methode</string>
+    <string name="bf_us_navy_long">Berekent het lichaamsvetpercentage op basis van de taille-, nek- en (bij vrouwen) heupomtrek volgens de U.S. Navy-standaard.</string>
+
+    <string name="batch_update_status_report">%1$d: %2$s</string>
+    <string name="dialog_title_confirm_generic">%1$s bevestigen?</string>
+    <string name="dialog_text_confirm_generic_verb">Weet je zeker dat je %1$d item(s) wilt %2$s?</string>
+    <string name="action_pin">vastzetten</string>
+    <string name="action_unpin">losmaken</string>
+    <string name="action_enable">inschakelen</string>
+    <string name="action_disable">uitschakelen</string>
+    <string name="action_move_to_left_axis">verplaatsen naar de linker as</string>
+    <string name="action_move_to_right_axis">verplaatsen naar de rechter as</string>
+    <string name="status_pinned">Vastgezet</string>
+    <string name="status_unpinned">Losgemaakt</string>
+    <string name="status_enabled">Ingeschakeld</string>
+    <string name="status_disabled">Uitgeschakeld</string>
+    <string name="status_axis_right">Verplaatst naar de rechter as</string>
+    <string name="status_axis_left">Verplaatst naar de linker as</string>
+
+    <!-- Bluetooth -->
+    <string name="info_bluetooth_connection_error_scale_offline">Kan geen verbinding maken met de weegschaal. Controleer of deze aan staat.</string>
+    <string name="fallback_device_name_saved_scale">opgeslagen weegschaal</string>
+    <string name="bluetooth_action_connecting_disconnecting_desc">Bluetooth-activiteit</string>
+    <string name="bluetooth_action_no_scale_saved_desc">Bluetooth-weegschaal instellen</string>
+    <string name="bluetooth_action_disconnect_desc">Verbinding met %1$s verbreken</string>
+    <string name="bluetooth_action_retry_connection_desc">Opnieuw verbinding maken met %1$s</string>
+    <string name="bluetooth_action_error_check_settings_desc">Bluetooth-fout, controleer de instellingen</string>
+    <string name="bluetooth_action_connect_to_desc">Verbinding maken met %1$s</string>
+    <string name="bluetooth_action_check_settings_desc">Bluetooth-instellingen controleren</string>
+    <string name="snackbar_bluetooth_connecting_to">Verbinding maken met %1$s…</string>
+    <string name="snackbar_bluetooth_disconnecting_from">Verbinding met %1$s verbreken…</string>
+    <string name="snackbar_bluetooth_processing_with">Verwerken met %1$s…</string>
+    <string name="snackbar_bluetooth_no_scale_saved">Geen Bluetooth-weegschaal opgeslagen. Voeg een weegschaal toe in de instellingen.</string>
+    <string name="snackbar_bluetooth_retry_connection">Opnieuw verbinding maken met %1$s…</string>
+    <string name="snackbar_bluetooth_error_check_settings">Bluetooth-fout. Controleer de instellingen.</string>
+    <string name="snackbar_bluetooth_attempting_connection">Proberen verbinding te maken met %1$s…</string>
+    <string name="snackbar_bluetooth_check_settings">Controleer de Bluetooth-instellingen.</string>
+    <string name="bluetooth_enable_for_scan">Schakel Bluetooth in om te zoeken.</string>
+    <string name="bluetooth_permissions_required_for_scan">Bluetooth-machtigingen zijn vereist om te zoeken.</string>
+    <string name="bluetooth_enabled_permissions_missing">Bluetooth is ingeschakeld, maar de machtigingen ontbreken nog.</string>
+    <string name="bluetooth_must_be_enabled_for_scan">Bluetooth moet zijn ingeschakeld om naar weegschalen te zoeken.</string>
+    <string name="saved_scale_label">Opgeslagen weegschaal:</string>
+    <string name="unknown_device">Onbekend</string>
+    <string name="stop_scan_button">Zoeken stoppen</string>
+    <string name="search_for_scales_button">Weegschalen zoeken</string>
+    <string name="search_for_scales_button_desc">Weegschalen zoeken</string>
+    <string name="found_devices_label">Gevonden apparaten:</string>
+    <string name="device_saved_as_preferred">\'%1$s\' opgeslagen als voorkeursweegschaal.</string>
+    <string name="device_not_supported">%1$s wordt momenteel niet ondersteund.</string>
+    <string name="no_devices_found_start_scan">Geen apparaten gevonden. Start een nieuwe zoekopdracht.</string>
+    <string name="saved_scale_icon_desc">Opgeslagen weegschaal</string>
+    <string name="supported_icon_desc">Ondersteund apparaat</string>
+    <string name="not_supported_icon_desc">Niet-ondersteund apparaat</string>
+    <string name="supported_label">Ondersteund</string>
+    <string name="not_supported_label">Niet ondersteund</string>
+    <string name="rssi_format">%1$d dBm</string>
+    <string name="menu_save_as_preferred">Als voorkeur instellen</string>
+    <string name="menu_save_as_developer">Ontwikkelaarsmodus inschakelen</string>
+    <string name="snackbar_saved_device_removed">Opgeslagen apparaat verwijderd.</string>
+    <string name="snackbar_developer_enable_logs">Ontwikkelaarsmodus ingeschakeld. Schakel het logbestand in via Instellingen → Algemeen → Logbestand bijhouden.</string>
+    <string name="snackbar_developer_for_device_enable_logs">Ontwikkelaarsmodus ingeschakeld voor dit apparaat. Schakel het logbestand in via Instellingen → Algemeen → Logbestand bijhouden.</string>
+    <string name="developer_banner_active">Ontwikkelaarsmodus is actief — metingen worden niet opgeslagen.</string>
+    <string name="developer_banner_enable_logs_hint">Schakel het logbestand in via Instellingen → Algemeen → Logbestand bijhouden.</string>
+    <string name="developer_mode_dialog_title">Ontwikkelaarsmodus inschakelen?</string>
+    <string name="developer_mode_dialog_message">openScale registreert alleen het Bluetooth-verkeer van %1$s voor diagnostiek. Zolang de ontwikkelaarsmodus actief is, worden er geen metingen opgeslagen. Je kunt deze modus weer uitschakelen op het Bluetooth-scherm of in de apparaatinstellingen.</string>
+    <string name="developer_mode_dialog_replaces">%1$s wordt je opgeslagen weegschaal en vervangt %2$s.</string>
+    <string name="developer_mode_dialog_confirm_button">Inschakelen</string>
+    <string name="developer_mode_disable_action">Uitschakelen</string>
+    <string name="developer_mode_active_icon_desc">Ontwikkelaarsmodus is actief</string>
+    <string name="capabilities_header">Mogelijkheden</string>
+    <string name="cap_body_composition">Lichaamssamenstelling</string>
+    <string name="cap_time_sync">Tijd synchroniseren</string>
+    <string name="cap_user_sync">Gebruikers synchroniseren</string>
+    <string name="cap_history_read">Eerdere metingen uitlezen</string>
+    <string name="cap_live_weight">Gewicht direct uitlezen</string>
+    <string name="cap_unit_config">Eenheid instellen</string>
+    <string name="cap_battery">Batterij</string>
+    <string name="cap_state_implemented">Geïmplementeerd: %1$s</string>
+    <string name="cap_state_supported_only">Ondersteund (niet geïmplementeerd): %1$s</string>
+    <string name="more_options_cd">Meer opties</string>
+
+    <!-- Bluetooth Detail Screen -->
+    <string name="title_device_settings_for">Instellingen voor %1$s</string>
+    <string name="bluetooth_tuning_title">Bluetooth-afstemming</string>
+    <string name="tuning_profile_label">Afstemmingsprofiel</string>
+    <string name="bluetooth_measurement_title">Bluetooth-meting</string>
+    <string name="smart_assignment_assignment">Slimme gebruikerstoewijzing</string>
+    <string name="tolerance_label">Tolerantie</string>
+    <string name="ignore_outside_tolerance_title">Onzekere metingen negeren</string>
+    <string name="ignore_outside_tolerance_desc">Als een meting voor alle gebruikers buiten de tolerantie valt, wordt deze niet opgeslagen.</string>
+    <string name="device_actions_title">Apparaatacties</string>
+    <string name="bluetooth_developer_mode">Ontwikkelaarsmodus</string>
+    <string name="bluetooth_remove_saved_device">Opgeslagen apparaat verwijderen</string>
+    <string name="tuning_title">Bluetooth-afstemmingsprofiel</string>
+    <string name="tuning_snackbar">Bluetooth-afstemming: %1$s</string>
+    <string name="tuning_balanced">Gebalanceerd</string>
+    <string name="tuning_conservative">Voorzichtig</string>
+    <string name="tuning_aggressive">Agressief</string>
+    <string name="tolerance_desc">Maximale gewichtsafwijking voor automatische toewijzing aan een gebruiker.</string>
+    <string name="developer_section_title">Ontwikkelaar</string>
+    <string name="danger_zone_title">Risicovolle acties</string>
+    <string name="auto_connect_on_startup_title">Automatisch verbinden bij opstarten</string>
+
+    <!-- Scale Configuration (generic, shown when a handler declares config fields) -->
+    <string name="scale_configuration_title">Weegschaalinstellingen</string>
+    <string name="no_special_configuration_available">Geen extra instellingen voor dit apparaat.</string>
+
+    <!-- Mi Scale body-composition algorithm -->
+    <string name="mi_body_comp_algorithm_label">Algoritme voor lichaamssamenstelling</string>
+    <string name="mi_algorithm_xiaomi">Xiaomi (originele app)</string>
+    <string name="mi_algorithm_bodymiscale_science">Wetenschappelijk</string>
+    <string name="mi_algorithm_description">Kies hoe de lichaamssamenstelling uit de impedantie wordt afgeleid. \"Xiaomi\" bootst de originele Mi Fit / Zepp Life-app na. \"Wetenschappelijk\" gebruikt wetenschappelijk getoetste formules (Siri, Pace, Wang, Schofield) en berekent ook eiwit en BMR. Geldt voor nieuwe metingen van deze weegschaal.</string>
+
+    <!-- S400 Scale Configuration -->
+    <string name="s400_bind_key_label">BLE-koppelsleutel</string>
+    <string name="s400_bind_key_placeholder">Hexadecimale sleutel van 32 tekens</string>
+    <string name="s400_bind_key_description">De Xiaomi S400-weegschaal heeft een BLE-koppelsleutel nodig om gegevens te ontsleutelen. Haal deze sleutel op uit Xiaomi Cloud met het hulpprogramma Xiaomi Cloud Tokens Extractor.</string>
+    <string name="s400_bind_key_error">De koppelsleutel moet uit precies 32 hexadecimale tekens bestaan</string>
+    <string name="bt_s400_missing_bind_key">S400: geen koppelsleutel ingesteld. Ga naar de Bluetooth-instellingen om je BLE-sleutel in te voeren.</string>
+    <string name="hs2s_device_key_label">Apparaatsleutel</string>
+    <string name="hs2s_device_key_description">De originele Wyze Scale (WHSCL1) heeft een apparaatsleutel van 32 tekens uit de Wyze-cloud nodig. De iHealth HS2S- en HS2S Pro-weegschalen hebben geen sleutel nodig.</string>
+    <string name="hs2s_device_key_error">De apparaatsleutel moet uit precies 32 hexadecimale tekens bestaan</string>
+    <string name="bt_hs2s_missing_device_key">Wyze Scale: geen apparaatsleutel ingesteld. Ga naar de Bluetooth-instellingen om deze in te voeren.</string>
+    <string name="bt_hs2s_wrong_device_key">Weegschaalauthenticatie mislukt: de apparaatsleutel hoort niet bij deze weegschaal.</string>
+    <string name="bt_hs2s_auth_failed">De weegschaal heeft de authenticatie geweigerd.</string>
+
+    <!-- Huawei Hagrid Scale Configuration -->
+    <string name="huawei_hagrid_secrets_title">Huawei Hagrid WSP-sleutels</string>
+    <string name="huawei_hagrid_secrets_description">Stel CAK, C1 en C2 elk in als 32 hexadecimale tekens. De waarden blijven opgeslagen in de app-instellingen van het betreffende stuurprogramma.</string>
+    <string name="huawei_hagrid_secret_invalid">Er worden 32 hexadecimale tekens verwacht</string>
+    <string name="huawei_hagrid_secret_saved">Opgeslagen</string>
+
+    <!-- Bluetooth Connector -->
+    <string name="bluetooth_connector_connected_to">Verbonden met %1$s</string>
+    <string name="bluetooth_connector_connection_failed">Verbinding met %1$s mislukt: %2$s</string>
+    <string name="bluetooth_connector_device_error">Fout met %1$s: %2$s</string>
+    <string name="bluetooth_connector_device_not_supported">%1$s wordt niet ondersteund.</string>
+    <string name="bluetooth_connector_driver_not_found">Stuurprogramma voor %1$s niet gevonden of interne fout.</string>
+    <string name="bluetooth_connector_measurement_user_missing">Meting van %1$s kan niet aan een gebruiker worden toegewezen.</string>
+    <string name="bluetooth_connector_measurement_types_not_loaded">Fout: meettypen niet geladen.</string>
+    <string name="bluetooth_connector_measurement_no_values">Geen geldige meetwaarden ontvangen van %1$s.</string>
+    <string name="bluetooth_connector_measurement_saved">Meting (%1$.1f kg) van %2$s opgeslagen.</string>
+    <string name="bluetooth_connector_measurement_save_error">Fout bij het opslaan van de meting van %1$s.</string>
+    <string name="bluetooth_connector_device_message">%1$s: %2$s</string>
+    <string name="bluetooth_connector_listening_for_device">Wachten op %1$s…</string>
+    <string name="bluetooth_connector_broadcast_complete">Meting ontvangen van %1$s.</string>
+
+    <!-- Bluetooth Permissions & Enable Cards -->
+    <string name="permissions_required_icon_desc">Machtigingen vereist</string>
+    <string name="permissions_required_title">Machtigingen vereist</string>
+    <string name="permissions_required_message_bluetooth">Om naar weegschalen te zoeken, is toegang tot Bluetooth nodig.</string>
+    <string name="grant_permissions_button">Machtigingen verlenen</string>
+    <string name="bluetooth_disabled_icon_desc">Bluetooth uitgeschakeld</string>
+    <string name="bluetooth_disabled_title">Bluetooth uitgeschakeld</string>
+    <string name="bluetooth_disabled_message_enable_for_scan">Schakel Bluetooth in om naar weegschalen te zoeken.</string>
+    <string name="enable_bluetooth_button">Bluetooth inschakelen</string>
+    <string name="error_icon_desc">Fout</string>
+    <string name="compatibility_dialog_title">Belangrijke informatie</string>
+    <string name="bluetooth_compatibility_disclaimer">openScale is een opensourceproject en ik beschik niet over elk type weegschaal. Compatibiliteit kan niet altijd worden gegarandeerd, omdat Bluetooth-protocollen kunnen veranderen of niet gedocumenteerd zijn.\n\nPull requests en bijdragen om de ondersteuning voor weegschalen te verbeteren zijn van harte welkom!</string>
+    <string name="compatibility_dialog_confirm_button">Begrepen en opslaan</string>
+    <string name="go_to_project_website_button">Projectwebsite openen</string>
+
+    <!-- LegacyScaleAdapter (Bluetooth Driver) -->
+
+    <!-- Charts (LineChart) -->
+    <string name="content_description_time_range_icon">Periode</string>
+    <string name="content_description_filter_chart_data">Grafiekgegevens filteren</string>
+    <string name="content_description_time_range_selected">%s geselecteerd</string> <!-- Example: "Last 7 days selected" -->
+    <string name="content_description_measurement_filter_visible">Meettypefilter zichtbaar</string>
+    <string name="content_description_measurement_filter_hidden">Meettypefilter verborgen</string>
+    <string name="line_chart_filter_title_template">%1$s (%2$d metingen)</string> <!-- Example: "Last 30 days (15 entries)" -->
+    <string name="time_range_all_days">Alle dagen</string>
+    <string name="time_range_last_7_days">Afgelopen 7 dagen</string>
+    <string name="time_range_last_30_days">Afgelopen 30 dagen</string>
+    <string name="time_range_last_365_days">Afgelopen 365 dagen</string>
+    <string name="time_range_custom">Aangepaste periode</string>
+    <string name="time_range_custom_from_to">Van %1$s tot %2$s</string>
+    <string name="time_range_custom_since">Sinds %1$s</string>
+    <string name="time_range_custom_dialog_title">Periode selecteren</string>
+    <string name="time_range_custom_hint_open_end">Geen einddatum — altijd tot en met vandaag.</string>
+    <string name="time_range_custom_hint_fixed_end">Wis de einddatum om vandaag altijd mee te nemen.</string>
+    <string name="time_range_custom_clear_end">Einddatum wissen</string>
+    <string name="filter_section_time_range">Periode</string>
+    <string name="filter_section_aggregation">Groepering</string>
+    <string name="content_description_time_range_linked">Periode geldt voor alle schermen</string>
+    <string name="content_description_time_range_unlinked">Periode geldt alleen voor dit scherm</string>
+    <string name="content_description_aggregation_linked">Groepering geldt voor alle schermen</string>
+    <string name="content_description_aggregation_unlinked">Groepering geldt alleen voor dit scherm</string>
+    <string name="content_description_aggregation_selected">%1$s geselecteerd</string>
+    <string name="aggregation_level_none">Niet groeperen</string>
+    <string name="aggregation_level_day">Dag</string>
+    <string name="aggregation_level_week">Week</string>
+    <string name="aggregation_level_month">Maanden</string>
+    <string name="aggregation_level_year">Jaar</string>
+    <string name="line_chart_no_plottable_types">Geen meettypen beschikbaar om in de grafiek weer te geven.</string>
+    <string name="line_chart_no_data_to_display">Geen gegevens om weer te geven.</string>
+    <string name="line_chart_no_data_for_type_in_range">Geen gegevens voor %1$s in de geselecteerde periode.</string>
+    <string name="line_chart_this_type_placeholder">dit meettype</string>
+    <string name="line_chart_please_select_types">Selecteer meettypen voor de grafiek.</string>
+    <string name="line_chart_no_data_or_types_to_select">Geen gegevens om weer te geven of meettypen om te selecteren.</string>
+    <string name="line_chart_no_data_for_selected_types">Geen gegevens beschikbaar voor de geselecteerde meettypen.</string>
+    <string name="menu_item_measurement_filter">Meettypefilter tonen/verbergen</string>
+
+    <!-- Table Screen -->
+    <string name="table_header_date">Datum</string>
+    <string name="table_message_no_columns_or_measurements">Geen kolommen geselecteerd of geen metingen beschikbaar.</string>
+    <string name="table_message_no_columns_selected">Geen kolommen geselecteerd.</string>
+    <string name="table_message_no_data_for_selection">Geen gegevens voor de gekozen kolommen.</string>
+    <string name="table_trend_up">Stijgende trend</string>
+    <string name="table_trend_down">Dalende trend</string>
+    <string name="desc_enter_selection_mode">Items selecteren</string>
+    <string name="items_selected_count">%1$d geselecteerd</string>
+    <string name="desc_cancel_selection_mode">Selectie annuleren</string>
+    <string name="desc_change_user">Gebruiker voor geselecteerde items wijzigen</string>
+    <string name="desc_export_selected">Geselecteerde items exporteren</string>
+    <string name="desc_delete_selected">Geselecteerde items verwijderen</string>
+    <string name="dialog_title_delete_user">Gebruiker %1$s verwijderen?</string>
+    <string name="dialog_text_delete_user">Alle gegevens van deze gebruiker worden permanent verwijderd. Dit kan niet ongedaan worden gemaakt.</string>
+    <string name="dialog_title_delete_goal">Doel voor %1$s verwijderen?</string>
+    <string name="dialog_text_delete_goal">Hiermee verwijder je het doel. Je eerdere metingen blijven behouden.</string>
+    <string name="dialog_title_delete_item">Meting verwijderen?</string>
+    <string name="dialog_message_delete_item">Weet je zeker dat je de meting van %1$s (%2$s) wilt verwijderen? Dit kan niet ongedaan worden gemaakt.</string>
+    <string name="dialog_title_delete_selected_items">Items verwijderen?</string>
+    <string name="dialog_message_delete_selected_item">Weet je zeker dat je het geselecteerde item wilt verwijderen? Dit kan niet ongedaan worden gemaakt.</string>
+    <string name="dialog_message_delete_selected_items">Weet je zeker dat je de %1$d geselecteerde items wilt verwijderen? Dit kan niet ongedaan worden gemaakt.</string>
+    <string name="dialog_title_delete_type">Meettype verwijderen?</string>
+    <string name="dialog_text_delete_type">Weet je zeker dat je het eigen meettype “%1$s” wilt verwijderen? Alle bijbehorende meetwaarden worden ook permanent verwijderd. Dit kan niet ongedaan worden gemaakt.</string>
+    <string name="snackbar_items_deleted_successfully">%1$d metingen verwijderd</string>
+    <string name="snackbar_items_delete_partial_failure">Verwijderen mislukt voor %1$d van de %2$d metingen.</string>
+    <string name="dialog_title_select_user_for_assignment">Gebruiker voor toewijzing selecteren</string>
+    <string name="snackbar_no_other_users_to_change_to">Geen andere gebruikers beschikbaar om de metingen aan toe te wijzen.</string>
+    <string name="snackbar_items_user_changed_successfully">%1$d metingen verplaatst</string>
+    <string name="snackbar_items_move_partial_failure">Verplaatsen mislukt voor %1$d van de %2$d metingen (al aanwezig bij die gebruiker).</string>
+
+    <!-- Insights Screen -->
+    <string name="insights_confidence_low">Beperkte gegevens</string>
+    <string name="insights_section_measurement_analysis">Je analyse van %1$s</string>
+    <string name="insights_label_recomposition">Lichaamshercompositie</string>
+    <string name="insights_label_bulking">Bulken</string>
+    <string name="insights_label_mixed_loss">Vet- en spierverlies</string>
+    <string name="insights_label_fat_gain">Vettoename</string>
+    <string name="insights_placeholder_measurement_analysis">Er zijn minstens %1$d metingen nodig om te analyseren hoe je lichaam in de loop van de tijd is veranderd.</string>
+    <string name="insights_placeholder_weekday">Er zijn minstens %1$d metingen per weekdag nodig om wekelijkse gewoonten te herkennen.</string>
+    <string name="insights_placeholder_seasonal">Er zijn minstens %1$d jaar aan gegevens nodig om seizoenspatronen te herkennen.</string>
+    <string name="insights_placeholder_anomalies">Er zijn minstens %1$d metingen nodig om ongebruikelijke waarden te herkennen.</string>
+    <string name="insights_best_period_label">Beste maand</string>
+    <string name="insights_trend_up">Stijgend</string>
+    <string name="insights_trend_down">Dalend</string>
+    <string name="insights_trend_stable">Stabiel</string>
+    <string name="insights_rate_per_month">Verandering / maand</string>
+    <string name="insights_volatility">Schommelingen</string>
+    <string name="insights_volatility_stable">Stabiel</string>
+    <string name="insights_volatility_moderate">Matig</string>
+    <string name="insights_volatility_high">Sterk</string>
+    <string name="insights_plateau_label">Stabiele periode</string>
+    <string name="insights_plateau_days">%1$d dagen</string>
+    <string name="insights_section_weekday">Je wekelijkse gewoonten</string>
+    <string name="insights_weekday_summary_high">Je meetwaarden zijn doorgaans het hoogst op %1$s en het laagst op %2$s</string>
+    <string name="insights_weekday_summary_low">Voorlopig patroon — meet regelmatiger voor betrouwbare resultaten</string>
+    <string name="insights_section_seasonal">Je jaaroverzicht</string>
+    <string name="insights_seasonal_summary_high">Je waarden zijn doorgaans het hoogst in %1$s en het laagst in %2$s</string>
+    <string name="insights_seasonal_summary_low">Slechts één jaar aan gegevens — blijf meten om seizoenspatronen te ontdekken</string>
+    <string name="insights_section_anomalies">Ongebruikelijke metingen</string>
+    <string name="insights_anomalies_none">Geen ongebruikelijke metingen gevonden.</string>
+    <string name="insights_anomaly_deviation">%1$s ten opzichte van de verwachte %2$s</string>
+    <string name="insights_anomaly_comment">%1$s</string>
+    <string name="insights_summary_plateau">Al %1$d dagen geen duidelijke verandering — je lichaam past zich mogelijk aan.</string>
+    <string name="insights_summary_trend_change_down">Recente dalende trend — een positieve verandering ten opzichte van je langetermijntrend.</string>
+    <string name="insights_summary_trend_change_up">Recente stijgende trend — houd de langetermijntrend in de gaten.</string>
+    <string name="insights_summary_volatility_high">Sterke schommelingen waargenomen — dit komt vaak voor en kan samenhangen met natuurlijke lichaamsveranderingen, zoals het vasthouden van vocht.</string>
+    <string name="insights_summary_volatility_stable">Je waarden zijn zeer consistent — een betrouwbare basis voor analyse.</string>
+    <string name="insights_section_body_pattern">Je lichaamssamenstelling</string>
+    <string name="insights_placeholder_body_pattern">Er zijn minstens %1$d metingen met alle vier de meetwaarden (gewicht, lichaamsvet, spiermassa en lichaamswater) binnen de afgelopen %2$d dagen nodig om dit inzicht te berekenen.</string>
+    <string name="insights_pattern_summary_fat_loss">Je gewicht en vetmassa nemen af, terwijl je spiermassa behouden blijft of zelfs licht toeneemt — je verliest vooral vetmassa.</string>
+    <string name="insights_pattern_summary_recomposition">Je lichaamssamenstelling verandert gunstig: je verliest vet en bouwt tegelijkertijd aanzienlijke spiermassa op.</string>
+    <string name="insights_pattern_summary_muscle_gain">Je spiermassa neemt toe, terwijl je lichaamsvet stabiel blijft of afneemt — een positieve ontwikkeling in je lichaamssamenstelling.</string>
+    <string name="insights_pattern_summary_weight_loss_mixed">Let op: je verliest gewicht, maar je spiermassa neemt ook af.</string>
+    <string name="insights_pattern_summary_fat_gain">Je vetmassa neemt toe. Als je niet bewust bulkt, kijk dan nog eens naar je activiteitsniveau.</string>
+    <string name="insights_pattern_summary_fat_gain_with_muscle">Je vet- en spiermassa nemen toe — dit lijkt op een bulkfase. Wil je spieren opbouwen, bekijk dan of de vettoename binnen je streefbereik valt.</string>
+    <string name="insights_pattern_summary_stable">Alle meetwaarden zijn stabiel — je zit in een onderhoudsfase.</string>
+    <string name="insights_pattern_summary_undefined">Nog geen duidelijk patroon gevonden — er zijn meer metingen nodig met gewicht, lichaamsvet, spiermassa en lichaamswater.</string>
+    <string name="insights_pattern_summary_undefined_with_data">Gemengde signalen in %1$s — de trends in gewicht, vet en spiermassa vormen nog geen duidelijk patroon.</string>
+    <string name="insights_zone_tooltip_recomposition">Vet neemt af en spiermassa neemt toe — het best mogelijke resultaat.</string>
+    <string name="insights_zone_tooltip_bulking">Je vet- en spiermassa nemen toe.</string>
+    <string name="insights_zone_tooltip_mixed_loss">Je vet- en spiermassa nemen af. Je gewicht daalt, maar je verliest ook spiermassa.</string>
+    <string name="insights_zone_tooltip_fat_gain">Vet neemt toe en spiermassa neemt af of blijft stabiel — het minst gunstige resultaat.</string>
+    <string name="insights_stat_start">Start</string>
+    <string name="insights_stat_now">Nu</string>
+    <string name="insights_stat_rate_month">Verandering / maand</string>
+    <string name="insights_stat_on_average">gemiddeld</string>
+    <string name="insights_chip_volatility_stable">stabiel</string>
+    <string name="insights_chip_volatility_moderate">matig</string>
+    <string name="insights_chip_volatility_high">wisselend</string>
+    <string name="insights_chip_plateau_days">plateau van %1$d dagen</string>
+    <string name="insights_short_term_trend">korte termijn</string>
+    <string name="insights_long_term_trend">lange termijn</string>
+
+    <!-- Statistics Screen -->
+    <string name="statistics_no_relevant_types">Geen relevante meettypen beschikbaar of ingesteld voor statistieken.</string>
+    <string name="statistics_label_min">Min.</string>
+    <string name="statistics_label_max">Max.</string>
+    <string name="statistics_label_average">Gem.</string>
+    <string name="statistics_content_desc_increase">Toename</string>
+    <string name="statistics_content_desc_decrease">Afname</string>
+    <string name="statistics_content_desc_no_change">Geen verandering</string>
+
+    <!-- Settings Screen & Sub-screens -->
+    <string name="settings_item_general">Algemeen</string>
+    <string name="settings_item_user">Gebruiker</string>
+    <string name="settings_item_measurement_types">Meettypen</string>
+    <string name="settings_item_bluetooth">Bluetooth</string>
+    <string name="settings_item_chart">Grafiek</string>
+    <string name="settings_item_data_management">Gegevensbeheer</string>
+    <string name="settings_item_about">Over</string>
+
+    <!-- General Settings Screen -->
+    <string name="settings_general_title">Algemene instellingen</string>
+    <string name="settings_language_label">Taal</string>
+    <string name="settings_reminder_title">Herinnering</string>
+    <string name="settings_reminder_enable_label">Herinneringsfunctie</string>
+    <string name="settings_reminder_text_label">Herinneringstekst</string>
+    <string name="settings_reminder_text_placeholder">Voer hier je herinneringstekst in</string>
+    <string name="settings_reminder_time_label">Tijd</string>
+    <string name="reminder_enabled_snackbar">Herinnering ingeschakeld</string>
+    <string name="reminder_disabled_snackbar">Herinnering uitgeschakeld</string>
+    <string name="reminder_default_text">Tijd om te wegen</string>
+    <string name="reminder_channel_name">Herinneringen</string>
+    <string name="reminder_notification_title">openScale</string>
+    <string name="settings_reminder_days_label">Dagen</string>
+    <string name="permission_denied">Machtiging voor meldingen geweigerd</string>
+    <string name="settings_appearance_title">Weergave</string>
+    <string name="settings_dynamic_color_label">Dynamische kleuren</string>
+    <string name="settings_high_contrast_label">Hoog contrast</string>
+    <string name="settings_pure_black_label">Puur zwart</string>
+
+    <string name="monday_short">Ma</string>
+    <string name="tuesday_short">Di</string>
+    <string name="wednesday_short">Wo</string>
+    <string name="thursday_short">Do</string>
+    <string name="friday_short">Vr</string>
+    <string name="saturday_short">Za</string>
+    <string name="sunday_short">Zo</string>
+    <string name="all">Alle</string>
+
+    <string name="settings_feedback_title">Feedback</string>
+    <string name="settings_haptics_label">Trillen bij een nieuwe meting</string>
+    <string name="settings_haptics_enabled_snackbar">Trillen bij metingen ingeschakeld</string>
+    <string name="settings_haptics_disabled_snackbar">Trillen bij metingen uitgeschakeld</string>
+
+    <!-- Chart Settings Screen -->
+    <string name="setting_show_chart_points">Meetpunten tonen</string>
+    <string name="setting_show_chart_goal_lines">Doellijnen tonen</string>
+    <string name="setting_smoothing_algorithm">Afvlakkingsalgoritme</string>
+    <string name="setting_smoothing_alpha">Alfa</string>
+    <string name="setting_smoothing_window_size">Venstergrootte</string>
+    <string name="setting_smoothing_max_gap_days">Maximale onderbreking voor afvlakking (dagen)</string>
+    <string name="smoothing_algorithm_none">Geen afvlakking</string>
+    <string name="smoothing_algorithm_sma">Voortschrijdend gemiddelde</string>
+    <string name="smoothing_algorithm_ses">Exponentiële afvlakking</string>
+    <string name="setting_show_chart_projection">Prognose tonen</string>
+    <string name="setting_projection_days_in_the_past">Basis voor de prognose (dagen)</string>
+    <string name="setting_projection_days_to_project">Prognoseperiode (dagen)</string>
+    <string name="setting_projection_polynomial_degree">Prognosemodel</string>
+    <string name="poly_degree_linear">Lineair</string>
+    <string name="poly_degree_quadratic">Kwadratisch</string>
+    <string name="poly_degree_cubic">Kubisch</string>
+
+    <!-- About Screen & Diagnostics -->
+    <string name="version_info">Versie: %1$s (%2$s)</string>
+    <string name="project_information_title">Projectinformatie</string>
+    <string name="maintainer_label">Beheerder</string>
+    <string name="maintainer_icon_content_description">Beheerder</string>
+    <string name="project_homepage_display">Project op GitHub</string>
+    <string name="official_project_page_label">Officiële projectpagina</string>
+    <string name="homepage_icon_content_description">Startpagina</string>
+    <string name="software_license_details_label">Softwarelicentie</string>
+    <string name="license_icon_content_description">Licentie</string>
+    <string name="diagnostics_title">Diagnostiek</string>
+    <string name="file_logging_icon_content_description">Logregistratie</string>
+    <string name="file_logging_label">Logbestand bijhouden</string>
+    <string name="enable_file_logging_dialog_title">Logbestand bijhouden?</string>
+    <string name="enable_file_logging_dialog_message">Als je dit inschakelt, slaat de app gedetailleerde logbestanden lokaal op je apparaat op. Deze zijn handig om problemen op te sporen. De bestanden kunnen gevoelige informatie bevatten. Deel ze alleen met mensen die je vertrouwt.</string>
+    <string name="enable_file_logging_dialog_message_warning">Als je logregistratie inschakelt, begint er direct een nieuwe logsessie. Er wordt een nieuw logbestand aangemaakt en het oude wordt verwijderd.</string>
+    <string name="file_logging_enabled_snackbar">Logregistratie ingeschakeld</string>
+    <string name="file_logging_disabled_snackbar">Logregistratie uitgeschakeld</string>
+    <string name="log_export_success">Logbestand geëxporteerd.</string>
+    <string name="log_export_error">Fout bij het exporteren van het logbestand.</string>
+    <string name="log_export_no_file">Geen logbestand gevonden om te exporteren.</string>
+    <string name="log_export_no_file_to_export">Geen logbestand beschikbaar om te exporteren.</string>
+    <string name="log_export_cancelled">Export geannuleerd.</string>
+    <string name="log_export_no_app_error">Geen geschikte app gevonden om het bestand te exporteren.</string>
+    <string name="export_log_file_button">Logbestand exporteren</string>
+
+    <!-- Data Management (Export, Import, Backup, Restore, Delete) -->
+    <string name="settings_export_measurements_csv">Metingen exporteren (CSV)</string>
+    <string name="settings_import_measurements_csv">Metingen importeren (CSV)</string>
+    <string name="settings_backup_database">Back-up van database maken</string>
+    <string name="settings_restore_database">Database herstellen</string>
+    <string name="settings_delete_all_measurement_data">Alle meetgegevens verwijderen</string>
+    <string name="settings_delete_entire_database">Hele database verwijderen</string>
+    <string name="settings_danger_zone">Risicovolle acties</string>
+    <string name="settings_unknown_error">Onbekende fout</string>
+    <string name="settings_auto_backup_title">Automatische back-ups</string>
+    <string name="settings_enable_auto_backups">Automatische back-ups inschakelen</string>
+    <string name="content_desc_auto_backups_toggle">Automatische back-ups in- of uitschakelen</string>
+    <string name="settings_last_backup_status_label">Back-upstatus</string>
+    <string name="content_desc_backup_status_icon">Back-upstatus</string>
+    <string name="settings_backup_location_label">Back-uplocatie</string>
+    <string name="content_desc_backup_location_icon">Back-uplocatie</string>
+    <string name="content_desc_open_backup_location_icon">Back-uplocatie openen</string>
+    <string name="content_desc_change_backup_location_icon">Back-uplocatie wijzigen</string>
+    <string name="settings_backup_interval_label">Back-upinterval</string>
+    <string name="content_desc_backup_interval_icon">Back-upinterval</string>
+    <string name="content_desc_change_interval_icon">Back-upinterval wijzigen</string>
+    <string name="settings_backup_behavior_label">Back-upgedrag</string>
+    <string name="content_desc_backup_behavior_icon">Back-upgedrag</string>
+    <string name="settings_last_backup_status_placeholder">Laatste back-up: %1$s</string>
+    <string name="settings_auto_backups_disabled">Automatische back-ups uitgeschakeld</string>
+    <string name="settings_backup_behavior_new_file">Altijd een nieuw back-upbestand maken</string>
+    <string name="settings_backup_behavior_overwrite">Bestaand back-upbestand overschrijven</string>
+    <string name="settings_backup_location_default">Standaard: app-specifieke map</string>
+    <string name="settings_backup_location_simulated_user_choice">Gesimuleerd: gebruiker heeft een map gekozen</string>
+    <string name="dialog_title_select_backup_interval">Back-upinterval selecteren</string>
+    <string name="settings_backup_location_not_configured">Geen back-uplocatie ingesteld</string>
+    <string name="settings_backup_location_not_configured_for_auto">Geen locatie ingesteld. Automatische back-ups zijn gepauzeerd.</string>
+    <string name="settings_backup_location_error_accessing">Fout bij het openen van de back-uplocatie</string>
+    <string name="content_desc_delete_icon">Verwijderen</string>
+    <string name="dialog_title_select_backup_directory">Back-upmap selecteren</string>
+    <string name="settings_backup_location_select_action">Back-uplocatie selecteren</string>
+    <string name="settings_backup_location_selected_folder">Geselecteerde map</string>
+    <string name="settings_backup_location_open_error_no_app">Geen app gevonden om de map te openen.</string>
+    <string name="settings_backup_location_open_error">Kan de back-uplocatie niet openen.</string>
+    <string name="settings_backup_location_selected_toast">Back-uplocatie ingesteld op: %1$s</string>
+    <string name="settings_backup_location_selection_cancelled">Mapselectie geannuleerd. Automatische back-ups zijn niet ingeschakeld.</string>
+    <string name="settings_last_backup_status_successful">Laatste back-up: %1$s</string>
+    <string name="settings_last_backup_status_never">Laatste back-up: nooit</string>
+    <string name="settings_last_backup_status_failed">Laatste back-up mislukt op %1$s: %2$s</string>
+    <string name="settings_next_backup_scheduled">Volgende back-up: %1$s</string>
+    <string name="settings_next_backup_not_scheduled">Volgende back-up: niet gepland</string>
+    <string name="settings_backup_error_location_inaccessible">De back-upmap is niet meer toegankelijk. Selecteer deze opnieuw.</string>
+    <string name="settings_backup_error_file_creation_failed">Het back-upbestand kon niet in de geselecteerde map worden aangemaakt.</string>
+    <string name="settings_backup_error_write_failed">De database kon niet naar het back-upbestand worden geschreven.</string>
+    <string name="interval_daily">Dagelijks</string>
+    <string name="interval_weekly">Wekelijks</string>
+    <string name="interval_monthly">Maandelijks</string>
+
+    <!-- Data Management Dialog Titles -->
+    <string name="dialog_title_export_select_user">Exporteren: gebruiker selecteren</string>
+    <string name="dialog_title_import_select_user">Importeren: gebruiker selecteren</string>
+    <string name="dialog_title_delete_select_user">Verwijderen: gebruiker selecteren</string>
+    <string name="dialog_title_delete_user_data_confirmation">Permanent verwijderen?</string>
+    <string name="dialog_title_delete_entire_database_confirmation">LET OP! Hele database verwijderen?</string>
+    <string name="dialog_title_restore_database_confirmation">Database herstellen?</string>
+    <string name="delete_db_confirmation_title">Verwijderen van database bevestigen</string> <!-- Similar to above, could be consolidated -->
+
+    <!-- Data Management Dialog Messages & Buttons -->
+    <string name="dialog_message_delete_user_data_confirmation">Weet je zeker dat je ALLE meetgegevens van gebruiker \"%1$s\" permanent wilt verwijderen? Dit kan niet ongedaan worden gemaakt.</string>
+    <string name="button_yes_delete_all">JA, ALLES VERWIJDEREN</string>
+    <string name="dialog_message_delete_entire_database_confirmation">Hiermee verwijder je ALLE gegevens van deze app ONHERROEPELIJK, inclusief alle gebruikers, instellingen en meetgegevens. Dit kan NIET ongedaan worden gemaakt. Weet je het absoluut zeker?\n\nNa deze actie moet je de app opnieuw starten.</string>
+    <string name="dialog_message_restore_database_confirmation">Weet je zeker dat je de huidige database wilt overschrijven met een back-up? Alle huidige gegevens die niet in de back-up staan, gaan verloren. Mogelijk moet je de app na het herstellen opnieuw starten.</string>
+    <string name="button_yes_restore">JA, HERSTELLEN</string>
+    <string name="delete_db_confirmation_message">Weet je zeker dat je de hele database wilt verwijderen? Hiermee verwijder je ALLE gebruikers en ALLE gegevens. Dit kan niet ongedaan worden gemaakt.</string> <!-- Similar to above -->
+
+    <!-- Data Export Messages -->
+    <string name="export_successful">Gegevens geëxporteerd.</string>
+    <string name="export_error_no_specific_fields">Exporteren is niet mogelijk: er zijn geen specifieke gegevensvelden ingesteld om te exporteren.</string>
+    <string name="export_error_no_measurements">Geen metingen voor deze gebruiker beschikbaar om te exporteren.</string>
+    <string name="export_error_no_exportable_values">Geen exporteerbare meetwaarden voor deze gebruiker gevonden.</string>
+    <string name="export_error_cannot_create_file">Exporteren mislukt: kan het bestand niet aanmaken.</string>
+    <string name="export_error_generic">Fout bij het exporteren: %1$s</string>
+    <string name="export_no_users_available">Geen gebruikers beschikbaar om te exporteren.</string>
+
+    <!-- Data Import Messages -->
+    <string name="import_successful_records">%1$d metingen geïmporteerd.</string>
+    <string name="import_successful_records_with_details">%1$d metingen geïmporteerd%2$s.</string> <!-- %2$s for detailed summary -->
+    <string name="import_summary_details_base">%1$d metingen geïmporteerd.</string> <!-- Base for constructing summary -->
+    <string name="import_summary_ignored_duplicated_timestamp">%1$d rijen genegeerd (dubbel tijdstip).</string>
+    <string name="import_summary_skipped_missing_dates">%1$d rijen overgeslagen vanwege ontbrekende datums.</string>
+    <string name="import_summary_skipped_date_parse_errors">%1$d rijen overgeslagen vanwege fouten bij het verwerken van datums.</string>
+    <string name="import_summary_values_skipped_parse_errors">%1$d afzonderlijke waarden konden niet worden verwerkt.</string>
+    <string name="import_summary_skipped_unknown_columns">%1$d kolommen kwamen niet overeen met een meettype en zijn overgeslagen.</string>
+    <string name="import_error_no_valid_data">Geen geldige gegevens gevonden in het CSV-bestand, of alle rijen bevatten fouten.</string>
+    <string name="import_error_missing_date_column">Importeren mislukt: de verplichte kolom date ontbreekt in de CSV-kopregel.</string>
+    <string name="import_error_cannot_read_file">Importeren mislukt: kan het bestand niet lezen.</string>
+    <string name="import_error_generic">Fout bij het importeren: %1$s</string>
+    <string name="import_no_users_available">Geen gebruikers beschikbaar om te importeren.</string>
+
+    <!-- Data Deletion Messages (User Specific) -->
+    <string name="delete_data_no_users_available">Geen gebruikersgegevens beschikbaar om te verwijderen.</string>
+    <string name="delete_data_user_successful">Alle meetgegevens van %1$s zijn verwijderd.</string>
+    <string name="delete_data_user_no_data_found">Geen meetgegevens van %1$s gevonden.</string>
+    <string name="delete_data_user_error">Fout bij het verwijderen van gegevens van %1$s.</string>
+    <string name="delete_data_error_no_user_selected">Verwijderen kon niet worden gestart: geen gebruiker geselecteerd.</string>
+
+    <!-- Database Backup Messages -->
+    <string name="backup_error_db_name_not_retrieved">Fout: kan de databasenaam niet ophalen.</string>
+    <string name="backup_error_main_db_not_found">Fout: hoofddatabasebestand \'%1$s\' niet gevonden.</string>
+    <string name="backup_error_no_output_stream">Back-up mislukt: kan geen back-upbestand aanmaken op de geselecteerde locatie.</string>
+    <string name="backup_error_generic">Fout bij het maken van een databaseback-up: %1$s</string>
+    <string name="backup_successful">Databaseback-up gemaakt.</string>
+
+    <!-- Database Restore Messages -->
+    <string name="restore_error_no_input_stream">Herstellen mislukt: kan het back-upbestand niet lezen.</string>
+    <string name="restore_error_zip_format">Herstellen mislukt: het back-upbestand is geen geldig ZIP-archief of is beschadigd.</string>
+    <string name="restore_error_db_files_missing">Herstellen mislukt: essentiële databasebestanden ontbreken in de back-up.</string>
+    <string name="restore_error_generic">Fout bij het herstellen van de database: %1$s</string>
+    <string name="restore_successful">Database hersteld. Start de app opnieuw.</string>
+
+    <!-- Entire Database Deletion Messages -->
+    <string name="delete_db_successful">De hele database is verwijderd.</string>
+    <string name="delete_db_error">Fout bij het verwijderen van de hele database.</string>
+
+    <!-- Evaluation Messages -->
+    <string name="eval_no_age_band">Geen beoordeling mogelijk: geen passende leeftijdsgroep op het moment van de meting.</string>
+    <string name="eval_out_of_plausible_range_percent">Ongebruikelijke waarde: buiten het aannemelijke bereik (%1$.0f–%2$.0f%%).</string>
+
+    <!-- Bluetooth Scales Messages -->
+    <string name="bluetooth_scale_trisa_message_not_paired_instruction">Deze weegschaal is nog niet gekoppeld!\n\nHoud de knop aan de onderkant van de weegschaal ingedrukt om de koppelmodus te activeren. Maak daarna opnieuw verbinding om het apparaatwachtwoord op te halen.</string>
+    <string name="bluetooth_scale_trisa_success_pairing">Koppelen gelukt!\n\nMaak opnieuw verbinding om meetgegevens op te halen.</string>
+    <string name="bluetooth_scale_weightgurus_slot_empty">leeg</string>
+    <string name="bluetooth_scale_weightgurus_slot">Gebruiker %1$d - %2$s</string>
+    <string name="bluetooth_scale_weightgurus_slot_match">Gebruiker %1$d - %2$s (komt overeen met je naam)</string>
+    <string name="bluetooth_scale_info_create_user_instruction">Nieuwe gebruiker aanmaken op de weegschaal.</string>
+    <string name="bluetooth_scale_warning_low_battery">Batterij bijna leeg (%d%%). Laad de weegschaal op of vervang de batterijen</string>
+    <string name="bluetooth_scale_info_step_on_for_reference">Ga op blote voeten op de weegschaal staan voor referentiemetingen</string>
+    <string name="bluetooth_scale_info_measuring_weight">Gewicht meten: %.2f</string>
+    <string name="bluetooth_scale_error_max_users_reached">Het maximale aantal gelijktijdige weegschaalgebruikers is bereikt</string>
+
+    <string name="permission_read_write_data_description">openScale-gegevens lezen en schrijven, inclusief gebruikersinformatie en alle opgeslagen metingen</string>
+    <string name="permission_read_write_data_label">openScale-gegevens lezen en schrijven</string>
+
+    <string name="dialog_bt_interaction_title_choose_user">Gebruiker op de weegschaal selecteren</string>
+    <string name="dialog_bt_interaction_desc_choose_user_default">Selecteer je gebruiker in de lijst of maak een nieuwe aan.</string>
+    <string name="dialog_bt_icon_desc_choose_user">Gebruikersselectie</string>
+    <string name="dialog_bt_interaction_title_enter_consent">Bevestigingscode invoeren</string>
+    <string name="dialog_bt_interaction_desc_enter_consent_default">Voer de code in die je weegschaal toont.</string>
+    <string name="dialog_bt_icon_desc_enter_consent">Code invoeren</string>
+    <string name="dialog_bt_label_consent_code">Bevestigingscode</string>
+    <string name="dialog_bt_error_loading_user_list_empty">De gebruikerslijst is leeg of beschadigd.</string>
+    <string name="dialog_bt_error_loading_user_list_format">Fout: de gebruikersgegevens konden niet correct worden geladen.</string>
+    <string name="dialog_bt_select_user_prompt">Selecteer een gebruiker.</string>
+    <string name="dialog_bt_enter_valid_code_prompt">Voer een geldige code in.</string>
+
+    <string name="saved_measurements_message">%1$d metingen opgeslagen</string>
+
+    <!-- General info -->
+    <string name="bt_info_step_on_scale">Ga op blote voeten op de weegschaal staan</string>
+
+    <!-- Mapping / consent flows -->
+    <string name="bt_info_using_existing_mapping">Bestaande koppeling gebruiken: app-gebruiker %1$d ↔ profielplaats %2$d op de weegschaal.</string>
+    <string name="bt_info_consent_needed">Voer de bevestigingscode voor profielplaats %1$d in.</string>
+    <string name="bt_info_read_only_mode_no_consent">Geen bevestigingscode beschikbaar. Metingen kunnen worden gelezen, maar gebruikersinstellingen kunnen niet worden gewijzigd.</string>
+    <string name="bt_info_suggest_create_new_user">Maak een nieuwe gebruiker aan op de weegschaal om alle functies te gebruiken.</string>
+    <string name="bt_info_register_new_user_started">Nieuwe gebruiker aanmaken op de weegschaal…</string>
+    <string name="bt_info_no_mapping_creating_user">Geen gebruikerskoppeling gevonden; nieuwe gebruiker aanmaken op de weegschaal…</string>
+    <string name="bt_info_waiting_for_measurements">Wachten op een meting via Bluetooth-notificaties.</string>
+    <string name="bt_info_linked_app_user_to_slot">App-gebruiker %1$d gekoppeld aan profielplaats %2$d op de weegschaal.</string>
+
+    <!-- Omron WLC scales (HBF-702T family) -->
+    <string name="bt_info_omron_pairing_mode_required">Houd de Bluetooth-knop van de weegschaal ingedrukt tot de koppelindicator knippert.</string>
+    <string name="bt_info_omron_paired">Weegschaal gekoppeld met openScale.</string>
+    <string name="bt_info_omron_measurements_read">%1$d nieuwe meting(en) uitgelezen van de weegschaal.</string>
+    <string name="bt_info_omron_no_new_measurements">Geen nieuwe metingen op de weegschaal opgeslagen.</string>
+    <string name="bt_omron_slot_with_measurement">Weegschaalgebruiker %1$d — %2$.1f kg op %3$s</string>
+    <string name="bt_omron_slot_empty">Weegschaalgebruiker %1$d — geen metingen</string>
+    <string name="bt_error_omron_unknown_model">Omron-model \"%1$s\" wordt niet ondersteund; de meetgegevens kunnen niet worden gedecodeerd.</string>
+    <string name="bt_error_omron_service_missing">Dit apparaat biedt de Omron-overdrachtsservice niet aan.</string>
+    <string name="bt_error_omron_pairing_mode_required">De weegschaal staat niet in de koppelmodus. Houd de Bluetooth-knop ingedrukt tot de koppelindicator knippert en probeer het opnieuw.</string>
+    <string name="bt_error_omron_pairing_failed">Kan de koppelsleutel niet op de weegschaal opslaan.</string>
+    <string name="bt_error_omron_session_failed">De weegschaal heeft het starten van de gegevensoverdracht geweigerd.</string>
+    <string name="bt_error_omron_read_failed">Opgeslagen metingen uitlezen van de weegschaal mislukt.</string>
+    <string name="bt_error_omron_timeout">De weegschaal reageert niet meer; de overdracht is geannuleerd.</string>
+    <string name="bt_error_mi_scale_service_missing">Dit apparaat biedt geen ondersteunde Mi Scale-service aan.</string>
+    <string name="bt_warn_mi_scale_variant_downgraded">Deze weegschaal wordt als v2-model herkend, maar geeft alleen het gewicht door. Lichaamssamenstelling is niet beschikbaar op dit apparaat.</string>
+
+    <!-- Warnings -->
+    <string name="bt_warn_low_battery">De batterij van de weegschaal is bijna leeg (%1$d%%).</string>
+    <!-- Used by scales that only signal that the battery is low, without reporting a level. -->
+    <string name="bt_warn_low_battery_unknown">De batterij van de weegschaal is bijna leeg.</string>
+    <string name="bt_warn_register_failed_with_code">Gebruiker aanmaken op de weegschaal mislukt (code %1$d).</string>
+    <string name="bt_warn_slots_full">De weegschaal heeft geen vrije profielplaatsen. Verwijder een gebruiker op het apparaat en probeer het opnieuw.</string>
+    <string name="bt_warn_notify_failed">Notificaties inschakelen voor %1$s mislukt.</string>
+    <string name="bt_warn_write_failed">Schrijven naar %1$s mislukt.</string>
+    <string name="bt_warn_notify_state_failed">Notificatiestatus wijzigen voor %1$s mislukt.</string>
+    <string name="bt_warn_consent_wrong_retry">De bevestigingscode is niet geaccepteerd. Controleer de code en probeer het opnieuw.</string>
+    <string name="bt_warn_qardio_users_full">De QardioBase heeft geen vrije profielplaatsen. Reset de weegschaal in de apparaatinstellingen om alle gebruikers te verwijderen en maak daarna opnieuw verbinding.</string>
+    <string name="bt_info_qardio_updating">Weegschaal bijwerken…</string>
+    <string name="bt_info_qardio_updated">Weegschaal bijgewerkt.</string>
+    <string name="bt_warn_qardio_other_user">Weging van %1$s niet opgeslagen: de weegschaal heeft deze toegewezen aan \"%2$s\". Was jij dit? Stap dan van de weegschaal af en druk op het midden tot de aanwijzer op je naam staat.</string>
+    <string name="bt_info_qardio_guest">De weegschaal heeft je niet herkend. Stap van de weegschaal af en druk op het midden tot de aanwijzer op je naam staat.</string>
+    <string name="bt_warn_qardio_profile_timeout">De weegschaal reageerde niet meer tijdens het opslaan van je profiel. Maak opnieuw verbinding om het nogmaals te proberen.</string>
+    <string name="bt_warn_qardio_config_timeout">De weegschaal ging niet in de instellingenmodus, waardoor je profiel niet is verzonden. Stap van de weegschaal af en maak opnieuw verbinding om het nogmaals te proberen.</string>
+    <string name="bt_warn_qardio_reset_timeout">De weegschaal heeft de reset niet bevestigd. Bij de volgende verbinding wordt het opnieuw geprobeerd.</string>
+    <string name="bt_warn_qardio_guest_not_saved">Weging van %1$s niet opgeslagen: de weegschaal heeft je niet herkend. Stap de volgende keer van de weegschaal af en druk op het midden tot de aanwijzer op je naam staat.</string>
+    <string name="qardio_section_info">Weegschaal</string>
+    <string name="qardio_info_none">Maak één keer verbinding om de gegevens van de weegschaal uit te lezen.</string>
+    <string name="qardio_info_model">Model</string>
+    <string name="qardio_info_firmware">Firmware</string>
+    <string name="qardio_info_software">Software</string>
+    <string name="qardio_info_battery_value">%1$d%%</string>
+    <string name="qardio_info_profiles">Profielen</string>
+    <string name="qardio_info_profile_other">ander profiel (niet van deze telefoon)</string>
+    <string name="qardio_section_scale">Weegschaalinstellingen</string>
+    <string name="qardio_section_phone">Deze telefoon</string>
+    <string name="qardio_section_maintenance">Onderhoud</string>
+    <string name="qardio_action_resend">Opnieuw verzenden</string>
+    <string name="qardio_action_reset">Resetten</string>
+    <string name="qardio_config_resend_pending">Profielen worden bij de volgende verbinding verzonden.</string>
+    <string name="qardio_config_impedance">Lichaamssamenstelling</string>
+    <string name="qardio_config_impedance_desc">Meet vet, water, spier- en botmassa met een zwakke elektrische stroom. Schakel dit uit als iemand met een pacemaker of ander implantaat de weegschaal gebruikt, of tijdens een zwangerschap.</string>
+    <string name="qardio_config_haptic">Trillen</string>
+    <string name="qardio_config_haptic_desc">De weegschaal trilt bij het inschakelen, na een meting en wanneer de instellingen veranderen.</string>
+    <string name="qardio_config_scale_wide_pending">Wijziging in behandeling: wordt bij de volgende verbinding verzonden.</string>
+    <string name="qardio_config_save_guest">Gastwegingen opslaan</string>
+    <string name="qardio_config_save_guest_desc">Slaat wegingen die de weegschaal niet herkent op bij de actieve gebruiker. Gebruik dit alleen als niemand anders de weegschaal gebruikt.</string>
+    <string name="bt_info_qardio_resetting">Weegschaal resetten en alle gebruikers verwijderen…</string>
+    <string name="qardio_config_description">openScale houdt het profiel van de actieve gebruiker op de weegschaal bij. De weegschaal toont namen in kleine letters, tot 6 letters of cijfers.</string>
+    <string name="qardio_config_select_on_connect">Mijn profiel selecteren bij verbinden</string>
+    <string name="qardio_config_select_on_connect_desc">Geeft aan de weegschaal door dat de volgende weging voor de actieve openScale-gebruiker is, zoals de officiële app dat deed. De weegschaal kan nog steeds iemand anders herkennen.</string>
+    <string name="qardio_config_resend_profiles">Profielen opnieuw verzenden</string>
+    <string name="qardio_config_reset">Weegschaal resetten</string>
+    <string name="qardio_config_reset_desc">Verwijdert bij de volgende verbinding alle gebruikers en het wifi-netwerk en herstelt de standaardinstellingen van de weegschaal. Bij de verbinding daarna wordt je profiel opnieuw toegevoegd.</string>
+    <string name="qardio_config_reset_legacy">Oude resetmethode (experimenteel)</string>
+    <string name="qardio_config_reset_legacy_desc">De resetmethode van de Qardio-app voor firmware ouder dan 1.8. Probeer dit alleen als de normale reset niets doet.</string>
+    <string name="qardio_config_resend_profiles_desc">Verzendt het profiel van elke openScale-gebruiker op deze telefoon opnieuw wanneer die gebruiker de volgende keer verbinding maakt.</string>
+    <string name="bt_info_qardio_reset_done">Weegschaal gereset. Je profiel wordt opnieuw toegevoegd wanneer de weegschaal weer verbinding maakt.</string>
+    <string name="qardio_config_reset_pending">In behandeling: de weegschaal wordt gereset wanneer deze telefoon weer verbinding maakt.</string>
+
+    <!-- Errors -->
+    <string name="bt_error_ucp_not_authorized">De bevestigingscode is niet geaccepteerd. Controleer de code en probeer het opnieuw.</string>
+    <string name="bt_error_delivery_user_feedback">Fout bij het doorgeven van gebruikersfeedback: %1$s</string>
+    <string name="bt_info_reconnecting_try">Opnieuw verbinden… (poging %1$d/%2$d)</string>
+    <string name="bt_info_waiting_for_measurement">Wachten op een meting via Bluetooth-notificaties.</string>
+
+    <!-- Adapter: warnings/errors -->
+    <string name="bt_warn_no_peripheral_for_setnotify">Geen randapparaat voor setNotifyOn(%1$s)</string>
+    <string name="bt_warn_characteristic_not_found">Bluetooth-karakteristiek %1$s niet gevonden</string>
+    <string name="bt_warn_no_peripheral_for_write">Geen randapparaat voor write(%1$s)</string>
+    <string name="bt_warn_no_peripheral_for_read">Geen randapparaat voor read(%1$s)</string>
+    <string name="bt_warn_write_failed_status">Schrijven naar %1$s mislukt: %2$s</string>
+    <string name="bt_warn_notify_state_failed_status">Notificatiestatus wijzigen voor %1$s mislukt: %2$s</string>
+
+    <!-- Adapter: generic errors -->
+    <string name="bt_error_no_user_selected">Geen gebruiker geselecteerd</string>
+    <string name="bt_error_generic">Fout</string>
+
+    <string name="bt_error_handler_connect_failed">Fout in het stuurprogramma bij het verbinden: %1$s</string>
+    <string name="bt_error_handler_parse_error">Verwerkingsfout in het stuurprogramma voor %1$s: %2$s</string>
+    <string name="bt_error_no_bluetooth_adapter">Geen Bluetooth-adapter gevonden op dit apparaat.</string>
+    <string name="bt_error_no_device_found">Apparaat niet gevonden. Controleer of het aan staat en binnen bereik is.</string>
+    <string name="bt_info_using_existing_mapping_auto_consent">Bestaande koppeling gebruiken voor gebruiker %1$s met profielplaats %2$s op de weegschaal. Automatische bevestiging proberen.</string>
+    <string name="bt_error_pin_format_invalid">Ongeldige pincode-indeling. Voer een geldig getal in.</string>
+    <string name="bt_error_uds_register_failed">Gebruiker registreren op de weegschaal mislukt. Fout: %1$s</string>
+    <string name="bt_error_uds_consent_failed">Gebruiker bevestigen op de weegschaal mislukt. Fout: %1$s</string>
+    <string name="bt_error_uds_list_users_failed">Gebruikerslijst ophalen van de weegschaal mislukt. Fout: %1$s</string>
+    <string name="bt_error_user_setup_failed_no_list">Gebruiker instellen mislukt. Kan de gebruikerslijst niet van de weegschaal ophalen.</string>
+
+    <string name="bluetooth_scale_info_create_user_instruction_uds">Nieuwe gebruiker aanmaken op de weegschaal (profielplaats toegewezen door UDS)</string>
+    <string name="bt_uds_choice_slot_current_user">Profielplaats P%1$d: %2$s (huidige app-gebruiker)</string>
+    <string name="bt_uds_choice_slot_other_user">Profielplaats P%1$d: in gebruik door %2$s (selecteren om over te nemen?)</string>
+    <string name="bt_uds_choice_slot_occupied_unmapped">Profielplaats P%1$d: bezet (niet gekoppeld)</string>
+
+    <!-- SBF72 Specific (can be in a general BT strings section or specific if needed later) -->
+    <!-- These were requested for SanitasSbf72Handler, ensure they are distinct if used by both -->
+    <string name="bt_sbf72_choice_slot_current_user">P%1$d: %2$s (huidige gebruiker)</string>
+    <string name="bt_sbf72_choice_slot_other_user">P%1$d: in gebruik door %2$s (overnemen?)</string>
+    <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: bezet (niet gekoppeld)</string>
+    <string name="bt_sbf72_choice_slot_create_new">P%1$d: \'%2$s\' hier aanmaken</string>
+
+    <!-- Progress since the start point recorded on a goal -->
+    <string name="content_description_goal_progress">Doelvoortgang: %1$d procent</string>
+    <string name="progress_goal_reached">Doel bereikt</string>
+    <string name="progress_held_for">al %1$s</string> <!-- how long the goal has been held; follows "2.13 kg below goal"; %1$s is a duration -->
+    <string name="progress_remaining_to_go">nog %1$s te gaan</string> <!-- distance still missing to the goal -->
+    <string name="progress_time_left">%1$s tot %2$s</string> <!-- %1$s is a day count, %2$s the target date without the year -->
+    <string name="progress_since_date">Sinds %1$s</string> <!-- the goal's start date -->
+    <string name="progress_until_date">Tot %1$s</string> <!-- the goal's target date -->
+    <string name="progress_elapsed_in">In %1$s</string> <!-- time the change took, counted from the start point; %1$s is a duration -->
+    <string name="progress_below_goal">%1$s onder je doel</string> <!-- overshot a goal downwards -->
+    <string name="progress_above_goal">%1$s boven je doel</string> <!-- overshot a goal upwards -->
+
+    <!-- Measurement comparison -->
+    <string name="route_title_measurement_comparison">Vergelijking</string>
+    <string name="desc_compare_selected">De twee geselecteerde metingen vergelijken</string>
+    <string name="comparison_select_two">Selecteer precies twee metingen om ze te vergelijken.</string>
+    <string name="comparison_days_apart">%1$d dagen verschil</string>
+    <string name="comparison_same_day">Dezelfde dag</string>
+    <string name="comparison_no_common_metrics">Deze twee metingen hebben geen meettypen gemeen.</string>
+    <string name="comparison_only_in_one">Slechts in één van de twee metingen</string>
+    <string name="comparison_mode_absolute">Absoluut</string>
+    <string name="comparison_mode_percent">Procent</string>
+    <string name="comparison_mode_per_week">Per week</string>
+    <string name="comparison_column_delta">Δ</string>
+    <string name="comparison_column_delta_percent">Δ %</string>
+    <string name="comparison_column_delta_per_week">Δ / week</string>
+
+    <!-- Measurement photos -->
+    <string name="image_take_photo">Foto maken</string>
+    <string name="image_choose_from_gallery">Kiezen uit galerij</string>
+    <string name="image_remove_photo">Foto verwijderen</string>
+    <string name="content_desc_photo">Foto: %1$s</string>
+    <string name="content_desc_close_photo">Foto sluiten</string>
+    <string name="content_desc_export_photo">Foto exporteren</string>
+    <string name="success_photo_exported">Foto geëxporteerd.</string>
+    <string name="error_saving_image">De foto kon niet worden opgeslagen.</string>
+    <string name="error_exporting_image">De foto kon niet worden geëxporteerd.</string>
+    <string name="dialog_title_export_photos">Deze CSV-export bevat foto\'s</string>
+    <string name="dialog_message_export_photos">Alleen het CSV-bestand exporteren, of een ZIP-bestand met het CSV-bestand en alle foto\'s? Het ZIP-bestand kan weer worden geïmporteerd, inclusief foto\'s.</string>
+    <string name="action_export_csv_only">Alleen CSV</string>
+    <string name="action_export_zip_with_photos">ZIP met foto\'s</string>
 </resources>
