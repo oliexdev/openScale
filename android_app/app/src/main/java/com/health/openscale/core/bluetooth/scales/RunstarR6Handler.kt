@@ -19,9 +19,11 @@ package com.health.openscale.core.bluetooth.scales
 
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
+import com.health.openscale.core.bluetooth.libs.Wla25BodyComposition
 import com.health.openscale.core.service.ScannedDeviceInfo
 import java.util.Date
 import java.util.Locale
@@ -63,9 +65,12 @@ import com.health.openscale.core.data.WeightUnit
  *    display shows weight only.
  *
  * The FG2202WB speaks the same protocol with two differences seen so far: 0x25 where the R6
- * sends status 00, and 0xA3/0xA4 frames that are the first of two parts (length 0x1A/0x1E);
- * the second part is not decoded. Its impedance is only measured with the handlebar held —
- * feet only, the scale reports 50 Ω, which the plausibility range below rejects.
+ * sends status 00, and 0xA3/0xA4 frames that are the first of two parts (length 0x1A/0x1E).
+ * The two-part 0xA3 (also sent by the Sacoma Ultra) carries ten 8-electrode impedances
+ * instead of one, see [segmentalImpedances]; they feed the vendor's [Wla25BodyComposition],
+ * which matched the Fitdays app's reading of a Sacoma Ultra weigh-in to within 0.2 % fat.
+ * Impedance is only measured with the handlebar held; feet only, the limb values read
+ * ~1 Ω and WLA25's own validity gate rejects them (weight only).
  *
  * The Lescale F4P (ICOMON model FI2019LB-C) speaks the same protocol (checksum verified
  * across every frame of six weigh-ins) with two differences seen so far:
@@ -90,10 +95,13 @@ class RunstarR6Handler : ScaleDeviceHandler() {
     private var lastPreviewWeightKg = -1f
     private var lastPublishedWeightRaw: Int? = null
     private var outgoingSeq = 0
-    private var isHoffen = false
+    /** Fitdays sends these the 0xBA user frame after the 0xA1 ack; see [sendHoffenUserInfo]. */
+    private var sendsUserInfo = false
     private var isLescale = false
     /** Trailer flag bits for outgoing frames; only the F4P gets any (see [unitFlags]). */
     private var outgoingFlags = 0
+    /** Part 1 of a two-part 0xA3, held until part 2 arrives. */
+    private var pendingResultPart1: ByteArray? = null
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.lowercase(Locale.ROOT)
@@ -109,6 +117,10 @@ class RunstarR6Handler : ScaleDeviceHandler() {
             // and TaylorBIAHandler leaves it alone for that.
             name == "my_scale" && SERVICE in device.serviceUuids &&
                 SERVICE_FG2202WB in device.serviceUuids -> "Fitdays FG2202WB"
+            // The Sacoma Ultra (8 electrodes + handle, Fitdays/Sacoma app) advertises the
+            // FG2202WB's 0xFFB0 + 0x1530 pair under its own name.
+            name == SACOMA_NAME.lowercase(Locale.ROOT) && SERVICE in device.serviceUuids &&
+                SERVICE_FG2202WB in device.serviceUuids -> "Sacoma Ultra"
             name == LESCALE_F4P_NAME.lowercase(Locale.ROOT) -> "Lescale F4P"
             else -> return null
         }
@@ -136,9 +148,12 @@ class RunstarR6Handler : ScaleDeviceHandler() {
         lastPreviewWeightKg = -1f
         lastPublishedWeightRaw = null
         outgoingSeq = 0
-        isHoffen = getPeripheral()?.name.equals(HOFFEN_NAME, ignoreCase = true)
-        isLescale = getPeripheral()?.name.equals(LESCALE_F4P_NAME, ignoreCase = true)
+        val name = getPeripheral()?.name
+        isLescale = name.equals(LESCALE_F4P_NAME, ignoreCase = true)
+        sendsUserInfo = listOf(HOFFEN_NAME, LESCALE_F4P_NAME, SACOMA_NAME)
+            .any { name.equals(it, ignoreCase = true) }
         outgoingFlags = if (isLescale) unitFlags(user.scaleUnit) else 0
+        pendingResultPart1 = null
 
         // Subscribe live first, then result — mirrors RobiS9Handler's subscription order
         // for the same FFB0 family.
@@ -152,6 +167,16 @@ class RunstarR6Handler : ScaleDeviceHandler() {
 
     override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
         if (data.size != 20) return
+        if ((data[2].toInt() and 0xFF) == 0x01) {
+            // Part 2 of a two-part 0xA3; same seq and checksum rule as part 1.
+            val part1 = pendingResultPart1 ?: return
+            pendingResultPart1 = null
+            val valid = data[0] == part1[0] && isChecksumValid(data)
+            if (!valid) logW("Runstar R6 bad A3 part 2 ${data.toHexPreview(20)}, weight only")
+            handleFinalResult(part1, part1[0].toInt() and 0xFF, user,
+                if (valid) segmentalImpedances(part1, data) else null)
+            return
+        }
         if ((data[2].toInt() and 0xFF) != 0x00) return
         if (!isChecksumValid(data)) {
             logD("Runstar R6 checksum mismatch ${data.toHexPreview(20)}")
@@ -164,12 +189,15 @@ class RunstarR6Handler : ScaleDeviceHandler() {
             TYPE_DEVICE_INFO -> {
                 logD("Runstar R6 device info ${data.toHexPreview(20)}")
                 sendAck(seq)
-                // Fitdays sends the HO-36's user frame right after this ack; the F4P
-                // accepts the same frame (answers 0xA0 01).
-                if (isHoffen || isLescale) sendHoffenUserInfo(user)
+                // Fitdays sends the HO-36's user frame right after this ack; the F4P and
+                // Sacoma Ultra accept the same frame (answer 0xA0 01) and only then show
+                // body composition on their display.
+                if (sendsUserInfo) sendHoffenUserInfo(user)
             }
             TYPE_ACK -> logD("Runstar R6 ack ${data.toHexPreview(20)}")
-            TYPE_FINAL_RESULT -> handleFinalResult(data, seq, user)
+            TYPE_FINAL_RESULT ->
+                if ((data[1].toInt() and 0xFF) > SINGLE_FRAME_LEN) pendingResultPart1 = data
+                else handleFinalResult(data, seq, user, null)
             TYPE_HISTORY_ENTRY -> handleHistoryEntry(data, seq)
             else -> logD(
                 "Runstar R6 unhandled frame type=0x${String.format("%02X", data[3])} " +
@@ -195,11 +223,12 @@ class RunstarR6Handler : ScaleDeviceHandler() {
         }
     }
 
-    private fun handleFinalResult(data: ByteArray, seq: Int, user: ScaleUser) {
+    /** [segmental]: the ten impedances of a two-part 0xA3, or null for a single-frame one. */
+    private fun handleFinalResult(data: ByteArray, seq: Int, user: ScaleUser, segmental: DoubleArray?) {
         logI("Runstar R6 final result ${data.toHexPreview(20)}")
 
         val result = decodeFinalResult(data) ?: return
-        if (result.status != STATUS_OK) {
+        if (result.status !in OK_STATUSES) {
             // Never seen in any capture, so its meaning is unknown — log it rather than
             // discard a weigh-in on a guess.
             logW("Runstar R6 final result status=0x${String.format("%02X", result.status)}")
@@ -217,12 +246,14 @@ class RunstarR6Handler : ScaleDeviceHandler() {
             // Only a plausible impedance is stored: the scales report fixed placeholders when
             // they measured none (0 on the HO-36, 50 Ω on the FG2202WB feet only), and those
             // in the history would be worse than nothing.
-            if (result.impedanceOhm in IMPEDANCE_MIN..IMPEDANCE_MAX) {
+            // In a two-part frame bytes 9..10 are the first segmental value, not an impedance.
+            if (segmental == null && result.impedanceOhm in IMPEDANCE_MIN..IMPEDANCE_MAX) {
                 this[MeasurementType.IMPEDANCE] = Ohm(result.impedanceOhm.toFloat())
             }
         }
 
-        applyBodyComposition(measurement, weightKg, result.impedanceOhm, user)
+        if (segmental == null) applyBodyComposition(measurement, weightKg, result.impedanceOhm, user)
+        else applySegmentalBodyComposition(measurement, weightKg, segmental, user)
 
         publish(measurement)
         lastPublishedWeightRaw = result.grams
@@ -231,6 +262,40 @@ class RunstarR6Handler : ScaleDeviceHandler() {
         // No requestDisconnect(): the scale hangs up on its own a few seconds after the
         // result (every capture: HCI reason 19, remote-initiated). Forcing it here would
         // risk cutting off 0xA4 history entries still pending on this connection.
+    }
+
+    /** Body composition from the ten 8-electrode impedances, via the vendor's WLA25. */
+    private fun applySegmentalBodyComposition(
+        measurement: ScaleMeasurement,
+        weightKg: Float,
+        imps: DoubleArray,
+        user: ScaleUser
+    ) {
+        logI("Runstar R6 segmental impedances (Ω): ${imps.joinToString()}")
+        if (user.bodyHeight <= 0f) {
+            logW("Runstar R6 no body height set for the current user, skipping body composition")
+            return
+        }
+        val r = Wla25BodyComposition.compute(user.bodyHeight.toInt(), weightKg.toDouble(), imps)
+        if (r == null) {
+            logW("Runstar R6 segmental impedances rejected (no handlebar contact?), weight only")
+            return
+        }
+        measurement[MeasurementType.BODY_FAT] = Percent(r.fat)
+        measurement[MeasurementType.WATER] = Percent(r.water)
+        // MUSCLE is skeletal muscle in openScale (Fitdays' "Skeletal Muscle"); Fitdays' broader
+        // "Muscle Rate" (fat-free mass minus bone, ~80 %) goes to TOTAL_MUSCLE, as in KeepS3Handler.
+        measurement[MeasurementType.MUSCLE] = Percent(r.skeletalMuscle)
+        measurement[TOTAL_MUSCLE] = Percent(r.musclePercent)
+        measurement[MeasurementType.BONE] = Kg(r.boneKg)
+        measurement[MeasurementType.VISCERAL_FAT] = r.visceralFat.toFloat()
+        measurement[MeasurementType.PROTEIN] = Percent(r.protein)
+        val sex = if (user.gender.isMale()) Wla25BodyComposition.SEX_MALE else Wla25BodyComposition.SEX_FEMALE
+        Wla25BodyComposition.bodyAge(user.age, r.fat.toDouble(), sex)
+            .takeIf { it in 10..99 }?.let { measurement[METABOLIC_AGE] = it }
+        // BMR and LBM are left to openScale's derived values (wiki: "do not compute what
+        // openScale already derives").
+        logI("Runstar R6 body composition (WLA25): $r")
     }
 
     /**
@@ -363,6 +428,16 @@ class RunstarR6Handler : ScaleDeviceHandler() {
     }
 
     companion object {
+        /** Shared identities with KeepS3/QN/Picooc and Relaxmedic, so histories stay continuous. */
+        val TOTAL_MUSCLE = MeasurementType.devicePercent(
+            "total_muscle", R.string.measurement_type_total_muscle,
+            icon = MeasurementTypeIcon.IC_M_WORKOUT, color = 0xFF2E7D32.toInt()
+        )
+        val METABOLIC_AGE = MeasurementType.deviceInt(
+            "metabolic_age", R.string.measurement_type_metabolic_age,
+            icon = MeasurementTypeIcon.IC_M_TIMER, color = 0xFF795548.toInt()
+        )
+
         private const val TYPE_DEVICE_INFO = 0xA1
         private const val TYPE_ACK = 0xA0
         private const val TYPE_LIVE_WEIGHT = 0xA2
@@ -373,6 +448,7 @@ class RunstarR6Handler : ScaleDeviceHandler() {
 
         /** Advertised name of the Hoffen HO-36. */
         private const val HOFFEN_NAME = "HOFFEN"
+        private const val SACOMA_NAME = "SACOMA SCALE"
 
         /** Advertised name of the Lescale F4P. */
         private const val LESCALE_F4P_NAME = "Lescale F4P"
@@ -380,7 +456,8 @@ class RunstarR6Handler : ScaleDeviceHandler() {
         private const val STATE_MEASURING = 0x01
         private const val STATE_SETTLING = 0x02
 
-        private const val STATUS_OK = 0x00
+        /** 00 on the R6; 0x25 on every FG2202WB and Sacoma Ultra weigh-in. */
+        private val OK_STATUSES = setOf(0x00, 0x25)
 
         /** 2000-01-01T00:00:00Z — same floor as [AfuB1Handler]'s history guard. */
         private const val EARLIEST_PLAUSIBLE_MILLIS = 946_684_800_000L
@@ -496,6 +573,20 @@ class RunstarR6Handler : ScaleDeviceHandler() {
             ((data[offset].toInt() and 0xFF) shl 16) or
                 ((data[offset + 1].toInt() and 0xFF) shl 8) or
                 (data[offset + 2].toInt() and 0xFF)
+
+        /** A frame's length byte counts the type byte plus up to 15 payload bytes. */
+        private const val SINGLE_FRAME_LEN = 0x10
+
+        /**
+         * The ten impedances of a two-part 0xA3, in Ω, in [Wla25BodyComposition]'s order:
+         * u16 BE (0.1 Ω) at part 1 bytes 9..18, then part 2 bytes 3..12 — two groups of
+         * five, each led by the small trunk value (~20 Ω), then four limb values (~250-370 Ω)
+         * on a Sacoma Ultra with the handlebar held.
+         */
+        private fun segmentalImpedances(part1: ByteArray, part2: ByteArray): DoubleArray {
+            val bytes = part1.copyOfRange(9, 19) + part2.copyOfRange(3, 13)
+            return DoubleArray(10) { u16be(bytes, 2 * it) / 10.0 }
+        }
 
         private fun u16be(data: ByteArray, offset: Int): Int =
             ((data[offset].toInt() and 0xFF) shl 8) or
