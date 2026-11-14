@@ -106,7 +106,8 @@ class MiScaleS400Handler : ScaleDeviceHandler() {
         /** [S400HydrationShift] against the user's previous weighing; |value| >= 3 % is a warning. */
         val HYDRATION_SHIFT = MeasurementType.devicePercent(
             "hydration_shift", R.string.measurement_type_hydration_shift,
-            icon = MeasurementTypeIcon.IC_M_WATER_DROP, color = 0xFF26A69A.toInt()
+            icon = MeasurementTypeIcon.IC_M_WATER_DROP, color = 0xFF26A69A.toInt(),
+            numericPolicy = MeasurementType.NumericPolicy.SIGNED
         )
 
         private const val SETTINGS_KEY_BIND_KEY = "s400_bind_key"
