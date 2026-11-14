@@ -643,7 +643,7 @@
     <string name="settings_reminder_time_label">Time</string>
     <string name="reminder_enabled_snackbar">Reminder enabled</string>
     <string name="reminder_disabled_snackbar">Reminder disabled</string>
-    <string name="reminder_default_text">Time to weight</string>
+    <string name="reminder_default_text">Time to weigh yourself</string>
     <string name="reminder_channel_name">Reminders</string>
     <string name="reminder_notification_title">openScale</string>
     <string name="settings_reminder_days_label">Days</string>
