@@ -1,0 +1,117 @@
+# Decoded ATT trace (btsnoop -> HCI ACL -> L2CAP -> ATT)
+# Redacted: scale MAC -> DE:AD:BE:EF:00:01, alias -> BLESmart_EXAMPLE
+# Pairing pass; 8-byte/24-byte frames fully reassembled across ACL fragments.
+# Times are capture-local (UTC).
+# 0x01B8 bytes 6-15 were replaced by synthetic zeros for privacy (BCC recomputed as XOR).
+# Device Information serial-number reads were removed.
+
+03:05:16.492 host>ctrl hci=0x003 ReadByTypeReq start=0x0001 end=0xffff type=0x2a01
+03:05:16.543 ctrl>host hci=0x003 ReadByTypeRsp len=4 | h=0x0005 0x0c80
+03:05:20.292 host>ctrl hci=0x003 ReadByTypeReq start=0x0001 end=0xffff type=0x2b3a
+03:05:20.354 ctrl>host hci=0x003 ErrorRsp req=ReadByTypeReq h=0x0001 err=0x0a
+03:05:20.859 host>ctrl hci=0x003 FindByTypeValueReq start=0x0001 end=0xffff type=0x2800 value=0118
+03:05:20.921 ctrl>host hci=0x003 FindByTypeValueRsp 08000b00
+03:05:20.923 host>ctrl hci=0x003 ReadByTypeReq start=0x0001 end=0xffff type=0x2b2a
+03:05:20.981 ctrl>host hci=0x003 ErrorRsp req=ReadByTypeReq h=0x0001 err=0x0a
+03:05:20.983 host>ctrl hci=0x003 FindByTypeValueReq start=0x000c end=0xffff type=0x2800 value=0118
+03:05:21.072 ctrl>host hci=0x003 ErrorRsp req=FindByTypeValueReq h=0x000c err=0x0a
+03:05:21.074 host>ctrl hci=0x003 ReadByGroupReq start=0x0001 end=0xffff type=0x2800
+03:05:21.132 ctrl>host hci=0x003 ReadByGroupRsp len=6 | 0x0001-0x0007 0x1800 ; 0x0008-0x000b 0x1801 ; 0x000c-0x0018 0x180a
+03:05:21.133 host>ctrl hci=0x003 ReadByTypeReq start=0x0001 end=0x000b type=0x2803
+03:05:21.192 ctrl>host hci=0x003 ReadByTypeRsp len=7 | h=0x0002 0x0302 val=00002a ; h=0x0004 0x0502 val=00012a ; h=0x0006 0x0702 val=00042a
+03:05:21.194 host>ctrl hci=0x003 ReadByGroupReq start=0x0019 end=0xffff type=0x2800
+03:05:21.252 ctrl>host hci=0x003 ReadByGroupRsp len=6 | 0x0019-0x0021 0xfe4a ; 0x0022-0x0025 0x1805 ; 0x0026-0x002b 0x181d
+03:05:21.254 host>ctrl hci=0x003 ReadByTypeReq start=0x0007 end=0x000b type=0x2803
+03:05:21.289 ctrl>host hci=0x003 ReadByTypeRsp len=7 | h=0x0009 0x0a22 val=00052a
+03:05:21.292 host>ctrl hci=0x003 ReadByGroupReq start=0x002c end=0xffff type=0x2800
+03:05:21.304 ctrl>host hci=0x003 ErrorRsp req=ReadByGroupReq h=0x002c err=0x0a
+03:05:21.309 host>ctrl hci=0x003 ReadByTypeReq start=0x000a end=0x000b type=0x2803
+03:05:21.327 ctrl>host hci=0x003 ErrorRsp req=ReadByTypeReq h=0x000a err=0x0a
+03:05:21.331 host>ctrl hci=0x003 ReadByTypeReq start=0x0001 end=0x0007 type=0x2802
+03:05:21.342 ctrl>host hci=0x003 ErrorRsp req=ReadByTypeReq h=0x0001 err=0x0a
+03:05:21.344 host>ctrl hci=0x003 FindInfoReq start=0x000a end=0x000b
+03:05:21.357 ctrl>host hci=0x003 FindInfoRsp fmt=1 | h=0x000a uuid=0x2a05 ; h=0x000b uuid=0x2902
+03:05:21.360 host>ctrl hci=0x003 ReadByTypeReq start=0x0001 end=0x0007 type=0x2803
+03:05:21.373 ctrl>host hci=0x003 ReadByTypeRsp len=7 | h=0x0002 0x0302 val=00002a ; h=0x0004 0x0502 val=00012a ; h=0x0006 0x0702 val=00042a
+03:05:21.376 host>ctrl hci=0x003 WriteReq h=0x000b len=2 val=0200
+03:05:21.394 ctrl>host hci=0x003 WriteRsp 
+03:05:21.395 host>ctrl hci=0x003 ReadByTypeReq start=0x0007 end=0x0007 type=0x2803
+03:05:21.410 ctrl>host hci=0x003 ErrorRsp req=ReadByTypeReq h=0x0007 err=0x0a
+03:05:21.414 host>ctrl hci=0x003 ReadByTypeReq start=0x0001 end=0xffff type=0x2b3a
+03:05:21.432 ctrl>host hci=0x003 ErrorRsp req=ReadByTypeReq h=0x0001 err=0x0a
+03:05:21.436 host>ctrl hci=0x003 ReadByTypeReq start=0x0008 end=0x000b type=0x2802
+03:05:21.447 ctrl>host hci=0x003 ErrorRsp req=ReadByTypeReq h=0x0008 err=0x0a
+03:05:21.449 host>ctrl hci=0x003 ReadByTypeReq start=0x0008 end=0x000b type=0x2803
+03:05:21.462 ctrl>host hci=0x003 ReadByTypeRsp len=7 | h=0x0009 0x0a22 val=00052a
+03:05:21.463 host>ctrl hci=0x003 ReadByTypeReq start=0x000a end=0x000b type=0x2803
+03:05:21.477 ctrl>host hci=0x003 ErrorRsp req=ReadByTypeReq h=0x000a err=0x0a
+03:05:21.480 host>ctrl hci=0x003 FindInfoReq start=0x000b end=0x000b
+03:05:21.492 ctrl>host hci=0x003 FindInfoRsp fmt=1 | h=0x000b uuid=0x2902
+03:05:21.495 host>ctrl hci=0x003 ReadByTypeReq start=0x000c end=0x0018 type=0x2802
+03:05:21.507 ctrl>host hci=0x003 ErrorRsp req=ReadByTypeReq h=0x000c err=0x0a
+03:05:21.510 host>ctrl hci=0x003 ReadByTypeReq start=0x000c end=0x0018 type=0x2803
+03:05:21.523 ctrl>host hci=0x003 ReadByTypeRsp len=7 | h=0x000d 0x0e02 val=00292a ; h=0x000f 0x1002 val=00242a ; h=0x0011 0x1202 val=00252a
+03:05:21.526 host>ctrl hci=0x003 ReadByTypeReq start=0x0012 end=0x0018 type=0x2803
+03:05:21.545 ctrl>host hci=0x003 ReadByTypeRsp len=7 | h=0x0013 0x1402 val=00262a ; h=0x0015 0x1602 val=00282a ; h=0x0017 0x1802 val=00232a
+03:05:21.548 host>ctrl hci=0x003 ReadByTypeReq start=0x0018 end=0x0018 type=0x2803
+03:05:21.559 ctrl>host hci=0x003 ErrorRsp req=ReadByTypeReq h=0x0018 err=0x0a
+03:05:21.566 host>ctrl hci=0x003 ReadByTypeReq start=0x0019 end=0x0021 type=0x2802
+03:05:21.582 ctrl>host hci=0x003 ErrorRsp req=ReadByTypeReq h=0x0019 err=0x0a
+03:05:21.586 host>ctrl hci=0x003 ReadByTypeReq start=0x0019 end=0x0021 type=0x2803
+03:05:21.605 ctrl>host hci=0x003 ReadByTypeRsp len=21 | h=0x001a props=0x1e val=0x001b b305b680-aee7-11e1-a730-0002a5d5c51b
+03:05:21.608 host>ctrl hci=0x003 ReadByTypeReq start=0x001b end=0x0021 type=0x2803
+03:05:21.619 ctrl>host hci=0x003 ReadByTypeRsp len=21 | h=0x001d props=0x0c val=0x001e db5b55e0-aee7-11e1-965e-0002a5d5c51b
+03:05:21.622 host>ctrl hci=0x003 ReadByTypeReq start=0x001e end=0x0021 type=0x2803
+03:05:21.635 ctrl>host hci=0x003 ReadByTypeRsp len=21 | h=0x001f props=0x12 val=0x0020 49123040-aee8-11e1-a74d-0002a5d5c51b
+03:05:21.637 host>ctrl hci=0x003 ReadByTypeReq start=0x0020 end=0x0021 type=0x2803
+03:05:21.650 ctrl>host hci=0x003 ErrorRsp req=ReadByTypeReq h=0x0020 err=0x0a
+03:05:21.655 host>ctrl hci=0x003 FindInfoReq start=0x001c end=0x001c
+03:05:21.672 ctrl>host hci=0x003 FindInfoRsp fmt=1 | h=0x001c uuid=0x2902
+03:05:21.675 host>ctrl hci=0x003 FindInfoReq start=0x0021 end=0x0021
+03:05:21.687 ctrl>host hci=0x003 FindInfoRsp fmt=1 | h=0x0021 uuid=0x2902
+03:05:21.690 host>ctrl hci=0x003 ReadByTypeReq start=0x0022 end=0x0025 type=0x2802
+03:05:21.702 ctrl>host hci=0x003 ErrorRsp req=ReadByTypeReq h=0x0022 err=0x0a
+03:05:21.705 host>ctrl hci=0x003 ReadByTypeReq start=0x0022 end=0x0025 type=0x2803
+03:05:21.719 ctrl>host hci=0x003 ReadByTypeRsp len=7 | h=0x0023 0x241a val=002b2a
+03:05:21.723 host>ctrl hci=0x003 ReadByTypeReq start=0x0024 end=0x0025 type=0x2803
+03:05:21.739 ctrl>host hci=0x003 ErrorRsp req=ReadByTypeReq h=0x0024 err=0x0a
+03:05:21.745 host>ctrl hci=0x003 FindInfoReq start=0x0025 end=0x0025
+03:05:21.762 ctrl>host hci=0x003 FindInfoRsp fmt=1 | h=0x0025 uuid=0x2902
+03:05:21.765 host>ctrl hci=0x003 ReadByTypeReq start=0x0026 end=0x002b type=0x2802
+03:05:21.777 ctrl>host hci=0x003 ErrorRsp req=ReadByTypeReq h=0x0026 err=0x0a
+03:05:21.780 host>ctrl hci=0x003 ReadByTypeReq start=0x0026 end=0x002b type=0x2803
+03:05:21.792 ctrl>host hci=0x003 ReadByTypeRsp len=7 | h=0x0027 0x2802 val=009e2a ; h=0x0029 0x2a20 val=009d2a
+03:05:21.795 host>ctrl hci=0x003 ReadByTypeReq start=0x002a end=0x002b type=0x2803
+03:05:21.807 ctrl>host hci=0x003 ErrorRsp req=ReadByTypeReq h=0x002a err=0x0a
+03:05:21.814 host>ctrl hci=0x003 FindInfoReq start=0x002b end=0x002b
+03:05:21.830 ctrl>host hci=0x003 FindInfoRsp fmt=1 | h=0x002b uuid=0x2902
+03:05:21.851 host>ctrl hci=0x003 ReadByTypeReq start=0x0001 end=0xffff type=0x2a04
+03:05:21.868 ctrl>host hci=0x003 ReadByTypeRsp len=10 | h=0x0007 0x0010 val=18000000c800
+03:05:22.965 host>ctrl hci=0x003 ReadReq h=0x0014 len=0 val=
+03:05:23.007 ctrl>host hci=0x003 ReadRsp len=12 val=53572e5330312e30342e3034
+03:05:23.025 host>ctrl hci=0x003 ReadReq h=0x0016 len=0 val=
+03:05:23.067 ctrl>host hci=0x003 ReadRsp len=16 val=30303030303030303030313032313030
+03:05:23.082 host>ctrl hci=0x003 ReadReq h=0x0003 len=0 val=
+03:05:23.127 ctrl>host hci=0x003 ReadRsp len=8 val=484e2d3330305432
+03:05:23.170 host>ctrl hci=0x003 MtuReq mtu=517
+03:05:23.217 ctrl>host hci=0x003 MtuRsp mtu=67
+03:05:23.231 host>ctrl hci=0x003 WriteReq h=0x0021 len=2 val=0100
+03:05:23.278 ctrl>host hci=0x003 WriteRsp 
+03:05:23.299 host>ctrl hci=0x003 WriteReq h=0x001c len=2 val=0100
+03:05:23.338 ctrl>host hci=0x003 WriteRsp 
+03:05:23.857 host>ctrl hci=0x003 WriteCmd h=0x001b len=20 val=115d224721000000000000000000000000000000
+03:05:23.878 ctrl>host hci=0x003 Notify h=0x001b len=64 val=91005d22472100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+03:05:23.904 host>ctrl hci=0x003 WriteCmd h=0x001e len=8 val=0800000000100018
+03:05:24.087 ctrl>host hci=0x003 Notify h=0x0020 len=8 val=0880000000100098
+03:05:24.147 host>ctrl hci=0x003 WriteCmd h=0x001e len=8 val=08010001a00c00a4
+03:05:24.313 ctrl>host hci=0x003 Notify h=0x0020 len=20 val=14810001a00c92000000800000000012008000b8
+03:05:24.329 host>ctrl hci=0x003 WriteCmd h=0x001e len=8 val=08010001ac0c00a8
+03:05:24.494 ctrl>host hci=0x003 Notify h=0x0020 len=20 val=14810001ac0cffffffffffffffffffffffff0034
+03:05:24.514 host>ctrl hci=0x003 WriteCmd h=0x001e len=8 val=08010001b81000a0
+03:05:24.674 ctrl>host hci=0x003 Notify h=0x0020 len=24 val=18810001b8101a0b04030420000000000000000000000002
+03:05:24.744 host>ctrl hci=0x003 WriteCmd h=0x001e len=20 val=1401c002300c920000008000000000120080006b
+03:05:24.928 ctrl>host hci=0x003 Notify h=0x0020 len=20 val=1481c002300c92000000800000000012008000eb
+03:05:24.946 host>ctrl hci=0x003 WriteCmd h=0x001e len=16 val=1001c00248081a0b040305194aff002c
+03:05:25.107 ctrl>host hci=0x003 Notify h=0x0020 len=16 val=1081c00248081a0b040305194aff00ac
+03:05:25.128 host>ctrl hci=0x003 WriteCmd h=0x001e len=8 val=080f000000000007
+03:05:25.287 ctrl>host hci=0x003 Notify h=0x0020 len=8 val=088f000000000087

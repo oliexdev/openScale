@@ -919,6 +919,13 @@
     <string name="bt_error_omron_session_failed">The scale refused to start a data transfer.</string>
     <string name="bt_error_omron_read_failed">Failed to read stored measurements from the scale.</string>
     <string name="bt_error_omron_timeout">The scale stopped responding; the transfer was cancelled.</string>
+    <string name="bt_info_hn300t2_no_new_measurements">No new measurements on the scale.</string>
+    <string name="bt_info_hn300t2_no_user">No openScale user to save this measurement for.</string>
+    <string name="bt_error_hn300t2_handshake">The scale rejected the session handshake.</string>
+    <string name="bt_error_hn300t2_timeout">The scale stopped responding.</string>
+    <string name="bt_error_hn300t2_bond_required">This scale needs to be paired (bonded) first.</string>
+    <string name="bt_error_hn300t2_transfer">Reading from the scale failed.</string>
+    <string name="bt_error_hn300t2_service_missing">This scale does not offer the expected service.</string>
     <string name="bt_error_mi_scale_service_missing">This device does not expose a supported Mi Scale service.</string>
     <string name="bt_warn_mi_scale_variant_downgraded">This scale is advertised as a v2 model, but it only reports weight. Body composition is not available on this device.</string>
 
