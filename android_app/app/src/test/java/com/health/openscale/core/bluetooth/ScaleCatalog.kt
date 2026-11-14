@@ -226,6 +226,7 @@ object ScaleCatalog {
         device("PICOOC-L") claimedBy PicoocBroadcastHandler::class.java,
         device("Beurer BF450") claimedBy BeurerBF450Handler::class.java,
         device("BIA SCALE", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
+        device("meditive", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
         device("RYFIT") claimedBy RyFitHandler::class.java,
         device("CULT Smart Scale Pro") claimedBy CultSmartScaleProHandler::class.java,
         device("Body Pod 2", uuid16(0xFFF0)) claimedBy BodyPod2Handler::class.java,
