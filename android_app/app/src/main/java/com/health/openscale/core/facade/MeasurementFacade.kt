@@ -40,6 +40,7 @@ import com.health.openscale.core.usecase.MeasurementQueryUseCases
 import com.health.openscale.core.usecase.MeasurementSmoothingUseCases
 import com.health.openscale.core.usecase.MeasurementTransformationUseCase
 import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
+import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -79,6 +80,8 @@ class MeasurementFacade @Inject constructor(
     private val insights: MeasurementInsightsUseCase,
     private val demoUseCase: MeasurementDemoUseCase,
     ) {
+
+    private val TAG = "MeasurementFacade"
 
     private var pendingReferenceUser: User? = null
 
@@ -248,13 +251,16 @@ class MeasurementFacade @Inject constructor(
      * have reassigned it), so the gaps are filled from the history of the user the entry ends up on.
      * It also runs before CRUD applies the body-composition formulas, which lets an inherited
      * waist/neck/hips feed e.g. the US-Navy body fat formula.
+     *
+     * @return true if a new measurement was stored; false if one already exists at that time or
+     *   smart user assignment dropped the reading (both logged). A failed save is thrown.
      */
     suspend fun saveMeasurementFromBleDevice(
         measurement: Measurement,
         values: List<MeasurementValue>,
-    ) {
+    ): Boolean {
         val ref = pendingReferenceUser
-        if (ref != null) {
+        val savedId = if (ref != null) {
             val finalValues = transformation.applyAssistedWeighing(measurement, values, ref)
             crud.saveMeasurement(
                 measurement,
@@ -262,13 +268,20 @@ class MeasurementFacade @Inject constructor(
             )
         } else {
             val finalMeasurement = transformation.applySmartUserAssignment(measurement, values)
-            if (finalMeasurement != null) {
-                crud.saveMeasurement(
-                    finalMeasurement,
-                    transformation.applyValueInheritance(finalMeasurement, values)
-                )
-            }
+                ?: run {
+                    LogManager.i(TAG, "Scale measurement matched no user within tolerance, not saved.")
+                    return false
+                }
+            crud.saveMeasurement(
+                finalMeasurement,
+                transformation.applyValueInheritance(finalMeasurement, values)
+            )
+        }.getOrThrow()
+        if (savedId == -1) {
+            LogManager.i(TAG, "Scale measurement at ${measurement.timestamp} is already stored, skipped.")
+            return false
         }
+        return true
     }
 
     fun setPendingReferenceUserForBle(referenceUser: User?) {

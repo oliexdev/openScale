@@ -480,14 +480,12 @@ class BleConnector(
             }
 
             try {
-                val measurementId = measurementFacade.saveMeasurementFromBleDevice(newDbMeasurement, values)
-                LogManager.i(
-                    TAG,
-                    "Measurement from $deviceName for User $currentAppUserId saved (ID: $measurementId). Values: ${values.size}"
-                )
-                pendingSavedCount.incrementAndGet()
-                lastSavedArgs = listOf(measurementData[MeasurementType.WEIGHT]?.value ?: 0f, deviceName)
-                savedBurstSignal.tryEmit(Unit)
+                if (measurementFacade.saveMeasurementFromBleDevice(newDbMeasurement, values)) {
+                    LogManager.i(TAG, "Measurement from $deviceName for User $currentAppUserId saved. Values: ${values.size}")
+                    pendingSavedCount.incrementAndGet()
+                    lastSavedArgs = listOf(measurementData[MeasurementType.WEIGHT]?.value ?: 0f, deviceName)
+                    savedBurstSignal.tryEmit(Unit)
+                }
             } catch (e: Exception) {
                 LogManager.e(TAG, "Error saving measurement from $deviceName.", e)
                 _snackbarEvents.tryEmit(
