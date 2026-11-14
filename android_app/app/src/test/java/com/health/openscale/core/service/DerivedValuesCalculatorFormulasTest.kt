@@ -19,6 +19,7 @@ package com.health.openscale.core.service
 
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
+import com.health.openscale.core.data.BmrFormulaOption
 import com.health.openscale.core.data.GenderType
 import org.junit.Test
 
@@ -99,6 +100,27 @@ class DerivedValuesCalculatorFormulasTest {
         val bmr = DerivedValuesCalculator.processBmrCalculation(80f, 175f, 30, GenderType.FEMALE)
         assertThat(bmr).isNotNull()
         assertThat(bmr!!).isWithin(EPS).of(1582.75f)
+    }
+
+    @Test
+    fun bmr_harrisBenedictRevised_male() {
+        // 88.362 + 13.397*80 + 4.799*175 - 5.677*30
+        val bmr = DerivedValuesCalculator.processBmrCalculation(
+            80f, 175f, 30, GenderType.MALE, formula = BmrFormulaOption.HARRIS_BENEDICT_REVISED
+        )
+        assertThat(bmr!!).isWithin(EPS).of(1829.637f)
+    }
+
+    @Test
+    fun bmr_katchMcArdle_usesLeanBodyMass_andFallsBackWithoutIt() {
+        val withLbm = DerivedValuesCalculator.processBmrCalculation(
+            80f, 175f, 30, GenderType.MALE, formula = BmrFormulaOption.KATCH_MCARDLE, lbmKg = 65f
+        )
+        val withoutLbm = DerivedValuesCalculator.processBmrCalculation(
+            80f, 175f, 30, GenderType.MALE, formula = BmrFormulaOption.KATCH_MCARDLE
+        )
+        assertThat(withLbm!!).isWithin(EPS).of(1774f)
+        assertThat(withoutLbm!!).isWithin(EPS).of(1748.75f)
     }
 
     @Test

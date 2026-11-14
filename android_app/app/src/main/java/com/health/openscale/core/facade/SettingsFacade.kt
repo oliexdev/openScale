@@ -36,6 +36,7 @@ import com.health.openscale.core.data.AutoBackupError
 import com.health.openscale.core.data.BackupInterval
 import com.health.openscale.core.data.BodyFatFormulaOption
 import com.health.openscale.core.data.BodyWaterFormulaOption
+import com.health.openscale.core.data.BmrFormulaOption
 import com.health.openscale.core.data.LbmFormulaOption
 import com.health.openscale.core.data.SmoothingAlgorithm
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -126,6 +127,7 @@ object SettingsPreferenceKeys {
     val BODY_FAT_FORMULA_OPTION   = stringPreferencesKey("body_fat_formula_option")
     val BODY_WATER_FORMULA_OPTION = stringPreferencesKey("body_water_formula_option")
     val LBM_FORMULA_OPTION        = stringPreferencesKey("lbm_formula_option")
+    val BMR_FORMULA_OPTION        = stringPreferencesKey("bmr_formula_option")
 
     // Context strings for screen-specific settings (can be used as prefixes for dynamic keys)
     const val OVERVIEW_SCREEN_CONTEXT = "overview_screen"
@@ -294,6 +296,9 @@ interface SettingsFacade {
 
     val selectedLbmFormula: Flow<LbmFormulaOption>
     suspend fun setSelectedLbmFormula(option: LbmFormulaOption)
+
+    val selectedBmrFormula: Flow<BmrFormulaOption>
+    suspend fun setSelectedBmrFormula(option: BmrFormulaOption)
 
     val autoConnectOnStartup: Flow<Boolean>
     suspend fun setAutoConnectOnStartup(enabled: Boolean)
@@ -1091,6 +1096,22 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun setSelectedLbmFormula(option: LbmFormulaOption) {
         LogManager.d(TAG, "Setting LBM_FORMULA_OPTION to: ${option.name}")
         saveSetting(SettingsPreferenceKeys.LBM_FORMULA_OPTION.name, option.name)
+    }
+
+    override val selectedBmrFormula = dataStore.data
+        .catch { exception ->
+            LogManager.e(TAG, "Error reading BMR_FORMULA_OPTION", exception)
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { prefs ->
+            val raw = prefs[SettingsPreferenceKeys.BMR_FORMULA_OPTION] ?: BmrFormulaOption.MIFFLIN_ST_JEOR.name
+            runCatching { BmrFormulaOption.valueOf(raw) }.getOrDefault(BmrFormulaOption.MIFFLIN_ST_JEOR)
+        }
+        .distinctUntilChanged()
+
+    override suspend fun setSelectedBmrFormula(option: BmrFormulaOption) {
+        LogManager.d(TAG, "Setting BMR_FORMULA_OPTION to: ${option.name}")
+        saveSetting(SettingsPreferenceKeys.BMR_FORMULA_OPTION.name, option.name)
     }
 
     @Suppress("UNCHECKED_CAST")

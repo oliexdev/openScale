@@ -19,6 +19,7 @@ package com.health.openscale.core.service
 
 import androidx.annotation.VisibleForTesting
 import com.health.openscale.core.data.ActivityLevel
+import com.health.openscale.core.data.BmrFormulaOption
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.MeasureUnit
 import com.health.openscale.core.data.MeasurementType
@@ -212,10 +213,9 @@ class DerivedValuesCalculator @Inject constructor(
         processBmiCalculation(weightKg, userHeightCm).also { saveOrUpdateDerivedValue(it, MeasurementType.BMI) }
         processWhrCalculation(waistCm, hipsCm).also { saveOrUpdateDerivedValue(it, MeasurementType.WHR) }
         processWhtrCalculation(waistCm, userHeightCm).also { saveOrUpdateDerivedValue(it, MeasurementType.WHTR) }
-        // BMR: when the source device already supplied one (e.g. S400 BIA-based BMR
-        // via FFM), keep it. Mifflin-St Jeor is an anthropometric fallback used
-        // only when no BMR landed on the row. TDEE always derives from whichever
-        // BMR is actually persisted.
+        // BMR is calculated with the chosen formula whenever a measurement is saved
+        // (MeasurementTransformationUseCase). Mifflin-St Jeor only fills in for rows that
+        // arrive without one, e.g. from a CSV import or the ContentProvider.
         val bmrTypeId = allGlobalTypes.find { it.key == MeasurementType.BMR }?.id
         val existingBmr = bmrTypeId?.let { id ->
             currentMeasurementValues.find { it.typeId == id }?.floatValue
@@ -283,7 +283,9 @@ class DerivedValuesCalculator @Inject constructor(
         weightKg: Float?,
         heightCm: Float?,
         ageYears: Int,
-        gender: GenderType
+        gender: GenderType,
+        formula: BmrFormulaOption = BmrFormulaOption.MIFFLIN_ST_JEOR,
+        lbmKg: Float? = null,
     ): Float? {
        // LogManager.v(CALC_PROCESS_TAG, "Processing BMR: weight=$weightKg kg, height=$heightCm cm, age=$ageYears, gender=$gender")
 
@@ -295,9 +297,17 @@ class DerivedValuesCalculator @Inject constructor(
             return null
         }
 
-        return when (gender) {
-            GenderType.MALE   -> (10.0f * weightKg) + (6.25f * heightCm) - (5.0f * ageYears) + 5.0f
-            GenderType.FEMALE -> (10.0f * weightKg) + (6.25f * heightCm) - (5.0f * ageYears) - 161.0f
+        return when {
+            // Without a lean body mass Katch-McArdle has nothing to work with; Mifflin-St Jeor steps in.
+            formula == BmrFormulaOption.KATCH_MCARDLE && lbmKg != null && lbmKg > 0f -> 370.0f + 21.6f * lbmKg
+            formula == BmrFormulaOption.HARRIS_BENEDICT_REVISED -> when (gender) {
+                GenderType.MALE   -> 88.362f + (13.397f * weightKg) + (4.799f * heightCm) - (5.677f * ageYears)
+                GenderType.FEMALE -> 447.593f + (9.247f * weightKg) + (3.098f * heightCm) - (4.330f * ageYears)
+            }
+            else -> when (gender) {
+                GenderType.MALE   -> (10.0f * weightKg) + (6.25f * heightCm) - (5.0f * ageYears) + 5.0f
+                GenderType.FEMALE -> (10.0f * weightKg) + (6.25f * heightCm) - (5.0f * ageYears) - 161.0f
+            }
         }
     }
 

@@ -190,7 +190,7 @@ data class MeasurementType(
 
         /** Body weight — raw values arrive as [Kg]. */
         val WEIGHT: Key<Kg> = builtinFloat("weight", R.string.measurement_type_weight, WEIGHT_UNITS, 0xFF7E57C2, MeasurementTypeIcon.IC_WEIGHT, pinned = true, rightAxis = true)
-        /** Body mass index — dimensionless; usually derived by the app, set it only if the scale reports its own. */
+        /** Body mass index — dimensionless; derived by the app, a value a handler sets is dropped. */
         val BMI: Key<Float> = builtinFloat("bmi", R.string.measurement_type_bmi, NONE_UNIT, 0xFFFFCA28, MeasurementTypeIcon.IC_BMI, derived = true, pinned = true)
         /** Body fat — raw values arrive as [Percent] of body weight. */
         val BODY_FAT: Key<Percent> = builtinFloat("body_fat", R.string.measurement_type_body_fat, COMPOSITION_UNITS, 0xFFEF5350, MeasurementTypeIcon.IC_BODY_FAT, pinned = true)
@@ -228,7 +228,7 @@ data class MeasurementType(
         val CALIPER_3: Key<Cm> = builtinFloat("caliper_3", R.string.measurement_type_caliper3, LENGTH_UNITS, 0xFFFFCC80, MeasurementTypeIcon.IC_CALIPER3)
         /** Caliper body fat — **%**, derived by the app from the three sites. */
         val CALIPER: Key<Percent> = builtinFloat("caliper", R.string.measurement_type_fat_caliper, listOf(UnitType.PERCENT), 0xFFFB8C00, MeasurementTypeIcon.IC_FAT_CALIPER, derived = true)
-        /** Basal metabolic rate — raw values arrive as [Kcal] per day (set it only if the scale reports its own; the app derives it otherwise). */
+        /** Basal metabolic rate in [Kcal] per day — derived by the app with the formula chosen in settings; a value a handler sets is dropped. */
         val BMR: Key<Kcal> = builtinFloat("bmr", R.string.measurement_type_bmr, listOf(UnitType.KCAL), 0xFFAB47BC, MeasurementTypeIcon.IC_BMR, derived = true)
         /** Total daily energy expenditure — **kcal/day**, derived by the app. */
         val TDEE: Key<Kcal> = builtinFloat("tdee", R.string.measurement_type_tdee, listOf(UnitType.KCAL), 0xFF26A69A, MeasurementTypeIcon.IC_TDEE, derived = true)

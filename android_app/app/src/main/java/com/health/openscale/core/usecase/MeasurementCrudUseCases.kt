@@ -75,20 +75,19 @@ class MeasurementCrudUseCases @Inject constructor(
 
         if (measurement.id == 0) {
             // Insert path
-            val newId = databaseRepository.insertMeasurement(measurement).toInt()
-            // A (userId, timestamp) duplicate is ignored by the DAO and returns -1. Signal it via the
-            // sentinel and abort, so we never insert orphan values referencing a non-existent id.
-            if (newId == -1) {
-                return@runCatching -1
-            }
+            // Measurement and values go in together; a (userId, timestamp) duplicate is ignored
+            // and signalled via the sentinel.
+            val (insertedIds, ignored) = databaseRepository.insertMeasurementsWithValues(
+                listOf(measurement to finalValues)
+            )
+            val newId = insertedIds.firstOrNull()?.toInt()
+                ?: if (ignored.isNotEmpty()) return@runCatching -1 else error("Measurement could not be saved")
+            // Only now, with every value in place, so derived values see the complete measurement.
+            databaseRepository.recalculateDerivedValuesForMeasurement(newId)
             val measurementWithId = measurement.copy(id = newId)
 
-            finalValues.forEach { v ->
-                databaseRepository.insertMeasurementValue(v.copy(measurementId = newId))
-            }
-
             // Sync what was stored, not finalValues: the derived values (BMI, BMR, …) only exist
-            // after the recalculation each value insert runs, and the sync app must see the same
+            // after the recalculation that follows the insert, and the sync app must see the same
             // measurement here as through the ContentProvider.
             val syncValues = databaseRepository.getValuesForMeasurement(newId).first()
             sync.triggerSyncInsert(measurementWithId, syncValues,"com.health.openscale.sync")
@@ -122,17 +121,23 @@ class MeasurementCrudUseCases @Inject constructor(
                 .filter { it.typeId !in derivedTypeIds }
                 .map { it.id }
                 .toSet()
-            val newSetIds = finalValues.mapNotNull { if (it.id != 0) it.id else null }.toSet()
+            // A measurement holds one value per type. A value without an id (e.g. one a formula
+            // just calculated) therefore replaces the stored row of its type instead of adding a
+            // second one.
+            val targets = finalValues.map { v ->
+                v to (existing.firstOrNull { v.id != 0 && it.id == v.id }
+                    ?: existing.firstOrNull { v.id == 0 && it.typeId == v.typeId })
+            }
+            val keptIds = targets.mapNotNull { (_, target) -> target?.id }.toSet()
             val previousImages = imageFileNames(existing)
 
             // Delete raw values that are no longer present.
-            (existingRawIds - newSetIds).forEach { id -> databaseRepository.deleteMeasurementValueById(id) }
+            (existingRawIds - keptIds).forEach { id -> databaseRepository.deleteMeasurementValueById(id) }
 
-            // Update or insert raw values.
-            finalValues.forEach { v ->
-                val exists = existing.any { it.id == v.id && v.id != 0 }
-                if (exists) {
-                    databaseRepository.updateMeasurementValue(v.copy(measurementId = measurement.id))
+            // Update or insert values.
+            targets.forEach { (v, target) ->
+                if (target != null) {
+                    databaseRepository.updateMeasurementValue(v.copy(id = target.id, measurementId = measurement.id))
                 } else {
                     databaseRepository.insertMeasurementValue(v.copy(measurementId = measurement.id))
                 }

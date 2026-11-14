@@ -22,6 +22,8 @@ import android.content.pm.PackageInfo
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import com.health.openscale.core.data.ActivityLevel
+import com.health.openscale.core.data.BmrFormulaOption
+import com.health.openscale.core.data.BodyFatFormulaOption
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Measurement
@@ -30,6 +32,7 @@ import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.User
 import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
+import com.health.openscale.core.facade.SettingsFacadeImpl
 import com.health.openscale.testutil.RoomTestSupport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -63,13 +66,14 @@ class MeasurementCrudUseCasesTest {
     private var weightId = 0
     private var waistId = 0
     private var neckId = 0
+    private lateinit var settings: SettingsFacadeImpl
 
     @Before
     fun setUp() = runBlocking {
         db = RoomTestSupport.inMemory(app)
         repo = RoomTestSupport.repositoryFor(db)
         repo.insertAllMeasurementTypes(MeasurementType.seedRows())
-        val settings = RoomTestSupport.settingsFacadeFor(
+        settings = RoomTestSupport.settingsFacadeFor(
             CoroutineScope(SupervisorJob() + Dispatchers.IO),
             File(app.cacheDir, "crud-${System.nanoTime()}.preferences_pb"),
         )
@@ -101,6 +105,79 @@ class MeasurementCrudUseCasesTest {
         assertThat(id).isGreaterThan(0)
         val values = repo.getValuesForMeasurement(id).first()
         assertThat(values.any { it.typeId == weightId && it.floatValue == 70f }).isTrue()
+    }
+
+    private suspend fun typeId(key: MeasurementType.Key<*>) =
+        repo.getAllMeasurementTypes().first().first { it.key == key }.id
+
+    private suspend fun valuesOf(id: Int, typeId: Int) =
+        repo.getValuesForMeasurement(id).first().filter { it.typeId == typeId }
+
+    /** Saves [weightKg] as a new measurement, then corrects it to [correctedKg] like the edit dialog does. */
+    private suspend fun saveThenCorrectWeight(weightKg: Float, correctedKg: Float): Int {
+        val id = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 1_700_000_000_000L),
+            listOf(MeasurementValue(measurementId = 0, typeId = weightId, floatValue = weightKg)),
+        ).getOrThrow()
+        val weightRow = repo.getValuesForMeasurement(id).first().single { it.typeId == weightId }
+        crud.saveMeasurement(
+            Measurement(id = id, userId = userId, timestamp = 1_700_000_000_000L),
+            listOf(weightRow.copy(floatValue = correctedKg)),
+        ).getOrThrow()
+        return id
+    }
+
+    @Test
+    fun saveMeasurement_insert_replacesASuppliedBmr_withOneCalculatedRow() = runBlocking {
+        val bmrId = typeId(MeasurementType.BMR)
+
+        val id = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 1_700_000_000_000L),
+            listOf(
+                MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 70f),
+                MeasurementValue(measurementId = 0, typeId = bmrId, floatValue = 2000f),
+            ),
+        ).getOrThrow()
+
+        // Mifflin-St Jeor, male, 70 kg, 175 cm, 53 y: 700 + 1093.75 - 265 + 5
+        assertThat(valuesOf(id, bmrId).single().floatValue!!).isWithin(0.05f).of(1533.75f)
+    }
+
+    @Test
+    fun saveMeasurement_update_formulaValueReplacesItsRowInsteadOfAddingOne() = runBlocking {
+        settings.setSelectedBodyFatFormula(BodyFatFormulaOption.DEURENBERG_1991)
+        val fat = repo.getAllMeasurementTypes().first().first { it.key == MeasurementType.BODY_FAT }
+        // With a formula on, the type is derived and the edit dialog no longer sends it.
+        repo.updateMeasurementType(fat.copy(isDerived = true))
+
+        val id = saveThenCorrectWeight(80f, 90f)
+
+        assertThat(valuesOf(id, fat.id)).hasSize(1)
+    }
+
+    @Test
+    fun saveMeasurement_update_bmrFollowsTheCorrectedWeight() = runBlocking {
+        val bmrId = typeId(MeasurementType.BMR)
+
+        val id = saveThenCorrectWeight(80f, 90f)
+
+        assertThat(valuesOf(id, bmrId).single().floatValue!!).isWithin(0.05f).of(1733.75f)
+    }
+
+    @Test
+    fun saveMeasurement_bmrUsesLeanBodyMass_withKatchMcArdle() = runBlocking {
+        settings.setSelectedBmrFormula(BmrFormulaOption.KATCH_MCARDLE)
+        val bmrId = typeId(MeasurementType.BMR)
+
+        val id = crud.saveMeasurement(
+            Measurement(userId = userId, timestamp = 1_700_000_000_000L),
+            listOf(
+                MeasurementValue(measurementId = 0, typeId = weightId, floatValue = 80f),
+                MeasurementValue(measurementId = 0, typeId = typeId(MeasurementType.LBM), floatValue = 60f),
+            ),
+        ).getOrThrow()
+
+        assertThat(valuesOf(id, bmrId).single().floatValue!!).isWithin(0.05f).of(370f + 21.6f * 60f)
     }
 
     @Test

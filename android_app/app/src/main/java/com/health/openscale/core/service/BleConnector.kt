@@ -456,20 +456,17 @@ class BleConnector(
             // measurement, so what is in the map is worth persisting — which is also why
             // resolving (and thus creating) a device type only happens for values that
             // survived: a broken packet must not leave an empty type behind.
-            //
-            // BMR goes in first so its presence guards the per-value recalc that runs
-            // after WEIGHT lands; otherwise DerivedValuesProcess would write its
-            // Mifflin-St Jeor BMR before the device's BIA-based BMR arrives, leaving two
-            // rows for the same typeId.
-            val bmrTypeId = typesByIdentity[MeasurementType.BMR.identity]?.id
+            // Derived values (BMI, BMR, …) are always openScale's own calculation, so what a
+            // scale reports for them is dropped.
             val values = measurementData.toStored { key ->
+                if (key.isDerived) return@toStored null
                 typesByIdentity[key.identity]
                     ?: measurementFacade.resolveOrCreateMeasurementType(key)
                     ?: run {
                         LogManager.w(TAG, "($deviceName): Skipping ${key.identity}, type unavailable.")
                         null
                     }
-            }.sortedByDescending { it.typeId == bmrTypeId }
+            }
 
             if (values.isEmpty()) {
                 LogManager.w(TAG, "No valid values from measurement of $deviceName to save.")

@@ -811,6 +811,30 @@ enum class BodyWaterFormulaOption {
     }
 }
 
+enum class BmrFormulaOption {
+    MIFFLIN_ST_JEOR,
+    KATCH_MCARDLE,
+    HARRIS_BENEDICT_REVISED;
+
+    fun displayName(context: Context) = when (this) {
+        MIFFLIN_ST_JEOR -> context.getString(R.string.formula_bmr_mifflin_st_jeor)
+        KATCH_MCARDLE -> context.getString(R.string.formula_bmr_katch_mcardle)
+        HARRIS_BENEDICT_REVISED -> context.getString(R.string.formula_bmr_harris_benedict_revised)
+    }
+
+    fun shortDescription(ctx: Context) = when (this) {
+        MIFFLIN_ST_JEOR -> ctx.getString(R.string.bmr_mifflin_st_jeor_short)
+        KATCH_MCARDLE -> ctx.getString(R.string.bmr_katch_mcardle_short)
+        HARRIS_BENEDICT_REVISED -> ctx.getString(R.string.bmr_harris_benedict_revised_short)
+    }
+
+    fun longDescription(ctx: Context) = when (this) {
+        MIFFLIN_ST_JEOR -> ctx.getString(R.string.bmr_mifflin_st_jeor_long)
+        KATCH_MCARDLE -> ctx.getString(R.string.bmr_katch_mcardle_long)
+        HARRIS_BENEDICT_REVISED -> ctx.getString(R.string.bmr_harris_benedict_revised_long)
+    }
+}
+
 enum class LbmFormulaOption {
     OFF,
     BOER_1984,

@@ -29,6 +29,7 @@ import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
 import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.facade.SettingsFacade
+import com.health.openscale.core.service.DerivedValuesCalculator
 import com.health.openscale.core.utils.CalculationUtils
 import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
@@ -167,11 +168,7 @@ class MeasurementTransformationUseCase @Inject constructor(
         val bfOpt  = settings.selectedBodyFatFormula.first()
         val bwOpt  = settings.selectedBodyWaterFormula.first()
         val lbmOpt = settings.selectedLbmFormula.first()
-
-        if (bfOpt == BodyFatFormulaOption.OFF &&
-            bwOpt == BodyWaterFormulaOption.OFF &&
-            lbmOpt == LbmFormulaOption.OFF
-        ) return values
+        val bmrOpt = settings.selectedBmrFormula.first()
 
         val user  = userUseCases.observeUserById(measurement.userId).first() ?: return values
         val types = query.getAllMeasurementTypes().first()
@@ -360,6 +357,22 @@ class MeasurementTransformationUseCase @Inject constructor(
 
                 upsertFloat(type, newVal)
             }
+        }
+
+        // --- BMR (always calculated; after LBM so Katch-McArdle sees a formula-based LBM)
+        byKey[MeasurementType.BMR]?.let { type ->
+            val lbmType = byKey[MeasurementType.LBM]
+            val lbmKg = lbmType?.let { t -> out.firstOrNull { it.typeId == t.id }?.floatValue }
+                ?.let { ConverterUtils.convertFloatValueUnit(it, lbmType.unit, UnitType.KG) }
+            val bmr = DerivedValuesCalculator.processBmrCalculation(
+                weightKg = weightKg,
+                heightCm = heightCm.toFloat(),
+                ageYears = ageYears,
+                gender = user.gender,
+                formula = bmrOpt,
+                lbmKg = lbmKg,
+            )
+            upsertFloat(type, bmr?.let { CalculationUtils.roundTo(it) })
         }
 
         return out

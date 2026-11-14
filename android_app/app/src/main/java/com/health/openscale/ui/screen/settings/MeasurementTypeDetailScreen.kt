@@ -79,6 +79,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.health.openscale.R
+import com.health.openscale.core.data.BmrFormulaOption
 import com.health.openscale.core.data.BodyFatFormulaOption
 import com.health.openscale.core.data.BodyWaterFormulaOption
 import com.health.openscale.core.data.InputFieldType
@@ -191,10 +192,12 @@ fun MeasurementTypeDetailScreen(
     val bodyFatFormulaOption by sharedViewModel.selectedBodyFatFormula.collectAsState(BodyFatFormulaOption.OFF)
     val bodyWaterFormulaOption by sharedViewModel.selectedBodyWaterFormula.collectAsState(BodyWaterFormulaOption.OFF)
     val lbmFormulaOption by sharedViewModel.selectedLbmFormula.collectAsState(LbmFormulaOption.OFF)
+    val bmrFormulaOption by sharedViewModel.selectedBmrFormula.collectAsState(BmrFormulaOption.MIFFLIN_ST_JEOR)
 
     var bodyFatFormula by remember(bodyFatFormulaOption) { mutableStateOf(bodyFatFormulaOption) }
     var bodyWaterFormula by remember(bodyWaterFormulaOption) { mutableStateOf(bodyWaterFormulaOption) }
     var lbmFormula by remember(lbmFormulaOption) { mutableStateOf(lbmFormulaOption) }
+    var bmrFormula by remember(bmrFormulaOption) { mutableStateOf(bmrFormulaOption) }
 
     var formulaInfoTitle by remember { mutableStateOf<String?>(null) }
     var formulaInfoText by remember { mutableStateOf<String?>(null) }
@@ -269,6 +272,7 @@ fun MeasurementTypeDetailScreen(
                         MeasurementType.BODY_FAT -> if (bodyFatFormula != bodyFatFormulaOption) sharedViewModel.setSelectedBodyFatFormula(bodyFatFormula)
                         MeasurementType.WATER    -> if (bodyWaterFormula != bodyWaterFormulaOption) sharedViewModel.setSelectedBodyWaterFormula(bodyWaterFormula)
                         MeasurementType.LBM      -> if (lbmFormula != lbmFormulaOption) sharedViewModel.setSelectedLbmFormula(lbmFormula)
+                        MeasurementType.BMR      -> if (bmrFormula != bmrFormulaOption) sharedViewModel.setSelectedBmrFormula(bmrFormula)
                         else -> Unit
                     }
                 }
@@ -532,6 +536,21 @@ fun MeasurementTypeDetailScreen(
                         formulaInfoText  = opt.longDescription(context)
                     },
                     onSelect = { requestFormulaChange(it) }
+                )
+            }
+            MeasurementType.BMR -> {
+                FormulaPickerRow(
+                    label = stringResource(R.string.formula_label_bmr),
+                    currentText = bmrFormula.displayName(context),
+                    options = BmrFormulaOption.entries,
+                    optionLabel = { it.displayName(context) },
+                    optionSubtitle = { it.shortDescription(context) },
+                    onInfo = { opt ->
+                        formulaInfoTitle = opt.displayName(context)
+                        formulaInfoText  = opt.longDescription(context)
+                    },
+                    // BMR is always calculated, so switching formulas needs no warning.
+                    onSelect = { bmrFormula = it }
                 )
             }
             else -> Unit
