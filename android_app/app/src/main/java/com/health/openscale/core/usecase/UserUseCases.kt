@@ -26,12 +26,10 @@ import com.health.openscale.core.model.UserEvaluationContext
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -49,8 +47,6 @@ class UserUseCases @Inject constructor(
     private val settingsFacade: SettingsFacade,
     private val sync: SyncUseCases
 ) {
-    private val supportedAppLangs = setOf("en", "de", "es", "fr")
-
     /** Observe all users stored in the database. */
     fun observeAllUsers(): Flow<List<User>> = databaseRepository.getAllUsers()
 
@@ -177,22 +173,4 @@ class UserUseCases @Inject constructor(
             .flatMap { it.values }
             .filter { it.type.inputType == InputFieldType.IMAGE }
             .mapNotNull { it.value.textValue }
-
-    /** Observe effective app language with system fallback if unset/invalid. */
-    fun observeAppLanguageCode(): Flow<String> =
-        settingsFacade.appLanguageCode
-            .map { stored -> stored?.takeIf { it in supportedAppLangs } ?: resolveDefaultAppLanguage() }
-            .catch { emit(resolveDefaultAppLanguage()) }
-
-    /** Set app language (ignored if blank). */
-    suspend fun setAppLanguageCode(languageCode: String) {
-        if (languageCode.isBlank()) return
-        settingsFacade.setAppLanguageCode(languageCode)
-    }
-
-    /** Resolve default from system locale with safe fallback. */
-    fun resolveDefaultAppLanguage(): String {
-        val sys = Locale.getDefault().language
-        return if (sys in supportedAppLangs) sys else "en"
-    }
 }

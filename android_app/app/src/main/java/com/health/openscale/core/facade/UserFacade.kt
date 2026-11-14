@@ -52,10 +52,6 @@ class UserFacade @Inject constructor(
     fun observeUserEvaluationContext(): Flow<UserEvaluationContext?> =
         userUseCases.observeUserEvaluationContext()
 
-    /** Effective app language (stored or safe system fallback). */
-    fun observeAppLanguageCode(): Flow<String> =
-        userUseCases.observeAppLanguageCode()
-
     // --- Mutations / Commands ---
 
     /** Select a given user id (or clear with null). */
@@ -105,13 +101,4 @@ class UserFacade @Inject constructor(
     fun observeProgress(userId: Int, types: List<MeasurementType>): Flow<List<GoalProgress>> {
         return userGoalsUseCases.observeProgress(userId, types)
     }
-
-    /** Persist application language code. */
-    suspend fun setAppLanguageCode(code: String): Result<Unit> = runCatching {
-        userUseCases.setAppLanguageCode(code)
-    }
-
-    /** Resolve safe default language from system (non-reactive helper). */
-    fun resolveDefaultAppLanguage(): String =
-        userUseCases.resolveDefaultAppLanguage()
 }
