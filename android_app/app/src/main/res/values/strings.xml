@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App & General -->
     <string name="app_name" translatable="false">openScale</string>
@@ -9,7 +10,6 @@
     <string name="placeholder_empty_value">-</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
-
     <!-- Generic UI Elements & Actions -->
     <string name="enable_button">Enable</string>
     <string name="cancel_button">Cancel</string>
@@ -28,17 +28,14 @@
     <string name="content_desc_selected">Selected</string>
     <string name="derived_backfill_start">Calculating derived values …</string>
     <string name="derived_backfill_done">Derived values successfully updated.</string>
-
     <!-- Generic error messages -->
     <string name="error_generic">An error has occurred.</string>
     <string name="error_loading_data">Failed to load data.</string>
     <string name="error_try_again">Please try again.</string>
-
     <!-- No data available messages -->
     <string name="no_data_available">No data available.</string>
     <string name="no_measurements_found">No measurements found.</string>
     <string name="no_entries_found">No entries available.</string>
-
     <!-- Route & Screen Titles -->
     <string name="route_title_overview">Overview</string>
     <string name="route_title_graph">Charts</string>
@@ -57,7 +54,6 @@
     <string name="user_detail_edit_user_title">Edit User</string>
     <string name="user_detail_add_user_title">Add User</string>
     <string name="user_settings_title">Users</string>
-
     <!-- User Management & Details -->
     <string name="manage_users">Manage Users</string>
     <string name="content_desc_switch_user">Switch user. Selected: %1$s</string>
@@ -104,13 +100,16 @@
     <string name="user_settings_content_description_delete">Delete user</string>
     <string name="user_settings_content_description_add_user">Add new user</string>
     <string name="user_detail_content_description_change_unit">Change unit</string>
-
     <!-- Measurement CRUD & Operations -->
-    <string name="success_measurement_updated">Measurement updated (%1$s)</string> <!-- %1$s is date/time -->
-    <string name="success_measurement_saved">Measurement saved (%1$s)</string> <!-- %1$s is date/time -->
+    <string name="success_measurement_updated">Measurement updated (%1$s)</string>
+    <!-- %1$s is date/time -->
+    <string name="success_measurement_saved">Measurement saved (%1$s)</string>
+    <!-- %1$s is date/time -->
     <string name="error_saving_measurement">Couldn\'t save measurement. Please try again.</string>
-    <string name="error_duplicate_timestamp">Not saved — a measurement already exists at %1$s.</string> <!-- %1$s is date/time -->
-    <string name="success_measurement_deleted">Measurement deleted (%1$s)</string> <!-- %1$s is date/time -->
+    <string name="error_duplicate_timestamp">Not saved — a measurement already exists at %1$s.</string>
+    <!-- %1$s is date/time -->
+    <string name="success_measurement_deleted">Measurement deleted (%1$s)</string>
+    <!-- %1$s is date/time -->
     <string name="error_deleting_measurement">Couldn\'t delete measurement. Please try again.</string>
     <string name="action_undo">Undo</string>
     <string name="cd_chart_handle_resize">Drag to resize the chart, or tap to collapse it</string>
@@ -122,20 +121,20 @@
     <string name="action_save_measurement">Save measurement</string>
     <string name="action_add_measurement">Add Measurement</string>
     <string name="action_add_measurement_desc">Add new measurement</string>
-    <string name="action_edit_measurement_desc">Edit measurement from %1$s</string> <!-- %1$s is date -->
-    <string name="action_delete_measurement_desc">Delete measurement from %1$s</string> <!-- %1$s is date -->
+    <string name="action_edit_measurement_desc">Edit measurement from %1$s</string>
+    <!-- %1$s is date -->
+    <string name="action_delete_measurement_desc">Delete measurement from %1$s</string>
+    <!-- %1$s is date -->
     <string name="toast_duplicate_timestamp">This timestamp matches your last measurement. Please choose a different timestamp.</string>
     <string name="no_measurements_title">No Measurements Yet</string>
     <string name="no_measurements_message">Add your first measurement to start tracking your progress.</string>
     <string name="no_active_values_for_measurement">No active measurement values for this entry.</string>
-
     <!-- Measurement Input & Validation Toasts -->
     <string name="toast_invalid_number_format">Invalid number for %1$s: \'%2$s\'</string>
     <string name="toast_invalid_integer_format">Invalid integer for %1$s: \'%2$s\'</string>
     <string name="toast_invalid_number_format_short">Invalid number for %1$s</string>
     <string name="toast_invalid_integer_format_short">Invalid integer for %1$s</string>
     <string name="toast_enter_valid_data">Please enter valid data.</string>
-
     <!-- Dialogs (General & Measurement Edit) -->
     <string name="dialog_title_edit_value">Edit %1$s</string>
     <string name="dialog_title_change_value">Change %1$s</string>
@@ -145,10 +144,8 @@
     <string name="dialog_title_input_text">Input text</string>
     <string name="dialog_title_hour">Hour</string>
     <string name="dialog_title_minute">Minute</string>
-
     <string name="label_date">Date</string>
     <string name="label_time">Time</string>
-
     <!-- Content Descriptions for Editing & Trends -->
     <string name="content_desc_increase_value">Increase %1$s</string>
     <string name="content_desc_decrease_value">Decrease %1$s</string>
@@ -158,7 +155,6 @@
     <string name="trend_increased_desc">Value increased</string>
     <string name="trend_decreased_desc">Value decreased</string>
     <string name="trend_stable_desc">Value stable or no change</string>
-
     <!-- Measurement Types -->
     <string name="measurement_type_icon_desc">Icon for %1$s</string>
     <string name="measurement_type_icon_unknown_desc">Icon for unknown measurement type: %1$s</string>
@@ -227,7 +223,6 @@
     <string name="measurement_type_time">Time</string>
     <string name="measurement_type_user">User</string>
     <string name="measurement_type_custom_default_name">Custom Type</string>
-
     <!-- Measurement Type Settings -->
     <string name="measurement_type_label_enabled">Enabled</string>
     <string name="measurement_type_label_name">Name</string>
@@ -237,7 +232,8 @@
     <string name="measurement_type_label_goal">Goal</string>
     <string name="goal_target_date_label">Goal target date</string>
     <string name="goal_start_date_label">Start date</string>
-    <string name="label_optional">%1$s (optional)</string> <!-- %1$s is a field label -->
+    <string name="label_optional">%1$s (optional)</string>
+    <!-- %1$s is a field label -->
     <string name="content_desc_select_date">Select date</string>
     <string name="my_goals_label">My Goals</string>
     <string name="user_detail_goals">%d Goals</string>
@@ -268,14 +264,12 @@
     <string name="measurement_type_updated_unit_changed_no_values_converted">Type \'%1$s\' updated. Unit changed, but no existing values required conversion.</string>
     <string name="measurement_type_dialog_confirm_unit_change_title">Confirm Unit Change</string>
     <string name="measurement_type_dialog_confirm_unit_change_message">Changing the unit for \'%1$s\' from %2$s to %3$s will convert all existing data points. This action may take some time and cannot be easily undone. Do you want to proceed?</string>
-
     <string name="formula_label_body_fat">Body Fat Formula</string>
     <string name="formula_label_body_water">Body Water Formula</string>
     <string name="formula_label_lbm">Lean Body Mass Formula</string>
     <string name="formula_label_bmr">Basal Metabolic Rate Formula</string>
     <string name="formula_warning_title">Formula Calculation</string>
     <string name="formula_warning_message">This metric becomes read-only and auto-calculated. It updates when base values change. Applies to new or edited measurements; existing ones stay unchanged.</string>
-
     <string name="formula_off">Off</string>
     <string name="formula_bf_deurenberg_1991">Deurenberg (1991)</string>
     <string name="formula_bf_deurenberg_1992">Deurenberg (1992)</string>
@@ -293,7 +287,6 @@
     <string name="formula_bmr_katch_mcardle">Katch-McArdle</string>
     <string name="formula_bmr_harris_benedict_revised">Harris-Benedict, revised (1984)</string>
     <string name="formula_bf_us_navy">U.S. Navy</string>
-
     <string name="formula_desc_off_short">No automatic calculation</string>
     <string name="formula_desc_off_long">This metric is not auto-calculated. You can enter values manually.</string>
     <string name="bf_deurenberg_1991_short">Classic regression for adults</string>
@@ -328,7 +321,6 @@
     <string name="lbm_weight_minus_bf_long">Computes LBM as total weight minus fat mass derived from the chosen body-fat formula. Accuracy depends on the BF estimate.</string>
     <string name="bf_us_navy_short">U.S. Navy method</string>
     <string name="bf_us_navy_long">Calculates body fat percentage based on waist, neck, and (for females) hip circumferences according to the U.S. Navy standard.</string>
-
     <string name="batch_update_status_report">%1$d: %2$s</string>
     <string name="dialog_title_confirm_generic">Confirm %1$s?</string>
     <string name="dialog_text_confirm_generic_verb">Are you sure you want to %2$s %1$d item(s)?</string>
@@ -344,7 +336,6 @@
     <string name="status_disabled">Disabled</string>
     <string name="status_axis_right">Moved to right axis</string>
     <string name="status_axis_left">Moved to left axis</string>
-
     <!-- Bluetooth -->
     <string name="info_bluetooth_connection_error_scale_offline">Could not connect to scale, please ensure it is on.</string>
     <string name="fallback_device_name_saved_scale">saved scale</string>
@@ -406,8 +397,6 @@
     <string name="cap_state_implemented">Implemented: %1$s</string>
     <string name="cap_state_supported_only">Supported (not implemented): %1$s</string>
     <string name="more_options_cd">More options</string>
-
-
     <!-- Bluetooth Detail Screen -->
     <string name="title_device_settings_for">"%1$s Settings"</string>
     <string name="bluetooth_tuning_title">Bluetooth Tuning</string>
@@ -429,17 +418,14 @@
     <string name="developer_section_title">Developer</string>
     <string name="danger_zone_title">Danger Zone</string>
     <string name="auto_connect_on_startup_title">Auto-connect on startup</string>
-
     <!-- Scale Configuration (generic, shown when a handler declares config fields) -->
     <string name="scale_configuration_title">Scale Configuration</string>
     <string name="no_special_configuration_available">No additional special configuration available for this device.</string>
-
     <!-- Mi Scale body-composition algorithm -->
     <string name="mi_body_comp_algorithm_label">Body composition algorithm</string>
     <string name="mi_algorithm_xiaomi">Xiaomi (original app)</string>
     <string name="mi_algorithm_bodymiscale_science">Scientific</string>
     <string name="mi_algorithm_description">Choose how body composition is derived from impedance. \"Xiaomi\" reproduces the original Mi Fit / Zepp Life app. \"Scientific\" uses peer-reviewed formulas (Siri, Pace, Wang, Schofield) and also reports protein and BMR. Applies to new measurements from this scale.</string>
-
     <!-- S400 Scale Configuration -->
     <string name="s400_bind_key_label">BLE Bind Key</string>
     <string name="s400_bind_key_placeholder">32-character hex key</string>
@@ -453,13 +439,11 @@
     <string name="bt_hs2s_wrong_device_key">Scale authentication failed: the device key doesn\'t match this scale.</string>
     <string name="bt_hs2s_auth_failed">The scale rejected authentication.</string>
     <string name="bt_wyze_scale_x_user_rejected">Wyze Scale X: the scale rejected the user profile.</string>
-
     <!-- Huawei Hagrid Scale Configuration -->
     <string name="huawei_hagrid_secrets_title">Huawei Hagrid WSP secrets</string>
     <string name="huawei_hagrid_secrets_description">Configure CAK, C1, and C2 as 32 hex characters each. Values stay in per-driver app settings.</string>
     <string name="huawei_hagrid_secret_invalid">Expected 32 hex characters</string>
     <string name="huawei_hagrid_secret_saved">Saved</string>
-
     <!-- Bluetooth Connector -->
     <string name="bluetooth_connector_connected_to">Connected to %1$s</string>
     <string name="bluetooth_connector_connection_failed">Connection to %1$s failed: %2$s</string>
@@ -474,7 +458,6 @@
     <string name="bluetooth_connector_device_message">%1$s: %2$s</string>
     <string name="bluetooth_connector_listening_for_device">Listening for %1$s…</string>
     <string name="bluetooth_connector_broadcast_complete">Measurement received from %1$s.</string>
-
     <!-- Bluetooth Permissions & Enable Cards -->
     <string name="permissions_required_icon_desc">Permissions required icon</string>
     <string name="permissions_required_title">Permissions Required</string>
@@ -489,16 +472,17 @@
     <string name="bluetooth_compatibility_disclaimer">openScale is an open-source project, and I don\'t own every scale. Please note that compatibility cannot be guaranteed in all cases, as Bluetooth protocols may change or be undocumented.\n\nAs an open-source project, pull requests and contributions to improve scale support are very welcome!</string>
     <string name="compatibility_dialog_confirm_button">Acknowledge &amp; Save</string>
     <string name="go_to_project_website_button">Go to Project Website</string>
-
     <!-- LegacyScaleAdapter (Bluetooth Driver) -->
 
     <!-- Charts (LineChart) -->
     <string name="content_description_time_range_icon">Time range icon</string>
     <string name="content_description_filter_chart_data">Filter chart data</string>
-    <string name="content_description_time_range_selected">%s selected</string> <!-- Example: "Last 7 days selected" -->
+    <string name="content_description_time_range_selected">%s selected</string>
+    <!-- Example: "Last 7 days selected" -->
     <string name="content_description_measurement_filter_visible">Measurement filter is visible</string>
     <string name="content_description_measurement_filter_hidden">Measurement filter is hidden</string>
-    <string name="line_chart_filter_title_template">%1$s (%2$d entries)</string> <!-- Example: "Last 30 days (15 entries)" -->
+    <string name="line_chart_filter_title_template">%1$s (%2$d entries)</string>
+    <!-- Example: "Last 30 days (15 entries)" -->
     <string name="time_range_all_days">All Days</string>
     <string name="time_range_last_7_days">Last 7 Days</string>
     <string name="time_range_last_30_days">Last 30 Days</string>
@@ -530,7 +514,6 @@
     <string name="line_chart_no_data_or_types_to_select">No data to display or types to select.</string>
     <string name="line_chart_no_data_for_selected_types">No data available for the selected types.</string>
     <string name="menu_item_measurement_filter">Show/Hide Measurement Filter</string>
-
     <!-- Table Screen -->
     <string name="table_header_date">Date</string>
     <string name="table_message_no_columns_or_measurements">No columns selected or no measurements available.</string>
@@ -561,7 +544,6 @@
     <string name="snackbar_no_other_users_to_change_to">No other users available to change to.</string>
     <string name="snackbar_items_user_changed_successfully">%1$d measurements moved</string>
     <string name="snackbar_items_move_partial_failure">Couldn\'t move %1$d of %2$d measurements (already exist for that user).</string>
-
     <!-- Insights Screen -->
     <string name="insights_confidence_low">Limited data</string>
     <string name="insights_section_measurement_analysis">Your %1$s Analysis</string>
@@ -624,7 +606,6 @@
     <string name="insights_chip_plateau_days">plateau %1$d days</string>
     <string name="insights_short_term_trend">short-term</string>
     <string name="insights_long_term_trend">long-term</string>
-
     <!-- Statistics Screen -->
     <string name="statistics_no_relevant_types">No relevant measurement types available or configured for statistics.</string>
     <string name="statistics_label_min">Min</string>
@@ -633,7 +614,6 @@
     <string name="statistics_content_desc_increase">Increase</string>
     <string name="statistics_content_desc_decrease">Decrease</string>
     <string name="statistics_content_desc_no_change">No change</string>
-
     <!-- Settings Screen & Sub-screens -->
     <string name="settings_item_general">General</string>
     <string name="settings_item_user">User</string>
@@ -642,7 +622,6 @@
     <string name="settings_item_chart">Chart</string>
     <string name="settings_item_data_management">Data Management</string>
     <string name="settings_item_about">About</string>
-
     <!-- General Settings Screen -->
     <string name="settings_general_title">General Settings</string>
     <string name="settings_language_label">Language</string>
@@ -653,7 +632,7 @@
     <string name="settings_reminder_time_label">Time</string>
     <string name="reminder_enabled_snackbar">Reminder enabled</string>
     <string name="reminder_disabled_snackbar">Reminder disabled</string>
-    <string name="reminder_default_text">Time to weight</string>
+    <string name="reminder_default_text">Time to weigh yourself</string>
     <string name="reminder_channel_name">Reminders</string>
     <string name="reminder_notification_title">openScale</string>
     <string name="settings_reminder_days_label">Days</string>
@@ -662,7 +641,6 @@
     <string name="settings_dynamic_color_label">Dynamic colors</string>
     <string name="settings_high_contrast_label">High contrast</string>
     <string name="settings_pure_black_label">Pure black</string>
-
     <string name="monday_short">Mon</string>
     <string name="tuesday_short">Tue</string>
     <string name="wednesday_short">Wed</string>
@@ -671,12 +649,10 @@
     <string name="saturday_short">Sat</string>
     <string name="sunday_short">Sun</string>
     <string name="all">All</string>
-
     <string name="settings_feedback_title">Feedback</string>
     <string name="settings_haptics_label">Vibration on new measurement</string>
     <string name="settings_haptics_enabled_snackbar">Vibration on measurements enabled</string>
     <string name="settings_haptics_disabled_snackbar">Vibration on measurements disabled</string>
-
     <!-- Chart Settings Screen -->
     <string name="setting_show_chart_points">Show data points</string>
     <string name="setting_show_chart_goal_lines">Show goal lines</string>
@@ -694,7 +670,6 @@
     <string name="poly_degree_linear">Linear</string>
     <string name="poly_degree_quadratic">Quadratic</string>
     <string name="poly_degree_cubic">Cubic</string>
-
     <!-- About Screen & Diagnostics -->
     <string name="version_info">Version: %1$s (%2$s)</string>
     <string name="project_information_title">Project Information</string>
@@ -749,7 +724,6 @@
     <string name="dev_tools_scenario_weekday_habits" translatable="false">Weekday Habits (daily cadence)</string>
     <string name="dev_tools_scenario_sparse_metrics" translatable="false">Sparse Metrics (weight only)</string>
     <string name="dev_tools_scenario_with_gaps" translatable="false">With Gaps (30d+ breaks)</string>
-
     <!-- Data Management (Export, Import, Backup, Restore, Delete) -->
     <string name="settings_export_measurements_csv">Export measurements (CSV)</string>
     <string name="settings_import_measurements_csv">Import measurements (CSV)</string>
@@ -802,7 +776,6 @@
     <string name="interval_daily">Daily</string>
     <string name="interval_weekly">Weekly</string>
     <string name="interval_monthly">Monthly</string>
-
     <!-- Data Management Dialog Titles -->
     <string name="dialog_title_export_select_user">Export: Select User</string>
     <string name="dialog_title_import_select_user">Import: Select User</string>
@@ -810,7 +783,8 @@
     <string name="dialog_title_delete_user_data_confirmation">Delete Permanently?</string>
     <string name="dialog_title_delete_entire_database_confirmation">ATTENTION! Delete Entire Database?</string>
     <string name="dialog_title_restore_database_confirmation">Restore Database?</string>
-    <string name="delete_db_confirmation_title">Confirm Database Deletion</string> <!-- Similar to above, could be consolidated -->
+    <string name="delete_db_confirmation_title">Confirm Database Deletion</string>
+    <!-- Similar to above, could be consolidated -->
 
     <!-- Data Management Dialog Messages & Buttons -->
     <string name="dialog_message_delete_user_data_confirmation">Are you sure you want to permanently delete ALL measurement data for user \"%1$s\"? This action cannot be undone.</string>
@@ -818,7 +792,8 @@
     <string name="dialog_message_delete_entire_database_confirmation">This will IRREVERSIBLY delete ALL data for this app, including all users, settings, and measurement data. This action CANNOT be undone. Are you absolutely sure?\n\nAn app restart will be required after this action.</string>
     <string name="dialog_message_restore_database_confirmation">Are you sure you want to overwrite the current database with a backup? All current, unsaved data will be lost. The app may need to be restarted after the restore.</string>
     <string name="button_yes_restore">YES, RESTORE</string>
-    <string name="delete_db_confirmation_message">Are you sure you want to delete the entire database? This will remove ALL users and ALL data and cannot be undone.</string> <!-- Similar to above -->
+    <string name="delete_db_confirmation_message">Are you sure you want to delete the entire database? This will remove ALL users and ALL data and cannot be undone.</string>
+    <!-- Similar to above -->
 
     <!-- Data Export Messages -->
     <string name="export_successful">Data successfully exported.</string>
@@ -828,11 +803,12 @@
     <string name="export_error_cannot_create_file">Export failed: Could not create file.</string>
     <string name="export_error_generic">Error during export: %1$s</string>
     <string name="export_no_users_available">No users available for export.</string>
-
     <!-- Data Import Messages -->
     <string name="import_successful_records">"%1$d measurement records successfully imported."</string>
-    <string name="import_successful_records_with_details">%1$d records successfully imported%2$s.</string> <!-- %2$s for detailed summary -->
-    <string name="import_summary_details_base">"%1$d measurement records successfully imported."</string> <!-- Base for constructing summary -->
+    <string name="import_successful_records_with_details">%1$d records successfully imported%2$s.</string>
+    <!-- %2$s for detailed summary -->
+    <string name="import_summary_details_base">"%1$d measurement records successfully imported."</string>
+    <!-- Base for constructing summary -->
     <string name="import_summary_ignored_duplicated_timestamp">"%1$d rows ignored (duplicated timestamp)."</string>
     <string name="import_summary_skipped_missing_dates">"%1$d rows skipped due to missing dates."</string>
     <string name="import_summary_skipped_date_parse_errors">"%1$d rows skipped due to date parsing errors."</string>
@@ -843,36 +819,30 @@
     <string name="import_error_cannot_read_file">Import failed: Could not read the file.</string>
     <string name="import_error_generic">Error during import: %1$s</string>
     <string name="import_no_users_available">No users available for import.</string>
-
     <!-- Data Deletion Messages (User Specific) -->
     <string name="delete_data_no_users_available">No user data available to delete.</string>
     <string name="delete_data_user_successful">All measurement data for %1$s has been deleted.</string>
     <string name="delete_data_user_no_data_found">No measurement data was found for %1$s.</string>
     <string name="delete_data_user_error">Error deleting data for %1$s.</string>
     <string name="delete_data_error_no_user_selected">Deletion process could not be started: No user selected.</string>
-
     <!-- Database Backup Messages -->
     <string name="backup_error_db_name_not_retrieved">Error: Database name could not be retrieved.</string>
     <string name="backup_error_main_db_not_found">Error: Main database file \'%1$s\' not found.</string>
     <string name="backup_error_no_output_stream">Backup failed: Could not create backup file at the selected location.</string>
     <string name="backup_error_generic">Error during database backup: %1$s</string>
     <string name="backup_successful">Database successfully backed up.</string>
-
     <!-- Database Restore Messages -->
     <string name="restore_error_no_input_stream">Restore failed: Could not read the backup file.</string>
     <string name="restore_error_zip_format">Restore failed: Backup file is not a valid ZIP archive or is corrupted.</string>
     <string name="restore_error_db_files_missing">Restore failed: Essential database files not found in the backup.</string>
     <string name="restore_error_generic">Error during database restore: %1$s</string>
     <string name="restore_successful">Database successfully restored. Please restart the app.</string>
-
     <!-- Entire Database Deletion Messages -->
     <string name="delete_db_successful">Entire database has been deleted.</string>
     <string name="delete_db_error">Error deleting entire database.</string>
-
     <!-- Evaluation Messages -->
     <string name="eval_no_age_band">No evaluation possible: No matching age band at the time of measurement.</string>
     <string name="eval_out_of_plausible_range_percent">Unusual value: outside the plausible range (%1$.0f–%2$.0f%%).</string>
-
     <!-- Bluetooth Scales Messages -->
     <string name="bluetooth_scale_trisa_message_not_paired_instruction">This scale has not been paired!\n\nHold the button on the bottom of the scale to switch it to pairing mode, and then reconnect to retrieve the device password.</string>
     <string name="bluetooth_scale_trisa_success_pairing">Pairing succeeded!\n\nReconnect to retrieve measurement data.</string>
@@ -884,10 +854,8 @@
     <string name="bluetooth_scale_info_step_on_for_reference">Please step barefoot on the scale for reference measurements</string>
     <string name="bluetooth_scale_info_measuring_weight">Measuring weight: %.2f</string>
     <string name="bluetooth_scale_error_max_users_reached">Max. number of concurrent scale users reached</string>
-
     <string name="permission_read_write_data_description">read/write openScale data, including user information and all saved measurements</string>
     <string name="permission_read_write_data_label">Read and Write openScale data</string>
-
     <string name="dialog_bt_interaction_title_choose_user">Select User on Scale</string>
     <string name="dialog_bt_interaction_desc_choose_user_default">Select your user from the list or create a new one.</string>
     <string name="dialog_bt_icon_desc_choose_user">User Selection</string>
@@ -899,12 +867,9 @@
     <string name="dialog_bt_error_loading_user_list_format">Error: User data could not be loaded correctly.</string>
     <string name="dialog_bt_select_user_prompt">Please select a user.</string>
     <string name="dialog_bt_enter_valid_code_prompt">Please enter a valid code.</string>
-
     <string name="saved_measurements_message">Saved %1$d measurements</string>
-
     <!-- General info -->
     <string name="bt_info_step_on_scale">Please step barefoot on the scale</string>
-
     <!-- Mapping / consent flows -->
     <string name="bt_info_using_existing_mapping">Using existing mapping: app user %1$d ↔ scale slot %2$d.</string>
     <string name="bt_info_consent_needed">Please enter the consent code for slot %1$d.</string>
@@ -914,7 +879,6 @@
     <string name="bt_info_no_mapping_creating_user">No user mapping found; creating a new user on the scale…</string>
     <string name="bt_info_waiting_for_measurements">Waiting for measurement via notifications.</string>
     <string name="bt_info_linked_app_user_to_slot">Linked app user %1$d to scale slot %2$d.</string>
-
     <!-- Omron WLC scales (HBF-702T family) -->
     <string name="bt_info_omron_pairing_mode_required">Hold the scale\'s Bluetooth button until it shows the blinking pairing indicator.</string>
     <string name="bt_info_omron_paired">Scale paired with openScale.</string>
@@ -931,7 +895,6 @@
     <string name="bt_error_omron_timeout">The scale stopped responding; the transfer was cancelled.</string>
     <string name="bt_error_mi_scale_service_missing">This device does not expose a supported Mi Scale service.</string>
     <string name="bt_warn_mi_scale_variant_downgraded">This scale is advertised as a v2 model, but it only reports weight. Body composition is not available on this device.</string>
-
     <!-- Warnings -->
     <string name="bt_warn_low_battery">Scale battery is low (%1$d%%).</string>
     <!-- Used by scales that only signal that the battery is low, without reporting a level. -->
@@ -984,13 +947,11 @@
     <string name="qardio_config_resend_profiles_desc">Sends the profile of each openScale user on this phone again on their next connection.</string>
     <string name="bt_info_qardio_reset_done">Scale reset. Your profile is added again the next time the scale connects.</string>
     <string name="qardio_config_reset_pending">Pending: the scale will be reset the next time this phone connects.</string>
-
     <!-- Errors -->
     <string name="bt_error_ucp_not_authorized">Consent code not accepted. Please check and try again.</string>
     <string name="bt_error_delivery_user_feedback">Error delivering user feedback: %1$s</string>
     <string name="bt_info_reconnecting_try">Reconnecting… (try %1$d/%2$d)</string>
     <string name="bt_info_waiting_for_measurement">Waiting for measurement via notifications.</string>
-
     <!-- Adapter: warnings/errors -->
     <string name="bt_warn_no_peripheral_for_setnotify">No peripheral for setNotifyOn(%1$s)</string>
     <string name="bt_warn_characteristic_not_found">Characteristic %1$s not found</string>
@@ -998,11 +959,9 @@
     <string name="bt_warn_no_peripheral_for_read">No peripheral for read(%1$s)</string>
     <string name="bt_warn_write_failed_status">Write to %1$s failed: %2$s</string>
     <string name="bt_warn_notify_state_failed_status">Notify state failed for %1$s: %2$s</string>
-
     <!-- Adapter: generic errors -->
     <string name="bt_error_no_user_selected">No user selected</string>
     <string name="bt_error_generic">Error</string>
-
     <string name="bt_error_handler_connect_failed">Handler failed on connect: %1$s</string>
     <string name="bt_error_handler_parse_error">Handler parse error for %1$s: %2$s</string>
     <string name="bt_error_no_bluetooth_adapter">No Bluetooth adapter detected on this device.</string>
@@ -1013,30 +972,35 @@
     <string name="bt_error_uds_consent_failed">Failed to confirm user on scale. Error: %1$s</string>
     <string name="bt_error_uds_list_users_failed">Failed to retrieve user list from scale. Error: %1$s</string>
     <string name="bt_error_user_setup_failed_no_list">User setup failed. Could not retrieve user list from scale.</string>
-
     <string name="bluetooth_scale_info_create_user_instruction_uds">Create new user on scale (UDS assigned slot)</string>
     <string name="bt_uds_choice_slot_current_user">Slot P%1$d: %2$s (Current App User)</string>
     <string name="bt_uds_choice_slot_other_user">Slot P%1$d: Used by %2$s (Select to take over?)</string>
     <string name="bt_uds_choice_slot_occupied_unmapped">Slot P%1$d: Occupied (Unmapped)</string>
-
     <!-- SBF72 Specific (can be in a general BT strings section or specific if needed later) -->
     <!-- These were requested for SanitasSbf72Handler, ensure they are distinct if used by both -->
     <string name="bt_sbf72_choice_slot_current_user">P%1$d: %2$s (Current)</string>
     <string name="bt_sbf72_choice_slot_other_user">P%1$d: Used by %2$s (Take over?)</string>
     <string name="bt_sbf72_choice_slot_occupied_unmapped">P%1$d: Occupied (Not linked)</string>
     <string name="bt_sbf72_choice_slot_create_new">P%1$d: Create \'%2$s\' here</string>
-
     <!-- Progress since the start point recorded on a goal -->
     <string name="content_description_goal_progress">Goal progress: %1$d percent</string>
     <string name="progress_goal_reached">Goal reached</string>
-    <string name="progress_held_for">for %1$s</string> <!-- how long the goal has been held; follows "2.13 kg below goal"; %1$s is a duration -->
-    <string name="progress_remaining_to_go">%1$s to go</string> <!-- distance still missing to the goal -->
-    <string name="progress_time_left">%1$s to %2$s</string> <!-- %1$s is a day count, %2$s the target date without the year -->
-    <string name="progress_since_date">Since %1$s</string> <!-- the goal's start date -->
-    <string name="progress_until_date">Until %1$s</string> <!-- the goal's target date -->
-    <string name="progress_elapsed_in">In %1$s</string> <!-- time the change took, counted from the start point; %1$s is a duration -->
-    <string name="progress_below_goal">%1$s below goal</string> <!-- overshot a goal downwards -->
-    <string name="progress_above_goal">%1$s above goal</string> <!-- overshot a goal upwards -->
+    <string name="progress_held_for">for %1$s</string>
+    <!-- how long the goal has been held; follows "2.13 kg below goal"; %1$s is a duration -->
+    <string name="progress_remaining_to_go">%1$s to go</string>
+    <!-- distance still missing to the goal -->
+    <string name="progress_time_left">%1$s to %2$s</string>
+    <!-- %1$s is a day count, %2$s the target date without the year -->
+    <string name="progress_since_date">Since %1$s</string>
+    <!-- the goal's start date -->
+    <string name="progress_until_date">Until %1$s</string>
+    <!-- the goal's target date -->
+    <string name="progress_elapsed_in">In %1$s</string>
+    <!-- time the change took, counted from the start point; %1$s is a duration -->
+    <string name="progress_below_goal">%1$s below goal</string>
+    <!-- overshot a goal downwards -->
+    <string name="progress_above_goal">%1$s above goal</string>
+    <!-- overshot a goal upwards -->
 
     <!-- Measurement comparison -->
     <string name="route_title_measurement_comparison">Comparison</string>
@@ -1052,7 +1016,6 @@
     <string name="comparison_column_delta">Δ</string>
     <string name="comparison_column_delta_percent">Δ %</string>
     <string name="comparison_column_delta_per_week">Δ / week</string>
-
     <!-- Measurement photos -->
     <string name="image_take_photo">Take photo</string>
     <string name="image_choose_from_gallery">Choose from gallery</string>
