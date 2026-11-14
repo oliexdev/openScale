@@ -148,11 +148,10 @@ fun MeasurementTypeFilterRow(
                 onSelectionChanged(initialIdsToDisplay)
             }
         } else {
-            // No selectable types are available
-            if (displayedSelectedIds.isNotEmpty() || savedTypeIdsSet.isNotEmpty()) {
-                // Clear any previous selection if types become unavailable
+            // No selectable types: the list may simply not be loaded yet (empty on the first
+            // frame), so the saved selection must not be overwritten here.
+            if (displayedSelectedIds.isNotEmpty()) {
                 displayedSelectedIds = emptyList()
-                onPersistSelectedTypeIds(emptySet()) // Persist empty set
                 onSelectionChanged(emptyList())
             } else if (!isInitialized) {
                 onSelectionChanged(emptyList())
