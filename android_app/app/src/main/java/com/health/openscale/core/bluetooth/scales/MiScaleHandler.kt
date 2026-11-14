@@ -443,10 +443,15 @@ class MiScaleHandler : ScaleDeviceHandler() {
             return
         }
 
-        // Response to "only last" or "all": 0x01 <count> 0x00 <marker/echo bytes...>
+        // Response to "only last" or "all": 0x01, the record count, then the echo of the request's
+        // bytes 1..4. Current firmware sends a 16-bit count (7 bytes, e.g. 01 43 00 FF FF 00 01 for
+        // the request 01 FF FF 00 01); the original v1 documented a single count byte (6 bytes).
         if (d.size >= 6 && d[0] == 0x01.toByte()) {
-            val count = d[1].toInt() and 0xFF
-            val marker = (d[2].toInt() and 0xFF) shl 8 or (d[3].toInt() and 0xFF)
+            val wideCount = d.size >= 7
+            val count = if (wideCount) (d[1].toInt() and 0xFF) or ((d[2].toInt() and 0xFF) shl 8)
+                        else d[1].toInt() and 0xFF
+            val echo = if (wideCount) 3 else 2
+            val marker = (d[echo].toInt() and 0xFF) shl 8 or (d[echo + 1].toInt() and 0xFF)
             if (marker == 0xFFFF || marker == 0x0000) {
                 pendingHistoryCount = count
                 histBufReset() // Discard any stale bytes (e.g. magic-echo) before history data arrives.
