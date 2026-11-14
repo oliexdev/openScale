@@ -32,13 +32,11 @@ import com.health.openscale.core.bluetooth.ScaleCommunicator
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
-import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.CoroutineScope
@@ -64,8 +62,6 @@ import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.min
 import kotlin.time.Duration.Companion.milliseconds
-import com.health.openscale.core.data.Kg
-import com.health.openscale.core.data.Percent
 
 // -------------------------------------------------------------------------------------------------
 // Shared tuning for BLE pacing & retry (used by GATT adapter).
@@ -309,7 +305,7 @@ abstract class ModernScaleAdapter(
                             val out = HashMap<Int, ScaleMeasurement>(users.size)
                             users.forEachIndexed { idx, u ->
                                 val newest = lists[idx].maxByOrNull { it.measurement.timestamp }
-                                mapMeasurement(newest)?.let { out[u.id] = it }
+                                newest?.let { out[u.id] = ScaleMeasurement.fromStored(it) }
                             }
                             out
                         }
@@ -521,26 +517,6 @@ abstract class ModernScaleAdapter(
                 LogManager.w(TAG, "Mapping user ${u.id} failed, continuing with defaults for goal/initial weight and unit", t)
             }
         }
-
-    protected fun mapMeasurement(mwv: MeasurementWithValues?): ScaleMeasurement? {
-        if (mwv == null) return null
-        val m = ScaleMeasurement()
-        runCatching { m.userId = mwv.measurement.userId }
-        runCatching { m.dateTime = Date(mwv.measurement.timestamp) }
-
-        fun valueOf(key: com.health.openscale.core.data.MeasurementType.Key<*>): MeasurementValue? =
-            mwv.values.firstOrNull { it.type.key == key }?.value
-
-        valueOf(MeasurementType.WEIGHT)?.let { m[MeasurementType.WEIGHT] = Kg(it.floatValue ?: 0f) }
-        valueOf(MeasurementType.BODY_FAT)?.let { m[MeasurementType.BODY_FAT] = Percent(it.floatValue ?: 0f) }
-        valueOf(MeasurementType.WATER)?.let { m[MeasurementType.WATER] = Percent(it.floatValue ?: 0f) }
-        valueOf(MeasurementType.MUSCLE)?.let { m[MeasurementType.MUSCLE] = Percent(it.floatValue ?: 0f) }
-        valueOf(MeasurementType.VISCERAL_FAT)?.let { m[MeasurementType.VISCERAL_FAT] = it.floatValue ?: 0f }
-        valueOf(MeasurementType.LBM)?.let { m[MeasurementType.LBM] = Kg(it.floatValue ?: 0f) }
-        valueOf(MeasurementType.BONE)?.let { m[MeasurementType.BONE] = Kg(it.floatValue ?: 0f) }
-
-        return m
-    }
 
     /** Pretty print a few leading bytes of a payload for logs. */
     fun ByteArray.toHexPreview(limit: Int): String {

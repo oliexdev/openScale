@@ -18,11 +18,19 @@
 package com.health.openscale.core.bluetooth.data
 
 import com.health.openscale.core.data.Bpm
-import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.UnitValue
-import java.util.Date
+import com.health.openscale.core.data.Cm
+import com.health.openscale.core.data.InputFieldType
+import com.health.openscale.core.data.Kcal
 import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementValue
+import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.Percent
+import com.health.openscale.core.data.UnitType
+import com.health.openscale.core.data.UnitValue
+import com.health.openscale.core.model.MeasurementWithValues
+import com.health.openscale.core.utils.ConverterUtils
+import java.util.Date
 
 /**
  * One weigh-in as reported by a scale, potentially combined from multiple BLE packets —
@@ -97,7 +105,71 @@ class ScaleMeasurement(
      */
     fun snapshot(): ScaleMeasurement = ScaleMeasurement(userId, dateTime, LinkedHashMap(values))
 
+    /**
+     * The values as rows, each converted from the key's wire unit into the unit its
+     * [MeasurementType] is configured for; the inverse of [fromStored]. [typeFor] returns null
+     * for a key that has no type, which skips the value. `measurementId` is set on insert.
+     */
+    suspend fun toStored(typeFor: suspend (MeasurementType.Key<*>) -> MeasurementType?): List<MeasurementValue> =
+        values.mapNotNull { (key, raw) ->
+            val type = typeFor(key) ?: return@mapNotNull null
+            when (key.inputType) {
+                InputFieldType.FLOAT -> MeasurementValue(
+                    measurementId = 0, typeId = type.id,
+                    floatValue = ConverterUtils.convertFloatValueUnit(
+                        if (raw is UnitValue) raw.value else raw as Float, key.wireUnit, type.unit
+                    )
+                )
+                InputFieldType.INT -> MeasurementValue(
+                    measurementId = 0, typeId = type.id, intValue = if (raw is Bpm) raw.value else raw as Int
+                )
+                InputFieldType.TEXT -> MeasurementValue(measurementId = 0, typeId = type.id, textValue = raw as String)
+                InputFieldType.DATE, InputFieldType.TIME ->
+                    MeasurementValue(measurementId = 0, typeId = type.id, dateValue = (raw as Date).time)
+                InputFieldType.USER, InputFieldType.IMAGE -> null
+            }
+        }
+
     override fun toString(): String =
         "ScaleMeasurement(userId=$userId, dateTime=$dateTime, " +
             "values=${values.entries.joinToString { "${it.key.identity}=${it.value}" }})"
+
+    companion object {
+        /**
+         * A stored measurement as a handler would have reported it: the inverse of the
+         * connector's save path, so values come back in the key's wire unit, not the unit
+         * the user configured.
+         */
+        fun fromStored(stored: MeasurementWithValues): ScaleMeasurement {
+            val m = ScaleMeasurement(stored.measurement.userId, Date(stored.measurement.timestamp))
+            for ((value, type) in stored.values) {
+                val key = type.key ?: continue
+                val raw: Any = when (key.inputType) {
+                    InputFieldType.FLOAT -> {
+                        val wire = ConverterUtils.convertFloatValueUnit(
+                            value.floatValue ?: continue, type.unit, key.wireUnit
+                        )
+                        when (key.wireUnit) {
+                            UnitType.KG -> Kg(wire)
+                            UnitType.PERCENT -> Percent(wire)
+                            UnitType.CM -> Cm(wire)
+                            UnitType.KCAL -> Kcal(wire)
+                            UnitType.OHM -> Ohm(wire)
+                            else -> wire
+                        }
+                    }
+                    InputFieldType.INT -> {
+                        val number = value.intValue ?: continue
+                        if (key.wireUnit == UnitType.BPM) Bpm(number) else number
+                    }
+                    InputFieldType.TEXT -> value.textValue ?: continue
+                    InputFieldType.DATE, InputFieldType.TIME -> Date(value.dateValue ?: continue)
+                    InputFieldType.USER, InputFieldType.IMAGE -> continue
+                }
+                @Suppress("UNCHECKED_CAST")
+                m[key as MeasurementType.Key<Any>] = raw
+            }
+            return m
+        }
+    }
 }

@@ -25,11 +25,7 @@ import com.health.openscale.core.bluetooth.ScaleFactory
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.data.ConnectionStatus
 import com.health.openscale.core.data.Measurement
-import com.health.openscale.core.data.Bpm
-import com.health.openscale.core.data.InputFieldType
-import com.health.openscale.core.data.UnitValue
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.shared.SnackbarEvent
@@ -456,54 +452,24 @@ class BleConnector(
                 }
             val typesByIdentity = types.associateBy { it.identity }
 
-            // One loop for everything the handler reported. The key declares which
-            // column its value lands in and which unit it arrived in; the row knows the
-            // unit the user wants. ScaleMeasurement.set already dropped values that never
-            // describe a real measurement, so what is in the map is worth persisting —
-            // which is also why resolving (and thus creating) a device type only happens
-            // for values that survived: a broken packet must not leave an empty type
-            // behind.
+            // ScaleMeasurement.set already dropped values that never describe a real
+            // measurement, so what is in the map is worth persisting — which is also why
+            // resolving (and thus creating) a device type only happens for values that
+            // survived: a broken packet must not leave an empty type behind.
             //
             // BMR goes in first so its presence guards the per-value recalc that runs
             // after WEIGHT lands; otherwise DerivedValuesProcess would write its
             // Mifflin-St Jeor BMR before the device's BIA-based BMR arrives, leaving two
             // rows for the same typeId.
-            val values = mutableListOf<MeasurementValue>()
-            val reported = measurementData.values.entries
-                .sortedByDescending { it.key == MeasurementType.BMR }
-
-            for ((key, raw) in reported) {
-                val type = typesByIdentity[key.identity]
+            val bmrTypeId = typesByIdentity[MeasurementType.BMR.identity]?.id
+            val values = measurementData.toStored { key ->
+                typesByIdentity[key.identity]
                     ?: measurementFacade.resolveOrCreateMeasurementType(key)
                     ?: run {
                         LogManager.w(TAG, "($deviceName): Skipping ${key.identity}, type unavailable.")
                         null
-                    } ?: continue
-
-                values += when (key.inputType) {
-                    InputFieldType.FLOAT -> MeasurementValue(
-                        measurementId = 0,
-                        typeId = type.id,
-                        // The user may have configured a different unit than the wire one.
-                        floatValue = com.health.openscale.core.utils.ConverterUtils
-                            .convertFloatValueUnit(
-                                if (raw is UnitValue) raw.value else raw as Float,
-                                key.wireUnit, type.unit
-                            )
-                    )
-                    InputFieldType.INT -> MeasurementValue(
-                        measurementId = 0, typeId = type.id,
-                        intValue = if (raw is Bpm) raw.value else raw as Int
-                    )
-                    InputFieldType.TEXT -> MeasurementValue(
-                        measurementId = 0, typeId = type.id, textValue = raw as String
-                    )
-                    InputFieldType.DATE, InputFieldType.TIME -> MeasurementValue(
-                        measurementId = 0, typeId = type.id, dateValue = (raw as java.util.Date).time
-                    )
-                    InputFieldType.USER, InputFieldType.IMAGE -> continue
-                }
-            }
+                    }
+            }.sortedByDescending { it.typeId == bmrTypeId }
 
             if (values.isEmpty()) {
                 LogManager.w(TAG, "No valid values from measurement of $deviceName to save.")
