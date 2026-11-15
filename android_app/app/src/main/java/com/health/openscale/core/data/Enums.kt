@@ -111,7 +111,7 @@ enum class SupportedLanguage(val code: String, val nativeDisplayName: String) {
     GREEK("el", "Greek (ελληνικά)"),
     HEBREW("iw", "Hebrew (עברית)"),
     HINDI("hi", "Hindi (हिन्दी)"),
-    //HUNGARIAN("hu", "Hungarian (magyar)"),
+    HUNGARIAN("hu", "Hungarian (magyar)"),
     //INDONESIAN("id", "Indonesian (Bahasa Indonesia)"),
     ITALIAN("it", "Italian (Italiano)"),
     JAPANESE("ja", "Japanese (日本語)"),
