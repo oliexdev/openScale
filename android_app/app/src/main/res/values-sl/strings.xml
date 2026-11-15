@@ -931,4 +931,9 @@
     <string name="bt_hs2s_missing_device_key">Tehtnica Wyze: ključ naprave ni nastavljen. Odpri nastavitve Bluetootha in ga vnesi.</string>
     <string name="bt_hs2s_wrong_device_key">Preverjanje pristnosti tehtnice ni uspelo: ključ naprave se ne ujema s to tehtnico.</string>
     <string name="bt_hs2s_auth_failed">Tehtnica je zavrnila preverjanje pristnosti.</string>
+    <string name="formula_label_bmr">Formula za izračun bazalne metabolne hitrosti</string>
+    <string name="formula_bmr_mifflin_st_jeor">Mifflin-St Jeor (1990)</string>
+    <string name="formula_bmr_katch_mcardle">Katch-McArdle</string>
+    <string name="formula_bmr_harris_benedict_revised">Harris-Benedict, revidirana različica (1984)</string>
+    <string name="bmr_mifflin_st_jeor_short">Po teži, višini, starosti in spolu</string>
 </resources>
