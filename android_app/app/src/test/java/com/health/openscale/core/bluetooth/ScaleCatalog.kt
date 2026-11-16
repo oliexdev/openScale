@@ -21,6 +21,7 @@ import android.util.SparseArray
 import com.health.openscale.core.bluetooth.scales.AAAxHandler
 import com.health.openscale.core.bluetooth.scales.HealthKeep280Handler
 import com.health.openscale.core.bluetooth.scales.AiLinkBroadcastHandler
+import com.health.openscale.core.bluetooth.scales.OmronHn300t2Handler
 import com.health.openscale.core.bluetooth.scales.ActiveEraBF06Handler
 import com.health.openscale.core.bluetooth.scales.AfuB1Handler
 import com.health.openscale.core.bluetooth.scales.BeurerBF450Handler
@@ -342,6 +343,7 @@ object ScaleCatalog {
         device("BCM-500") claimedBy OmronWlcHandler::class.java,
         device("VIVA") claimedBy OmronWlcHandler::class.java,
         device("BLEsmart_0001000C0080E1A2B3C4") claimedBy OmronWlcHandler::class.java,
+        device("BLEsmart_${OmronHn300t2Handler.ADVERTISED_ID}0080E1A2B3C4", uuid16(0xFE4A)) claimedBy OmronHn300t2Handler::class.java,
         advertisement(services = listOf(uuid16(0x1320))) claimedBy YunmaiXHandler::class.java,
         advertisement(
             manufacturerData = listOf(
