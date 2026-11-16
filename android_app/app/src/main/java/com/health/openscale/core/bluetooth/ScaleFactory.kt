@@ -41,6 +41,7 @@ import com.health.openscale.core.bluetooth.scales.ExcelvanCF36xHandler
 import com.health.openscale.core.bluetooth.scales.ExingtechY1Handler
 import com.health.openscale.core.bluetooth.scales.EufyC20Handler
 import com.health.openscale.core.bluetooth.scales.EufyP2Handler
+import com.health.openscale.core.bluetooth.scales.EufyT9140Handler
 import com.health.openscale.core.bluetooth.scales.EbelterBodyFatB2Handler
 import com.health.openscale.core.bluetooth.scales.EtekcityESF551Handler
 import com.health.openscale.core.bluetooth.scales.EtekcityFit8SHandler
@@ -133,8 +134,8 @@ class ScaleFactory @Inject constructor(
          * Builds the list of modern Kotlin-based device handlers.
          *
          * Order matters: [createCommunicator] returns the FIRST handler whose [ScaleDeviceHandler.supportFor]
-         * is non-null. TaylorBIAHandler, FitTrackDaraHandler, RelaxmedicHandler, RobiS9Handler and
-         * DrTrustSSW532Handler must stay ahead of MGBHandler — all live on service 0xFFB0, which
+         * is non-null. TaylorBIAHandler, FitTrackDaraHandler, EufyT9140Handler, RelaxmedicHandler,
+         * RobiS9Handler and DrTrustSSW532Handler must stay ahead of MGBHandler — all live on service 0xFFB0, which
          * MGBHandler matches on its own, so a later position would let MGB wrongly claim them.
          *
          * Exposed so the registry (order, device claims, duplicates) can be asserted in unit tests
@@ -184,6 +185,7 @@ class ScaleFactory @Inject constructor(
             VitafitVT701Handler(),
             EEBBLHandler(),
             FitTrackDaraHandler(),
+            EufyT9140Handler(),
             DrTrustSSW532Handler(),
             AAAxHandler(),
             MGBHandler(),

@@ -25,6 +25,7 @@ import com.health.openscale.core.bluetooth.scales.EtekcityESF551Handler
 import com.health.openscale.core.bluetooth.scales.EtekcityFit8SHandler
 import com.health.openscale.core.bluetooth.scales.EufyC20Handler
 import com.health.openscale.core.bluetooth.scales.ExcelvanCF36xHandler
+import com.health.openscale.core.bluetooth.scales.EufyT9140Handler
 import com.health.openscale.core.bluetooth.scales.FitTrackDaraHandler
 import com.health.openscale.core.bluetooth.scales.HumeDara2Handler
 import com.health.openscale.core.bluetooth.scales.MGBHandler
@@ -174,6 +175,7 @@ class ScaleFactoryTest {
         assertClaimedBy(device("relaxmedic", SERVICE_FFB0), RelaxmedicHandler::class.java)
         assertClaimedBy(device("robi", SERVICE_FFB0), RobiS9Handler::class.java)
         assertClaimedBy(device("SSW532", SERVICE_FFB0), DrTrustSSW532Handler::class.java)
+        assertClaimedBy(device("eufy T9140", SERVICE_FFB0), EufyT9140Handler::class.java)
 
         // The generic member of the family keeps the devices nobody else claims.
         assertClaimedBy(device("swan", SERVICE_FFB0), MGBHandler::class.java)
@@ -183,6 +185,7 @@ class ScaleFactoryTest {
         val siblings = listOf(
             "TaylorBIAHandler",
             "FitTrackDaraHandler",
+            "EufyT9140Handler",
             "RelaxmedicHandler",
             "RobiS9Handler",
             "DrTrustSSW532Handler",

@@ -40,6 +40,7 @@ import com.health.openscale.core.bluetooth.scales.EtekcityESF551Handler
 import com.health.openscale.core.bluetooth.scales.EtekcityFit8SHandler
 import com.health.openscale.core.bluetooth.scales.EufyC20Handler
 import com.health.openscale.core.bluetooth.scales.EufyP2Handler
+import com.health.openscale.core.bluetooth.scales.EufyT9140Handler
 import com.health.openscale.core.bluetooth.scales.ExcelvanCF36xHandler
 import com.health.openscale.core.bluetooth.scales.ExingtechY1Handler
 import com.health.openscale.core.bluetooth.scales.FitTrackDaraHandler
@@ -281,6 +282,7 @@ object ScaleCatalog {
         device("Vitafit VT701") claimedBy VitafitVT701Handler::class.java,
         device("EEBBL") claimedBy EEBBLHandler::class.java,
         device("FITTRACK Dara") claimedBy FitTrackDaraHandler::class.java,
+        device("eufy T9140") claimedBy EufyT9140Handler::class.java,
         device("SSW532", SERVICE_FFB0) claimedBy DrTrustSSW532Handler::class.java,
         device("MY_SCALE", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
         device("Aero I", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
