@@ -451,7 +451,7 @@
     <string name="settings_reminder_time_label">Urnik</string>
     <string name="reminder_enabled_snackbar">Opomnik vklopljen</string>
     <string name="reminder_disabled_snackbar">Opomnik izklopljen</string>
-    <string name="reminder_default_text">Čas za tehtanje</string>
+    <string name="reminder_default_text">Čas je, da se stehtaš</string>
     <string name="reminder_channel_name">Opomniki</string>
     <string name="reminder_notification_title">openScale</string>
     <string name="settings_reminder_days_label">Dni</string>
@@ -936,4 +936,10 @@
     <string name="formula_bmr_katch_mcardle">Katch-McArdle</string>
     <string name="formula_bmr_harris_benedict_revised">Harris-Benedict, revidirana različica (1984)</string>
     <string name="bmr_mifflin_st_jeor_short">Po teži, višini, starosti in spolu</string>
+    <string name="bmr_mifflin_st_jeor_long">Najpogosteje priporočena ocena za odrasle. Upošteva težo, višino, starost in spol; ne upošteva telesne sestave, zato lahko pri zelo mišičastih ali zelo netreniranih osebah pride do večjih odstopanj.</string>
+    <string name="bmr_katch_mcardle_short">Na podlagi mišične mase</string>
+    <string name="bmr_katch_mcardle_long">Temelji na mišični masi, zato odraža telesno sestavo in je bolj primerna za mišičaste postave. Pri merjenju je potrebna vrednost mišične mase; če ta ni na voljo, se uporabi metoda Mifflin-St Jeor.</string>
+    <string name="bmr_harris_benedict_revised_short">Classic Harris-Benedict</string>
+    <string name="bmr_harris_benedict_revised_long">Prenovljena različica že dolgo uveljavljene enačbe Harris-Benedict (Roza in Shizgal). Upošteva težo, višino, starost in spol; ponavadi daje nekoliko višje vrednosti kot enačba Mifflin-St Jeor.</string>
+    <string name="bt_wyze_scale_x_user_rejected">Wyze Scale X: tehtnica je zavrnila uporabniški profil.</string>
 </resources>
