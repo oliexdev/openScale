@@ -28,7 +28,19 @@ package com.health.openscale.core.bluetooth.libs
  * Decoded from the three EufyLife-app HCI snoop logs attached to openScale issue #772 (true
  * weights 76.0, 79.9 and 84.0 kg, all in kg mode), cross-checked with the frame names in
  * particleflux's notes and cbondurant's eufy-protocol-reversal, and with the live-weight
- * handling in the eufylife-ble-client library used by Home Assistant.
+ * handling in the eufylife-ble-client library used by Home Assistant. Confirmed on a second
+ * unit (2026 firmware, "BK-BLE-1.0", service `4143f7b0`) with direct GATT captures, including a
+ * weigh-in made while the scale displayed lb.
+ *
+ * ## Firmware differences
+ * - The #772 unit (2021) exposes service `4143f6b0`; the 2026 unit exposes `4143f7b0` (and
+ *   advertises the 16-bit UUIDs `0xF7B0` and `0xD618`). Characteristics are `…b1` (write) and
+ *   `…b2` (notify) in both families.
+ * - The 2026 unit sends two constant frames before every result, `AC 02 F4 23 10 0B CC ck` and
+ *   `AC 02 F7 23 15 2A CC ck` (meaning unknown, see [Frame.Preamble]), and never sends the
+ *   19-byte `FE` final record: its result ends with "measurement finished".
+ * - The 2026 unit delivers a result that was measured before the connection right after
+ *   subscribing, without any write, and stays connected for further weigh-ins.
  *
  * ## Framing
  * Every frame starts `AC 02`. Short frames are 8 bytes (9 for the timestamp frames):
@@ -63,8 +75,9 @@ package com.health.openscale.core.bluetooth.libs
  *   AC 02 FE 06 <unit> 00 CC ck                display unit, 00 = kg
  *   AC 02 FF 00 00 00 CF ck                    request stored weigh-ins
  * ```
- * Only kg mode has been captured. Whether weights are sent in the display unit when the scale
- * is set to lb or st is unknown, so the handler always selects kg.
+ * Weights are always sent in 0.1 kg, whatever unit the display shows (seen with the display in
+ * lb). Unit codes 1 = lb and 2 = st come from the vendor-app notes; only 0 = kg has been seen
+ * acknowledged.
  */
 object EufyT9140Lib {
 
@@ -88,6 +101,8 @@ object EufyT9140Lib {
     const val STATUS_READY_POWER_OFF = 0x1C
 
     const val UNIT_KG = 0x00
+    const val UNIT_LB = 0x01
+    const val UNIT_ST = 0x02
 
     /** One stored or just-taken weigh-in. */
     data class Record(val epochSeconds: Long, val weightDeciKg: Int, val impedanceOhm: Int) {
@@ -103,6 +118,8 @@ object EufyT9140Lib {
         data class MeasurementTime(val epochSeconds: Long) : Frame
         data class Status(val code: Int, val arg: Int) : Frame
         data class FinalRecord(val record: Record) : Frame
+        /** `AC 02 F4|F7 …` sent by 2026 firmware just before each result; payload not decoded. */
+        data class Preamble(val code: Int) : Frame
         data class History(val records: List<Record>) : Frame
         data class Unknown(val bytes: ByteArray, val reason: String) : Frame
     }
@@ -168,6 +185,7 @@ object EufyT9140Lib {
             chan == CHAN_IMPEDANCE && b2 == 0xFD && b3 == 0x00 -> Frame.ImpedanceStarted
             chan == CHAN_IMPEDANCE && b2 == 0xFD && b3 == 0x01 -> Frame.Impedance(be16(f, 4))
             b2 == 0xFE && (chan == CHAN_COMMAND || chan == CHAN_HISTORY) -> Frame.Status(b3, u8(f, 4))
+            (b2 == 0xF4 || b2 == 0xF7) && chan == CHAN_COMMAND -> Frame.Preamble(b2)
             else -> Frame.Unknown(f, "unknown frame")
         }
     }

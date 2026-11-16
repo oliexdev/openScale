@@ -115,4 +115,40 @@ class EufyT9140LibTest {
         assertThat(EufyT9140Lib.setUnit(EufyT9140Lib.UNIT_KG)).isEqualTo(hex("ac02fe060000ccd0"))
         assertThat(EufyT9140Lib.historyRequest()).isEqualTo(hex("ac02ff000000cfce"))
     }
+
+    // --- Second unit (2026 firmware, service 4143f7b0), captured with capture_scale.py ----------
+
+    @Test
+    fun `2026 firmware preamble frames are recognised`() {
+        // Sent before every result, identical each time; checksum valid, payload meaning unknown.
+        assertThat(single("ac02f423100bccfe")).isEqualTo(Frame.Preamble(0xF4))
+        assertThat(single("ac02f723152acc25")).isEqualTo(Frame.Preamble(0xF7))
+    }
+
+    @Test
+    fun `2026 firmware result frames decode`() {
+        // Display showed 50.2 lb; the wire still carries 0.1 kg: 0x00E4 = 22.8 kg (50.3 lb).
+        assertThat(single("ac0200e40000caae")).isEqualTo(Frame.Weight(228, stable = true))
+        assertThat(EufyT9140Lib.parseNotification(hex("ac02fd0102decba9ac0200e40000caae")))
+            .containsExactly(Frame.Impedance(734), Frame.Weight(228, true)).inOrder()
+        // 0x6AFA8DD3 = 2026-11-16 05:00:03 UTC
+        assertThat(EufyT9140Lib.parseNotification(hex("ac02f1d38dfa6acc81ac0200e40000caae")).first())
+            .isEqualTo(Frame.MeasurementTime(0x6AFA8DD3L))
+    }
+
+    @Test
+    fun `2026 firmware history frames decode`() {
+        // One stored record (synthetic values, real layout): 2026-11-10 12:00:00 UTC, 75.0 kg, 500 ohm.
+        assertThat(single("ac02ff4007f36a02ee01f40000000000000000"))
+            .isEqualTo(Frame.History(listOf(Record(0x6AF30740L, 750, 500))))
+        // Two offline weigh-ins: 05:11:48Z 23.6 kg 552 ohm, 05:12:02Z 22.4 kg 581 ohm.
+        assertThat(single("ac02ff9490fa6a00ec0228a290fa6a00e00245")).isEqualTo(
+            Frame.History(listOf(Record(0x6AFA9094L, 236, 552), Record(0x6AFA90A2L, 224, 581)))
+        )
+    }
+
+    @Test
+    fun `unit codes`() {
+        assertThat(EufyT9140Lib.setUnit(EufyT9140Lib.UNIT_LB)).isEqualTo(hex("ac02fe060100ccd1"))
+    }
 }
