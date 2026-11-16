@@ -931,4 +931,15 @@
     <string name="qardio_config_resend_profiles_desc">Envia novamente o perfil de cada usuário do openScale neste telefone na sua próxima conexão.</string>
     <string name="bt_info_qardio_reset_done">Balança redefinida. Seu perfil será adicionado novamente na próxima conexão da balança.</string>
     <string name="qardio_config_reset_pending">Pendente: a balança será redefinida na próxima vez que este telefone se conectar.</string>
+    <string name="formula_label_bmr">Fórmula da Taxa Metabólica Basal</string>
+    <string name="formula_bmr_mifflin_st_jeor">Mifflin-St Jeor (1990)</string>
+    <string name="formula_bmr_katch_mcardle">Katch-McArdle</string>
+    <string name="formula_bmr_harris_benedict_revised">Harris-Benedict, revisada (1984)</string>
+    <string name="bmr_mifflin_st_jeor_short">A partir do peso, altura, idade e sexo</string>
+    <string name="bmr_mifflin_st_jeor_long">A estimativa mais recomendada para adultos. Usa peso, altura, idade e sexo; não considera a composição corporal, portanto pessoas muito musculosas ou muito sedentárias podem notar variações maiores.</string>
+    <string name="bmr_katch_mcardle_short">A partir da massa corporal magra</string>
+    <string name="bmr_katch_mcardle_long">Baseada na massa corporal magra, reflete a composição corporal e se adapta melhor a perfis musculosos. Exige um valor de massa corporal magra na medição; caso não haja, a fórmula Mifflin-St Jeor é utilizada.</string>
+    <string name="bmr_harris_benedict_revised_short">Harris-Benedict clássica</string>
+    <string name="bmr_harris_benedict_revised_long">A versão revisada da tradicional equação de Harris-Benedict (Roza e Shizgal). Usa peso, altura, idade e sexo; tende a gerar valores ligeiramente maiores que a Mifflin-St Jeor.</string>
+    <string name="bt_wyze_scale_x_user_rejected">Wyze Scale X: a balança rejeitou o perfil do usuário.</string>
 </resources>
