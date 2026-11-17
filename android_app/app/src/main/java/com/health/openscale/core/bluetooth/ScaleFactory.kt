@@ -41,6 +41,7 @@ import com.health.openscale.core.bluetooth.scales.ExcelvanCF36xHandler
 import com.health.openscale.core.bluetooth.scales.ExingtechY1Handler
 import com.health.openscale.core.bluetooth.scales.EufyC20Handler
 import com.health.openscale.core.bluetooth.scales.EufyP2Handler
+import com.health.openscale.core.bluetooth.scales.EufyT9140Handler
 import com.health.openscale.core.bluetooth.scales.EbelterBodyFatB2Handler
 import com.health.openscale.core.bluetooth.scales.EtekcityESF551Handler
 import com.health.openscale.core.bluetooth.scales.EtekcityFit8SHandler
@@ -184,6 +185,7 @@ class ScaleFactory @Inject constructor(
             VitafitVT701Handler(),
             EEBBLHandler(),
             FitTrackDaraHandler(),
+            EufyT9140Handler(),
             DrTrustSSW532Handler(),
             AAAxHandler(),
             MGBHandler(),
