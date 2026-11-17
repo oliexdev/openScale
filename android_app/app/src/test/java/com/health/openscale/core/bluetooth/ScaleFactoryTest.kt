@@ -25,7 +25,6 @@ import com.health.openscale.core.bluetooth.scales.EtekcityESF551Handler
 import com.health.openscale.core.bluetooth.scales.EtekcityFit8SHandler
 import com.health.openscale.core.bluetooth.scales.EufyC20Handler
 import com.health.openscale.core.bluetooth.scales.ExcelvanCF36xHandler
-import com.health.openscale.core.bluetooth.scales.EufyT9140Handler
 import com.health.openscale.core.bluetooth.scales.FitTrackDaraHandler
 import com.health.openscale.core.bluetooth.scales.HumeDara2Handler
 import com.health.openscale.core.bluetooth.scales.MGBHandler
@@ -191,15 +190,6 @@ class ScaleFactoryTest {
         for (sibling in siblings) {
             assertThat(order.indexOf(sibling)).isLessThan(mgb)
         }
-    }
-
-    @Test
-    fun `eufy T9140 is claimed from its real advertisement`() {
-        // 2026 firmware advertises the 16-bit UUIDs 0xF7B0 and 0xD618; the handler matches by name,
-        // so no other handler, MGBHandler included, may claim it.
-        val t9140 = device("eufy T9140", uuid16(0xF7B0), uuid16(0xD618))
-        assertClaimedBy(t9140, EufyT9140Handler::class.java)
-        assertThat(claimants(t9140).map { it.javaClass.simpleName }).containsExactly("EufyT9140Handler")
     }
 
     /**

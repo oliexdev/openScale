@@ -149,6 +149,6 @@ class EufyT9140LibTest {
 
     @Test
     fun `unit codes`() {
-        assertThat(EufyT9140Lib.setUnit(EufyT9140Lib.UNIT_LB)).isEqualTo(hex("ac02fe060100ccd1"))
+        assertThat(EufyT9140Lib.setUnit(EufyT9140Lib.UNIT_KG)).isEqualTo(hex("ac02fe060000ccd0"))
     }
 }

@@ -282,7 +282,7 @@ object ScaleCatalog {
         device("Vitafit VT701") claimedBy VitafitVT701Handler::class.java,
         device("EEBBL") claimedBy EEBBLHandler::class.java,
         device("FITTRACK Dara") claimedBy FitTrackDaraHandler::class.java,
-        device("eufy T9140") claimedBy EufyT9140Handler::class.java,
+        device("eufy T9140", uuid16(0xF7B0), uuid16(0xD618)) claimedBy EufyT9140Handler::class.java,
         device("SSW532", SERVICE_FFB0) claimedBy DrTrustSSW532Handler::class.java,
         device("MY_SCALE", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,
         device("Aero I", SERVICE_FFB0) claimedBy TaylorBIAHandler::class.java,

@@ -76,8 +76,8 @@ package com.health.openscale.core.bluetooth.libs
  *   AC 02 FF 00 00 00 CF ck                    request stored weigh-ins
  * ```
  * Weights are always sent in 0.1 kg, whatever unit the display shows (seen with the display in
- * lb). Unit codes 1 = lb and 2 = st come from the vendor-app notes; only 0 = kg has been seen
- * acknowledged.
+ * lb). Only unit code 0 = kg has been seen acknowledged; vendor-app notes suggest 1 = lb and
+ * 2 = st, but no capture confirms them, so they are not used.
  */
 object EufyT9140Lib {
 
@@ -90,7 +90,6 @@ object EufyT9140Lib {
     const val CHAN_WEIGHT_STABLE = 0xCA
     const val CHAN_IMPEDANCE = 0xCB
 
-    const val STATUS_NO_HISTORY = 0x00
     const val STATUS_HISTORY_START = 0x01
     const val STATUS_HISTORY_END = 0x02
     const val STATUS_UNIT_SET = 0x06
@@ -100,9 +99,8 @@ object EufyT9140Lib {
     const val STATUS_POWER_OFF = 0x1A
     const val STATUS_READY_POWER_OFF = 0x1C
 
+    /** The only display-unit code seen acknowledged; the codes for lb and st are not known. */
     const val UNIT_KG = 0x00
-    const val UNIT_LB = 0x01
-    const val UNIT_ST = 0x02
 
     /** One stored or just-taken weigh-in. */
     data class Record(val epochSeconds: Long, val weightDeciKg: Int, val impedanceOhm: Int) {
