@@ -22,6 +22,8 @@ import com.health.openscale.core.bluetooth.ScaleCatalog
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.data.Kg
+import com.health.openscale.core.data.Ohm
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.WeightUnit
 import kotlinx.coroutines.CoroutineScope
@@ -128,9 +130,22 @@ class EufyT9140HandlerTest {
     }
 
     @Test
-    fun `display unit follows the user`() {
-        val (_, rig) = connected(unit = WeightUnit.LB)
-        assertThat(rig.writes[1].second).isEqualTo(hex("ac02fe060100ccd1"))
+    fun `unverified display units are not sent`() {
+        // Only kg (0) has been seen acknowledged; for lb/st the scale keeps its own setting.
+        for (unit in listOf(WeightUnit.LB, WeightUnit.ST)) {
+            val (_, rig) = connected(unit = unit)
+            assertThat(rig.writes).hasSize(2)
+            assertThat(rig.writes[0].second.copyOfRange(0, 3)).isEqualTo(hex("ac02f2"))
+            assertThat(rig.writes[1].second).isEqualTo(hex("ac02ff000000cfce"))
+        }
+    }
+
+    @Test
+    fun `live weight and unit config are not claimed as implemented`() {
+        val support = EufyT9140Handler().supportFor(ScaleCatalog.device("eufy T9140"))!!
+        assertThat(support.implemented).containsNoneOf(
+            DeviceCapability.LIVE_WEIGHT_STREAM, DeviceCapability.UNIT_CONFIG,
+        )
     }
 
     @Test
@@ -212,6 +227,78 @@ class EufyT9140HandlerTest {
     }
 
     @Test
+    fun `an unfinished weigh-in without a scale time is dropped on disconnect`() {
+        // Synthetic: run A's first weigh-in cut off after the impedance, before the F1 time.
+        val (handler, rig) = connected()
+        runA.take(8).forEach { handler.handleNotification(notifyF7, hex(it)) }
+        handler.handleDisconnected()
+        assertThat(rig.published).isEmpty()
+    }
+
+    @Test
+    fun `an abandoned weigh-in does not lend its impedance or time to the next one`() {
+        // Synthetic: run A's first weigh-in up to its F1 time, the user steps off and on again
+        // (live frame), and the second weigh-in finishes without impedance or time.
+        val (handler, rig) = connected()
+        runA.take(9).forEach { handler.handleNotification(notifyF7, hex(it)) }
+        handler.handleNotification(notifyF7, hex("ac0201430000ce12"))   // live 32.3
+        handler.handleNotification(notifyF7, hex("ac0200e90000cab3"))   // stable 23.3
+        handler.handleNotification(notifyF7, hex("ac02fe100000ccda"))   // finished
+        val m = rig.published.single()
+        assertThat(m[MeasurementType.WEIGHT]!!.value).isWithin(1e-4f).of(23.3f)
+        assertThat(m[MeasurementType.IMPEDANCE]).isNull()
+        assertThat(m.dateTime).isNotEqualTo(epochDate(0x6AFA8DD3))
+    }
+
+    @Test
+    fun `a live result without a scale time still matches its stored copy`() {
+        // Synthetic: run A's first weigh-in without its F1 frame, so it is saved with the phone's
+        // clock; then the scale (clock synced at connect) offers the same weigh-in, 22.8 kg and
+        // 734 ohm, stamped 20 s earlier, from its history.
+        val (handler, rig) = connected()
+        (runA.take(8) + "ac02fe100000ccda").forEach { handler.handleNotification(notifyF7, hex(it)) }
+        assertThat(rig.published).hasSize(1)
+        handler.handleNotification(notifyF7, historyFrame(System.currentTimeMillis() / 1000 - 20, 228, 734))
+        assertThat(rig.published).hasSize(1)
+    }
+
+    @Test
+    fun `a live result already imported from history is skipped`() {
+        // Synthetic: the history record of run A's first weigh-in arrives before its live result.
+        val (handler, rig) = connected()
+        handler.handleNotification(notifyF7, hex("ac02ffd38dfa6a00e402de0000000000000000"))
+        runA.take(10).forEach { handler.handleNotification(notifyF7, hex(it)) }
+        handler.handleDisconnected()
+        assertThat(rig.published.single().dateTime).isEqualTo(epochDate(0x6AFA8DD3))
+    }
+
+    @Test
+    fun `a stored copy of a weigh-in saved with phone time last connection is skipped`() {
+        // The last saved measurement is run A's first weigh-in, saved 30 s off the scale's time.
+        val last = ScaleMeasurement().apply {
+            userId = 3
+            dateTime = epochDate(0x6AFA8DD3 + 30)
+            this[MeasurementType.WEIGHT] = Kg(22.8f)
+            this[MeasurementType.IMPEDANCE] = Ohm(734f)
+        }
+        val (handler, rig) = connected(lastWeights = mapOf(3 to last))
+        handler.handleNotification(notifyF7, hex("ac02ffd38dfa6a00e402de0000000000000000"))
+        assertThat(rig.published).isEmpty()
+    }
+
+    @Test
+    fun `stored records closer to another user's weight are not imported`() {
+        // Synthetic history: 23.6 kg (this user, last 23.0 kg) and 84.0 kg (other user, last 84.5 kg).
+        val other = ScaleUser(id = 4, gender = GenderType.FEMALE)
+        val (handler, rig) = connected(
+            otherUsers = listOf(other),
+            lastWeights = mapOf(3 to weightOnly(3, 23.0f), 4 to weightOnly(4, 84.5f)),
+        )
+        handler.handleNotification(notifyF7, hex("ac02ff9490fa6a00ec0228a290fa6a03480228"))
+        assertThat(rig.published.map { it[MeasurementType.WEIGHT]!!.value }).containsExactly(23.6f)
+    }
+
+    @Test
     fun `no impedance publishes weight only`() {
         // Synthetic final record with impedance 0, e.g. weighed in socks.
         val (handler, rig) = connected()
@@ -232,9 +319,27 @@ class EufyT9140HandlerTest {
 
     // --- Harness ---------------------------------------------------------------
 
+    /** A `FF` history notification holding one record and an empty slot. */
+    private fun historyFrame(epoch: Long, deciKg: Int, ohm: Int): ByteArray {
+        val b = ByteArray(19)
+        b[0] = 0xAC.toByte(); b[1] = 0x02; b[2] = 0xFF.toByte()
+        for (i in 0 until 4) b[3 + i] = (epoch shr (8 * i)).toByte()
+        b[7] = (deciKg shr 8).toByte(); b[8] = deciKg.toByte()
+        b[9] = (ohm shr 8).toByte(); b[10] = ohm.toByte()
+        return b
+    }
+
+    private fun weightOnly(userId: Int, kg: Float) = ScaleMeasurement().apply {
+        this.userId = userId
+        dateTime = epochDate(0x6AF00000)
+        this[MeasurementType.WEIGHT] = Kg(kg)
+    }
+
     private fun connected(
         f7Present: Boolean = true,
         unit: WeightUnit = WeightUnit.KG,
+        otherUsers: List<ScaleUser> = emptyList(),
+        lastWeights: Map<Int, ScaleMeasurement> = emptyMap(),
     ): Pair<EufyT9140Handler, Rig> {
         val user = ScaleUser(
             id = 3,
@@ -244,13 +349,18 @@ class EufyT9140HandlerTest {
             scaleUnit = unit,
         )
         val handler = EufyT9140Handler()
-        val rig = Rig(user, setOf(if (f7Present) serviceF7 else serviceF6))
+        val rig = Rig(user, setOf(if (f7Present) serviceF7 else serviceF6), listOf(user) + otherUsers, lastWeights)
         handler.attach(rig, rig, rig, rig, CoroutineScope(EmptyCoroutineContext))
         handler.handleConnected(user)
         return handler to rig
     }
 
-    private class Rig(private val user: ScaleUser, private val services: Set<UUID>) :
+    private class Rig(
+        private val user: ScaleUser,
+        private val services: Set<UUID>,
+        private val users: List<ScaleUser>,
+        private val last: Map<Int, ScaleMeasurement>,
+    ) :
         ScaleDeviceHandler.Transport, ScaleDeviceHandler.Callbacks,
         ScaleDeviceHandler.DriverSettings, ScaleDeviceHandler.DataProvider {
         val published = mutableListOf<ScaleMeasurement>()
@@ -276,7 +386,7 @@ class EufyT9140HandlerTest {
         override fun remove(key: String) = Unit
 
         override fun currentUser(): ScaleUser = user
-        override fun usersForDevice(): List<ScaleUser> = listOf(user)
-        override fun lastMeasurementFor(userId: Int): ScaleMeasurement? = null
+        override fun usersForDevice(): List<ScaleUser> = users
+        override fun lastMeasurementFor(userId: Int): ScaleMeasurement? = last[userId]
     }
 }

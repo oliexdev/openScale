@@ -134,9 +134,11 @@ class ScaleFactory @Inject constructor(
          * Builds the list of modern Kotlin-based device handlers.
          *
          * Order matters: [createCommunicator] returns the FIRST handler whose [ScaleDeviceHandler.supportFor]
-         * is non-null. TaylorBIAHandler, FitTrackDaraHandler, EufyT9140Handler, RelaxmedicHandler,
-         * RobiS9Handler and DrTrustSSW532Handler must stay ahead of MGBHandler — all live on service 0xFFB0, which
+         * is non-null. TaylorBIAHandler, FitTrackDaraHandler, RelaxmedicHandler, RobiS9Handler and
+         * DrTrustSSW532Handler must stay ahead of MGBHandler — all live on service 0xFFB0, which
          * MGBHandler matches on its own, so a later position would let MGB wrongly claim them.
+         * EufyT9140Handler uses the AiCare 4143f6b0/4143f7b0 services and matches by name only; it
+         * sits ahead of MGBHandler only as a precaution, in case an AiCare unit also advertises 0xFFB0.
          *
          * Exposed so the registry (order, device claims, duplicates) can be asserted in unit tests
          * without building the Hilt graph — see `ScaleFactoryTest`.

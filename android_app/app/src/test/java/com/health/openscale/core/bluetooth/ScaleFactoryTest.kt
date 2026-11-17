@@ -175,6 +175,7 @@ class ScaleFactoryTest {
         assertClaimedBy(device("relaxmedic", SERVICE_FFB0), RelaxmedicHandler::class.java)
         assertClaimedBy(device("robi", SERVICE_FFB0), RobiS9Handler::class.java)
         assertClaimedBy(device("SSW532", SERVICE_FFB0), DrTrustSSW532Handler::class.java)
+        // Precaution only: real T9140 units advertise 0xF7B0/0xD618 (see below), not 0xFFB0.
         assertClaimedBy(device("eufy T9140", SERVICE_FFB0), EufyT9140Handler::class.java)
 
         // The generic member of the family keeps the devices nobody else claims.
@@ -193,6 +194,14 @@ class ScaleFactoryTest {
         for (sibling in siblings) {
             assertThat(order.indexOf(sibling)).isLessThan(mgb)
         }
+    }
+
+    @Test
+    fun `eufy T9140 is claimed from its real advertisement`() {
+        // 2026 firmware advertises the 16-bit UUIDs 0xF7B0 and 0xD618; the handler matches by name.
+        val t9140 = device("eufy T9140", uuid16(0xF7B0), uuid16(0xD618))
+        assertClaimedBy(t9140, EufyT9140Handler::class.java)
+        assertThat(claimants(t9140).map { it.javaClass.simpleName }).containsExactly("EufyT9140Handler")
     }
 
     /**

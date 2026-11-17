@@ -46,7 +46,12 @@ import java.util.UUID
  * the impedance with [StandardImpedanceLib] (the scale itself measures only weight and
  * impedance). Every measurement carries the scale's own timestamp, so a weigh-in that reaches
  * openScale twice (as a live result and as a stored record) collides on openScale's unique
- * user + timestamp key; the handler also skips such repeats itself.
+ * user + timestamp key; the handler also skips such repeats itself, in both directions.
+ *
+ * The scale has no user slots: stored weigh-ins carry no owner. When several openScale users
+ * share the scale, a stored record is imported only if its weight is not clearly closer to
+ * another user's last weight (see [isLikelyOtherUser]). Live weigh-ins belong to whoever is
+ * connected, as in the other handlers.
  */
 class EufyT9140Handler : ScaleDeviceHandler() {
 
@@ -68,15 +73,27 @@ class EufyT9140Handler : ScaleDeviceHandler() {
         /** A stored record within this many seconds of a published weigh-in with the same weight is that weigh-in. */
         private const val SAME_WEIGH_IN_SECONDS = 2L
 
+        /**
+         * When one side of a comparison carries the phone's clock instead of the scale's (no
+         * usable `F1` time arrived), weight *and* impedance must match within this window.
+         */
+        private const val SAME_WEIGH_IN_FALLBACK_SECONDS = 10 * 60L
+
+        /** A stored record within this many kg of another user's last weight, and closer to it, is theirs. */
+        private const val OTHER_USER_MATCH_KG = 5f
+
         /** True if [epochSeconds] can be a real weigh-in time on a scale whose clock is set. */
         fun isPlausibleTimestamp(epochSeconds: Long, nowMillis: Long = System.currentTimeMillis()): Boolean =
             epochSeconds >= EARLIEST_PLAUSIBLE_EPOCH && epochSeconds * 1000 <= nowMillis + 24 * 3600 * 1000L
 
-        /** Wire unit code for the user's display unit (codes 1/2 per the vendor-app notes). */
-        fun unitCode(unit: WeightUnit): Int = when (unit) {
-            WeightUnit.LB -> EufyT9140Lib.UNIT_LB
-            WeightUnit.ST -> EufyT9140Lib.UNIT_ST
-            else -> EufyT9140Lib.UNIT_KG
+        /**
+         * Wire unit code to send for the user's display unit, or null to leave the scale's own
+         * setting alone. Only kg (0) has been seen acknowledged; the lb/st codes from the
+         * vendor-app notes are unverified, so they are not sent.
+         */
+        fun unitCode(unit: WeightUnit): Int? = when (unit) {
+            WeightUnit.KG -> EufyT9140Lib.UNIT_KG
+            else -> null
         }
     }
 
@@ -86,11 +103,19 @@ class EufyT9140Handler : ScaleDeviceHandler() {
     private var measurementEpoch = 0L
     private var published = false
 
+    /**
+     * A weigh-in published in this connection. [record] holds the timestamp actually saved;
+     * [scaleTime] is false when that is the phone's clock because the scale sent no usable time.
+     */
+    private data class Published(val record: EufyT9140Lib.Record, val scaleTime: Boolean)
+
     /** Weigh-ins published in this connection, for skipping repeats. */
-    private val publishedThisSession = mutableListOf<EufyT9140Lib.Record>()
+    private val publishedThisSession = mutableListOf<Published>()
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         if (!device.name.lowercase(Locale.ROOT).startsWith("eufy t9140")) return null
+        // The scale streams live weights and has a unit setting, but the handler does not show
+        // live weights and only sets kg (the lb/st codes are unverified), so neither is claimed.
         val caps = setOf(
             DeviceCapability.LIVE_WEIGHT_STREAM,
             DeviceCapability.BODY_COMPOSITION,
@@ -98,10 +123,15 @@ class EufyT9140Handler : ScaleDeviceHandler() {
             DeviceCapability.HISTORY_READ,
             DeviceCapability.UNIT_CONFIG,
         )
+        val implemented = setOf(
+            DeviceCapability.BODY_COMPOSITION,
+            DeviceCapability.TIME_SYNC,
+            DeviceCapability.HISTORY_READ,
+        )
         return DeviceSupport(
             displayName = "Eufy Smart Scale T9140",
             capabilities = caps,
-            implemented = caps,
+            implemented = implemented,
             linkMode = LinkMode.CONNECT_GATT,
         )
     }
@@ -116,7 +146,7 @@ class EufyT9140Handler : ScaleDeviceHandler() {
 
         setNotifyOn(service, notify)
         writeTo(service, write, EufyT9140Lib.timeSync(System.currentTimeMillis() / 1000), withResponse = false)
-        writeTo(service, write, EufyT9140Lib.setUnit(unitCode(user.scaleUnit)), withResponse = false)
+        unitCode(user.scaleUnit)?.let { writeTo(service, write, EufyT9140Lib.setUnit(it), withResponse = false) }
         writeTo(service, write, EufyT9140Lib.historyRequest(), withResponse = false)
 
         userInfo(R.string.bt_info_step_on_scale)
@@ -128,7 +158,7 @@ class EufyT9140Handler : ScaleDeviceHandler() {
     }
 
     override fun onDisconnected() {
-        publishLatched(currentAppUser())
+        publishLatched(currentAppUser(), finished = false)
     }
 
     private fun handleFrame(frame: Frame, user: ScaleUser) {
@@ -136,25 +166,27 @@ class EufyT9140Handler : ScaleDeviceHandler() {
             // A new weigh-in starts with live frames (all firmware) or the preamble (2026
             // firmware; also for a result delivered right after connecting, which has no live
             // frames). Stable frames are repeated inside later notifications, so they do not reset.
+            // A live frame after a stable one means the user stepped off and on again, so an
+            // unfinished weigh-in is discarded too rather than lending its values to the next.
             is Frame.Weight -> {
                 if (frame.deciKg <= 0 || frame.deciKg > MAX_PLAUSIBLE_DECI_KG) return
                 if (!frame.stable) {
-                    if (published) resetWeighIn()
+                    if (published || hasWeighInState()) resetWeighIn()
                 } else if (!published) {
                     stableDeciKg = frame.deciKg
                 }
             }
             is Frame.Preamble -> {
                 logD("result preamble 0x%02X".format(frame.code))
-                if (published) resetWeighIn()
+                resetWeighIn()
             }
             is Frame.Impedance -> if (!published) impedanceOhm = frame.ohm
             is Frame.MeasurementTime -> if (!published) measurementEpoch = frame.epochSeconds
             is Frame.FinalRecord -> publishLive(frame.record, user)
             is Frame.History -> frame.records.forEach { publishStored(it, user) }
             is Frame.Status -> when (frame.code) {
-                EufyT9140Lib.STATUS_MEASUREMENT_FINISHED,
-                EufyT9140Lib.STATUS_POWER_OFF -> publishLatched(user)
+                EufyT9140Lib.STATUS_MEASUREMENT_FINISHED -> publishLatched(user, finished = true)
+                EufyT9140Lib.STATUS_POWER_OFF -> publishLatched(user, finished = false)
                 EufyT9140Lib.STATUS_TIME_SYNC_FAILED -> logW("scale rejected the time sync")
                 else -> logD("status 0x%02X".format(frame.code))
             }
@@ -163,6 +195,8 @@ class EufyT9140Handler : ScaleDeviceHandler() {
         }
     }
 
+    private fun hasWeighInState() = stableDeciKg > 0 || impedanceOhm > 0 || measurementEpoch != 0L
+
     private fun resetWeighIn() {
         stableDeciKg = 0
         impedanceOhm = 0
@@ -170,9 +204,21 @@ class EufyT9140Handler : ScaleDeviceHandler() {
         published = false
     }
 
-    /** Publishes the streamed stable weight + impedance once the scale reports the weigh-in done. */
-    private fun publishLatched(user: ScaleUser) {
+    /**
+     * Publishes the streamed stable weight + impedance.
+     *
+     * [finished] is true when the scale reported "measurement finished". Otherwise (power-off or
+     * disconnect mid-weigh-in) the values are published only if the scale's measurement time
+     * arrived, which comes after the impedance result: the weigh-in is then complete, and its
+     * timestamp matches the stored copy the scale will offer next time, so openScale's unique key
+     * absorbs that copy. Without it the weigh-in is dropped and left to the scale's history.
+     */
+    private fun publishLatched(user: ScaleUser, finished: Boolean) {
         if (published || stableDeciKg <= 0) return
+        if (!finished && !isPlausibleTimestamp(measurementEpoch)) {
+            logW("dropping unfinished weigh-in without a scale time: ${stableDeciKg / 10.0} kg")
+            return
+        }
         publishLive(EufyT9140Lib.Record(measurementEpoch, stableDeciKg, impedanceOhm), user)
     }
 
@@ -182,7 +228,13 @@ class EufyT9140Handler : ScaleDeviceHandler() {
         if (published) return
         if (!isPlausibleWeight(record)) return
         published = true
-        publishRecord(record, user, if (isPlausibleTimestamp(record.epochSeconds)) Date(record.epochSeconds * 1000) else Date())
+        val scaleTime = isPlausibleTimestamp(record.epochSeconds)
+        val saved = if (scaleTime) record else record.copy(epochSeconds = System.currentTimeMillis() / 1000)
+        if (isAlreadyPublished(saved, scaleTime, user)) {
+            logD("live weigh-in already imported from the scale's history: $record")
+            return
+        }
+        publishRecord(saved, scaleTime, user)
     }
 
     private fun publishStored(record: EufyT9140Lib.Record, user: ScaleUser) {
@@ -191,15 +243,60 @@ class EufyT9140Handler : ScaleDeviceHandler() {
             logW("dropping stored record with unset clock $record")
             return
         }
-        if (publishedThisSession.any { isSameWeighIn(it, record) }) {
-            logD("stored record already published live: $record")
+        if (isAlreadyPublished(record, scaleTime = true, user)) {
+            logD("stored record already published: $record")
             return
         }
-        publishRecord(record, user, Date(record.epochSeconds * 1000))
+        if (isLikelyOtherUser(record, user)) {
+            logI("skipping stored record that matches another user's weight: $record")
+            return
+        }
+        publishRecord(record, scaleTime = true, user)
     }
 
-    private fun isSameWeighIn(a: EufyT9140Lib.Record, b: EufyT9140Lib.Record) =
-        a.weightDeciKg == b.weightDeciKg && kotlin.math.abs(a.epochSeconds - b.epochSeconds) <= SAME_WEIGH_IN_SECONDS
+    /**
+     * True if [record] repeats a weigh-in published earlier in this connection, or the user's
+     * last saved measurement (a live result saved with the phone's clock in an earlier connection,
+     * which openScale's timestamp key cannot match against the scale's stored copy).
+     */
+    private fun isAlreadyPublished(record: EufyT9140Lib.Record, scaleTime: Boolean, user: ScaleUser): Boolean {
+        if (publishedThisSession.any { isSameWeighIn(it.record, it.scaleTime, record, scaleTime) }) return true
+        val last = lastMeasurementFor(user.id) ?: return false
+        val lastDate = last.dateTime ?: return false
+        val lastWeight = last[MeasurementType.WEIGHT]?.value ?: return false
+        val lastRecord = EufyT9140Lib.Record(
+            epochSeconds = lastDate.time / 1000,
+            weightDeciKg = kotlin.math.round(lastWeight * 10).toInt(),
+            impedanceOhm = last[MeasurementType.IMPEDANCE]?.value?.let { kotlin.math.round(it).toInt() } ?: 0,
+        )
+        // The saved measurement's clock source is unknown, so only the strict weight + impedance
+        // match within the fallback window counts.
+        return isSameWeighIn(lastRecord, false, record, scaleTime)
+    }
+
+    private fun isSameWeighIn(
+        a: EufyT9140Lib.Record, aScaleTime: Boolean,
+        b: EufyT9140Lib.Record, bScaleTime: Boolean,
+    ): Boolean {
+        if (a.weightDeciKg != b.weightDeciKg) return false
+        val dt = kotlin.math.abs(a.epochSeconds - b.epochSeconds)
+        if (aScaleTime && bScaleTime) return dt <= SAME_WEIGH_IN_SECONDS
+        return a.impedanceOhm == b.impedanceOhm && dt <= SAME_WEIGH_IN_FALLBACK_SECONDS
+    }
+
+    /**
+     * True if another openScale user of this scale is a clearly better match for [record]: their
+     * last weight is within [OTHER_USER_MATCH_KG] of it and closer than [user]'s own last weight.
+     * With a single user, or no weight history to compare against, the record is kept.
+     */
+    private fun isLikelyOtherUser(record: EufyT9140Lib.Record, user: ScaleUser): Boolean {
+        val others = usersForDevice().filter { it.id != user.id }
+        if (others.isEmpty()) return false
+        fun distance(u: ScaleUser): Float? =
+            lastMeasurementFor(u.id)?.get(MeasurementType.WEIGHT)?.value?.let { kotlin.math.abs(it - record.weightKg) }
+        val own = distance(user) ?: Float.MAX_VALUE
+        return others.any { other -> distance(other)?.let { it <= OTHER_USER_MATCH_KG && it < own } == true }
+    }
 
     private fun isPlausibleWeight(record: EufyT9140Lib.Record): Boolean {
         if (record.weightDeciKg in 1..MAX_PLAUSIBLE_DECI_KG) return true
@@ -207,9 +304,10 @@ class EufyT9140Handler : ScaleDeviceHandler() {
         return false
     }
 
-    private fun publishRecord(record: EufyT9140Lib.Record, user: ScaleUser, date: Date) {
-        publishedThisSession += record
-        logI("publishing weigh-in $record at $date")
+    private fun publishRecord(record: EufyT9140Lib.Record, scaleTime: Boolean, user: ScaleUser) {
+        publishedThisSession += Published(record, scaleTime)
+        val date = Date(record.epochSeconds * 1000)
+        logI("publishing weigh-in $record at $date${if (scaleTime) "" else " (phone time)"}")
         publish(buildMeasurement(record, user, date))
     }
 
