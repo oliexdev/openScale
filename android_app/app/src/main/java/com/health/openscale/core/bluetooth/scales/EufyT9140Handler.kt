@@ -75,9 +75,10 @@ class EufyT9140Handler : ScaleDeviceHandler() {
 
         /**
          * When one side of a comparison carries the phone's clock instead of the scale's (no
-         * usable `F1` time arrived), weight *and* impedance must match within this window.
+         * usable `F1` time arrived), weight *and* a measured impedance must match within this
+         * window. The scale's clock is set on every connect, so the two clocks stay close.
          */
-        private const val SAME_WEIGH_IN_FALLBACK_SECONDS = 10 * 60L
+        private const val SAME_WEIGH_IN_FALLBACK_SECONDS = 120L
 
         /** A stored record within this many kg of another user's last weight, and closer to it, is theirs. */
         private const val OTHER_USER_MATCH_KG = 5f
@@ -280,8 +281,11 @@ class EufyT9140Handler : ScaleDeviceHandler() {
     ): Boolean {
         if (a.weightDeciKg != b.weightDeciKg) return false
         val dt = kotlin.math.abs(a.epochSeconds - b.epochSeconds)
-        if (aScaleTime && bScaleTime) return dt <= SAME_WEIGH_IN_SECONDS
-        return a.impedanceOhm == b.impedanceOhm && dt <= SAME_WEIGH_IN_FALLBACK_SECONDS
+        if (dt <= SAME_WEIGH_IN_SECONDS) return true
+        if (aScaleTime && bScaleTime) return false
+        // Without an impedance (e.g. weighed in socks) two weigh-ins of the same weight a minute
+        // apart are indistinguishable, so only a matching measured impedance counts.
+        return a.impedanceOhm > 0 && a.impedanceOhm == b.impedanceOhm && dt <= SAME_WEIGH_IN_FALLBACK_SECONDS
     }
 
     /**

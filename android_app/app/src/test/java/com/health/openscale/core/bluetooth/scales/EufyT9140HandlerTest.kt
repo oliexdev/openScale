@@ -287,6 +287,24 @@ class EufyT9140HandlerTest {
     }
 
     @Test
+    fun `a new sock weigh-in with the same weight as the last one is kept`() {
+        // From a phone test: the last saved weigh-in was 87.9 kg without impedance, 33 s before a
+        // second 87.9 kg weigh-in in socks. Without impedance they must not be treated as one.
+        val now = System.currentTimeMillis() / 1000
+        val last = ScaleMeasurement().apply {
+            userId = 3
+            dateTime = epochDate(now - 33)
+            this[MeasurementType.WEIGHT] = Kg(87.9f)
+        }
+        val (handler, rig) = connected(lastWeights = mapOf(3 to last))
+        handler.handleNotification(notifyF7, hex("ac02f423100bccfe"))
+        handler.handleNotification(notifyF7, hex("ac02f723152acc25"))
+        handler.handleNotification(notifyF7, hex("ac02036f0000ca3c"))   // stable 87.9
+        handler.handleNotification(notifyF7, hex("ac02fe100000ccda"))   // finished, no F1
+        assertThat(rig.published).hasSize(1)
+    }
+
+    @Test
     fun `stored records closer to another user's weight are not imported`() {
         // Synthetic history: 23.6 kg (this user, last 23.0 kg) and 84.0 kg (other user, last 84.5 kg).
         val other = ScaleUser(id = 4, gender = GenderType.FEMALE)
