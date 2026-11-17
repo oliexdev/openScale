@@ -48,10 +48,8 @@ import java.util.UUID
  * openScale twice (as a live result and as a stored record) collides on openScale's unique
  * user + timestamp key; the handler also skips such repeats itself, in both directions.
  *
- * The scale has no user slots: stored weigh-ins carry no owner. When several openScale users
- * share the scale, a stored record is imported only if its weight is not clearly closer to
- * another user's last weight (see [isLikelyOtherUser]). Live weigh-ins belong to whoever is
- * connected, as in the other handlers.
+ * The scale has no user slots, so every weigh-in is published for the connected user; openScale's
+ * smart user assignment can move it to another user by weight.
  */
 class EufyT9140Handler : ScaleDeviceHandler() {
 
@@ -79,9 +77,6 @@ class EufyT9140Handler : ScaleDeviceHandler() {
          * window. The scale's clock is set on every connect, so the two clocks stay close.
          */
         private const val SAME_WEIGH_IN_FALLBACK_SECONDS = 120L
-
-        /** A stored record within this many kg of another user's last weight, and closer to it, is theirs. */
-        private const val OTHER_USER_MATCH_KG = 5f
 
         /** True if [epochSeconds] can be a real weigh-in time on a scale whose clock is set. */
         fun isPlausibleTimestamp(epochSeconds: Long, nowMillis: Long = System.currentTimeMillis()): Boolean =
@@ -248,10 +243,6 @@ class EufyT9140Handler : ScaleDeviceHandler() {
             logD("stored record already published: $record")
             return
         }
-        if (isLikelyOtherUser(record, user)) {
-            logI("skipping stored record that matches another user's weight: $record")
-            return
-        }
         publishRecord(record, scaleTime = true, user)
     }
 
@@ -286,20 +277,6 @@ class EufyT9140Handler : ScaleDeviceHandler() {
         // Without an impedance (e.g. weighed in socks) two weigh-ins of the same weight a minute
         // apart are indistinguishable, so only a matching measured impedance counts.
         return a.impedanceOhm > 0 && a.impedanceOhm == b.impedanceOhm && dt <= SAME_WEIGH_IN_FALLBACK_SECONDS
-    }
-
-    /**
-     * True if another openScale user of this scale is a clearly better match for [record]: their
-     * last weight is within [OTHER_USER_MATCH_KG] of it and closer than [user]'s own last weight.
-     * With a single user, or no weight history to compare against, the record is kept.
-     */
-    private fun isLikelyOtherUser(record: EufyT9140Lib.Record, user: ScaleUser): Boolean {
-        val others = usersForDevice().filter { it.id != user.id }
-        if (others.isEmpty()) return false
-        fun distance(u: ScaleUser): Float? =
-            lastMeasurementFor(u.id)?.get(MeasurementType.WEIGHT)?.value?.let { kotlin.math.abs(it - record.weightKg) }
-        val own = distance(user) ?: Float.MAX_VALUE
-        return others.any { other -> distance(other)?.let { it <= OTHER_USER_MATCH_KG && it < own } == true }
     }
 
     private fun isPlausibleWeight(record: EufyT9140Lib.Record): Boolean {

@@ -305,18 +305,6 @@ class EufyT9140HandlerTest {
     }
 
     @Test
-    fun `stored records closer to another user's weight are not imported`() {
-        // Synthetic history: 23.6 kg (this user, last 23.0 kg) and 84.0 kg (other user, last 84.5 kg).
-        val other = ScaleUser(id = 4, gender = GenderType.FEMALE)
-        val (handler, rig) = connected(
-            otherUsers = listOf(other),
-            lastWeights = mapOf(3 to weightOnly(3, 23.0f), 4 to weightOnly(4, 84.5f)),
-        )
-        handler.handleNotification(notifyF7, hex("ac02ff9490fa6a00ec0228a290fa6a03480228"))
-        assertThat(rig.published.map { it[MeasurementType.WEIGHT]!!.value }).containsExactly(23.6f)
-    }
-
-    @Test
     fun `no impedance publishes weight only`() {
         // Synthetic final record with impedance 0, e.g. weighed in socks.
         val (handler, rig) = connected()
@@ -347,16 +335,9 @@ class EufyT9140HandlerTest {
         return b
     }
 
-    private fun weightOnly(userId: Int, kg: Float) = ScaleMeasurement().apply {
-        this.userId = userId
-        dateTime = epochDate(0x6AF00000)
-        this[MeasurementType.WEIGHT] = Kg(kg)
-    }
-
     private fun connected(
         f7Present: Boolean = true,
         unit: WeightUnit = WeightUnit.KG,
-        otherUsers: List<ScaleUser> = emptyList(),
         lastWeights: Map<Int, ScaleMeasurement> = emptyMap(),
     ): Pair<EufyT9140Handler, Rig> {
         val user = ScaleUser(
@@ -367,7 +348,7 @@ class EufyT9140HandlerTest {
             scaleUnit = unit,
         )
         val handler = EufyT9140Handler()
-        val rig = Rig(user, setOf(if (f7Present) serviceF7 else serviceF6), listOf(user) + otherUsers, lastWeights)
+        val rig = Rig(user, setOf(if (f7Present) serviceF7 else serviceF6), lastWeights)
         handler.attach(rig, rig, rig, rig, CoroutineScope(EmptyCoroutineContext))
         handler.handleConnected(user)
         return handler to rig
@@ -376,7 +357,6 @@ class EufyT9140HandlerTest {
     private class Rig(
         private val user: ScaleUser,
         private val services: Set<UUID>,
-        private val users: List<ScaleUser>,
         private val last: Map<Int, ScaleMeasurement>,
     ) :
         ScaleDeviceHandler.Transport, ScaleDeviceHandler.Callbacks,
@@ -404,7 +384,7 @@ class EufyT9140HandlerTest {
         override fun remove(key: String) = Unit
 
         override fun currentUser(): ScaleUser = user
-        override fun usersForDevice(): List<ScaleUser> = users
+        override fun usersForDevice(): List<ScaleUser> = listOf(user)
         override fun lastMeasurementFor(userId: Int): ScaleMeasurement? = last[userId]
     }
 }
