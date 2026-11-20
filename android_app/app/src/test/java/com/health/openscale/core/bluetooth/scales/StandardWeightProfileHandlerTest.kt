@@ -348,6 +348,137 @@ class StandardWeightProfileHandlerTest {
     // --- BF1000: segmental values on Beurer-private characteristics -----------------
     // Packet payloads are the vectors already asserted in BeurerBf1000LibTest.
 
+    // Capture from 2026-08-21, in notification order: 2A9D, 2A9C, 0009, 000A, 0006 [01].
+    private val bf1000Weight = hex("0E 48 44 EA 07 08 15 00 02 0E 01 04 01 26 07")
+    private val bf1000Composition = hex("98 03 72 00 A2 1E EA 01 74 39 D6 2B 02 12")
+    private val bf1000Fat = hex("7E 32 8E 00 8F 00 63 00 81 00 7C 00")
+    private val bf1000Muscle = hex("3E EA 01 E9 01 E8 01 F2 01 F5 01")
+    private val chrBf1000Status = uuid16(0x0006)
+
+    @Test
+    fun `BF1000 standard packets wait for segmentals and the completion indication`() {
+        val callbacks = CapturingCallbacks()
+        val handler = attachedHandler(StandardBeurerSanitasHandler(), "BF1000", callbacks)
+
+        handler.handleNotification(chrWeight, bf1000Weight)
+        handler.handleNotification(chrBodyComposition, bf1000Composition)
+        assertThat(callbacks.published).isEmpty()
+        handler.handleNotification(chrSegmentalFat, bf1000Fat)
+        handler.handleNotification(chrSegmentalMuscle, bf1000Muscle)
+        for (status in listOf(byteArrayOf(), hex("00"), hex("02"))) {
+            handler.handleNotification(chrBf1000Status, status)
+        }
+        assertThat(callbacks.published).isEmpty()
+        handler.handleNotification(chrBf1000Status, hex("01"))
+
+        val m = callbacks.published.single()
+        assertThat(m[MeasurementType.WEIGHT]!!.value).isWithin(0.001f).of(87.4f)
+        assertThat(m[MeasurementType.VISCERAL_FAT]).isWithin(0.001f).of(5f)
+        val expected = mapOf(
+            "fat.left_arm" to 14.2f, "fat.right_arm" to 14.3f, "fat.torso" to 9.9f,
+            "fat.left_leg" to 12.9f, "fat.right_leg" to 12.4f,
+            "muscle.left_arm" to 49f, "muscle.right_arm" to 48.9f, "muscle.torso" to 48.8f,
+            "muscle.left_leg" to 49.8f, "muscle.right_leg" to 50.1f,
+        )
+        val actual = m.segmentals()
+        assertThat(actual.keys).containsExactlyElementsIn(expected.keys)
+        expected.forEach { (part, percent) -> assertThat(actual.getValue(part)).isWithin(0.001f).of(percent) }
+        // Publication still performs the standard mass-to-percent conversion exactly once.
+        assertThat(m[MeasurementType.WATER]!!.value).isWithin(0.001f).of(56.11f / 87.4f * 100f)
+
+        handler.handleNotification(chrBf1000Status, hex("01"))
+        handler.handleDisconnected()
+        assertThat(callbacks.published).hasSize(1)
+    }
+
+    @Test
+    fun `consecutive BF1000 readings receive their own segmentals`() {
+        val callbacks = CapturingCallbacks()
+        val handler = attachedHandler(StandardBeurerSanitasHandler(), "BF1000", callbacks)
+
+        for ((fat, muscle) in listOf(
+            bf1000Fat to bf1000Muscle,
+            segmentalFatPacket() to segmentalMusclePacket(),
+        )) {
+            handler.handleNotification(chrWeight, bf1000Weight)
+            handler.handleNotification(chrBodyComposition, bf1000Composition)
+            handler.handleNotification(chrSegmentalFat, fat)
+            handler.handleNotification(chrSegmentalMuscle, muscle)
+            handler.handleNotification(chrBf1000Status, hex("01"))
+        }
+
+        assertThat(callbacks.published).hasSize(2)
+        assertThat(callbacks.published[0].segmentals().getValue("fat.left_arm")).isWithin(0.001f).of(14.2f)
+        assertThat(callbacks.published[1].segmentals().getValue("fat.left_arm")).isWithin(0.001f).of(12.4f)
+        assertThat(callbacks.published[1].segmentals().getValue("muscle.left_arm")).isWithin(0.001f).of(33.1f)
+    }
+
+    @Test
+    fun `BF1000 disconnect flushes readings interrupted before completion`() {
+        for (privatePacketCount in 0..2) {
+            val callbacks = CapturingCallbacks()
+            val handler = attachedHandler(StandardBeurerSanitasHandler(), "BF1000", callbacks)
+            handler.handleNotification(chrWeight, bf1000Weight)
+            handler.handleNotification(chrBodyComposition, bf1000Composition)
+            if (privatePacketCount >= 1) handler.handleNotification(chrSegmentalFat, bf1000Fat)
+            if (privatePacketCount >= 2) handler.handleNotification(chrSegmentalMuscle, bf1000Muscle)
+            handler.handleDisconnected()
+
+            val m = callbacks.published.single()
+            assertThat(m.segmentals()).hasSize(privatePacketCount * 5)
+            assertThat(m[MeasurementType.WEIGHT]!!.value).isWithin(0.001f).of(87.4f)
+            assertThat(m[MeasurementType.WATER]!!.value).isWithin(0.001f).of(56.11f / 87.4f * 100f)
+            handler.handleDisconnected()
+            assertThat(callbacks.published).hasSize(1)
+        }
+    }
+
+    @Test
+    fun `BF1000 completion or disconnect without standard packets clears orphaned segmentals`() {
+        for (disconnect in listOf(false, true)) {
+            val callbacks = CapturingCallbacks()
+            val handler = attachedHandler(StandardBeurerSanitasHandler(), "BF1000", callbacks)
+            handler.handleNotification(chrSegmentalFat, bf1000Fat)
+            handler.handleNotification(chrSegmentalMuscle, bf1000Muscle)
+            if (disconnect) handler.handleDisconnected()
+            else handler.handleNotification(chrBf1000Status, hex("01"))
+            assertThat(callbacks.published).isEmpty()
+
+            handler.handleNotification(chrWeight, bareWeightPacket())
+            handler.handleNotification(chrBf1000Status, hex("01"))
+            assertThat(callbacks.published.single().values.keys).containsExactly(MeasurementType.WEIGHT)
+        }
+    }
+
+    @Test
+    fun `other standard profile handlers still publish standard pairs immediately`() {
+        val handlers = listOf(
+            "Generic" to StandardWeightProfileHandler(),
+            "BF105" to StandardBeurerSanitasHandler(),
+            "BF950" to StandardBeurerSanitasHandler(),
+            "BF500" to StandardBeurerSanitasHandler(),
+            "BF600" to StandardBeurerSanitasHandler(),
+            "SBF73" to SanitasSbf72Handler(),
+            "BF450" to BeurerBF450Handler(),
+            "A&D_UC-352BLE_01166D" to PlainSigScaleHandler(),
+        )
+        for ((name, instance) in handlers) {
+            val callbacks = CapturingCallbacks()
+            val handler = attachedHandler(instance, name, callbacks)
+            handler.handleNotification(chrWeight, bareWeightPacket())
+            assertWithMessage(name).that(callbacks.published).isEmpty()
+            handler.handleNotification(chrBodyComposition, bf1000Composition)
+            assertWithMessage(name).that(callbacks.published).hasSize(1)
+            handler.handleNotification(chrBf1000Status, hex("01"))
+            handler.handleDisconnected()
+            assertWithMessage(name).that(callbacks.published).hasSize(1)
+        }
+    }
+
+    private fun ScaleMeasurement.segmentals(): Map<String, Float> = values.entries
+        .filter { it.key.identity.startsWith("ble.segmental.") }
+        .associate { it.key.identity.removePrefix("ble.segmental.") to (it.value as Percent).value }
+
     @Test
     fun `attaches BF1000 segmental values to the published measurement`() {
         val callbacks = CapturingCallbacks()

@@ -243,6 +243,14 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
         } ?: logW("onRequestMeasurement called but profile is null")
     }
 
+    // BF1000 sends the standard pair before its segmentals, then completes on 0006 [01].
+    override val deferMeasurementPublication: Boolean get() = activeModel == Model.BEURER_BF1000
+
+    override fun onDisconnected() {
+        super.onDisconnected()
+        if (activeModel == Model.BEURER_BF1000) clearBf1000PendingValues()
+    }
+
     // ---- Vendor write helpers -------------------------------------------------
 
     private fun enableBf1000CustomMeasurements() {
@@ -306,6 +314,8 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
         if (characteristic == bf1000MeasurementStatus &&
             data.firstOrNull()?.toInt()?.and(0xFF) == 0x01) {
             logD("BF1000 measurement-complete status received")
+            publishPendingMeasurement()
+            clearBf1000PendingValues()
         }
     }
 
@@ -314,6 +324,11 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
 
     private fun bufferSegmental(key: MeasurementType.Key<Percent>, percent: Float) {
         if (percent > 0f && percent.isFinite()) bf1000PendingSegmentals[key] = Percent(percent)
+    }
+
+    private fun clearBf1000PendingValues() {
+        bf1000PendingSegmentals.clear()
+        bf1000PendingVisceralFat = 0f
     }
 
     /**
@@ -336,8 +351,7 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             logD("Attached ${bf1000PendingSegmentals.size} BF1000 segmental values")
         }
 
-        bf1000PendingSegmentals.clear()
-        bf1000PendingVisceralFat = 0f
+        clearBf1000PendingValues()
 
         return transformed
     }
