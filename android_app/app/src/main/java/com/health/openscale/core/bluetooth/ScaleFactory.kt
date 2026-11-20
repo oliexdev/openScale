@@ -53,6 +53,7 @@ import com.health.openscale.core.bluetooth.scales.HuaweiHagridWspHandler
 import com.health.openscale.core.bluetooth.scales.HumeDara2Handler
 import com.health.openscale.core.bluetooth.scales.IHealthHS3Handler
 import com.health.openscale.core.bluetooth.scales.IHealthHs2sHandler
+import com.health.openscale.core.bluetooth.scales.IfB7Handler
 import com.health.openscale.core.bluetooth.scales.InlifeHandler
 import com.health.openscale.core.bluetooth.scales.KeepS3Handler
 import com.health.openscale.core.bluetooth.scales.LinkMode
@@ -166,6 +167,10 @@ class ScaleFactory @Inject constructor(
             SoehnleHandler(),
             SinocareHandler(),
             SenssunHandler(),
+            // Senssun's broadcast-only family: IF_B7 never accepts a GATT connection, it puts the
+            // measurement in its advertisement. Registered next to SenssunHandler, whose exact-name
+            // match ("SENSSUN FAT") is disjoint from it.
+            IfB7Handler(),
             RenphoHandler(),
             AiLinkBroadcastHandler(),
             QNHandlerBroadcast(),
