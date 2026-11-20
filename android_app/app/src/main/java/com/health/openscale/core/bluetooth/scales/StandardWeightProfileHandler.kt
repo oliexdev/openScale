@@ -169,12 +169,18 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
     }
 
     override fun onDisconnected() {
+        publishPendingMeasurement()
+        super.onDisconnected()
+    }
+
+    /** Wait for a vendor completion indication instead of publishing the standard packet pair. */
+    protected open val deferMeasurementPublication: Boolean get() = false
+
+    protected fun publishPendingMeasurement() {
         pendingMeasurement?.let {
             publishTransformed(it)
             pendingMeasurement = null
         }
-
-        super.onDisconnected()
     }
 
     protected open fun transformBeforePublish(m: ScaleMeasurement): ScaleMeasurement {
@@ -318,7 +324,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
             prev.mergeWith(newM)
 
             // When we already have weight (or stabilized) → publish
-            if (prev.hasWeight()) {
+            if (prev.hasWeight() && !deferMeasurementPublication) {
                 publishTransformed(prev)
                 pendingMeasurement = null
             } else {
