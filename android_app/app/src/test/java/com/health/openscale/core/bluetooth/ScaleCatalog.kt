@@ -52,6 +52,7 @@ import com.health.openscale.core.bluetooth.scales.HumeDara2Handler
 import com.health.openscale.core.bluetooth.scales.IHealthHS3Handler
 import com.health.openscale.core.bluetooth.scales.IHealthHs2sHandler
 import com.health.openscale.core.bluetooth.libs.IHealthHs2sLib
+import com.health.openscale.core.bluetooth.scales.IfB7Handler
 import com.health.openscale.core.bluetooth.scales.InlifeHandler
 import com.health.openscale.core.bluetooth.scales.KeepS3Handler
 import com.health.openscale.core.bluetooth.scales.LinkMode
@@ -202,6 +203,15 @@ object ScaleCatalog {
         0xCB.toByte(), 0x45, 0x2C, 0xCC.toByte(),
         0xFF.toByte(), 0xFF.toByte(),
     )
+
+    /**
+     * A completed Grifema GA2001 measurement (the device advertises as `IF_B7`): header, the
+     * advertiser's own MAC, marker `01`, an invented 85.00 kg reading, 520 Ω in its BIA phase, a
+     * sequence number and the checksum `sum(bytes 9..15) and 0xFF`. The handler only claims a record
+     * that decodes and checksums, and whose embedded MAC is the address it advertises from, so this
+     * fixture is built against [device]'s fixed address rather than a placeholder.
+     */
+    private val IFB7_RECORD = hex("020311 C0FFEE123456 01 2134 0208 A1 30 31")
 
     private infix fun ScannedDeviceInfo.claimedBy(handler: Class<out ScaleDeviceHandler>) =
         Fixture(this, handler)
@@ -374,6 +384,11 @@ object ScaleCatalog {
             services = listOf(uuid16(0xF0A0)),
             manufacturerData = listOf(AILINK_COMPANY_ID to AILINK_RECORD),
         ) claimedBy AiLinkBroadcastHandler::class.java,
+        // Grifema GA2001, a Senssun IF_B7 board: never connectable, and the name alone is not
+        // enough — the record under Senssun's company id has to decode as a real frame, embedding
+        // the advertised address.
+        advertisement(name = "IF_B7", manufacturerData = listOf(0x0100 to IFB7_RECORD))
+            claimedBy IfB7Handler::class.java,
     )
 
     // --- Registry queries -------------------------------------------------------------------

@@ -209,4 +209,11 @@ _Please select a scale for further information_
 </th>
 </tr>
 
+<tr>
+<th>
+<img src='../raw/master/docs/scales/grifema_ga2001.jpg' width='300px' alt='image missing' /> <br>
+<sub>Grifema GA2001</sub>
+</th>
+</tr>
+
 </table>
