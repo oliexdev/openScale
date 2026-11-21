@@ -209,6 +209,10 @@
     <string name="measurement_type_segmental_muscle_torso">Muscle (torso)</string>
     <string name="measurement_type_segmental_muscle_left_leg">Muscle (left leg)</string>
     <string name="measurement_type_segmental_muscle_right_leg">Muscle (right leg)</string>
+    <string name="measurement_type_segmental_fat_upper_body">Body fat (upper body)</string>
+    <string name="measurement_type_segmental_fat_lower_body">Body fat (lower body)</string>
+    <string name="measurement_type_segmental_muscle_upper_body">Muscle (upper body)</string>
+    <string name="measurement_type_segmental_muscle_lower_body">Muscle (lower body)</string>
     <string name="s400_bone_formula_label">Bone formula</string>
     <string name="s400_bone_formula_mi_legacy">Impedance-based regression (Legacy)</string>
     <string name="s400_bone_formula_heymsfield">Heymsfield (anthropometric)</string>

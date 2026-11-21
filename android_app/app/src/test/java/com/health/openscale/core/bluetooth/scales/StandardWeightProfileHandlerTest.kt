@@ -51,6 +51,7 @@ class StandardWeightProfileHandlerTest {
     private val chrBodyComposition = uuid16(0x2A9C)
     private val chrSegmentalFat = uuid16(0x0009)
     private val chrSegmentalMuscle = uuid16(0x000A)
+    private val chrHalfBody = uuid16(0x0008)
 
     /**
      * One weigh-in: the weight packet (2A9D) and the body-composition packet (2A9C) that
@@ -451,6 +452,101 @@ class StandardWeightProfileHandlerTest {
         assertThat(keys.none { it.defaultIcon == MeasurementTypeIcon.IC_DEFAULT }).isTrue()
         assertThat(keys.all { it.wireUnit == UnitType.PERCENT }).isTrue()
         assertThat(keys.none { it.defaultPinned }).isTrue()
+    }
+
+    // --- BF105: half-body values on the record they were measured with ---------------
+    //
+    // The BF105 replays the weigh-ins it stores: a weight packet (2A9D), the body-composition
+    // packet (2A9C) of that same record, and a FFFF/0008 half-body frame with the upper/lower
+    // body values of that same record, in that order. The weigh-in packets are the #635 captures
+    // used above; the half-body frames are built here from round percentages, so a value passes
+    // only if it lands on the record it was fed with.
+
+    @Test
+    fun `BF105 half-body frames are attached to the record they came with`() {
+        val (first, second) = captures.filter { it.deviceName == "BF105" }
+        val callbacks = CapturingCallbacks()
+        val handler = attachedHandler(StandardBeurerSanitasHandler(), "BF105", callbacks)
+
+        feedBf105Record(handler, first, halfBodyFrame(10.9f, 16.2f, 40.1f, 44.1f))
+        feedBf105Record(handler, second, halfBodyFrame(11.4f, 17.3f, 41.8f, 45.6f))
+        handler.handleDisconnected()
+
+        assertWithMessage("published").that(callbacks.published).hasSize(2)
+        assertWeights(callbacks.published, listOf(first.weight, second.weight))
+        assertHalfBody(callbacks.published[0], 10.9f, 16.2f, 40.1f, 44.1f)
+        assertHalfBody(callbacks.published[1], 11.4f, 17.3f, 41.8f, 45.6f)
+    }
+
+    @Test
+    fun `BF105 half-body values are not borrowed by the records around them`() {
+        val (first, second, third) = captures.filter { it.deviceName == "BF105" }
+        val callbacks = CapturingCallbacks()
+        val handler = attachedHandler(StandardBeurerSanitasHandler(), "BF105", callbacks)
+
+        feedBf105Record(handler, first, null) // a record whose half-body frame never arrives
+        feedBf105Record(handler, second, halfBodyFrame(10.9f, 16.2f, 40.1f, 44.1f))
+        feedBf105Record(handler, third, null)
+        handler.handleDisconnected() // the last record is published even without its half-body frame
+
+        assertWithMessage("published").that(callbacks.published).hasSize(3)
+        assertWeights(callbacks.published, listOf(first.weight, second.weight, third.weight))
+        assertWithMessage("frame of the first record").that(
+            callbacks.published[0].values.keys.none { it.identity.startsWith("ble.") }
+        ).isTrue()
+        assertHalfBody(callbacks.published[1], 10.9f, 16.2f, 40.1f, 44.1f)
+        assertWithMessage("no frame for the third record").that(
+            callbacks.published[2].values.keys.none { it.identity.startsWith("ble.") }
+        ).isTrue()
+    }
+
+    @Test
+    fun `other Beurer models ignore the BF105 half-body frame`() {
+        val capture = captures.first { it.deviceName == "BF950" }
+        val callbacks = CapturingCallbacks()
+        val handler = attachedHandler(StandardBeurerSanitasHandler(), "Beurer BF950", callbacks)
+
+        handler.handleNotification(chrWeight, hex(capture.weightPacket))
+        handler.handleNotification(chrBodyComposition, hex(capture.compositionPacket))
+        handler.handleNotification(chrHalfBody, halfBodyFrame(10.9f, 16.2f, 40.1f, 44.1f))
+        handler.handleDisconnected()
+
+        val published = callbacks.published.single()
+        assertThat(published[MeasurementType.WEIGHT]!!.value).isWithin(1e-3f).of(capture.weight)
+        assertThat(published.values.keys.none { it.identity.startsWith("ble.") }).isTrue()
+    }
+
+    private fun feedBf105Record(handler: ScaleDeviceHandler, capture: Capture, halfBody: ByteArray?) {
+        handler.handleNotification(chrWeight, hex(capture.weightPacket))
+        handler.handleNotification(chrBodyComposition, hex(capture.compositionPacket))
+        halfBody?.let { handler.handleNotification(chrHalfBody, it) }
+    }
+
+    private fun assertWeights(measurements: List<ScaleMeasurement>, weights: List<Float>) {
+        weights.zip(measurements.map { it[MeasurementType.WEIGHT]!!.value }).forEach { (expected, actual) ->
+            assertThat(actual).isWithin(0.01f).of(expected)
+        }
+    }
+
+    /** FFFF/0008: 0x1E marker, then upper/lower body fat and muscle in tenths of a percent. */
+    private fun halfBodyFrame(upperFat: Float, lowerFat: Float, upperMuscle: Float, lowerMuscle: Float): ByteArray =
+        byteArrayOf(0x1E) + tenths(upperFat, lowerFat, upperMuscle, lowerMuscle)
+
+    private fun assertHalfBody(m: ScaleMeasurement, upperFat: Float, lowerFat: Float, upperMuscle: Float, lowerMuscle: Float) {
+        val expected = mapOf(
+            "ble.segmental.fat.upper_body" to upperFat,
+            "ble.segmental.fat.lower_body" to lowerFat,
+            "ble.segmental.muscle.upper_body" to upperMuscle,
+            "ble.segmental.muscle.lower_body" to lowerMuscle,
+        )
+        val actual = m.values.keys
+            .filter { it.identity.startsWith("ble.segmental.") }
+            .associate { it.identity to (m.values[it] as Percent).value }
+
+        assertThat(actual.keys).containsExactlyElementsIn(expected.keys)
+        expected.forEach { (identity, percent) ->
+            assertThat(actual.getValue(identity)).isWithin(1e-3f).of(percent)
+        }
     }
 
     // --- A&D UC-352BLE -----------------------------------------------------------
