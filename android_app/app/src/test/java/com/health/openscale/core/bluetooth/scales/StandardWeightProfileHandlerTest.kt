@@ -53,6 +53,11 @@ class StandardWeightProfileHandlerTest {
     private val chrSegmentalMuscle = uuid16(0x000A)
     private val chrHalfBody = uuid16(0x0008)
 
+    // The private-packet vectors that BeurerBf1000LibTest asserts decoded, for the tests here
+    // that need a single record. The record-pairing tests use other numbers per record.
+    private val bf1000Fat = listOf(12.4f, 12.9f, 21.3f, 18.7f, 18.9f)
+    private val bf1000Muscle = listOf(33.1f, 33.6f, 45.2f, 41.8f, 42.0f)
+
     /**
      * One weigh-in: the weight packet (2A9D) and the body-composition packet (2A9C) that
      * followed it. A null expectation means the value must not be published.
@@ -354,8 +359,8 @@ class StandardWeightProfileHandlerTest {
         val callbacks = CapturingCallbacks()
         val handler = attachedHandler(StandardBeurerSanitasHandler(), "Beurer BF1000", callbacks)
 
-        handler.handleNotification(chrSegmentalFat, segmentalFatPacket())
-        handler.handleNotification(chrSegmentalMuscle, segmentalMusclePacket())
+        handler.handleNotification(chrSegmentalFat, segmentalFatPacket(0.8f, bf1000Fat))
+        handler.handleNotification(chrSegmentalMuscle, segmentalMusclePacket(bf1000Muscle))
         handler.handleNotification(chrWeight, bareWeightPacket())
         handler.handleDisconnected()
 
@@ -389,7 +394,7 @@ class StandardWeightProfileHandlerTest {
         val callbacks = CapturingCallbacks()
         val handler = attachedHandler(StandardBeurerSanitasHandler(), "Beurer BF1000", callbacks)
 
-        handler.handleNotification(chrSegmentalFat, segmentalFatPacket())
+        handler.handleNotification(chrSegmentalFat, segmentalFatPacket(0.8f, bf1000Fat))
         handler.handleNotification(chrWeight, bareWeightPacket())
         handler.handleDisconnected()
 
@@ -404,7 +409,7 @@ class StandardWeightProfileHandlerTest {
         val callbacks = CapturingCallbacks()
         val handler = attachedHandler(StandardBeurerSanitasHandler(), "Beurer BF1000", callbacks)
 
-        handler.handleNotification(chrSegmentalFat, segmentalFatPacket())
+        handler.handleNotification(chrSegmentalFat, segmentalFatPacket(0.8f, bf1000Fat))
         handler.handleNotification(chrWeight, bareWeightPacket())
         handler.handleDisconnected()
         handler.handleNotification(chrWeight, bareWeightPacket())
@@ -432,8 +437,8 @@ class StandardWeightProfileHandlerTest {
     fun `each BF1000 segment seeds with a distinguishable icon and colour`() {
         val callbacks = CapturingCallbacks()
         val handler = attachedHandler(StandardBeurerSanitasHandler(), "Beurer BF1000", callbacks)
-        handler.handleNotification(chrSegmentalFat, segmentalFatPacket())
-        handler.handleNotification(chrSegmentalMuscle, segmentalMusclePacket())
+        handler.handleNotification(chrSegmentalFat, segmentalFatPacket(0.8f, bf1000Fat))
+        handler.handleNotification(chrSegmentalMuscle, segmentalMusclePacket(bf1000Muscle))
         handler.handleNotification(chrWeight, bareWeightPacket())
         handler.handleDisconnected()
 
@@ -452,6 +457,87 @@ class StandardWeightProfileHandlerTest {
         assertThat(keys.none { it.defaultIcon == MeasurementTypeIcon.IC_DEFAULT }).isTrue()
         assertThat(keys.all { it.wireUnit == UnitType.PERCENT }).isTrue()
         assertThat(keys.none { it.defaultPinned }).isTrue()
+    }
+
+    // Two records replayed in the order a BF1000 sends them: weight (2A9D), body composition
+    // (2A9C), then that record's segmental fat (FFFF/0009) and muscle (FFFF/000A). The 2A9D and
+    // 2A9C packets are the #635 BF105 captures: this profile family encodes them identically for
+    // every model, so only the private packets are model-specific, and what these tests fix is
+    // which record each set of values lands on. The percentages are round numbers, chosen per
+    // record, so a value can only pass the assertion if it reached its own record.
+
+    @Test
+    fun `BF1000 segmental values stay on the record they were measured with`() {
+        val (first, second) = captures.filter { it.deviceName == "BF105" }
+        val firstFat = listOf(12.4f, 12.9f, 21.3f, 18.7f, 18.9f)
+        val firstMuscle = listOf(33.1f, 33.6f, 45.2f, 41.8f, 42.0f)
+        val secondFat = listOf(13.4f, 13.9f, 22.3f, 19.7f, 19.9f)
+        val secondMuscle = listOf(34.1f, 34.6f, 46.2f, 42.8f, 43.0f)
+        val callbacks = CapturingCallbacks()
+        val handler = attachedHandler(StandardBeurerSanitasHandler(), "Beurer BF1000", callbacks)
+
+        feedBf1000Record(handler, first, segmentalFatPacket(1.2f, firstFat), segmentalMusclePacket(firstMuscle))
+        feedBf1000Record(handler, second, segmentalFatPacket(1.5f, secondFat), segmentalMusclePacket(secondMuscle))
+        handler.handleDisconnected()
+
+        assertWithMessage("published").that(callbacks.published).hasSize(2)
+        assertWeights(callbacks.published, listOf(first.weight, second.weight))
+        assertBf1000Segmentals(callbacks.published[0], firstFat, firstMuscle)
+        assertBf1000Segmentals(callbacks.published[1], secondFat, secondMuscle)
+        assertThat(callbacks.published[0][MeasurementType.VISCERAL_FAT]!!).isWithin(1e-3f).of(1.2f)
+        assertThat(callbacks.published[1][MeasurementType.VISCERAL_FAT]!!).isWithin(1e-3f).of(1.5f)
+    }
+
+    @Test
+    fun `BF1000 records whose segmental packets never arrive are published without them`() {
+        val (first, second, third) = captures.filter { it.deviceName == "BF105" }
+        val secondFat = listOf(12.4f, 12.9f, 21.3f, 18.7f, 18.9f)
+        val secondMuscle = listOf(33.1f, 33.6f, 45.2f, 41.8f, 42.0f)
+        val thirdMuscle = listOf(34.1f, 34.6f, 46.2f, 42.8f, 43.0f)
+        val callbacks = CapturingCallbacks()
+        val handler = attachedHandler(StandardBeurerSanitasHandler(), "Beurer BF1000", callbacks)
+
+        feedBf1000Record(handler, first, null, null) // segmental data not coming for this record
+        feedBf1000Record(handler, second, segmentalFatPacket(1.2f, secondFat), segmentalMusclePacket(secondMuscle))
+        feedBf1000Record(handler, third, null, segmentalMusclePacket(thirdMuscle))
+        handler.handleDisconnected() // the last record is closed by the end of the connection
+
+        assertWithMessage("published").that(callbacks.published).hasSize(3)
+        assertWeights(callbacks.published, listOf(first.weight, second.weight, third.weight))
+        assertWithMessage("values of the first record").that(
+            callbacks.published[0].values.keys.none { it.identity.startsWith("ble.") }
+        ).isTrue()
+        assertBf1000Segmentals(callbacks.published[1], secondFat, secondMuscle)
+        // A record keeps the part of its data the scale did report, and a later record does not
+        // inherit the part that stayed missing.
+        assertBf1000Segmentals(callbacks.published[2], emptyList<Float>(), thirdMuscle)
+    }
+
+    private fun feedBf1000Record(
+        handler: ScaleDeviceHandler,
+        capture: Capture,
+        segmentalFat: ByteArray?,
+        segmentalMuscle: ByteArray?,
+    ) {
+        handler.handleNotification(chrWeight, hex(capture.weightPacket))
+        handler.handleNotification(chrBodyComposition, hex(capture.compositionPacket))
+        segmentalFat?.let { handler.handleNotification(chrSegmentalFat, it) }
+        segmentalMuscle?.let { handler.handleNotification(chrSegmentalMuscle, it) }
+    }
+
+    /** The ten segmental values of a record; an empty list means the group must be absent. */
+    private fun assertBf1000Segmentals(m: ScaleMeasurement, fat: List<Float>, muscle: List<Float>) {
+        val parts = listOf("left_arm", "right_arm", "torso", "left_leg", "right_leg")
+        val expected = parts.map { "ble.segmental.fat.$it" }.zip(fat) +
+            parts.map { "ble.segmental.muscle.$it" }.zip(muscle)
+        val actual = m.values.keys
+            .filter { it.identity.startsWith("ble.segmental.") }
+            .associate { it.identity to (m.values[it] as Percent).value }
+
+        assertThat(actual.keys).containsExactlyElementsIn(expected.map { it.first })
+        expected.forEach { (identity, percent) ->
+            assertThat(actual.getValue(identity)).isWithin(1e-3f).of(percent)
+        }
     }
 
     // --- BF105: half-body values on the record they were measured with ---------------
@@ -660,14 +746,15 @@ class StandardWeightProfileHandlerTest {
     }
 
     /** 0x7E marker, visceral in tenths, then five fat percentages in tenths, LE. */
-    private fun segmentalFatPacket(): ByteArray =
-        byteArrayOf(0x7E, 8) + tenths(12.4f, 12.9f, 21.3f, 18.7f, 18.9f)
+    private fun segmentalFatPacket(visceral: Float, fat: List<Float>): ByteArray =
+        byteArrayOf(0x7E, Math.round(visceral * 10f).toByte()) + tenths(fat)
 
     /** 0x3E marker, then five muscle percentages in tenths, LE. */
-    private fun segmentalMusclePacket(): ByteArray =
-        byteArrayOf(0x3E) + tenths(33.1f, 33.6f, 45.2f, 41.8f, 42.0f)
+    private fun segmentalMusclePacket(muscle: List<Float>): ByteArray = byteArrayOf(0x3E) + tenths(muscle)
 
-    private fun tenths(vararg values: Float): ByteArray {
+    private fun tenths(vararg values: Float): ByteArray = tenths(values.toList())
+
+    private fun tenths(values: List<Float>): ByteArray {
         val out = ByteArray(values.size * 2)
         values.forEachIndexed { i, v ->
             val raw = Math.round(v * 10f)

@@ -78,16 +78,33 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
     )
 
     // BF105 private characteristic on the Beurer FFFF service: 0008 carries one half-body frame
-    // per recorded weigh-in, with the upper/lower body fat and muscle percentages. It follows the
-    // body-composition packet of the same record, so that packet is kept in
-    // [bf105HeldComposition] until the frame has been buffered.
+    // per recorded weigh-in, with the upper/lower body fat and muscle percentages.
     private val bf105HalfBodyMeasurement = uuid16(0x0008)
-    private var bf105HeldComposition: ByteArray? = null
 
     // The two characteristics StandardWeightProfileHandler decodes, watched here to keep a
-    // BF105 record open until its half-body frame has been read.
+    // weigh-in open until the special values on the private characteristics have been read.
     private val chrWeightMeasurement = uuid16(0x2A9D)
     private val chrBodyCompositionMeasurement = uuid16(0x2A9C)
+
+    // Some models report additional values of a weigh-in on private characteristics *after* the
+    // standard packets of that weigh-in: the BF105 sends its half-body frame on FFFF/0008, the
+    // BF1000 sends segmental fat on FFFF/0009 and segmental muscle on FFFF/000A. The base class
+    // publishes as soon as a weight and a body-composition packet have been merged, which is
+    // before any of that data has been read, so the record would be stored without it. The
+    // body-composition packet is therefore kept in [heldComposition] until [awaitingSpecialData]
+    // empties, and handing that packet back is what publishes the record - with its values
+    // already in the buffer. A record whose data does not arrive is published without it, at the
+    // next weigh-in or at the end of the connection.
+    private var heldComposition: ByteArray? = null
+    // The private characteristics of the weigh-in in flight that we still wait a packet from.
+    private var awaitingSpecialData = emptySet<UUID>()
+
+    /** Per model, the private characteristics carrying the special values of a weigh-in; none for the rest. */
+    private fun specialDataCharacteristics(m: Model?): Set<UUID> = when (m) {
+        Model.BEURER_BF105 -> setOf(bf105HalfBodyMeasurement)
+        Model.BEURER_BF1000 -> setOf(bf1000SegmentalFatMeasurement, bf1000SegmentalMuscleMeasurement)
+        else -> emptySet()
+    }
 
     private fun pFor(m: Model) = when (m) {
         Model.BEURER_BF105,
@@ -199,14 +216,18 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             }
         }
 
+        // A handler instance outlives a connection, so a new session must not start with
+        // leftovers from the previous one: the buffers and the held packet belong to one record.
+        if (specialDataCharacteristics(activeModel).isNotEmpty()) {
+            pendingSegmentals.clear()
+            pendingVisceralFat = 0f
+            heldComposition = null
+            awaitingSpecialData = emptySet()
+        }
+
         when (activeModel) {
             Model.BEURER_BF1000 -> enableBf1000CustomMeasurements()
             Model.BEURER_BF105 -> {
-                // A handler instance outlives a connection, so a new session must not start
-                // with leftovers from the previous one.
-                pendingSegmentals.clear()
-                bf105HeldComposition = null
-
                 logD("Enabling BF105 half-body measurement characteristic")
                 setNotifyOn(p.service, bf105HalfBodyMeasurement)
             }
@@ -215,10 +236,10 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
     }
 
     override fun onDisconnected() {
-        // If the half-body frame (0008) for the held body-composition packet never arrived,
-        // publish that record anyway: weight and whole-body composition are still stored,
-        // only the four half-body values are missing.
-        releaseBf105Composition()
+        // If the data that closes the held record never arrived, publish that record anyway:
+        // weight and whole-body composition are still stored, only the values the scale did not
+        // report are missing.
+        releaseHeldComposition()
         super.onDisconnected()
     }
 
@@ -264,22 +285,27 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             }
             activeModel == Model.BEURER_BF105 && characteristic == bf105HalfBodyMeasurement -> {
                 handleBf105HalfBodyData(data)
-                releaseBf105Composition()
             }
-            activeModel == Model.BEURER_BF105 && characteristic == chrBodyCompositionMeasurement -> {
-                holdBf105Composition(data)
+            characteristic == chrBodyCompositionMeasurement &&
+                specialDataCharacteristics(activeModel).isNotEmpty() -> {
+                holdCompositionPacket(data)
+                awaitingSpecialData = specialDataCharacteristics(activeModel)
             }
-            activeModel == Model.BEURER_BF105 && characteristic == chrWeightMeasurement -> {
-                // A new weigh-in starts, so the half-body frame of the previous record is not
-                // coming; finish that record with the values it did report. This assumes the
-                // scale reports the weight before the half-body frame of the same record, which
-                // is how every capture of this model looks.
-                releaseBf105Composition()
+            characteristic == chrWeightMeasurement && heldComposition != null -> {
+                // This is the next weigh-in, so the rest of the previous one's special data is
+                // not coming any more; publish the previous one with the values it did report.
+                // This assumes a scale reports a weigh-in's weight before the special values on
+                // its private characteristics, which is how every capture of these models looks.
+                releaseHeldComposition()
                 super.onNotification(characteristic, data, user)
             }
             else ->
                 super.onNotification(characteristic, data, user)
         }
+
+        // This must come after the branches: they are what put a packet's values into the
+        // buffers that publishing the weigh-in reads.
+        noteSpecialDataRead(characteristic)
     }
 
     override fun onRequestMeasurement() {
@@ -384,21 +410,35 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
         bufferSegmental(SEGMENTAL_MUSCLE_LOWER_BODY, decoded.lowerBodyMuscle)
     }
 
+
     /**
      * The base class publishes as soon as a weight and a body-composition packet have been
-     * merged, which for this scale happens before the half-body frame of the same record.
-     * Taking the body-composition packet over here keeps the record open; handing it back is
-     * what publishes the record, with the half-body values already in the buffer.
+     * merged, which for these scales happens before the special values of the same weigh-in
+     * have arrived on its private characteristics. Taking the body-composition packet over here
+     * keeps the weigh-in open; handing it back is what publishes it, with those values already
+     * in the buffer the publish reads.
      */
-    private fun holdBf105Composition(value: ByteArray) {
-        releaseBf105Composition()
-        bf105HeldComposition = value
+    private fun holdCompositionPacket(value: ByteArray) {
+        releaseHeldComposition()
+        heldComposition = value
     }
 
-    /** Hands the held body-composition packet back, which publishes that record; no-op if none is held. */
-    private fun releaseBf105Composition() {
-        val value = bf105HeldComposition ?: return
-        bf105HeldComposition = null
+    /**
+     * Notes that one of the characteristics holding a weigh-in open has been read, and publishes
+     * it once all of them have. Data belonging to no weigh-in in flight is left in the buffer
+     * for the next publish, as it was before.
+     */
+    private fun noteSpecialDataRead(characteristic: UUID) {
+        if (characteristic !in awaitingSpecialData) return
+        awaitingSpecialData = awaitingSpecialData - characteristic
+        if (awaitingSpecialData.isEmpty()) releaseHeldComposition()
+    }
+
+    /** Hands the held body-composition packet back, which publishes that weigh-in; no-op if none is held. */
+    private fun releaseHeldComposition() {
+        val value = heldComposition ?: return
+        heldComposition = null
+        awaitingSpecialData = emptySet()
         logD("Handing the held body-composition packet back for publication")
         super.onNotification(chrBodyCompositionMeasurement, value, currentAppUser())
     }
@@ -412,7 +452,7 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
     override fun transformBeforePublish(m: ScaleMeasurement): ScaleMeasurement {
         val transformed = super.transformBeforePublish(m)
 
-        if (activeModel != Model.BEURER_BF1000 && activeModel != Model.BEURER_BF105) return transformed
+        if (specialDataCharacteristics(activeModel).isEmpty()) return transformed
 
         if (activeModel == Model.BEURER_BF1000 && MeasurementType.VISCERAL_FAT !in transformed && pendingVisceralFat > 0f) {
             transformed[MeasurementType.VISCERAL_FAT] = pendingVisceralFat
