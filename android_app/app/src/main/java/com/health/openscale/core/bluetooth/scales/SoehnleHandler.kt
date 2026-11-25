@@ -119,7 +119,7 @@ class SoehnleHandler : ScaleDeviceHandler() {
     private val CMD_LIVE_START = byteArrayOf(0x30, 0xFF.toByte(), 0x01)
     private val CMD_LIVE_STOP = byteArrayOf(0x30, 0xFF.toByte(), 0x00)
     private val CMD_LIST_USERS = byteArrayOf(0x0C, 0xFF.toByte())
-    private val MAX_CREATE_ATTEMPTS = 3
+    private val MAX_CREATE_ATTEMPTS = 8 // registering also answers 02 while the scale is busy
     private val MAX_SELECT_ATTEMPTS = 8 // 16 s, longer than a weighing
     private val SCALE_USER_SLOTS = 8
     private val DISCONNECT_DELAY_MS = 1000L
