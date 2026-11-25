@@ -17,6 +17,67 @@
  */
 package com.health.openscale.core.bluetooth.libs
 
+/**
+ * One frame of the live weight stream a Soehnle scale sends on 352e3001 after the
+ * app writes `30 FF 01` to 352e3002 (and stops with `30 FF 00`).
+ *
+ * Layout, as captured from the vendor app (Shape Sense Connect 50 and 200):
+ * ```
+ * [0]    0x30  live frame
+ * [1]    scale user index (1..7) the scale attributes the weighing to
+ * [2]    status: 0x00 while the weight settles, non-zero on the final frame
+ * [3..4] weight, uint16 BE, 0.1 kg
+ * [5..6] impedance (same position as imp5 in the 0x09 history frame), uint16 BE
+ * [7..8] impedance (same position as imp50 in the 0x09 history frame), uint16 BE
+ * ```
+ * Intermediate frames carry zero impedances; only the final frame carries them.
+ */
+data class SoehnleLiveFrame(
+    val userIndex: Int,
+    val status: Int,
+    val weightKg: Float,
+    val imp5: Int,
+    val imp50: Int,
+) {
+    val isFinal: Boolean get() = status != 0
+
+    companion object {
+        const val LENGTH = 9
+        const val OPCODE = 0x30
+
+        fun parse(value: ByteArray): SoehnleLiveFrame? {
+            if (value.size != LENGTH || (value[0].toInt() and 0xFF) != OPCODE) return null
+            fun u16(i: Int) = ((value[i].toInt() and 0xFF) shl 8) or (value[i + 1].toInt() and 0xFF)
+            return SoehnleLiveFrame(
+                userIndex = value[1].toInt() and 0xFF,
+                status = value[2].toInt() and 0xFF,
+                weightKg = u16(3) / 10.0f,
+                imp5 = u16(5),
+                imp50 = u16(7),
+            )
+        }
+    }
+}
+
+/**
+ * Current Time characteristic (0x2A2B) payload in the full 10-byte layout the vendor app
+ * writes: year (uint16 LE), month, day, hours, minutes, seconds, day of week (1 = Monday ..
+ * 7 = Sunday), fractions256, adjust reason. After the previous 9-byte write the scale
+ * still reported its default 2016-01-01 12:00 when read back.
+ */
+fun soehnleCurrentTime(
+    year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int,
+    calendarDayOfWeek: Int,
+): ByteArray {
+    // java.util.Calendar: SUNDAY = 1 .. SATURDAY = 7; Bluetooth: MONDAY = 1 .. SUNDAY = 7
+    val bleDayOfWeek = ((calendarDayOfWeek + 5) % 7) + 1
+    return byteArrayOf(
+        (year and 0xFF).toByte(), ((year shr 8) and 0xFF).toByte(),
+        month.toByte(), day.toByte(), hour.toByte(), minute.toByte(), second.toByte(),
+        bleDayOfWeek.toByte(), 0x00, 0x00,
+    )
+}
+
 class SoehnleLib(// male = 1; female = 0
     private val isMale: Boolean,
     private val age: Int,

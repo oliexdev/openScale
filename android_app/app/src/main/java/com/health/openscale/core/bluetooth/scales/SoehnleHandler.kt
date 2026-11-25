@@ -22,11 +22,15 @@ import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.SoehnleLib
+import com.health.openscale.core.bluetooth.libs.SoehnleLiveFrame
+import com.health.openscale.core.bluetooth.libs.soehnleCurrentTime
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
-import com.welie.blessed.BluetoothBytesBuilder
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.Calendar
+import java.util.Date
 import java.util.GregorianCalendar
 import java.util.TimeZone
 import java.util.UUID
@@ -45,14 +49,16 @@ import com.health.openscale.core.data.Percent
  * built-in DriverSettings helpers (persisted per device address).
  *
  * Flow on connect:
- *  1) (Optional) Factory reset if we have no known mappings at all.
+ *  1) (Last resort only) Factory reset if registering a user keeps failing.
  *  2) Subscribe Battery and read initial level.
  *  3) Write Current Time.
  *  4) Subscribe User Control Point (UDS).
- *  5) Create/select user on the scale via UCP.
+ *  5) Create/select user on the scale via UCP and wait for its response.
  *  6) Write age, gender, height.
  *  7) Subscribe custom measurement notifications (A/B).
  *  8) Request history for indices 1..7.
+ *  9) Start the live weight stream (`30 FF 01`); the final live frame is published and
+ *     the stream is stopped again (`30 FF 00`), as the vendor app does.
  */
 class SoehnleHandler : ScaleDeviceHandler() {
 
@@ -68,6 +74,7 @@ class SoehnleHandler : ScaleDeviceHandler() {
                     DeviceCapability.TIME_SYNC,
                     DeviceCapability.USER_SYNC,
                     DeviceCapability.HISTORY_READ,
+                    DeviceCapability.LIVE_WEIGHT_STREAM,
                     DeviceCapability.BATTERY_LEVEL
                 ),
                 implemented = setOf(
@@ -75,6 +82,7 @@ class SoehnleHandler : ScaleDeviceHandler() {
                     DeviceCapability.TIME_SYNC,
                     DeviceCapability.USER_SYNC,
                     DeviceCapability.HISTORY_READ,
+                    DeviceCapability.LIVE_WEIGHT_STREAM,
                     DeviceCapability.BATTERY_LEVEL
                 ),
                 tuningProfile = TuningProfile.Balanced,
@@ -104,69 +112,118 @@ class SoehnleHandler : ScaleDeviceHandler() {
     private val CHR_SOEHNLE_B = UUID.fromString("352e3004-28e9-40b8-a361-6db4cca4147c") // notify
     private val CHR_SOEHNLE_CMD = UUID.fromString("352e3002-28e9-40b8-a361-6db4cca4147c") // write
 
+    private val CMD_LIVE_START = byteArrayOf(0x30, 0xFF.toByte(), 0x01)
+    private val CMD_LIVE_STOP = byteArrayOf(0x30, 0xFF.toByte(), 0x00)
+    private val CMD_LIST_USERS = byteArrayOf(0x0C, 0xFF.toByte())
+    private val MAX_CREATE_ATTEMPTS = 3
+    private val MAX_SELECT_ATTEMPTS = 3
+    private val CREATE_RETRY_DELAY_MS = 2000L
+
+    // --- Per-connection state ---------------------------------------------------
+
+    private var sessionStarted = false
+    private var liveFinalPublished = false
+    private var createAttempts = 0
+    private var selectAttempts = 0
+    private var selectedIndex = -1
+    private var resetTried = false
+
     // --- Lifecycle -----------------------------------------------------------
 
     override fun onConnected(user: ScaleUser) {
-        // (0) Optional: Factory reset if we have no known mappings at all
-        val anyMapped = (1..7).any { loadUserIdForScaleIndex(it) != -1 }
-        if (!anyMapped) {
-            factoryReset()
-        }
+        // (0) No factory reset up front: the vendor app never sends one, and on a Shape50
+        //     registering a user right after `0B FF` was refused with [20 01 02]. The reset
+        //     is only used as a last resort when registration keeps failing (scale full).
 
         // (1) Battery: subscribe + read once
         setNotifyOn(SVC_BATTERY, CHR_BATTERY_LEVEL)
         readFrom(SVC_BATTERY, CHR_BATTERY_LEVEL)
 
-        // (2) Write current time using BluetoothBytesParser (CTS)
-        val bleBuilder = BluetoothBytesBuilder()
+        // Custom notifications early, so the user list below (0x0C frames) is received
+        setNotifyOn(SVC_SOEHNLE, CHR_SOEHNLE_A)
+        setNotifyOn(SVC_SOEHNLE, CHR_SOEHNLE_B)
+
+        // (2) Write current time (CTS, full 10-byte layout)
         val calendar = Calendar.getInstance()
-        bleBuilder.addUInt16(calendar.get(Calendar.YEAR))
-        bleBuilder.addUInt8((calendar.get(Calendar.MONTH) + 1))
-        bleBuilder.addUInt8(calendar.get(Calendar.DAY_OF_MONTH))
-        bleBuilder.addUInt8(calendar.get(Calendar.HOUR_OF_DAY))
-        bleBuilder.addUInt8(calendar.get(Calendar.MINUTE))
-        bleBuilder.addUInt8(calendar.get(Calendar.SECOND))
-        bleBuilder.addUInt8(calendar.get(Calendar.DAY_OF_WEEK))
-        bleBuilder.addUInt8(0)
+        val currentTime = soehnleCurrentTime(
+            year = calendar.get(Calendar.YEAR),
+            month = calendar.get(Calendar.MONTH) + 1,
+            day = calendar.get(Calendar.DAY_OF_MONTH),
+            hour = calendar.get(Calendar.HOUR_OF_DAY),
+            minute = calendar.get(Calendar.MINUTE),
+            second = calendar.get(Calendar.SECOND),
+            calendarDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK),
+        )
 
         LogManager.d(TAG, "Writing Current Time to $CHR_CURRENT_TIME: ${calendar.time}")
 
-        writeTo(SVC_CURRENT_TIME, CHR_CURRENT_TIME, bleBuilder.build(), withResponse = true)
+        writeTo(SVC_CURRENT_TIME, CHR_CURRENT_TIME, currentTime, withResponse = true)
 
         // (3) Subscribe to UDS User Control Point for create/select responses
         setNotifyOn(SVC_USER_DATA, CHR_USER_CONTROL_POINT)
 
-        // (4) Ensure user exists on scale
-        val appUserId = user.id
-        val scaleIndex = loadScaleIndexForAppUser(appUserId)
+        // (4) Ensure user exists on scale. The rest of the sequence runs once the scale
+        //     has answered on the User Control Point (see handleUserControlPoint).
+        sessionStarted = false
+        liveFinalPublished = false
+        createAttempts = 0
+        selectAttempts = 0
+        resetTried = false
+        // Ask for the scale's user list like the vendor app does (logged for diagnosis)
+        writeTo(SVC_SOEHNLE, CHR_SOEHNLE_CMD, CMD_LIST_USERS, withResponse = true)
+        val scaleIndex = loadScaleIndexForAppUser(user.id)
         if (scaleIndex == -1) {
-            // Create new scale user
-            // Payload per legacy: [0x01, 0x00, 0x00]
-            writeTo(SVC_USER_DATA, CHR_USER_CONTROL_POINT, byteArrayOf(0x01, 0x00, 0x00), withResponse = true)
+            createScaleUser()
         } else {
-            // Select existing scale user
-            writeTo(SVC_USER_DATA, CHR_USER_CONTROL_POINT, byteArrayOf(0x02, scaleIndex.toByte(), 0x00, 0x00), withResponse = true)
+            selectScaleUser(scaleIndex)
         }
+    }
+
+    override fun onDisconnected() {
+        sessionStarted = false
+    }
+
+    private fun createScaleUser() {
+        createAttempts++
+        // Payload per legacy: [0x01, 0x00, 0x00] (register new user, consent code 0x0000)
+        writeTo(SVC_USER_DATA, CHR_USER_CONTROL_POINT, byteArrayOf(0x01, 0x00, 0x00), withResponse = true)
+    }
+
+    private fun selectScaleUser(scaleIndex: Int) {
+        if (scaleIndex != selectedIndex) selectAttempts = 0
+        selectedIndex = scaleIndex
+        selectAttempts++
+        // [0x02, index, consent code 0x0000]
+        writeTo(SVC_USER_DATA, CHR_USER_CONTROL_POINT, byteArrayOf(0x02, scaleIndex.toByte(), 0x00, 0x00), withResponse = true)
+    }
+
+    /** Remaining steps, run once per connection after the scale user is created or selected. */
+    private fun startSession(user: ScaleUser) {
+        if (sessionStarted) return
+        sessionStarted = true
 
         // (5-7) Push profile fields
         writeTo(SVC_USER_DATA, CHR_USER_AGE, byteArrayOf(user.age.toByte()), withResponse = true)
         writeTo(SVC_USER_DATA, CHR_USER_GENDER, byteArrayOf(if (user.gender.isMale()) 0x00 else 0x01), withResponse = true)
         writeTo(SVC_USER_DATA, CHR_USER_HEIGHT, ConverterUtils.toInt16Le(user.bodyHeight.toInt()), withResponse = true)
 
-        // (8) Subscribe to custom A/B notifications
-        setNotifyOn(SVC_SOEHNLE, CHR_SOEHNLE_A)
-        setNotifyOn(SVC_SOEHNLE, CHR_SOEHNLE_B)
-
         // (9) Request history for indices 1..7
         for (i in 1..7) {
             writeTo(SVC_SOEHNLE, CHR_SOEHNLE_CMD, byteArrayOf(0x09, i.toByte()), withResponse = true)
         }
+
+        // (10) Start the live weight stream
+        writeTo(SVC_SOEHNLE, CHR_SOEHNLE_CMD, CMD_LIVE_START, withResponse = true)
     }
 
     override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
         if (data.isEmpty()) return
         when (characteristic) {
-            CHR_SOEHNLE_A -> handleSoehnleA(data)
+            CHR_SOEHNLE_A -> {
+                if (data[0] != 0x30.toByte()) logD("352e3001: ${data.toHexPreview(20)}")
+                handleSoehnleA(data)
+                handleLiveFrame(data, user)
+            }
             CHR_USER_CONTROL_POINT -> handleUserControlPoint(data, user)
             CHR_BATTERY_LEVEL -> handleBattery(data)
             else -> Unit
@@ -201,23 +258,86 @@ class SoehnleHandler : ScaleDeviceHandler() {
         when (cmd) {
             0x01 -> { // user create
                 val success = value.getOrNull(2) ?: return
-                val idx = value.getOrNull(3)?.toInt() ?: return
-                if (success == 0x01.toByte()) {
+                val idx = value.getOrNull(3)?.toInt()
+                if (success == 0x01.toByte() && idx != null) {
                     saveScaleIndexForAppUser(user.id, idx)
                     userInfo(R.string.bluetooth_scale_info_step_on_for_reference, 0)
+                    // The vendor app gives consent for the user before it starts a
+                    // live measurement; do the same for the freshly created one.
+                    selectScaleUser(idx)
+                } else if (createAttempts < MAX_CREATE_ATTEMPTS) {
+                    // Seen on a Shape50 right after a factory reset: [20 01 02].
+                    // Give the scale time to finish the reset and try again.
+                    logW("Soehnle: creating user failed (${value.toHexPreview(8)}), retry $createAttempts/$MAX_CREATE_ATTEMPTS")
+                    scope.launch {
+                        delay(CREATE_RETRY_DELAY_MS)
+                        createScaleUser()
+                    }
+                } else if (!resetTried) {
+                    // All user slots may be taken by other phones/apps: wipe and retry once.
+                    logW("Soehnle: creating user keeps failing, factory reset as last resort")
+                    resetTried = true
+                    createAttempts = 0
+                    factoryReset()
+                    writeTo(SVC_SOEHNLE, CHR_SOEHNLE_CMD, CMD_LIST_USERS, withResponse = true)
+                    scope.launch {
+                        delay(CREATE_RETRY_DELAY_MS)
+                        createScaleUser()
+                    }
                 } else {
-                    logE("Soehnle: error creating user")
+                    // Without a user the scale rejects the profile and sends no live data;
+                    // still request history in case it has stored measurements.
+                    logE("Soehnle: error creating user, response ${value.toHexPreview(8)}")
+                    startSession(user)
                 }
             }
             0x02 -> { // user select
                 val success = value.getOrNull(2) ?: return
-                if (success != 0x01.toByte()) {
+                if (success == 0x01.toByte()) {
+                    startSession(user)
+                } else if (!sessionStarted && selectAttempts < MAX_SELECT_ATTEMPTS) {
+                    // [20 02 02] also comes when the scale is momentarily busy (seen right
+                    // after registering a user); retry before giving up on the index.
+                    logW("Soehnle: selecting user failed (${value.toHexPreview(8)}), retry $selectAttempts/$MAX_SELECT_ATTEMPTS")
+                    val idx = selectedIndex
+                    scope.launch {
+                        delay(CREATE_RETRY_DELAY_MS)
+                        selectScaleUser(idx)
+                    }
+                } else if (!sessionStarted) {
                     logE("Soehnle: error selecting user; attempting create")
                     // Try to create instead
-                    writeTo(SVC_USER_DATA, CHR_USER_CONTROL_POINT, byteArrayOf(0x01, 0x00, 0x00), withResponse = true)
+                    createScaleUser()
+                } else {
+                    logE("Soehnle: error selecting user")
                 }
             }
         }
+    }
+
+    private fun handleLiveFrame(value: ByteArray, user: ScaleUser) {
+        val frame = SoehnleLiveFrame.parse(value) ?: return
+        if (frame.weightKg <= 0f) return // stream runs before anyone steps on
+
+        if (!frame.isFinal) {
+            userInfo(R.string.bluetooth_scale_info_measuring_weight, frame.weightKg)
+            return
+        }
+        if (liveFinalPublished) return
+        liveFinalPublished = true
+
+        // Stop the stream like the vendor app does after the final frame
+        writeTo(SVC_SOEHNLE, CHR_SOEHNLE_CMD, CMD_LIVE_STOP, withResponse = true)
+
+        // A live weighing belongs to whoever is connected right now; the scale's user
+        // index only matters if it is mapped to a different app user.
+        val mappedUserId = loadUserIdForScaleIndex(frame.userIndex)
+        val openScaleUserId = if (mappedUserId != -1) mappedUserId else {
+            logW("Soehnle user index ${frame.userIndex} not mapped, using connected user ${user.id}")
+            user.id
+        }
+        logI("Final live measurement: ${frame.weightKg} kg (user index ${frame.userIndex}, status 0x%02X)".format(frame.status))
+        publish(buildMeasurement(openScaleUserId, Date(), frame.weightKg, frame.imp5, frame.imp50))
     }
 
     private fun handleSoehnleA(value: ByteArray) {
@@ -252,6 +372,10 @@ class SoehnleHandler : ScaleDeviceHandler() {
             return
         }
 
+        publish(buildMeasurement(openScaleUserId, cal.time, weightKg, imp5, imp50))
+    }
+
+    private fun buildMeasurement(openScaleUserId: Int, dateTime: Date, weightKg: Float, imp5: Int, imp50: Int): ScaleMeasurement {
         // We need user's profile for composition calcs → try to use the currently selected user
         // (This is usually the same as 'openScaleUserId')
         val u = try { currentAppUser() } catch (_: Throwable) { null }
@@ -262,15 +386,14 @@ class SoehnleHandler : ScaleDeviceHandler() {
 
         val lib = SoehnleLib(isMale, age, height, activity)
 
-        val m = ScaleMeasurement().apply {
+        return ScaleMeasurement().apply {
             userId = openScaleUserId
             this[MeasurementType.WEIGHT] = Kg(weightKg)
-            dateTime = cal.time
+            this.dateTime = dateTime
             this[MeasurementType.WATER] = Percent(lib.getWater(weightKg, imp50.toFloat()))
             this[MeasurementType.BODY_FAT] = Percent(lib.getFat(weightKg, imp50.toFloat()))
             this[MeasurementType.MUSCLE] = Percent(lib.getMuscle(weightKg, imp50.toFloat(), imp5.toFloat()))
         }
-        publish(m)
     }
 
     // --- Helpers --------------------------------------------------------------
