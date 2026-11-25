@@ -24,6 +24,7 @@ import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.BeurerBf1000Lib
+import com.health.openscale.core.bluetooth.libs.BeurerBf105Lib
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -61,8 +62,8 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
     private var profile: Profile? = null
 
     // Segmental values buffered until the measurement they belong to is published.
-    private val bf1000PendingSegmentals = LinkedHashMap<MeasurementType.Key<Percent>, Percent>()
-    private var bf1000PendingVisceralFat = 0f
+    private val pendingSegmentals = LinkedHashMap<MeasurementType.Key<Percent>, Percent>()
+    private var pendingVisceralFat = 0f
 
     // BF1000 private measurement characteristics on the Beurer FFFF service:
     // 0006 reports measurement-complete status, 0009 carries visceral/segmental
@@ -75,6 +76,35 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
         bf1000SegmentalFatMeasurement,
         bf1000SegmentalMuscleMeasurement
     )
+
+    // BF105 private characteristic on the Beurer FFFF service: 0008 carries one half-body frame
+    // per recorded weigh-in, with the upper/lower body fat and muscle percentages.
+    private val bf105HalfBodyMeasurement = uuid16(0x0008)
+
+    // The two characteristics StandardWeightProfileHandler decodes, watched here to keep a
+    // weigh-in open until the special values on the private characteristics have been read.
+    private val chrWeightMeasurement = uuid16(0x2A9D)
+    private val chrBodyCompositionMeasurement = uuid16(0x2A9C)
+
+    // Some models report additional values of a weigh-in on private characteristics *after* the
+    // standard packets of that weigh-in: the BF105 sends its half-body frame on FFFF/0008, the
+    // BF1000 sends segmental fat on FFFF/0009 and segmental muscle on FFFF/000A. The base class
+    // publishes as soon as a weight and a body-composition packet have been merged, which is
+    // before any of that data has been read, so the record would be stored without it. The
+    // body-composition packet is therefore kept in [heldComposition] until [awaitingSpecialData]
+    // empties, and handing that packet back is what publishes the record - with its values
+    // already in the buffer. A record whose data does not arrive is published without it, at the
+    // next weigh-in or at the end of the connection.
+    private var heldComposition: ByteArray? = null
+    // The private characteristics of the weigh-in in flight that we still wait a packet from.
+    private var awaitingSpecialData = emptySet<UUID>()
+
+    /** Per model, the private characteristics carrying the special values of a weigh-in; none for the rest. */
+    private fun specialDataCharacteristics(m: Model?): Set<UUID> = when (m) {
+        Model.BEURER_BF105 -> setOf(bf105HalfBodyMeasurement)
+        Model.BEURER_BF1000 -> setOf(bf1000SegmentalFatMeasurement, bf1000SegmentalMuscleMeasurement)
+        else -> emptySet()
+    }
 
     private fun pFor(m: Model) = when (m) {
         Model.BEURER_BF105,
@@ -186,9 +216,31 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             }
         }
 
-        if (activeModel == Model.BEURER_BF1000) {
-            enableBf1000CustomMeasurements()
+        // A handler instance outlives a connection, so a new session must not start with
+        // leftovers from the previous one: the buffers and the held packet belong to one record.
+        if (specialDataCharacteristics(activeModel).isNotEmpty()) {
+            pendingSegmentals.clear()
+            pendingVisceralFat = 0f
+            heldComposition = null
+            awaitingSpecialData = emptySet()
         }
+
+        when (activeModel) {
+            Model.BEURER_BF1000 -> enableBf1000CustomMeasurements()
+            Model.BEURER_BF105 -> {
+                logD("Enabling BF105 half-body measurement characteristic")
+                setNotifyOn(p.service, bf105HalfBodyMeasurement)
+            }
+            else -> Unit
+        }
+    }
+
+    override fun onDisconnected() {
+        // If the data that closes the held record never arrived, publish that record anyway:
+        // weight and whole-body composition are still stored, only the values the scale did not
+        // report are missing.
+        releaseHeldComposition()
+        super.onDisconnected()
     }
 
     override fun writeUserDataToScale() {
@@ -231,9 +283,29 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
             activeModel == Model.BEURER_BF1000 && isBf1000CustomMeasurementCharacteristic(characteristic) -> {
                 handleBf1000CustomMeasurementData(characteristic, data)
             }
+            activeModel == Model.BEURER_BF105 && characteristic == bf105HalfBodyMeasurement -> {
+                handleBf105HalfBodyData(data)
+            }
+            characteristic == chrBodyCompositionMeasurement &&
+                specialDataCharacteristics(activeModel).isNotEmpty() -> {
+                holdCompositionPacket(data)
+                awaitingSpecialData = specialDataCharacteristics(activeModel)
+            }
+            characteristic == chrWeightMeasurement && heldComposition != null -> {
+                // This is the next weigh-in, so the rest of the previous one's special data is
+                // not coming any more; publish the previous one with the values it did report.
+                // This assumes a scale reports a weigh-in's weight before the special values on
+                // its private characteristics, which is how every capture of these models looks.
+                releaseHeldComposition()
+                super.onNotification(characteristic, data, user)
+            }
             else ->
                 super.onNotification(characteristic, data, user)
         }
+
+        // This must come after the branches: they are what put a packet's values into the
+        // buffers that publishing the weigh-in reads.
+        noteSpecialDataRead(characteristic)
     }
 
     override fun onRequestMeasurement() {
@@ -274,7 +346,7 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
 
                 // Visceral fat has a predefined key of its own, so it rides the regular
                 // field rather than a device-specific one.
-                if (decoded.visceralFat > 0f) bf1000PendingVisceralFat = decoded.visceralFat
+                if (decoded.visceralFat > 0f) pendingVisceralFat = decoded.visceralFat
 
                 bufferSegmental(SEGMENTAL_FAT_LEFT_ARM, decoded.leftArm)
                 bufferSegmental(SEGMENTAL_FAT_RIGHT_ARM, decoded.rightArm)
@@ -313,31 +385,86 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
         characteristic in bf1000CustomMeasurementChars
 
     private fun bufferSegmental(key: MeasurementType.Key<Percent>, percent: Float) {
-        if (percent > 0f && percent.isFinite()) bf1000PendingSegmentals[key] = Percent(percent)
+        if (percent > 0f && percent.isFinite()) pendingSegmentals[key] = Percent(percent)
+    }
+
+    // ---- BF105 half-body values ------------------------------------------------
+
+    /**
+     * The half-body frame belongs to the record it was measured with and arrives right after
+     * that record's body-composition packet, so its values go to the buffer that the next
+     * publish reads.
+     */
+    private fun handleBf105HalfBodyData(value: ByteArray) {
+        logD("BF105 half-body chr=${bf105HalfBodyMeasurement.shortId()} len=${value.size} ${value.toHexPreview(32)}")
+
+        val decoded = BeurerBf105Lib.parseHalfBodyMeasurement(value)
+        if (decoded == null) {
+            logW("BF105 half-body packet could not be decoded")
+            return
+        }
+
+        bufferSegmental(SEGMENTAL_FAT_UPPER_BODY, decoded.upperBodyFat)
+        bufferSegmental(SEGMENTAL_FAT_LOWER_BODY, decoded.lowerBodyFat)
+        bufferSegmental(SEGMENTAL_MUSCLE_UPPER_BODY, decoded.upperBodyMuscle)
+        bufferSegmental(SEGMENTAL_MUSCLE_LOWER_BODY, decoded.lowerBodyMuscle)
+    }
+
+
+    /**
+     * The base class publishes as soon as a weight and a body-composition packet have been
+     * merged, which for these scales happens before the special values of the same weigh-in
+     * have arrived on its private characteristics. Taking the body-composition packet over here
+     * keeps the weigh-in open; handing it back is what publishes it, with those values already
+     * in the buffer the publish reads.
+     */
+    private fun holdCompositionPacket(value: ByteArray) {
+        releaseHeldComposition()
+        heldComposition = value
     }
 
     /**
-     * Attaches the values from the BF1000's private characteristics to the measurement
-     * built from the standard weight/body-composition packets. Runs on every publish path,
-     * including the disconnect flush, and clears the buffer so the next weigh-in starts
-     * clean.
+     * Notes that one of the characteristics holding a weigh-in open has been read, and publishes
+     * it once all of them have. Data belonging to no weigh-in in flight is left in the buffer
+     * for the next publish, as it was before.
+     */
+    private fun noteSpecialDataRead(characteristic: UUID) {
+        if (characteristic !in awaitingSpecialData) return
+        awaitingSpecialData = awaitingSpecialData - characteristic
+        if (awaitingSpecialData.isEmpty()) releaseHeldComposition()
+    }
+
+    /** Hands the held body-composition packet back, which publishes that weigh-in; no-op if none is held. */
+    private fun releaseHeldComposition() {
+        val value = heldComposition ?: return
+        heldComposition = null
+        awaitingSpecialData = emptySet()
+        logD("Handing the held body-composition packet back for publication")
+        super.onNotification(chrBodyCompositionMeasurement, value, currentAppUser())
+    }
+
+    /**
+     * Attaches the values buffered from the private characteristics of the models that have
+     * them to the measurement built from the standard weight/body-composition packets. Runs on
+     * every publish path, including the disconnect flush, and clears the buffer so the next
+     * weigh-in starts clean.
      */
     override fun transformBeforePublish(m: ScaleMeasurement): ScaleMeasurement {
         val transformed = super.transformBeforePublish(m)
 
-        if (activeModel != Model.BEURER_BF1000) return transformed
+        if (specialDataCharacteristics(activeModel).isEmpty()) return transformed
 
-        if (MeasurementType.VISCERAL_FAT !in transformed && bf1000PendingVisceralFat > 0f) {
-            transformed[MeasurementType.VISCERAL_FAT] = bf1000PendingVisceralFat
+        if (activeModel == Model.BEURER_BF1000 && MeasurementType.VISCERAL_FAT !in transformed && pendingVisceralFat > 0f) {
+            transformed[MeasurementType.VISCERAL_FAT] = pendingVisceralFat
         }
-        bf1000PendingSegmentals.forEach { (key, percent) -> transformed[key] = percent }
+        pendingSegmentals.forEach { (key, percent) -> transformed[key] = percent }
 
-        if (bf1000PendingSegmentals.isNotEmpty()) {
-            logD("Attached ${bf1000PendingSegmentals.size} BF1000 segmental values")
+        if (pendingSegmentals.isNotEmpty()) {
+            logD("Attached ${pendingSegmentals.size} segmental values")
         }
 
-        bf1000PendingSegmentals.clear()
-        bf1000PendingVisceralFat = 0f
+        pendingSegmentals.clear()
+        pendingVisceralFat = 0f
 
         return transformed
     }
@@ -360,6 +487,12 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
         val SEGMENTAL_MUSCLE_TORSO     = muscle("torso",     R.string.measurement_type_segmental_muscle_torso,     MeasurementTypeIcon.IC_CHEST,  0xFF43A047)
         val SEGMENTAL_MUSCLE_LEFT_LEG  = muscle("left_leg",  R.string.measurement_type_segmental_muscle_left_leg,  MeasurementTypeIcon.IC_THIGH,  0xFF388E3C)
         val SEGMENTAL_MUSCLE_RIGHT_LEG = muscle("right_leg", R.string.measurement_type_segmental_muscle_right_leg, MeasurementTypeIcon.IC_THIGH,  0xFF2E7D32)
+
+        val SEGMENTAL_FAT_UPPER_BODY    = fat("upper_body",   R.string.measurement_type_segmental_fat_upper_body,    MeasurementTypeIcon.IC_CHEST, 0xFFEF9A9A)
+        val SEGMENTAL_FAT_LOWER_BODY    = fat("lower_body",   R.string.measurement_type_segmental_fat_lower_body,    MeasurementTypeIcon.IC_THIGH, 0xFFB71C1C)
+
+        val SEGMENTAL_MUSCLE_UPPER_BODY = muscle("upper_body", R.string.measurement_type_segmental_muscle_upper_body, MeasurementTypeIcon.IC_CHEST, 0xFFA5D6A7)
+        val SEGMENTAL_MUSCLE_LOWER_BODY = muscle("lower_body", R.string.measurement_type_segmental_muscle_lower_body, MeasurementTypeIcon.IC_THIGH, 0xFF1B5E20)
 
         /** Both packets report tenths of a percent, so every segment is a PERCENT float. */
         private fun fat(part: String, nameResId: Int, icon: MeasurementTypeIcon, color: Long) =
