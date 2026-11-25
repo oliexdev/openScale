@@ -58,7 +58,8 @@ import com.health.openscale.core.data.Percent
  *  5) Create/select user on the scale via UCP and wait for its response.
  *  6) Write age, gender, height.
  *  7) Subscribe custom measurement notifications (A/B).
- *  8) Request history for indices 1..7.
+ *  8) Request the stored history of the connected user's own scale index only
+ *     (openScale saves every published measurement for the current app user).
  *  9) Start the live weight stream (`30 FF 01`); the final live frame is published, the
  *     stream is stopped again (`30 FF 00`) as the vendor app does, and the link is
  *     dropped so the scale is free for the next phone right away.
@@ -219,9 +220,12 @@ class SoehnleHandler : ScaleDeviceHandler() {
         writeTo(SVC_USER_DATA, CHR_USER_GENDER, byteArrayOf(if (user.gender.isMale()) 0x00 else 0x01), withResponse = true)
         writeTo(SVC_USER_DATA, CHR_USER_HEIGHT, ConverterUtils.toInt16Le(user.bodyHeight.toInt()), withResponse = true)
 
-        // (9) Request history for indices 1..7
-        for (i in 1..7) {
-            writeTo(SVC_SOEHNLE, CHR_SOEHNLE_CMD, byteArrayOf(0x09, i.toByte()), withResponse = true)
+        // (9) Request the history of this user's scale index only, like the vendor app.
+        //     Every published measurement is stored for the current app user, so other
+        //     users' history must not be fetched here.
+        val ownIndex = loadScaleIndexForAppUser(user.id)
+        if (ownIndex in 1..7) {
+            writeTo(SVC_SOEHNLE, CHR_SOEHNLE_CMD, byteArrayOf(0x09, ownIndex.toByte()), withResponse = true)
         }
 
         // (10) Start the live weight stream
@@ -234,7 +238,7 @@ class SoehnleHandler : ScaleDeviceHandler() {
             CHR_SOEHNLE_A -> {
                 if (data[0] != 0x30.toByte()) logD("352e3001: ${data.toHexPreview(20)}")
                 handleUserListFrame(data)
-                handleSoehnleA(data)
+                handleSoehnleA(data, user)
                 handleLiveFrame(data, user)
             }
             CHR_USER_CONTROL_POINT -> handleUserControlPoint(data, user)
@@ -356,13 +360,15 @@ class SoehnleHandler : ScaleDeviceHandler() {
         // Stop the stream like the vendor app does after the final frame
         writeTo(SVC_SOEHNLE, CHR_SOEHNLE_CMD, CMD_LIVE_STOP, withResponse = true)
 
-        // A live weighing belongs to whoever is connected right now; the scale's user
-        // index only matters if it is mapped to a different app user.
+        // The weighing belongs to whoever is connected right now (openScale stores it for
+        // the current app user anyway); skip it only if the scale attributes it to an
+        // index that is mapped to a different app user.
         val mappedUserId = loadUserIdForScaleIndex(frame.userIndex)
-        val openScaleUserId = if (mappedUserId != -1) mappedUserId else {
-            logW("Soehnle user index ${frame.userIndex} not mapped, using connected user ${user.id}")
-            user.id
+        if (mappedUserId != -1 && mappedUserId != user.id) {
+            logW("Skipping live measurement of scale user index ${frame.userIndex} (app user $mappedUserId, connected ${user.id})")
+            return
         }
+        val openScaleUserId = user.id
         logI("Final live measurement: ${frame.weightKg} kg (user index ${frame.userIndex}, status 0x%02X)".format(frame.status))
         publish(buildMeasurement(openScaleUserId, Date(), frame.weightKg, frame.imp5, frame.imp50))
 
@@ -370,7 +376,7 @@ class SoehnleHandler : ScaleDeviceHandler() {
         scheduleDisconnect(DISCONNECT_DELAY_MS)
     }
 
-    private fun handleSoehnleA(value: ByteArray) {
+    private fun handleSoehnleA(value: ByteArray, user: ScaleUser) {
         // Only handle 0x09 frames of length 15
         if (value.size != 15 || value[0] != 0x09.toByte()) return
 
@@ -399,6 +405,10 @@ class SoehnleHandler : ScaleDeviceHandler() {
         val openScaleUserId = loadUserIdForScaleIndex(soehnleUserIndex)
         if (openScaleUserId == -1) {
             logE("Unknown Soehnle user index $soehnleUserIndex")
+            return
+        }
+        if (openScaleUserId != user.id) {
+            logW("Skipping history of scale user index $soehnleUserIndex (app user $openScaleUserId, connected ${user.id})")
             return
         }
 
