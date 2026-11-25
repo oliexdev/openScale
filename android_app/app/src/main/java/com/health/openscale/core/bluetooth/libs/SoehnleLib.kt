@@ -60,6 +60,29 @@ data class SoehnleLiveFrame(
 }
 
 /**
+ * One entry of the user list a Soehnle scale sends on 352e3001 for every slot after the
+ * app writes `0C FF` to 352e3002, e.g. `0C 01 01 29 00 00 C5 05 51 02`.
+ *
+ * Only the first two fields are decoded: [1] is the slot (1..8) and [2] is 01 for a
+ * registered user, 00 for a free slot (a free slot carries defaults, `0C 02 00 28 00 00 AA
+ * 00 00 03`). The remaining bytes look like the stored profile but are not needed here.
+ */
+data class SoehnleUserSlot(val index: Int, val registered: Boolean) {
+    companion object {
+        const val LENGTH = 10
+        const val OPCODE = 0x0C
+
+        fun parse(value: ByteArray): SoehnleUserSlot? {
+            if (value.size != LENGTH || (value[0].toInt() and 0xFF) != OPCODE) return null
+            return SoehnleUserSlot(
+                index = value[1].toInt() and 0xFF,
+                registered = value[2].toInt() == 0x01,
+            )
+        }
+    }
+}
+
+/**
  * Current Time characteristic (0x2A2B) payload in the full 10-byte layout the vendor app
  * writes: year (uint16 LE), month, day, hours, minutes, seconds, day of week (1 = Monday ..
  * 7 = Sunday), fractions256, adjust reason. After the previous 9-byte write the scale

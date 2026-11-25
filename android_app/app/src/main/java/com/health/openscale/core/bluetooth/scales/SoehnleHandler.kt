@@ -23,6 +23,7 @@ import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.SoehnleLib
 import com.health.openscale.core.bluetooth.libs.SoehnleLiveFrame
+import com.health.openscale.core.bluetooth.libs.SoehnleUserSlot
 import com.health.openscale.core.bluetooth.libs.soehnleCurrentTime
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.utils.ConverterUtils
@@ -49,7 +50,8 @@ import com.health.openscale.core.data.Percent
  * built-in DriverSettings helpers (persisted per device address).
  *
  * Flow on connect:
- *  1) (Last resort only) Factory reset if registering a user keeps failing.
+ *  1) (Last resort only) Factory reset if registering a user keeps failing and the
+ *     scale's user list shows all slots taken.
  *  2) Subscribe Battery and read initial level.
  *  3) Write Current Time.
  *  4) Subscribe User Control Point (UDS).
@@ -57,8 +59,9 @@ import com.health.openscale.core.data.Percent
  *  6) Write age, gender, height.
  *  7) Subscribe custom measurement notifications (A/B).
  *  8) Request history for indices 1..7.
- *  9) Start the live weight stream (`30 FF 01`); the final live frame is published and
- *     the stream is stopped again (`30 FF 00`), as the vendor app does.
+ *  9) Start the live weight stream (`30 FF 01`); the final live frame is published, the
+ *     stream is stopped again (`30 FF 00`) as the vendor app does, and the link is
+ *     dropped so the scale is free for the next phone right away.
  */
 class SoehnleHandler : ScaleDeviceHandler() {
 
@@ -117,6 +120,8 @@ class SoehnleHandler : ScaleDeviceHandler() {
     private val CMD_LIST_USERS = byteArrayOf(0x0C, 0xFF.toByte())
     private val MAX_CREATE_ATTEMPTS = 3
     private val MAX_SELECT_ATTEMPTS = 3
+    private val SCALE_USER_SLOTS = 8
+    private val DISCONNECT_DELAY_MS = 1000L
     private val CREATE_RETRY_DELAY_MS = 2000L
 
     // --- Per-connection state ---------------------------------------------------
@@ -127,6 +132,8 @@ class SoehnleHandler : ScaleDeviceHandler() {
     private var selectAttempts = 0
     private var selectedIndex = -1
     private var resetTried = false
+    /** Scale user list from the 0x0C frames: slot index -> registered. */
+    private val userSlots = mutableMapOf<Int, Boolean>()
 
     // --- Lifecycle -----------------------------------------------------------
 
@@ -169,6 +176,7 @@ class SoehnleHandler : ScaleDeviceHandler() {
         createAttempts = 0
         selectAttempts = 0
         resetTried = false
+        userSlots.clear()
         // Ask for the scale's user list like the vendor app does (logged for diagnosis)
         writeTo(SVC_SOEHNLE, CHR_SOEHNLE_CMD, CMD_LIST_USERS, withResponse = true)
         val scaleIndex = loadScaleIndexForAppUser(user.id)
@@ -221,6 +229,7 @@ class SoehnleHandler : ScaleDeviceHandler() {
         when (characteristic) {
             CHR_SOEHNLE_A -> {
                 if (data[0] != 0x30.toByte()) logD("352e3001: ${data.toHexPreview(20)}")
+                handleUserListFrame(data)
                 handleSoehnleA(data)
                 handleLiveFrame(data, user)
             }
@@ -273,9 +282,10 @@ class SoehnleHandler : ScaleDeviceHandler() {
                         delay(CREATE_RETRY_DELAY_MS)
                         createScaleUser()
                     }
-                } else if (!resetTried) {
-                    // All user slots may be taken by other phones/apps: wipe and retry once.
-                    logW("Soehnle: creating user keeps failing, factory reset as last resort")
+                } else if (!resetTried && allSlotsTaken()) {
+                    // Every user slot is taken (other phones/apps): wipe and retry once.
+                    // Never reset otherwise - it would delete the users of other phones.
+                    logW("Soehnle: creating user keeps failing and all ${userSlots.size} slots are taken, factory reset as last resort")
                     resetTried = true
                     createAttempts = 0
                     factoryReset()
@@ -315,6 +325,14 @@ class SoehnleHandler : ScaleDeviceHandler() {
         }
     }
 
+    private fun handleUserListFrame(value: ByteArray) {
+        val slot = SoehnleUserSlot.parse(value) ?: return
+        userSlots[slot.index] = slot.registered
+    }
+
+    private fun allSlotsTaken(): Boolean =
+        userSlots.size >= SCALE_USER_SLOTS && userSlots.values.all { it }
+
     private fun handleLiveFrame(value: ByteArray, user: ScaleUser) {
         val frame = SoehnleLiveFrame.parse(value) ?: return
         if (frame.weightKg <= 0f) return // stream runs before anyone steps on
@@ -338,6 +356,12 @@ class SoehnleHandler : ScaleDeviceHandler() {
         }
         logI("Final live measurement: ${frame.weightKg} kg (user index ${frame.userIndex}, status 0x%02X)".format(frame.status))
         publish(buildMeasurement(openScaleUserId, Date(), frame.weightKg, frame.imp5, frame.imp50))
+
+        // Free the scale for the next phone; give the stop command time to go out first
+        scope.launch {
+            delay(DISCONNECT_DELAY_MS)
+            requestDisconnect()
+        }
     }
 
     private fun handleSoehnleA(value: ByteArray) {

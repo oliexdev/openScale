@@ -73,6 +73,16 @@ class SoehnleLiveFrameTest {
     }
 
     @Test
+    fun `decodes user list entries`() {
+        // Shape200 user list from issue #487: slot 1 registered, slot 2 free
+        assertThat(SoehnleUserSlot.parse(hex("0C 01 01 29 00 00 C5 05 51 02")))
+            .isEqualTo(SoehnleUserSlot(index = 1, registered = true))
+        assertThat(SoehnleUserSlot.parse(hex("0C 02 00 28 00 00 AA 00 00 03")))
+            .isEqualTo(SoehnleUserSlot(index = 2, registered = false))
+        assertThat(SoehnleUserSlot.parse(hex("30 01 00 03 20 00 00 00 00"))).isNull()
+    }
+
+    @Test
     fun `current time uses the 10-byte layout the vendor app writes`() {
         // year LE, month, day, hours, minutes, seconds, day of week (Mon = 1),
         // fractions256 and adjust reason (left at zero)
