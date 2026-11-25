@@ -73,6 +73,15 @@ class SoehnleLiveFrameTest {
     }
 
     @Test
+    fun `rejects flagged or missing impedances`() {
+        assertThat(SoehnleLib.isValidImpedance(0x0172)).isTrue()
+        assertThat(SoehnleLib.isValidImpedance(0x019D)).isTrue()
+        assertThat(SoehnleLib.isValidImpedance(0x0000)).isFalse()
+        assertThat(SoehnleLib.isValidImpedance(0x10A4)).isFalse()
+        assertThat(SoehnleLib.isValidImpedance(0x15DC)).isFalse()
+    }
+
+    @Test
     fun `decodes user list entries`() {
         // Shape200 user list from issue #487: slot 1 registered, slot 2 free
         assertThat(SoehnleUserSlot.parse(hex("0C 01 01 29 00 00 C5 05 51 02")))

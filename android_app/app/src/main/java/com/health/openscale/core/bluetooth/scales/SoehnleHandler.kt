@@ -119,9 +119,11 @@ class SoehnleHandler : ScaleDeviceHandler() {
     private val CMD_LIVE_STOP = byteArrayOf(0x30, 0xFF.toByte(), 0x00)
     private val CMD_LIST_USERS = byteArrayOf(0x0C, 0xFF.toByte())
     private val MAX_CREATE_ATTEMPTS = 3
-    private val MAX_SELECT_ATTEMPTS = 3
+    private val MAX_SELECT_ATTEMPTS = 8 // 16 s, longer than a weighing
     private val SCALE_USER_SLOTS = 8
     private val DISCONNECT_DELAY_MS = 1000L
+    private val HISTORY_DISCONNECT_DELAY_MS = 3000L // let the rest of the history arrive
+    private val FRESH_HISTORY_MS = 3 * 60 * 1000L
     private val CREATE_RETRY_DELAY_MS = 2000L
 
     // --- Per-connection state ---------------------------------------------------
@@ -131,6 +133,7 @@ class SoehnleHandler : ScaleDeviceHandler() {
     private var createAttempts = 0
     private var selectAttempts = 0
     private var selectedIndex = -1
+    private var disconnectScheduled = false
     private var resetTried = false
     /** Scale user list from the 0x0C frames: slot index -> registered. */
     private val userSlots = mutableMapOf<Int, Boolean>()
@@ -175,6 +178,7 @@ class SoehnleHandler : ScaleDeviceHandler() {
         liveFinalPublished = false
         createAttempts = 0
         selectAttempts = 0
+        disconnectScheduled = false
         resetTried = false
         userSlots.clear()
         // Ask for the scale's user list like the vendor app does (logged for diagnosis)
@@ -305,21 +309,26 @@ class SoehnleHandler : ScaleDeviceHandler() {
                 val success = value.getOrNull(2) ?: return
                 if (success == 0x01.toByte()) {
                     startSession(user)
-                } else if (!sessionStarted && selectAttempts < MAX_SELECT_ATTEMPTS) {
-                    // [20 02 02] also comes when the scale is momentarily busy (seen right
-                    // after registering a user); retry before giving up on the index.
+                } else if (sessionStarted) {
+                    logE("Soehnle: error selecting user")
+                } else if (userSlots[selectedIndex] == false) {
+                    // The scale lists our slot as free (wiped by a reset elsewhere): register anew
+                    logE("Soehnle: scale user index $selectedIndex no longer exists; creating a new one")
+                    createScaleUser()
+                } else if (selectAttempts < MAX_SELECT_ATTEMPTS) {
+                    // [20 02 02] comes while the scale is busy, e.g. measuring someone who
+                    // stepped on before the app connected; it accepts the same command once
+                    // the weighing is done. Never register a second user for this.
                     logW("Soehnle: selecting user failed (${value.toHexPreview(8)}), retry $selectAttempts/$MAX_SELECT_ATTEMPTS")
                     val idx = selectedIndex
                     scope.launch {
                         delay(CREATE_RETRY_DELAY_MS)
                         selectScaleUser(idx)
                     }
-                } else if (!sessionStarted) {
-                    logE("Soehnle: error selecting user; attempting create")
-                    // Try to create instead
-                    createScaleUser()
                 } else {
-                    logE("Soehnle: error selecting user")
+                    // Still busy: fetch whatever the scale stored (a weighing done meanwhile)
+                    logE("Soehnle: selecting user keeps failing (${value.toHexPreview(8)})")
+                    startSession(user)
                 }
             }
         }
@@ -358,10 +367,7 @@ class SoehnleHandler : ScaleDeviceHandler() {
         publish(buildMeasurement(openScaleUserId, Date(), frame.weightKg, frame.imp5, frame.imp50))
 
         // Free the scale for the next phone; give the stop command time to go out first
-        scope.launch {
-            delay(DISCONNECT_DELAY_MS)
-            requestDisconnect()
-        }
+        scheduleDisconnect(DISCONNECT_DELAY_MS)
     }
 
     private fun handleSoehnleA(value: ByteArray) {
@@ -397,6 +403,21 @@ class SoehnleHandler : ScaleDeviceHandler() {
         }
 
         publish(buildMeasurement(openScaleUserId, cal.time, weightKg, imp5, imp50))
+
+        // A weighing that finished just now (the user stepped on before the app connected)
+        // means there is nothing left to wait for: free the scale.
+        if (System.currentTimeMillis() - cal.timeInMillis in 0..FRESH_HISTORY_MS) {
+            scheduleDisconnect(HISTORY_DISCONNECT_DELAY_MS)
+        }
+    }
+
+    private fun scheduleDisconnect(delayMs: Long) {
+        if (disconnectScheduled) return
+        disconnectScheduled = true
+        scope.launch {
+            delay(delayMs)
+            requestDisconnect()
+        }
     }
 
     private fun buildMeasurement(openScaleUserId: Int, dateTime: Date, weightKg: Float, imp5: Int, imp50: Int): ScaleMeasurement {
@@ -414,9 +435,16 @@ class SoehnleHandler : ScaleDeviceHandler() {
             userId = openScaleUserId
             this[MeasurementType.WEIGHT] = Kg(weightKg)
             this.dateTime = dateTime
-            this[MeasurementType.WATER] = Percent(lib.getWater(weightKg, imp50.toFloat()))
-            this[MeasurementType.BODY_FAT] = Percent(lib.getFat(weightKg, imp50.toFloat()))
-            this[MeasurementType.MUSCLE] = Percent(lib.getMuscle(weightKg, imp50.toFloat(), imp5.toFloat()))
+            // Body composition only from usable impedances; otherwise the weight alone
+            if (SoehnleLib.isValidImpedance(imp50)) {
+                this[MeasurementType.WATER] = Percent(lib.getWater(weightKg, imp50.toFloat()))
+                this[MeasurementType.BODY_FAT] = Percent(lib.getFat(weightKg, imp50.toFloat()))
+                if (SoehnleLib.isValidImpedance(imp5)) {
+                    this[MeasurementType.MUSCLE] = Percent(lib.getMuscle(weightKg, imp50.toFloat(), imp5.toFloat()))
+                }
+            } else {
+                logW("Soehnle: impedance not usable (imp5=0x%04X, imp50=0x%04X), weight only".format(imp5, imp50))
+            }
         }
     }
 

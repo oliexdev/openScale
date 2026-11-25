@@ -107,6 +107,15 @@ class SoehnleLib(// male = 1; female = 0
     private val height: Float,
     private val activityLevel: Int
 ) {
+    companion object {
+        /**
+         * Impedances in good measurements are plain values (e.g. 0x0172 = 370 Ohm). Stored
+         * measurements also carry fields with a high nibble set (0x10A4, 0x11F6, 0x15DC)
+         * or zero, which give nonsense body fat (> 200 %); those are not used.
+         */
+        fun isValidImpedance(value: Int): Boolean = value in 1..0x0FFF
+    }
+
     fun getFat(weight: Float, imp50: Float): Float { // in %
         var activityCorrFac = 0.0f
 
