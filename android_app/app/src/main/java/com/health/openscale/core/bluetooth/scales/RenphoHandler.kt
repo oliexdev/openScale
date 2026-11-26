@@ -22,11 +22,19 @@ import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
+import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
+import java.time.DateTimeException
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import com.health.openscale.core.data.Kg
+import java.util.concurrent.ConcurrentHashMap
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Handler for RENPHO ES-WBE28 (GATT; mix of standard and vendor-specific behavior).
@@ -44,6 +52,13 @@ import com.health.openscale.core.data.Kg
 class RenphoHandler : ScaleDeviceHandler() {
 
     companion object { private const val TAG = "RenphoHandler" }
+
+    // Android can omit the name on reconnect. Match the connected address to its advertisement.
+    private val qnScaleAddresses = ConcurrentHashMap.newKeySet<String>()
+    private var isQnScale = false
+    private var pendingWeight: ScaleMeasurement? = null
+    private var weightTimeout: Job? = null
+    private var weightPublished = false
 
     // --- Services (16-bit base UUIDs) -----------------------------------------
 
@@ -104,7 +119,12 @@ class RenphoHandler : ScaleDeviceHandler() {
 
         // Never claim Renpho when QN services are present
         if (hasQN) return null
+        if (nameLc == "qn-scale" && SERV_WEIGHT_SCALE in svc) {
+            qnScaleAddresses.add(device.address)
+            return DeviceSupport("RENPHO ES-WBE28 (QN-Scale)", setOf(DeviceCapability.BODY_COMPOSITION), implemented = emptySet())
+        }
         if (!looksRenphoByName) return null
+        qnScaleAddresses.remove(device.address)
 
         val caps = setOf(
             DeviceCapability.TIME_SYNC,
@@ -123,11 +143,25 @@ class RenphoHandler : ScaleDeviceHandler() {
         )
     }
 
-    /**
-     * After services are discovered, enable notifications and perform the vendor handshake
-     * followed by writing user data.
-     */
+    /** QN-Scale only needs user consent before subscribing to the measurements. */
+    @Synchronized
     override fun onConnected(user: ScaleUser) {
+        clearPendingWeight()
+        weightPublished = false
+        isQnScale = getPeripheral()?.address?.let(qnScaleAddresses::contains) == true
+
+        if (isQnScale) {
+            setNotifyOn(SERV_USER_DATA, CHAR_CUSTOM1_NOTIFY)
+            writeTo(SERV_USER_DATA, CHAR_CUSTOM1, MAGIC_UCP)
+        } else {
+            configureLegacyScale(user)
+        }
+        setNotifyOn(SERV_WEIGHT_SCALE, CHAR_WEIGHT)
+        setNotifyOn(SERV_BODY_COMP, CHAR_BODY_COMP_MEAS)
+        userInfo(R.string.bt_info_step_on_scale)
+    }
+
+    private fun configureLegacyScale(user: ScaleUser) {
         // Notifications / indications first (best practice)
         setNotifyOn(SERV_CUR_TIME, CHAR_CUR_TIME)
         setNotifyOn(SERV_USER_DATA, CHAR_CUSTOM1_NOTIFY)     // UCP indication
@@ -147,12 +181,6 @@ class RenphoHandler : ScaleDeviceHandler() {
 
         // Optional: read feature flags
         readFrom(SERV_BODY_COMP, CHAR_BODY_COMP_FEAT)
-
-        // Subscribe to measurements
-        setNotifyOn(SERV_WEIGHT_SCALE, CHAR_WEIGHT)          // weight → proprietary format
-        setNotifyOn(SERV_BODY_COMP, CHAR_BODY_COMP_MEAS)     // body comp → vendor specific (TODO)
-
-        userInfo(R.string.bt_info_step_on_scale)
     }
 
     /**
@@ -161,8 +189,9 @@ class RenphoHandler : ScaleDeviceHandler() {
      */
     override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
         when (characteristic) {
-            CHAR_WEIGHT -> handleWeightNotification(data, user)
+            CHAR_WEIGHT -> if (isQnScale) handleQnWeight(data) else handleWeightNotification(data, user)
             CHAR_BODY_COMP_MEAS -> {
+                if (isQnScale && data.size >= 4) publishPendingWeight()
                 // TODO: parse RENPHO vendor body composition (non-standard payload)
                 LogManager.d(TAG, "BodyComp indication (vendor-specific) len=${data.size}")
             }
@@ -195,6 +224,66 @@ class RenphoHandler : ScaleDeviceHandler() {
 
         val m = ScaleMeasurement().apply { this[MeasurementType.WEIGHT] = Kg(weightKg) }
         publish(m)
+    }
+
+    // QN-Scale can finish the weigh-in with a composition indication instead of a final weight.
+    @Synchronized
+    private fun handleQnWeight(data: ByteArray) {
+        if (data.size < 3) return
+        val flags = data[0].toInt() and 0xff
+        val raw = ConverterUtils.fromUnsignedInt16Le(data, 1)
+        // Zero ends the weigh-in. A moving weight (0x0E/0x0F) starts a new one.
+        if (raw == 0 || (flags and 0xfe) == 0x0e) {
+            if (raw == 0) publishPendingWeight() else clearPendingWeight()
+            weightPublished = false
+            return
+        }
+        if (weightPublished) return
+        val reading = ScaleMeasurement().apply {
+            this[MeasurementType.WEIGHT] = if ((flags and 1) == 0) Kg(raw / 20f) else Kg.fromLb(raw / 10f)
+            dateTime = weightTimestamp(data)
+        }
+        clearPendingWeight()
+        pendingWeight = reading
+        if ((flags and 0x60) == 0x20) {
+            publishPendingWeight()
+        } else {
+            weightTimeout = scope.launch {
+                delay(8_000)
+                publishPendingWeight(reading)
+            }
+        }
+    }
+
+    override fun onDisconnected() = publishPendingWeight()
+
+    @Synchronized
+    private fun publishPendingWeight(expected: ScaleMeasurement? = null) {
+        val reading = pendingWeight ?: return
+        if (expected != null && expected !== reading) return
+        clearPendingWeight()
+        weightPublished = true
+        publish(reading)
+    }
+
+    private fun clearPendingWeight() {
+        weightTimeout?.cancel()
+        weightTimeout = null
+        pendingWeight = null
+    }
+
+    // Stored readings include a Bluetooth Date Time. An unknown or invalid date is omitted.
+    private fun weightTimestamp(data: ByteArray): Date? {
+        if (data.size < 10 || (data[0].toInt() and 2) == 0) return null
+        val year = ConverterUtils.fromUnsignedInt16Le(data, 3)
+        if (year !in 1582..9999) return null
+        fun field(i: Int) = data[i].toInt() and 0xff
+        return try {
+            val time = LocalDateTime.of(year, field(5), field(6), field(7), field(8), field(9))
+            Date.from(time.atZone(ZoneId.systemDefault()).toInstant())
+        } catch (_: DateTimeException) {
+            null
+        }
     }
 
     // --- Helpers ---------------------------------------------------------------

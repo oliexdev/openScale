@@ -253,6 +253,8 @@ object ScaleCatalog {
         device("IFIT") claimedBy SinocareHandler::class.java,
         device("SENSSUN FAT") claimedBy SenssunHandler::class.java,
         device("RENPHO-SCALE-1234") claimedBy RenphoHandler::class.java,
+        device("QN-Scale", uuid16(0x181D)) claimedBy RenphoHandler::class.java,
+        device("QN-Scale", uuid16(0x181D), uuid16(0xFFE0)) claimedBy QNHandler::class.java,
         device("QN-Scale", uuid16(0xFFE0)) claimedBy QNHandler::class.java,
         device("Health Scale") claimedBy OneByoneHandler::class.java,
         device("eufy T9146") claimedBy OneByoneHandler::class.java,
